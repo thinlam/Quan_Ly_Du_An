@@ -372,3 +372,4 @@ E:\SER\QLDA.Migrator\obj\Debug\net8.0\refint\QLDA.Migrator.dll
 E:\SER\QLDA.Migrator\obj\Debug\net8.0\QLDA.Migrator.pdb
 E:\SER\QLDA.Migrator\obj\Debug\net8.0\QLDA.Migrator.genruntimeconfig.cache
 E:\SER\QLDA.Migrator\obj\Debug\net8.0\ref\QLDA.Migrator.dll
+E:\SER\QLDA.Migrator\obj\Debug\net8.0\QLDA.Migrator.sourcelink.json

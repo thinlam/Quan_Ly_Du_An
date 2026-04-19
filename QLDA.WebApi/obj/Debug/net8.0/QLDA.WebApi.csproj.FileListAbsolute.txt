@@ -324,3 +324,4 @@ E:\SER\QLDA.WebApi\bin\Debug\net8.0\System.Composition.Convention.dll
 E:\SER\QLDA.WebApi\bin\Debug\net8.0\System.Composition.Hosting.dll
 E:\SER\QLDA.WebApi\bin\Debug\net8.0\System.Composition.Runtime.dll
 E:\SER\QLDA.WebApi\bin\Debug\net8.0\System.Composition.TypedParts.dll
+E:\SER\QLDA.WebApi\obj\Debug\net8.0\QLDA.WebApi.sourcelink.json

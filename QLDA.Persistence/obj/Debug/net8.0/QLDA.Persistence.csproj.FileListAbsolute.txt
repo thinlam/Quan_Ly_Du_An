@@ -46,3 +46,4 @@ E:\SER\QLDA.Persistence\obj\Debug\net8.0\QLDA.Persistence.dll
 E:\SER\QLDA.Persistence\obj\Debug\net8.0\refint\QLDA.Persistence.dll
 E:\SER\QLDA.Persistence\obj\Debug\net8.0\QLDA.Persistence.pdb
 E:\SER\QLDA.Persistence\obj\Debug\net8.0\ref\QLDA.Persistence.dll
+E:\SER\QLDA.Persistence\obj\Debug\net8.0\QLDA.Persistence.sourcelink.json

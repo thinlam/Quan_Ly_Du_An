@@ -66,3 +66,4 @@ E:\SER\QLDA.Infrastructure\obj\Debug\net8.0\QLDA.Infrastructure.dll
 E:\SER\QLDA.Infrastructure\obj\Debug\net8.0\refint\QLDA.Infrastructure.dll
 E:\SER\QLDA.Infrastructure\obj\Debug\net8.0\QLDA.Infrastructure.pdb
 E:\SER\QLDA.Infrastructure\obj\Debug\net8.0\ref\QLDA.Infrastructure.dll
+E:\SER\QLDA.Infrastructure\obj\Debug\net8.0\QLDA.Infrastructure.sourcelink.json

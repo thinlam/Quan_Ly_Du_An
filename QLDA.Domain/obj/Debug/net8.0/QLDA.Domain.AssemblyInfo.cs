@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QLDA.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea92b25c34b92ef4616904675e4a92d01ee154d3")]
 [assembly: System.Reflection.AssemblyProductAttribute("QLDA.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QLDA.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

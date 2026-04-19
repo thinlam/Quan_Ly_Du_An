@@ -14,3 +14,4 @@ E:\SER\QLDA.Domain\obj\Debug\net8.0\QLDA.Domain.dll
 E:\SER\QLDA.Domain\obj\Debug\net8.0\refint\QLDA.Domain.dll
 E:\SER\QLDA.Domain\obj\Debug\net8.0\QLDA.Domain.pdb
 E:\SER\QLDA.Domain\obj\Debug\net8.0\ref\QLDA.Domain.dll
+E:\SER\QLDA.Domain\obj\Debug\net8.0\QLDA.Domain.sourcelink.json
