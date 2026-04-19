@@ -22,15 +22,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLDA.Migrator", "QLDA.Migra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{DC2676B7-23B6-41F3-B706-AAD036A41F2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Application", "..\..\BuildingBlocks\src\BuildingBlocks.Application\BuildingBlocks.Application.csproj", "{A1FE1E66-897D-44D6-AFB4-6522EFECB7A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Application", "BuildingBlocks\src\BuildingBlocks.Application\BuildingBlocks.Application.csproj", "{A1FE1E66-897D-44D6-AFB4-6522EFECB7A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Domain", "..\..\BuildingBlocks\src\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj", "{A29522CC-2577-4E09-AFEB-B6EA0963E151}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Domain", "BuildingBlocks\src\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj", "{A29522CC-2577-4E09-AFEB-B6EA0963E151}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Infrastructure", "..\..\BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj", "{A0F8AF64-91D7-4A26-B8CC-7689FBBCFD8A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Infrastructure", "BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj", "{A0F8AF64-91D7-4A26-B8CC-7689FBBCFD8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Persistence", "..\..\BuildingBlocks\src\BuildingBlocks.Persistence\BuildingBlocks.Persistence.csproj", "{A48EC7BF-D5A2-4945-865D-3F002C2B2C3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Persistence", "BuildingBlocks\src\BuildingBlocks.Persistence\BuildingBlocks.Persistence.csproj", "{A48EC7BF-D5A2-4945-865D-3F002C2B2C3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.CrossCutting", "..\..\BuildingBlocks\src\BuildingBlocks.CrossCutting\BuildingBlocks.CrossCutting.csproj", "{A5E41988-B83C-4176-8760-7A1B64C5281B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.CrossCutting", "BuildingBlocks\src\BuildingBlocks.CrossCutting\BuildingBlocks.CrossCutting.csproj", "{A5E41988-B83C-4176-8760-7A1B64C5281B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
