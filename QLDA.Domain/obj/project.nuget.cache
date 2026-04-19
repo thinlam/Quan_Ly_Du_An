@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BQgmEjrVc7w=",
+  "dgSpecHash": "RD7tTvnB5tQ=",
   "success": true,
-  "projectFilePath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj",
+  "projectFilePath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\thinl\\.nuget\\packages\\sequentialguid\\4.0.6\\sequentialguid.4.0.6.nupkg.sha512"
   ],

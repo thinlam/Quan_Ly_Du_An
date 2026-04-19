@@ -5312,28 +5312,28 @@
     },
     "BuildingBlocks.Application/1.0.0": {
       "type": "project",
-      "path": "../../BuildingBlocks/src/BuildingBlocks.Application/BuildingBlocks.Application.csproj",
-      "msbuildProject": "../../BuildingBlocks/src/BuildingBlocks.Application/BuildingBlocks.Application.csproj"
+      "path": "../BuildingBlocks/src/BuildingBlocks.Application/BuildingBlocks.Application.csproj",
+      "msbuildProject": "../BuildingBlocks/src/BuildingBlocks.Application/BuildingBlocks.Application.csproj"
     },
     "BuildingBlocks.CrossCutting/1.0.0": {
       "type": "project",
-      "path": "../../BuildingBlocks/src/BuildingBlocks.CrossCutting/BuildingBlocks.CrossCutting.csproj",
-      "msbuildProject": "../../BuildingBlocks/src/BuildingBlocks.CrossCutting/BuildingBlocks.CrossCutting.csproj"
+      "path": "../BuildingBlocks/src/BuildingBlocks.CrossCutting/BuildingBlocks.CrossCutting.csproj",
+      "msbuildProject": "../BuildingBlocks/src/BuildingBlocks.CrossCutting/BuildingBlocks.CrossCutting.csproj"
     },
     "BuildingBlocks.Domain/1.0.0": {
       "type": "project",
-      "path": "../../BuildingBlocks/src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj",
-      "msbuildProject": "../../BuildingBlocks/src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj"
+      "path": "../BuildingBlocks/src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj",
+      "msbuildProject": "../BuildingBlocks/src/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj"
     },
     "BuildingBlocks.Infrastructure/1.0.0": {
       "type": "project",
-      "path": "../../BuildingBlocks/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj",
-      "msbuildProject": "../../BuildingBlocks/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj"
+      "path": "../BuildingBlocks/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj",
+      "msbuildProject": "../BuildingBlocks/src/BuildingBlocks.Infrastructure/BuildingBlocks.Infrastructure.csproj"
     },
     "BuildingBlocks.Persistence/1.0.0": {
       "type": "project",
-      "path": "../../BuildingBlocks/src/BuildingBlocks.Persistence/BuildingBlocks.Persistence.csproj",
-      "msbuildProject": "../../BuildingBlocks/src/BuildingBlocks.Persistence/BuildingBlocks.Persistence.csproj"
+      "path": "../BuildingBlocks/src/BuildingBlocks.Persistence/BuildingBlocks.Persistence.csproj",
+      "msbuildProject": "../BuildingBlocks/src/BuildingBlocks.Persistence/BuildingBlocks.Persistence.csproj"
     },
     "QLDA.Application/1.0.0": {
       "type": "project",
@@ -5372,19 +5372,19 @@
   },
   "packageFolders": {
     "C:\\Users\\thinl\\.nuget\\packages\\": {},
-    "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj",
+      "projectUniqueName": "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj",
       "projectName": "QLDA.WebApi",
-      "projectPath": "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj",
+      "projectPath": "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj",
       "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-      "outputPath": "E:\\SER\\QLDA.WebApi\\obj\\",
+      "outputPath": "D:\\SER_1\\QLDA.WebApi\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -5396,20 +5396,21 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "E:\\SER\\QLDA.Application\\QLDA.Application.csproj": {
-              "projectPath": "E:\\SER\\QLDA.Application\\QLDA.Application.csproj"
+            "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj": {
+              "projectPath": "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj"
             },
-            "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj": {
-              "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj"
+            "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj": {
+              "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj"
             },
-            "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
-              "projectPath": "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj"
+            "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
+              "projectPath": "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj"
             }
           }
         }
@@ -5424,7 +5425,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -5478,7 +5479,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

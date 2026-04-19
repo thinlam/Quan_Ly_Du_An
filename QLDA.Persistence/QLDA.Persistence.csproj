@@ -8,8 +8,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\QLDA.Domain\QLDA.Domain.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\BuildingBlocks.Persistence\BuildingBlocks.Persistence.csproj" />
+      <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
+      <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Persistence\BuildingBlocks.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>

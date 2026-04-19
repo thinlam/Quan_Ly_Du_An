@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj": {}
+    "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj": {}
   },
   "projects": {
-    "E:\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj": {
+    "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj",
+        "projectUniqueName": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj",
         "projectName": "BuildingBlocks.Application",
-        "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj",
+        "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Application\\obj\\",
+        "outputPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -26,20 +26,21 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj"
               },
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
               },
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj"
               }
             }
           }
@@ -54,7 +55,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -120,21 +121,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
+    "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj",
+        "projectUniqueName": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj",
         "projectName": "BuildingBlocks.CrossCutting",
-        "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj",
+        "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\obj\\",
+        "outputPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -146,6 +147,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -164,7 +166,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -195,21 +197,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+    "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj",
+        "projectUniqueName": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj",
         "projectName": "BuildingBlocks.Domain",
-        "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj",
+        "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\obj\\",
+        "outputPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -221,6 +223,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -239,7 +242,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -266,21 +269,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj": {
+    "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj",
+        "projectUniqueName": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj",
         "projectName": "BuildingBlocks.Infrastructure",
-        "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj",
+        "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\obj\\",
+        "outputPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -292,14 +295,15 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj"
               }
             }
           }
@@ -314,7 +318,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -345,21 +349,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj": {
+    "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj",
+        "projectUniqueName": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj",
         "projectName": "BuildingBlocks.Persistence",
-        "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj",
+        "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\obj\\",
+        "outputPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -371,17 +375,18 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.CrossCutting\\BuildingBlocks.CrossCutting.csproj"
               },
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
               }
             }
           }
@@ -396,7 +401,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -439,21 +444,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\SER\\QLDA.Application\\QLDA.Application.csproj": {
+    "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\SER\\QLDA.Application\\QLDA.Application.csproj",
+        "projectUniqueName": "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj",
         "projectName": "QLDA.Application",
-        "projectPath": "E:\\SER\\QLDA.Application\\QLDA.Application.csproj",
+        "projectPath": "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\SER\\QLDA.Application\\obj\\",
+        "outputPath": "D:\\SER_1\\QLDA.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -465,20 +470,21 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj"
               },
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
               },
-              "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj"
+              "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj"
               }
             }
           }
@@ -493,7 +499,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -560,21 +566,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj": {
+    "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj",
+        "projectUniqueName": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj",
         "projectName": "QLDA.Domain",
-        "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj",
+        "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\SER\\QLDA.Domain\\obj\\",
+        "outputPath": "D:\\SER_1\\QLDA.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -586,14 +592,15 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
               }
             }
           }
@@ -608,7 +615,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -629,21 +636,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
+    "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj",
+        "projectUniqueName": "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj",
         "projectName": "QLDA.Infrastructure",
-        "projectPath": "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj",
+        "projectPath": "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\SER\\QLDA.Infrastructure\\obj\\",
+        "outputPath": "D:\\SER_1\\QLDA.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -655,20 +662,21 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Infrastructure\\BuildingBlocks.Infrastructure.csproj"
               },
-              "E:\\SER\\QLDA.Application\\QLDA.Application.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Application\\QLDA.Application.csproj"
+              "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj"
               },
-              "E:\\SER\\QLDA.Persistence\\QLDA.Persistence.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Persistence\\QLDA.Persistence.csproj"
+              "D:\\SER_1\\QLDA.Persistence\\QLDA.Persistence.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Persistence\\QLDA.Persistence.csproj"
               }
             }
           }
@@ -683,7 +691,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -710,21 +718,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\SER\\QLDA.Persistence\\QLDA.Persistence.csproj": {
+    "D:\\SER_1\\QLDA.Persistence\\QLDA.Persistence.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\SER\\QLDA.Persistence\\QLDA.Persistence.csproj",
+        "projectUniqueName": "D:\\SER_1\\QLDA.Persistence\\QLDA.Persistence.csproj",
         "projectName": "QLDA.Persistence",
-        "projectPath": "E:\\SER\\QLDA.Persistence\\QLDA.Persistence.csproj",
+        "projectPath": "D:\\SER_1\\QLDA.Persistence\\QLDA.Persistence.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\SER\\QLDA.Persistence\\obj\\",
+        "outputPath": "D:\\SER_1\\QLDA.Persistence\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -736,20 +744,21 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
               },
-              "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj": {
-                "projectPath": "E:\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj"
+              "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj": {
+                "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Persistence\\BuildingBlocks.Persistence.csproj"
               },
-              "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj"
+              "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj"
               }
             }
           }
@@ -764,7 +773,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -811,21 +820,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj": {
+    "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj",
+        "projectUniqueName": "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj",
         "projectName": "QLDA.WebApi",
-        "projectPath": "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj",
+        "projectPath": "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj",
         "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-        "outputPath": "E:\\SER\\QLDA.WebApi\\obj\\",
+        "outputPath": "D:\\SER_1\\QLDA.WebApi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -837,20 +846,21 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "E:\\SER\\QLDA.Application\\QLDA.Application.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Application\\QLDA.Application.csproj"
+              "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj"
               },
-              "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj"
+              "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj"
               },
-              "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
-                "projectPath": "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj"
+              "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
+                "projectPath": "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj"
               }
             }
           }
@@ -865,7 +875,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -919,7 +929,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

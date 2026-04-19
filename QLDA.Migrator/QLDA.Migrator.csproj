@@ -11,8 +11,8 @@
       <ProjectReference Include="..\QLDA.Domain\QLDA.Domain.csproj" />
       <ProjectReference Include="..\QLDA.Infrastructure\QLDA.Infrastructure.csproj" />
       <ProjectReference Include="..\QLDA.Persistence\QLDA.Persistence.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
-      <ProjectReference Include="..\..\..\BuildingBlocks\src\BuildingBlocks.Persistence\BuildingBlocks.Persistence.csproj" />
+      <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
+      <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Persistence\BuildingBlocks.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>
