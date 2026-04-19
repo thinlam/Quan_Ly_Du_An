@@ -1,5 +1,13 @@
+# IDE and Editor
 .kilocode/
 .specify/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -14,17 +22,15 @@ bld/
 [Bb]in/
 [Oo]bj/
 
-# Visual Studio
-.vs/
-*.user
-*.suo
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+*.nupkg
 
 # User-specific files
 *.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
 
 # Build logs
 logs/
@@ -34,8 +40,3 @@ Log/
 # Published files
 publish/
 *.Publish.xml
-# NuGet Packages
-*.dll
-*.exe
-*.pdb
-*.cache

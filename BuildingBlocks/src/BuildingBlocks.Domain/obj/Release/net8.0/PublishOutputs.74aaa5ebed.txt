@@ -1,5 +1,0 @@
-e:\SER\PublishOutput_Staging\BuildingBlocks.Domain.dll
-e:\SER\PublishOutput_Staging\BuildingBlocks.Domain.deps.json
-e:\SER\PublishOutput_Staging\BuildingBlocks.Domain.pdb
-e:\SER\PublishOutput_Staging\SequentialGuid.dll
-e:\SER\PublishOutput_Staging\BuildingBlocks.Domain.xml

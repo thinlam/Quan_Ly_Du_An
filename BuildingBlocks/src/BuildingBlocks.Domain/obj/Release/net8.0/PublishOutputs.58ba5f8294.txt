@@ -1,5 +1,0 @@
-E:\BuildingBlocks\src\BuildingBlocks.Domain\bin\Release\net8.0\publish\BuildingBlocks.Domain.dll
-E:\BuildingBlocks\src\BuildingBlocks.Domain\bin\Release\net8.0\publish\BuildingBlocks.Domain.deps.json
-E:\BuildingBlocks\src\BuildingBlocks.Domain\bin\Release\net8.0\publish\BuildingBlocks.Domain.pdb
-E:\BuildingBlocks\src\BuildingBlocks.Domain\bin\Release\net8.0\publish\SequentialGuid.dll
-E:\BuildingBlocks\src\BuildingBlocks.Domain\bin\Release\net8.0\publish\BuildingBlocks.Domain.xml
