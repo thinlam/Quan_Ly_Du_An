@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "dEuQ/ACsoSU=",
+  "dgSpecHash": "oXx0iPE7gHc=",
   "success": true,
-  "projectFilePath": "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj",
+  "projectFilePath": "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\thinl\\.nuget\\packages\\aspose.cells\\20.11.0\\aspose.cells.20.11.0.nupkg.sha512",
     "C:\\Users\\thinl\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
