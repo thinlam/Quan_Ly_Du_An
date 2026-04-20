@@ -36,6 +36,7 @@ public static class DuAnMappings {
             DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId,
             DuToanBanDauId = dto.DuToanBanDauId,
             SoDuToanBanDau = dto.SoDuToanBanDau,
+            KhaiToanKinhPhi = dto.KhaiToanKinhPhi,
             DuAnNguonVons = [..dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
                 DuAnId = id,
                 NguonVonId = nguonVonId
@@ -87,6 +88,7 @@ public static class DuAnMappings {
         entity.DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId;
         entity.DuToanBanDauId = dto.DuToanBanDauId;
         entity.SoDuToanBanDau = dto.SoDuToanBanDau;
+        entity.KhaiToanKinhPhi = dto.KhaiToanKinhPhi;
         entity.DuAnNguonVons = [.. dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
             DuAnId = dto.Id,
             NguonVonId = nguonVonId
@@ -126,8 +128,7 @@ public static class DuAnMappings {
             LanhDaoPhuTrachId = entity.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
             SoDuToanBanDau = entity.SoDuToanBanDau,
-            DuToanBanDauId = entity.DuToanBanDauId,
-            DanhSachNguonVon = [.. entity.DuAnNguonVons?.Select(nguonVon => nguonVon.NguonVonId) ?? []],
+            DuToanBanDauId = entity.DuToanBanDauId,            KhaiToanKinhPhi = entity.KhaiToanKinhPhi,            DanhSachNguonVon = [.. entity.DuAnNguonVons?.Select(nguonVon => nguonVon.NguonVonId) ?? []],
             DonViPhoiHopIds = [.. entity.DuAnChiuTrachNhiemXuLys?.Where(e => e.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop).Select(chiuTrachNhiemXuLy => chiuTrachNhiemXuLy.ChiuTrachNhiemXuLyId) ?? []],
             DuToans = [.. entity.DuToans?.Where(e => !e.IsDeleted)
                 .OrderBy(e => e.Index)

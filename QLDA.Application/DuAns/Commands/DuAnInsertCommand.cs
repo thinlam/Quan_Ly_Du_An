@@ -63,7 +63,7 @@ internal class DuAnInsertCommandHandler : IRequestHandler<DuAnInsertCommand, DuA
         if (!entity.DuToanBanDauId.HasValue && entity.DuToans?.Count > 0) {
             var firstDuToan = entity.DuToans.OrderBy(d => d.Index).FirstOrDefault();
             if (firstDuToan != null) {
-                entity.DuToanBanDauId = firstDuToan.Id;
+                entity.DuToanBanDauId = firstDuToan.SoDuToan;
                 entity.SoDuToanBanDau = firstDuToan.SoDuToan;
                 await DuAn.UpdateAsync(entity, cancellationToken);
             }
