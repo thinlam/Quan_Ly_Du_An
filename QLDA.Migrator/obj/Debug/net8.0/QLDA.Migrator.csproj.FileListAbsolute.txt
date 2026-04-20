@@ -581,3 +581,9 @@ D:\SER_1\QLDA.Migrator\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 D:\SER_1\QLDA.Migrator\obj\Debug\net8.0\QLDA.Mig.A0600BD1.Up2Date
 D:\SER_1\QLDA.Migrator\obj\Debug\net8.0\QLDA.Migrator.genruntimeconfig.cache
 D:\SER_1\QLDA.Migrator\obj\Debug\net8.0\ref\QLDA.Migrator.dll
+E:\SER\QLDA.Migrator\bin\Debug\net8.0\System.Data.SqlClient.dll
+E:\SER\QLDA.Migrator\bin\Debug\net8.0\runtimes\win-arm64\native\sni.dll
+E:\SER\QLDA.Migrator\bin\Debug\net8.0\runtimes\win-x64\native\sni.dll
+E:\SER\QLDA.Migrator\bin\Debug\net8.0\runtimes\win-x86\native\sni.dll
+E:\SER\QLDA.Migrator\bin\Debug\net8.0\runtimes\unix\lib\net8.0\System.Data.SqlClient.dll
+E:\SER\QLDA.Migrator\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Data.SqlClient.dll
