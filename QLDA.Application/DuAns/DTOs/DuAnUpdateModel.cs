@@ -32,6 +32,10 @@ public class DuAnUpdateModel : IHasKey<Guid>, IMayHaveParent<Guid?> {
     public long? DonViPhuTrachChinhId { get; set; }
     public List<long>? DonViPhoiHopIds { get; set; }
     public List<DuToanUpdateModel>? DuToans { get; set; }
-    public Guid? DuToanBanDauId { get; set; }
+    public long? DuToanBanDauId { get; set; }
     public long? SoDuToanBanDau { get; set; }
+    /// <summary>
+    /// Khái toán kinh phí
+    /// </summary>
+    public decimal? KhaiToanKinhPhi { get; set; }
 }

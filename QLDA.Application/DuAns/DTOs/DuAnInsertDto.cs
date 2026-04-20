@@ -138,8 +138,12 @@ public class DuAnInsertDto : IMayHaveParent<Guid?> {
     /// <summary>
     /// Dự toán ban đầu (cấp ban đầu)
     /// </summary>
-    public Guid? DuToanBanDauId { get; set; }
-    public long? SoDuToanBanDau { get; set; }  
+    public long? DuToanBanDauId { get; set; }
+    public long? SoDuToanBanDau { get; set; }
+    /// <summary>
+    /// Khái toán kinh phí
+    /// </summary>
+    public decimal? KhaiToanKinhPhi { get; set; }
     public List<DuToanInsertModel>? DuToans { get; set; }
 
 }

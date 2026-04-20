@@ -5372,19 +5372,19 @@
   },
   "packageFolders": {
     "C:\\Users\\thinl\\.nuget\\packages\\": {},
-    "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj",
+      "projectUniqueName": "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj",
       "projectName": "QLDA.WebApi",
-      "projectPath": "D:\\SER_1\\QLDA.WebApi\\QLDA.WebApi.csproj",
+      "projectPath": "E:\\SER\\QLDA.WebApi\\QLDA.WebApi.csproj",
       "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-      "outputPath": "D:\\SER_1\\QLDA.WebApi\\obj\\",
+      "outputPath": "E:\\SER\\QLDA.WebApi\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -5396,21 +5396,20 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj": {
-              "projectPath": "D:\\SER_1\\QLDA.Application\\QLDA.Application.csproj"
+            "E:\\SER\\QLDA.Application\\QLDA.Application.csproj": {
+              "projectPath": "E:\\SER\\QLDA.Application\\QLDA.Application.csproj"
             },
-            "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj": {
-              "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj"
+            "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj": {
+              "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj"
             },
-            "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
-              "projectPath": "D:\\SER_1\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj"
+            "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj": {
+              "projectPath": "E:\\SER\\QLDA.Infrastructure\\QLDA.Infrastructure.csproj"
             }
           }
         }
@@ -5425,7 +5424,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -5479,7 +5478,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
