@@ -148,51 +148,72 @@ public static class WebApiAppExtensions {
     /// <summary>
     /// Adds Swagger and SwaggerUI middleware.
     /// </summary>
-    public static WebApplication UseSwaggerWithUI(this WebApplication app, AppSettings appSettings) {
+    public static WebApplication UseSwaggerWithUI(this WebApplication app, AppSettings appSettings)
+{
+    // ✅ Development (giữ nguyên)
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.EnableFilter();
+            c.DocExpansion(DocExpansion.None);
+        });
+        return app;
+    }
 
-        // Giữ nguyên logic cho môi trường Development
-        if (app.Environment.IsDevelopment()) {
-            app.UseSwagger();
-            app.UseSwaggerUI(c => {
-                c.EnableFilter();
-                c.DocExpansion(DocExpansion.None);
-            });
+    // ✅ Staging (giữ nguyên)
+    if (app.Environment.IsStaging())
+    {
+        var pathBase = appSettings.SwaggerPathBase;
+        if (string.IsNullOrEmpty(pathBase))
+        {
             return app;
         }
 
-        // Cấu hình cho môi trường Staging
-        if (app.Environment.IsStaging()) {
-            var pathBase = appSettings.SwaggerPathBase;
-            if (string.IsNullOrEmpty(pathBase)) {
-                return app;
-            }
+        app.UseSwagger(c =>
+        {
+            c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+            {
+                string prefix = pathBase.TrimEnd('/');
+                string baseUrl = $"{httpReq.Scheme}://{httpReq.Host.Value}{prefix}";
 
-            app.UseSwagger(c => {
-                c.PreSerializeFilters.Add((swaggerDoc, httpReq) => {
-
-                    string prefix = pathBase.TrimEnd('/');
-
-                    // TẠO URL GỐC CHÍNH XÁC: scheme + host + prefix (vd: http://192.168.1.75/qlda)
-                    string baseUrl = $"{httpReq.Scheme}://{httpReq.Host.Value}{prefix}";
-
-                    swaggerDoc.Servers =
-                    [
-                        // Đặt URL gốc chính xác vào tài liệu Swagger (OpenAPI Specification)
-                        new OpenApiServer { Url = baseUrl }
-                    ];
-                });
+                swaggerDoc.Servers =
+                [
+                    new OpenApiServer { Url = baseUrl }
+                ];
             });
+        });
 
-            app.UseSwaggerUI(c => {
-                c.EnableFilter();
-                c.DocExpansion(DocExpansion.None);
-                c.SwaggerEndpoint($"{pathBase}/swagger/v1/swagger.json", "QLDA API v1");
-                c.RoutePrefix = "swagger";
-            });
-        }
+        app.UseSwaggerUI(c =>
+        {
+            c.EnableFilter();
+            c.DocExpansion(DocExpansion.None);
+            c.SwaggerEndpoint($"{pathBase}/swagger/v1/swagger.json", "QLDA API v1");
+            c.RoutePrefix = "swagger";
+        });
 
         return app;
     }
+
+    // 🔥 FIX: thêm Production (IIS chạy ở đây)
+    if (app.Environment.IsProduction())
+    {
+        app.UseSwagger();
+
+        app.UseSwaggerUI(c =>
+        {
+            c.EnableFilter();
+            c.DocExpansion(DocExpansion.None);
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "QLDA API v1");
+            c.RoutePrefix = "swagger";
+        });
+
+        return app;
+    }
+
+    return app;
+}
     /// <summary>
     /// Adds CORS middleware.
     /// </summary>

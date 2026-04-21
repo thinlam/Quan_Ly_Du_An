@@ -114,6 +114,32 @@ namespace QLDA.WebApi.Controllers {
         }
 
         /// <summary>
+        /// Báo cáo dự toán dự án
+        /// </summary>
+        /// <remarks>
+        /// Lấy danh sách báo cáo dự toán dự án với các thông tin:
+        /// - Tên dự án
+        /// - Phòng phụ trách
+        /// - Phân loại (Chuyển tiếp/Ghi vốn mới)
+        /// - Khái toán kinh phí
+        /// - Thời gian thực hiện
+        /// - Dự toán giao đầu năm
+        /// - Dự toán điều chỉnh/bổ sung
+        /// - Tiến độ thực hiện
+        /// - Giá trị nghiệm thu
+        /// </remarks>
+        /// <param name="searchDto"></param>
+        /// <returns></returns>
+        [HttpGet("bao-cao-du-toan")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<ResultApi<PaginatedList<BaoCaoDuAnDto>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetBaoCaoDuToan([FromQuery] BaoCaoDuAnSearchDto searchDto) {
+            var res = await Mediator.Send(new BaoCaoDuAnGetDanhSachQuery(searchDto));
+            return ResultApi.Ok(res);
+        }
+
+        /// <summary>
         /// Thêm mới dự án
         /// </summary>
         /// <remarks>
