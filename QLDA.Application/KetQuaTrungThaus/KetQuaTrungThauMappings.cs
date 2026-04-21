@@ -16,6 +16,7 @@ public static class KetQuaTrungThauMappings {
             LoaiGoiThauId = dto.LoaiGoiThauId,
             NgayEHSMT = dto.NgayEHSMT,
             NgayMoThau = dto.NgayMoThau,
+            SoNgayThucHienHopDong = dto.SoNgayThucHienHopDong,
             SoQuyetDinh = dto.SoQuyetDinh,
             NgayQuyetDinh = dto.NgayQuyetDinh,
         };
@@ -34,6 +35,7 @@ public static class KetQuaTrungThauMappings {
             LoaiGoiThauId = entity.LoaiGoiThauId,
             NgayEHSMT = entity.NgayEHSMT,
             NgayMoThau = entity.NgayMoThau,
+            SoNgayThucHienHopDong = entity.SoNgayThucHienHopDong,
             SoQuyetDinh = entity.SoQuyetDinh,
             NgayQuyetDinh = entity.NgayQuyetDinh,
             DanhSachTepDinhKem = [.. files?.ToDtos() ?? []]
@@ -48,6 +50,7 @@ public static class KetQuaTrungThauMappings {
         entity.LoaiGoiThauId = dto.LoaiGoiThauId;
         entity.NgayEHSMT = dto.NgayEHSMT;
         entity.NgayMoThau = dto.NgayMoThau;
+        entity.SoNgayThucHienHopDong = dto.SoNgayThucHienHopDong;
         entity.SoQuyetDinh = dto.SoQuyetDinh;
         entity.NgayQuyetDinh = dto.NgayQuyetDinh;
     }

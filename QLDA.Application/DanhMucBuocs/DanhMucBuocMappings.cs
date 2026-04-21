@@ -14,8 +14,9 @@ public static class DanhMucBuocMappings {
             GiaiDoanId = dto.GiaiDoanId,
             ParentId = dto.ParentId,
             SoNgayThucHien = dto.SoNgayThucHien,
-            BuocManHinhs = [ ..dto.DanhSachManHinh?.Select(manHinhId => new DanhMucBuocManHinh() {
-                ManHinhId = manHinhId
+            BuocManHinhs = [ ..dto.DanhSachManHinh?.Select((manHinhId, index) => new DanhMucBuocManHinh() {
+                ManHinhId = manHinhId,
+                Stt = index  // Lưu vị trí theo thứ tự từ request
             }) ?? []]
         };
     }
@@ -29,9 +30,10 @@ public static class DanhMucBuocMappings {
         entity.GiaiDoanId = dto.GiaiDoanId;
         entity.ParentId = dto.ParentId;
         entity.SoNgayThucHien = dto.SoNgayThucHien;
-        entity.BuocManHinhs = [ ..dto.DanhSachManHinh?.Select(manHinhId => new DanhMucBuocManHinh() {
+        entity.BuocManHinhs = [ ..dto.DanhSachManHinh?.Select((manHinhId, index) => new DanhMucBuocManHinh() {
             BuocId = entity.Id,
-            ManHinhId = manHinhId
+            ManHinhId = manHinhId,
+            Stt = index  // Lưu vị trí theo thứ tự từ request
         }) ?? []];
     }
 

@@ -53,7 +53,9 @@ public record DanhMucBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvide
                 Stt = entity.Stt,
                 Used = entity.Used,
                 Ten = entity.Ten,
-                DanhSachManHinh = entity.BuocManHinhs!.Select(i => i.ManHinhId).ToList(),
+                DanhSachManHinh = entity.BuocManHinhs!
+                    .OrderBy(i => i.Stt)
+                    .Select(i => i.ManHinhId).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
     }

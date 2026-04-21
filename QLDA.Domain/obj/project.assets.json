@@ -67,19 +67,19 @@
   },
   "packageFolders": {
     "C:\\Users\\thinl\\.nuget\\packages\\": {},
-    "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj",
+      "projectUniqueName": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj",
       "projectName": "QLDA.Domain",
-      "projectPath": "D:\\SER_1\\QLDA.Domain\\QLDA.Domain.csproj",
+      "projectPath": "E:\\SER\\QLDA.Domain\\QLDA.Domain.csproj",
       "packagesPath": "C:\\Users\\thinl\\.nuget\\packages\\",
-      "outputPath": "D:\\SER_1\\QLDA.Domain\\obj\\",
+      "outputPath": "E:\\SER\\QLDA.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Program Files(x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "E:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\thinl\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -91,15 +91,14 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
-              "projectPath": "D:\\SER_1\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
+            "E:\\SER\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj": {
+              "projectPath": "E:\\SER\\BuildingBlocks\\src\\BuildingBlocks.Domain\\BuildingBlocks.Domain.csproj"
             }
           }
         }
@@ -114,7 +113,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -135,7 +134,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

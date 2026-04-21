@@ -26,6 +26,11 @@ internal class DanhMucBuocGetQueryHandler(IServiceProvider ServiceProvider)
 
         ManagedException.ThrowIf(entity == null && request.ThrowIfNull, "Không tìm thấy dữ liệu");
 
+        // Sort BuocManHinhs theo Stt để giữ thứ tự input của user
+        if (entity?.BuocManHinhs != null) {
+            entity.BuocManHinhs = [.. entity.BuocManHinhs.OrderBy(e => e.Stt)];
+        }
+
         return new DanhMucBuocMaterializedDto {
             Entity = entity!,
             Ancestors = [.. (await DanhMucBuoc.GetAncestorsAsync(entity!.Id, cancellationToken)).Cast<DanhMucBuoc>()],

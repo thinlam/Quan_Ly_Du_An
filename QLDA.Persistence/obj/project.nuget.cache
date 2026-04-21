@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "LlqBOYRndyM=",
+  "dgSpecHash": "g1G/oZ7uZ4U=",
   "success": true,
-  "projectFilePath": "D:\\SER_1\\QLDA.Persistence\\QLDA.Persistence.csproj",
+  "projectFilePath": "E:\\SER\\QLDA.Persistence\\QLDA.Persistence.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\thinl\\.nuget\\packages\\aspose.cells\\20.11.0\\aspose.cells.20.11.0.nupkg.sha512",
     "C:\\Users\\thinl\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",

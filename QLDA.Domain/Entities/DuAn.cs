@@ -194,8 +194,11 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     /// </summary>
     
     public DuToan? DuToanBanDau { get; set; }   // ← Navigation
-    
-    public Guid? DuToanBanDauId { get; set; }
+    /// <summary>
+    /// Khái toán kinh phí
+    /// </summary>
+    public decimal? KhaiToanKinhPhi { get; set; }
+    public long? DuToanBanDauId { get; set; }
     
     public long? SoDuToanBanDau { get; set; }      // ← Số dự toán (bigint)
     public decimal? SoTienDuToanBanDau { get; set; } // ← Số tiền dự toán (nếu cần)

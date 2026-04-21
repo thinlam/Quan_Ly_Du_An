@@ -179,9 +179,13 @@ public class DuAnDto : IHasKey<Guid> {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<DuToanDto>? DuToans { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Guid? DuToanBanDauId { get; set; }
+    public long? DuToanBanDauId { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DuToanDto? DuToanBanDau { get; set; }
+    /// <summary>
+    /// Khái toán kinh phí
+    /// </summary>
+    public decimal? KhaiToanKinhPhi { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? SoDuToanBanDau { get; set; }  
 }

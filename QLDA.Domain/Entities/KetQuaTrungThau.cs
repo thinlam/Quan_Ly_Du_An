@@ -17,6 +17,7 @@ public class KetQuaTrungThau : Entity<Guid>, IAggregateRoot, ITienDo, IQuyetDinh
     public int? LoaiGoiThauId { get; set; }
     public DateTimeOffset? NgayEHSMT { get; set; }
     public DateTimeOffset? NgayMoThau { get; set; }
+    public long? SoNgayThucHienHopDong { get; set; }
 
     #region Issue 9208
     /// <summary>
