@@ -176,7 +176,6 @@ namespace QLDA.WebApi.Controllers {
                 if (duToanMoiNhat != null) {
                     entity.DuToanHienTai = duToanMoiNhat;
                     entity.SoDuToan = duToanMoiNhat.SoDuToan;
-                    entity.SoQuyetDinhDuToan = duToanMoiNhat.SoQuyetDinhDuToan;
                     entity.NamDuToan = duToanMoiNhat.NamDuToan;
                     entity.NgayKyDuToan = duToanMoiNhat.NgayKyDuToan;
                 }

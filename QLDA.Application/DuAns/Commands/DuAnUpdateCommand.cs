@@ -91,14 +91,12 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
             entity.DuToanHienTaiId = duToanMoiNhat.Id;
             entity.SoDuToan = duToanMoiNhat.SoDuToan;
             entity.NamDuToan = duToanMoiNhat.NamDuToan;
-            entity.SoQuyetDinhDuToan = duToanMoiNhat.SoQuyetDinhDuToan;
             entity.NgayKyDuToan = duToanMoiNhat.NgayKyDuToan;
             await DuAn.UpdateAsync(entity, cancellationToken);
         } else if (entity.DuToanHienTaiId != null) {
             entity.DuToanHienTaiId = null;
             entity.SoDuToan = 0;
             entity.NamDuToan = 0;
-            entity.SoQuyetDinhDuToan = null;
             entity.NgayKyDuToan = null;
             await DuAn.UpdateAsync(entity, cancellationToken);
         }
