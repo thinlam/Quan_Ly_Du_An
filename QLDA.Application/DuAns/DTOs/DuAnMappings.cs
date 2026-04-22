@@ -34,8 +34,6 @@ public static class DuAnMappings {
             NgayBatDau = dto.NgayBatDau,
             LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId,
-            DuToanBanDauId = dto.DuToanBanDauId,
-            SoDuToanBanDau = dto.SoDuToanBanDau,
             SoDuToanCuoiCung = dto.SoDuToanCuoiCung,
             KhaiToanKinhPhi = dto.KhaiToanKinhPhi,
             DuAnNguonVons = [..dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
@@ -87,8 +85,6 @@ public static class DuAnMappings {
         entity.GhiChu = dto.GhiChu;
         entity.LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId;
         entity.DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId;
-        entity.DuToanBanDauId = dto.DuToanBanDauId;
-        entity.SoDuToanBanDau = dto.SoDuToanBanDau;
         entity.SoDuToanCuoiCung = dto.SoDuToanCuoiCung;
         entity.KhaiToanKinhPhi = dto.KhaiToanKinhPhi;
         entity.DuAnNguonVons = [.. dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
@@ -129,19 +125,12 @@ public static class DuAnMappings {
             NgayBatDau = entity.NgayBatDau,
             LanhDaoPhuTrachId = entity.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
-            SoDuToanBanDau = entity.SoDuToanBanDau,
             SoDuToanCuoiCung = entity.SoDuToanCuoiCung,
-            DuToanBanDauId = entity.DuToanBanDauId,
             KhaiToanKinhPhi = entity.KhaiToanKinhPhi,            DanhSachNguonVon = [.. entity.DuAnNguonVons?.Select(nguonVon => nguonVon.NguonVonId) ?? []],
             DonViPhoiHopIds = [.. entity.DuAnChiuTrachNhiemXuLys?.Where(e => e.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop).Select(chiuTrachNhiemXuLy => chiuTrachNhiemXuLy.ChiuTrachNhiemXuLyId) ?? []],
             DuToans = [.. entity.DuToans?.Where(e => !e.IsDeleted)
                 .OrderBy(e => e.Index)
-                .Select(e => e.ToDto()) ?? []],
-            DuToanBanDau = entity.DuToans
-            ?.Where(e => !e.IsDeleted)
-            ?.OrderBy(dt => dt.CreatedAt)
-            ?.FirstOrDefault()
-            ?.ToDto()
+                .Select(e => e.ToDto()) ?? []]
         };
         if (entity.DuToanHienTaiId == null && entity.SoDuToan != 0) {
             // Insert at the beginning of the list
@@ -151,7 +140,7 @@ public static class DuAnMappings {
                 SoDuToan = entity.SoDuToan,
                 NamDuToan = entity.NamDuToan,
                 SoQuyetDinhDuToan = entity.SoQuyetDinhDuToan,
-                NgayKyDuToan = entity.NgayKyDuToan,
+                NgayKyDuToan = entity.NgayQuyetDinhDuToan,
             });
         }
 

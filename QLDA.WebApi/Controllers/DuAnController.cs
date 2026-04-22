@@ -178,7 +178,7 @@ namespace QLDA.WebApi.Controllers {
                     entity.SoDuToan = duToanMoiNhat.SoDuToan;
                     entity.SoQuyetDinhDuToan = duToanMoiNhat.SoQuyetDinhDuToan;
                     entity.NamDuToan = duToanMoiNhat.NamDuToan;
-                    entity.NgayKyDuToan = duToanMoiNhat.NgayKyDuToan;
+                    entity.NgayQuyetDinhDuToan = duToanMoiNhat.NgayKyDuToan;
                 }
 
                 //Thêm files

@@ -101,14 +101,14 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler : IRequestHandler<BaoCaoDuAnGet
                 KhaiToanKinhPhi = duAn.KhaiToanKinhPhi,
                 ThoiGianKhoiCong = duAn.ThoiGianKhoiCong,
                 ThoiGianHoanThanh = duAn.ThoiGianHoanThanh,
-                DuToanBanDau = duAn.SoDuToanBanDau,
+                DuToanBanDau = duAn.SoDuToanCuoiCung,
                 DuToanDieuChinh = duAn.SoDuToanCuoiCung,
                 TienDo = tienDo,
                 GiaTriNghiemThu = giaTriNghiemThu > 0 ? giaTriNghiemThu : null,
                 GiaTriGiaiNgan = giaTriGiaiNgan > 0 ? giaTriGiaiNgan : null,
                 HinhThucDauTuId = duAn.HinhThucDauTuId,
                 LoaiDuAnId = duAn.LoaiDuAnId,
-                NgayQuyetDinhDuToan = duAn.NgayKyDuToan,
+                NgayQuyetDinhDuToan = duAn.NgayQuyetDinhDuToan,
                 SoQuyetDinhDuToan = duAn.SoQuyetDinhDuToan,
             };
         }).ToList();

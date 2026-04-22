@@ -59,18 +59,9 @@ internal class DuAnInsertCommandHandler : IRequestHandler<DuAnInsertCommand, DuA
 
         DuAn.InitializeNode(entity, parent);
 
-        // Auto-set DuToanBanDauId and SoDuToanCuoiCung from DuToan list
+        // Auto-set SoDuToanCuoiCung from DuToan list
         if (entity.DuToans?.Count > 0) {
             var sortedDuToans = entity.DuToans.OrderBy(d => d.Index).ToList();
-            
-            // Set initial budget from first DuToan
-            if (!entity.DuToanBanDauId.HasValue) {
-                var firstDuToan = sortedDuToans.FirstOrDefault();
-                if (firstDuToan != null) {
-                    entity.DuToanBanDauId = firstDuToan.SoDuToan;
-                    entity.SoDuToanBanDau = firstDuToan.SoDuToan;
-                }
-            }
             
             // Set adjusted/final budget from last DuToan if count > 1
             if (sortedDuToans.Count > 1) {

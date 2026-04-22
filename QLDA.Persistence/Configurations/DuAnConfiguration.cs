@@ -101,7 +101,7 @@ public class DuAnConfiguration : AggregateRootConfiguration<DuAn> {
         builder.Property(e => e.SoQuyetDinhDuToan)
             .HasMaxLength(50);
 
-        builder.Property(e => e.NgayKyDuToan)
+        builder.Property(e => e.NgayQuyetDinhDuToan)
             .HasConversion(
                 toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
                 fromDb => fromDb

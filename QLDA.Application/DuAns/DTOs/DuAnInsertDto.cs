@@ -135,11 +135,6 @@ public class DuAnInsertDto : IMayHaveParent<Guid?> {
     /// Đơn vị phối hợp
     /// </summary>
     public List<long>? DonViPhoiHopIds { get; set; }
-    /// <summary>
-    /// Dự toán ban đầu (cấp ban đầu)
-    /// </summary>
-    public long? DuToanBanDauId { get; set; }
-    public long? SoDuToanBanDau { get; set; }
     public long? SoDuToanCuoiCung { get; set; }
     /// <summary>
     /// Khái toán kinh phí

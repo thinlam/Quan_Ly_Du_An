@@ -57,15 +57,9 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         }
           , cancellationToken);
 
-        // Update SoDuToanBanDau and SoDuToanCuoiCung based on the updated DuToans list
+        // Update SoDuToanCuoiCung based on the updated DuToans list
         if (entity.DuToans != null && entity.DuToans.Count > 0) {
             var sortedDuToans = entity.DuToans.Where(d => !d.IsDeleted).OrderBy(d => d.Index).ToList();
-            
-            // Set initial budget from first DuToan
-            if (sortedDuToans.Count > 0) {
-                var firstDuToan = sortedDuToans.First();
-                entity.SoDuToanBanDau = firstDuToan.SoDuToan;
-            }
             
             // Set adjusted/final budget from last DuToan if count > 1
             if (sortedDuToans.Count > 1) {
@@ -98,14 +92,14 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
             entity.SoDuToan = duToanMoiNhat.SoDuToan;
             entity.NamDuToan = duToanMoiNhat.NamDuToan;
             entity.SoQuyetDinhDuToan = duToanMoiNhat.SoQuyetDinhDuToan;
-            entity.NgayKyDuToan = duToanMoiNhat.NgayKyDuToan;
+            entity.NgayQuyetDinhDuToan = duToanMoiNhat.NgayKyDuToan;
             await DuAn.UpdateAsync(entity, cancellationToken);
         } else if (entity.DuToanHienTaiId != null) {
             entity.DuToanHienTaiId = null;
             entity.SoDuToan = 0;
             entity.NamDuToan = 0;
             entity.SoQuyetDinhDuToan = null;
-            entity.NgayKyDuToan = null;
+            entity.NgayQuyetDinhDuToan = null;
             await DuAn.UpdateAsync(entity, cancellationToken);
         }
 
