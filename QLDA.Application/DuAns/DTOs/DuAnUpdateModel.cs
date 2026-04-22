@@ -34,6 +34,7 @@ public class DuAnUpdateModel : IHasKey<Guid>, IMayHaveParent<Guid?> {
     public List<DuToanUpdateModel>? DuToans { get; set; }
     public long? DuToanBanDauId { get; set; }
     public long? SoDuToanBanDau { get; set; }
+    public long? SoDuToanCuoiCung { get; set; }
     /// <summary>
     /// Khái toán kinh phí
     /// </summary>

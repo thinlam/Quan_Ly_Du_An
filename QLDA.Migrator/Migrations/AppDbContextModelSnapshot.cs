@@ -242,6 +242,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<int>("ManHinhId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Stt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.HasKey("BuocId", "ManHinhId");
 
                     b.HasIndex("ManHinhId");
@@ -2008,6 +2013,9 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long?>("SoDuToanBanDau")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SoDuToanCuoiCung")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("SoQuyetDinhDuToan")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -2527,6 +2535,9 @@ namespace QLDA.Migrator.Migrations
 
                     b.Property<DateTimeOffset?>("NgayQuyetDinh")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("SoNgayThucHienHopDong")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("SoNgayTrienKhai")
                         .HasColumnType("bigint");

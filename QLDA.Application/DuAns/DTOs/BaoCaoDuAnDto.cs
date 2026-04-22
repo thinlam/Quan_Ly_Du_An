@@ -45,7 +45,7 @@ public class BaoCaoDuAnDto : IHasKey<Guid> {
 
     /// <summary>
     /// Dự toán điều chỉnh/bổ sung (nếu có)
-    /// Nếu danh sách dự án có > 1 thông tin dự toán lấy dòng cuối
+    /// Lấy dự toán cuối cùng (last record) nếu có > 1 dòng
     /// Nếu = 1 thì null
     /// </summary>
     public long? DuToanDieuChinh { get; set; }
@@ -63,6 +63,12 @@ public class BaoCaoDuAnDto : IHasKey<Guid> {
     public long? GiaTriNghiemThu { get; set; }
 
     /// <summary>
+    /// Giá trị giải ngân
+    /// Tổng giá trị thanh toán của dự án
+    /// </summary>
+    public long? GiaTriGiaiNgan { get; set; }
+
+    /// <summary>
     /// Hình thức đầu tư
     /// </summary>
     public int? HinhThucDauTuId { get; set; }
@@ -71,4 +77,14 @@ public class BaoCaoDuAnDto : IHasKey<Guid> {
     /// Loại dự án
     /// </summary>
     public int? LoaiDuAnId { get; set; }
+
+    /// <summary>
+    /// Ngày quyết định dự toán
+    /// </summary>
+    public DateTimeOffset? NgayQuyetDinhDuToan { get; set; }
+
+    /// <summary>
+    /// Số quyết định dự toán
+    /// </summary>
+    public string? SoQuyetDinhDuToan { get; set; }
 }

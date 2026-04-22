@@ -200,7 +200,8 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     public decimal? KhaiToanKinhPhi { get; set; }
     public long? DuToanBanDauId { get; set; }
     
-    public long? SoDuToanBanDau { get; set; }      // ← Số dự toán (bigint)
+    public long? SoDuToanBanDau { get; set; }      // ← Số dự toán ban đầu (bigint)
+    public long? SoDuToanCuoiCung { get; set; }    // ← Số dự toán cuối cùng/điều chỉnh (bigint)
     public decimal? SoTienDuToanBanDau { get; set; } // ← Số tiền dự toán (nếu cần)
     #endregion
 

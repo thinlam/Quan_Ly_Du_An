@@ -9,11 +9,11 @@ using QLDA.Persistence;
 
 #nullable disable
 
-namespace QLDA.Persistence.Migrations
+namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260420084248_AddSoNgayThucHienHopDongColumn")]
-    partial class AddSoNgayThucHienHopDongColumn
+    [Migration("20260422021019_AddSoDuToanCuoiCungColumnToDuAn")]
+    partial class AddSoDuToanCuoiCungColumnToDuAn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2014,6 +2014,9 @@ namespace QLDA.Persistence.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long?>("SoDuToanBanDau")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SoDuToanCuoiCung")
                         .HasColumnType("bigint");
 
                     b.Property<string>("SoQuyetDinhDuToan")

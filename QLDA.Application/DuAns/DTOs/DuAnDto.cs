@@ -187,5 +187,7 @@ public class DuAnDto : IHasKey<Guid> {
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public long? SoDuToanBanDau { get; set; }  
+    public long? SoDuToanBanDau { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? SoDuToanCuoiCung { get; set; }
 }

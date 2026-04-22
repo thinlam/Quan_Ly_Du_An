@@ -15,7 +15,7 @@ public class KetQuaTrungThauInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo, IT
     public int? LoaiGoiThauId { get; set; }
     public DateTimeOffset? NgayEHSMT { get; set; }
     public DateTimeOffset? NgayMoThau { get; set; }
-    public long? SoNgayThucHienHopDong { get; set; }
+    public int? SoNgayThucHienHopDong { get; set; }
     #region Issue 9208
     /// <summary>
     /// Số quyết định

@@ -57,6 +57,26 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         }
           , cancellationToken);
 
+        // Update SoDuToanBanDau and SoDuToanCuoiCung based on the updated DuToans list
+        if (entity.DuToans != null && entity.DuToans.Count > 0) {
+            var sortedDuToans = entity.DuToans.Where(d => !d.IsDeleted).OrderBy(d => d.Index).ToList();
+            
+            // Set initial budget from first DuToan
+            if (sortedDuToans.Count > 0) {
+                var firstDuToan = sortedDuToans.First();
+                entity.SoDuToanBanDau = firstDuToan.SoDuToan;
+            }
+            
+            // Set adjusted/final budget from last DuToan if count > 1
+            if (sortedDuToans.Count > 1) {
+                var lastDuToan = sortedDuToans.Last();
+                entity.SoDuToanCuoiCung = lastDuToan.SoDuToan;
+            } else {
+                // If only 1 DuToan, set SoDuToanCuoiCung to null
+                entity.SoDuToanCuoiCung = null;
+            }
+        }
+
         if (_unitOfWork.HasTransaction) {
             await UpdateAsync(entity, cancellationToken);
         } else {
