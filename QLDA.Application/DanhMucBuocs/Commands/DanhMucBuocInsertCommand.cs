@@ -53,17 +53,33 @@ internal class DanhMucBuocInsertCommandHandler : IRequestHandler<DanhMucBuocInse
             ManagedException.ThrowIf(parent == null, "Bước cha không tồn tại.");
         }
 
+        // Cập nhật BuocManHinhs với BuocId và Stt từ request
         if (request.Dto.DanhSachManHinh?.Count > 0) {
+            entity.BuocManHinhs = [ ..request.Dto.DanhSachManHinh.Select((manHinhId, index) => new DanhMucBuocManHinh() {
+                BuocId = entity.Id,
+                ManHinhId = manHinhId,
+                Stt = index
+            }) ];
+            
             var danhSachManHinh = await DanhMucManHinh.GetQueryableSet()
                 .Where(e => request.Dto.DanhSachManHinh.Contains(e.Id))
                 .ToListAsync(cancellationToken: cancellationToken);
 
             entity.PartialView = string.Join(";", danhSachManHinh.Select(e => e.Ten?.Trim()) ?? []);
         } else {
+            entity.BuocManHinhs = [];
             entity.PartialView = string.Empty;
         }
         DanhMucBuoc.InitializeNode(entity, parent);
-        return entity;
+        await UnitOfWork.SaveChangesAsync(cancellationToken);
+        
+        // Reload entity từ database để đảm bảo BuocManHinhs có Stt values chính xác
+        // Điều này cần thiết vì EF Core có thể reload collection theo default order (Primary Key)
+        var reloadedEntity = await DanhMucBuoc.GetOrderedSet()
+            .Include(e => e.BuocManHinhs)
+            .FirstOrDefaultAsync(e => e.Id == entity.Id, cancellationToken);
+        
+        return reloadedEntity ?? entity;
     }
 
     #endregion

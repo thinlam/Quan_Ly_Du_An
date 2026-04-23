@@ -2,6 +2,7 @@ using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Enums;
+using QLDA.Application.KeHoachVons.DTOs;
 
 namespace QLDA.Application.DuAns.DTOs;
 
@@ -34,8 +35,7 @@ public static class DuAnMappings {
             NgayBatDau = dto.NgayBatDau,
             LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId,
-            DuToanBanDauId = dto.DuToanBanDauId,
-            SoDuToanBanDau = dto.SoDuToanBanDau,
+            SoDuToanCuoiCung = dto.SoDuToanCuoiCung,
             KhaiToanKinhPhi = dto.KhaiToanKinhPhi,
             DuAnNguonVons = [..dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
                 DuAnId = id,
@@ -45,7 +45,8 @@ public static class DuAnMappings {
                 DuAnId = id,
                 ChiuTrachNhiemXuLyId = phoiHopId,
                 Loai = EChiuTrachNhiemXuLy.DonViPhoiHop
-            }) ?? []]
+            }) ?? []],
+            KeHoachVons = [.. dto.KeHoachVons?.Select(e => e.ToEntity(id)) ?? []]
         };
 
         // Set DuAnId for each DuToan entity and set DuToanHienTaiId if there's a latest DuToan
@@ -86,8 +87,7 @@ public static class DuAnMappings {
         entity.GhiChu = dto.GhiChu;
         entity.LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId;
         entity.DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId;
-        entity.DuToanBanDauId = dto.DuToanBanDauId;
-        entity.SoDuToanBanDau = dto.SoDuToanBanDau;
+        entity.SoDuToanCuoiCung = dto.SoDuToanCuoiCung;
         entity.KhaiToanKinhPhi = dto.KhaiToanKinhPhi;
         entity.DuAnNguonVons = [.. dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
             DuAnId = dto.Id,
@@ -98,6 +98,7 @@ public static class DuAnMappings {
             ChiuTrachNhiemXuLyId = phoiHopId,
             Loai = EChiuTrachNhiemXuLy.DonViPhoiHop
         }) ?? []];
+        // Note: KeHoachVons NOT updated here - handled by SyncKeHoachVonsAsync in DuAnUpdateCommand
     }
 
     public static DuAnDto ToDto(this DuAn entity) {
@@ -127,17 +128,14 @@ public static class DuAnMappings {
             NgayBatDau = entity.NgayBatDau,
             LanhDaoPhuTrachId = entity.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
-            SoDuToanBanDau = entity.SoDuToanBanDau,
-            DuToanBanDauId = entity.DuToanBanDauId,            KhaiToanKinhPhi = entity.KhaiToanKinhPhi,            DanhSachNguonVon = [.. entity.DuAnNguonVons?.Select(nguonVon => nguonVon.NguonVonId) ?? []],
+            SoDuToanCuoiCung = entity.SoDuToanCuoiCung,
+            KhaiToanKinhPhi = entity.KhaiToanKinhPhi,            DanhSachNguonVon = [.. entity.DuAnNguonVons?.Select(nguonVon => nguonVon.NguonVonId) ?? []],
             DonViPhoiHopIds = [.. entity.DuAnChiuTrachNhiemXuLys?.Where(e => e.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop).Select(chiuTrachNhiemXuLy => chiuTrachNhiemXuLy.ChiuTrachNhiemXuLyId) ?? []],
             DuToans = [.. entity.DuToans?.Where(e => !e.IsDeleted)
                 .OrderBy(e => e.Index)
                 .Select(e => e.ToDto()) ?? []],
-            DuToanBanDau = entity.DuToans
-            ?.Where(e => !e.IsDeleted)
-            ?.OrderBy(dt => dt.CreatedAt)
-            ?.FirstOrDefault()
-            ?.ToDto()
+            KeHoachVons = [.. entity.KeHoachVons?.Where(e => !e.IsDeleted)
+                .Select(e => e.ToDto()) ?? []]
         };
         if (entity.DuToanHienTaiId == null && entity.SoDuToan != 0) {
             // Insert at the beginning of the list

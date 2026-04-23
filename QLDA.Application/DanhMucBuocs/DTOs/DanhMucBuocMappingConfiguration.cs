@@ -15,7 +15,9 @@ public static class DanhMucBuocMappingConfiguration {
             Stt = entity.Stt,
             Used = entity.Used,
             Ten = entity.Ten,
-            DanhSachManHinh = entity.BuocManHinhs?.Select(e => e.ManHinhId).ToList(),
+            DanhSachManHinh = entity.BuocManHinhs?
+                .OrderBy(e => e.Stt)
+                .Select(e => e.ManHinhId).ToList(),
         };
 
     public static List<DanhMucBuocDto> ToDtos(this List<DanhMucBuoc> entities)
@@ -32,7 +34,9 @@ public static class DanhMucBuocMappingConfiguration {
             GiaiDoanId = dto.Entity.GiaiDoanId,
             SoNgayThucHien = dto.Entity.SoNgayThucHien,
             PartialView = dto.Entity.PartialView,
-            DanhSachManHinh = dto.Entity.BuocManHinhs?.Select(e => e.ManHinhId).ToList(),
+            DanhSachManHinh = dto.Entity.BuocManHinhs?
+                .OrderBy(e => e.Stt)
+                .Select(e => e.ManHinhId).ToList(),
             #region Materialized Path 
             Stt = dto.Entity.Stt,
             ParentId = dto.Entity.ParentId,

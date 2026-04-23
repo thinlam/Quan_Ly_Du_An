@@ -90,8 +90,8 @@ namespace QLDA.WebApi.Controllers {
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<ResultApi> Create([FromBody] DanhMucBuocInsertDto insertDto) {
-            await Mediator.Send(new DanhMucBuocInsertCommand(insertDto));
-            return ResultApi.Ok(1);
+            var entity = await Mediator.Send(new DanhMucBuocInsertCommand(insertDto));
+            return ResultApi.Ok(entity.ToDto());
         }
 
         [Authorize(Roles = RoleConstants.GroupAdminOrManager)]

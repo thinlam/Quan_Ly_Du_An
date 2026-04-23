@@ -118,6 +118,12 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     /// Ngày ký dự toán
     /// </summary>
     public DateTimeOffset? NgayKyDuToan { get; set; }
+
+    /// <summary>
+    /// Ngày quyết định dự toán
+    /// </summary>
+    public DateTimeOffset? NgayQuyetDinhDuToan { get; set; }
+
     /// <summary>
     /// Dự toán hiện tại
     /// </summary>
@@ -189,19 +195,19 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     /// </summary>
     public ICollection<DuToan>? DuToans { get; set; } = [];
     
-    /// <summary>
-    /// Dự toán ban đầu
-    /// </summary>
-    
-    public DuToan? DuToanBanDau { get; set; }   // ← Navigation
+     /// <summary>
+     /// Danh sách kế hoạch vốn của dự án
+     /// </summary>
+     public ICollection<KeHoachVon>? KeHoachVons { get; set; } = [];
     /// <summary>
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
-    public long? DuToanBanDauId { get; set; }
     
-    public long? SoDuToanBanDau { get; set; }      // ← Số dự toán (bigint)
-    public decimal? SoTienDuToanBanDau { get; set; } // ← Số tiền dự toán (nếu cần)
+    /// <summary>
+    /// Số dự toán cuối cùng (điều chỉnh)
+    /// </summary>
+    public long? SoDuToanCuoiCung { get; set; }
     #endregion
 
 

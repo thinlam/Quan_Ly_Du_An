@@ -1,5 +1,6 @@
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Domain.Interfaces;
+using QLDA.Application.KeHoachVons.DTOs;
 
 namespace QLDA.Application.DuAns.DTOs;
 
@@ -136,14 +137,14 @@ public class DuAnInsertDto : IMayHaveParent<Guid?> {
     /// </summary>
     public List<long>? DonViPhoiHopIds { get; set; }
     /// <summary>
-    /// Dự toán ban đầu (cấp ban đầu)
+    /// Số dư dự toán cuối cùng
     /// </summary>
-    public long? DuToanBanDauId { get; set; }
-    public long? SoDuToanBanDau { get; set; }
+    public long? SoDuToanCuoiCung { get; set; }
     /// <summary>
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
     public List<DuToanInsertModel>? DuToans { get; set; }
+    public List<KeHoachVonInsertDto>? KeHoachVons { get; set; }
 
 }

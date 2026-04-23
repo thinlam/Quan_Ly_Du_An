@@ -178,14 +178,13 @@ public class DuAnDto : IHasKey<Guid> {
     public int? BuocId { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<DuToanDto>? DuToans { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public long? DuToanBanDauId { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public DuToanDto? DuToanBanDau { get; set; }
     /// <summary>
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
+    /// <summary>
+    /// Số dự toán cuối cùng (điều chỉnh)
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public long? SoDuToanBanDau { get; set; }  
+    public long? SoDuToanCuoiCung { get; set; }
 }

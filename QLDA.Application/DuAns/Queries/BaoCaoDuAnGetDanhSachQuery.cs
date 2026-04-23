@@ -12,11 +12,13 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler : IRequestHandler<BaoCaoDuAnGet
     private readonly IRepository<DuAn, Guid> _duAn;
     private readonly IRepository<DuToan, Guid> _duToan;
     private readonly IRepository<NghiemThu, Guid> _nghiemThu;
+    private readonly IRepository<ThanhToan, Guid> _thanhToan;
 
     public BaoCaoDuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         _duToan = serviceProvider.GetRequiredService<IRepository<DuToan, Guid>>();
         _nghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
+        _thanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
     }
 
     public async Task<PaginatedList<BaoCaoDuAnDto>> Handle(BaoCaoDuAnGetDanhSachQuery request,
@@ -25,8 +27,8 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler : IRequestHandler<BaoCaoDuAnGet
         // Build the base query with filters
         var queryable = _duAn.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
-            .Include(e => e.DuToans)
             .Include(e => e.BuocHienTai)
+            .Include(e => e.GiaiDoanHienTai)
             .WhereIf(request.SearchDto.TenDuAn.IsNotNullOrWhitespace(),
                 e => e.TenDuAn!.ToLower().Contains(request.SearchDto.TenDuAn!.ToLower()))
             .WhereIf(request.SearchDto.ThoiGianKhoiCong > 0, 
@@ -39,12 +41,8 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler : IRequestHandler<BaoCaoDuAnGet
                 e => e.HinhThucDauTuId == request.SearchDto.HinhThucDauTuId)
             .WhereIf(request.SearchDto.LoaiDuAnId > 0, 
                 e => e.LoaiDuAnId == request.SearchDto.LoaiDuAnId)
-            .WhereFunc(request.SearchDto.DonViPhuTrachChinhId.HasValue, q => q
-                .WhereIf(request.SearchDto.DonViPhuTrachChinhId > 0, 
-                    e => e.DonViPhuTrachChinhId == request.SearchDto.DonViPhuTrachChinhId)
-                .WhereIf(request.SearchDto.DonViPhuTrachChinhId == -1, 
-                    e => e.DonViPhuTrachChinhId == null)
-            );
+            .WhereIf(request.SearchDto.DonViPhuTrachChinhId > 0, 
+                e => e.DonViPhuTrachChinhId == request.SearchDto.DonViPhuTrachChinhId);
 
         // Get total count before pagination
         var totalCount = await queryable.CountAsync(cancellationToken);
@@ -56,40 +54,44 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler : IRequestHandler<BaoCaoDuAnGet
             .ToListAsync(cancellationToken);
 
         // Build the result list using LINQ to Objects (in-memory)
-        // First, get all DuToan and NghiemThu data for the projects
+        // Get all NghiemThu data for the projects
         var duAnIds = duAnList.Select(e => e.Id).ToList();
         
-        var duToans = await _duToan.GetQueryableSet().AsNoTracking()
+        var nghiemThuDict = await _nghiemThu.GetQueryableSet()
+            .AsNoTracking()
             .Where(e => !e.IsDeleted && duAnIds.Contains(e.DuAnId))
-            .OrderBy(e => e.Id) // Order by ID to get first and last
-            .ToListAsync(cancellationToken);
+            .GroupBy(e => e.DuAnId)
+            .Select(g => new {
+                DuAnId = g.Key,
+                Sum = g.Sum(x => x.GiaTri)
+            })
+            .ToDictionaryAsync(x => x.DuAnId, x => x.Sum, cancellationToken);
 
-        var nghiemThus = await _nghiemThu.GetQueryableSet().AsNoTracking()
+        // Get all ThanhToan data for the projects (Giải ngân)
+        var thanhToanDict = await _thanhToan.GetQueryableSet()
+            .AsNoTracking()
             .Where(e => !e.IsDeleted && duAnIds.Contains(e.DuAnId))
-            .ToListAsync(cancellationToken);
+            .GroupBy(e => e.DuAnId)
+            .Select(g => new {
+                DuAnId = g.Key,
+                Sum = g.Sum(x => x.GiaTri)
+            })
+            .ToDictionaryAsync(x => x.DuAnId, x => x.Sum, cancellationToken);
 
         // Build the result DTOs
         var result = duAnList.Select(duAn => {
-            // Get DuToan records for this project
-            var duToanList = duToans.Where(dt => dt.DuAnId == duAn.Id).ToList();
-            
-            // Get initial budget (first DuToan)
-            var duToanBanDau = duToanList.FirstOrDefault()?.SoDuToan;
-            
-            // Get adjusted/supplementary budget
-            // If more than 1 record, get the last one; if exactly 1 record, return null
-            long? duToanDieuChinh = null;
-            if (duToanList.Count > 1) {
-                duToanDieuChinh = duToanList.Last().SoDuToan;
-            }
-
             // Get total acceptance value (sum of GiaTriNghiemThu)
-            var giaTriNghiemThu = nghiemThus
-                .Where(nt => nt.DuAnId == duAn.Id)
-                .Sum(nt => nt.GiaTri);
+            var giaTriNghiemThu = nghiemThuDict.ContainsKey(duAn.Id) ? nghiemThuDict[duAn.Id] : 0;
+            
+            // Get total disbursement value (sum of GiaTriGiaiNgan)
+            var giaTriGiaiNgan = thanhToanDict.ContainsKey(duAn.Id) ? thanhToanDict[duAn.Id] : 0;
 
-            // Get implementation progress (current step name)
-            var tenBuoc = duAn.BuocHienTai?.TenBuoc;
+            // Get implementation progress (phase name - step name)
+            var tenGiaiDoan = duAn.GiaiDoanHienTai?.Ten ?? "";
+            var tenBuoc = duAn.BuocHienTai?.TenBuoc ?? "";
+            var tienDo = string.IsNullOrEmpty(tenGiaiDoan) && string.IsNullOrEmpty(tenBuoc) 
+                ? null 
+                : $"{tenGiaiDoan}{(string.IsNullOrEmpty(tenGiaiDoan) || string.IsNullOrEmpty(tenBuoc) ? "" : " - ")}{tenBuoc}";
 
             return new BaoCaoDuAnDto {
                 Id = duAn.Id,
@@ -99,12 +101,15 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler : IRequestHandler<BaoCaoDuAnGet
                 KhaiToanKinhPhi = duAn.KhaiToanKinhPhi,
                 ThoiGianKhoiCong = duAn.ThoiGianKhoiCong,
                 ThoiGianHoanThanh = duAn.ThoiGianHoanThanh,
-                DuToanBanDau = duToanBanDau,
-                DuToanDieuChinh = duToanDieuChinh,
-                TienDo = tenBuoc,
+                DuToanBanDau = duAn.SoDuToanCuoiCung,
+                DuToanDieuChinh = duAn.SoDuToanCuoiCung,
+                TienDo = tienDo,
                 GiaTriNghiemThu = giaTriNghiemThu > 0 ? giaTriNghiemThu : null,
+                GiaTriGiaiNgan = giaTriGiaiNgan > 0 ? giaTriGiaiNgan : null,
                 HinhThucDauTuId = duAn.HinhThucDauTuId,
                 LoaiDuAnId = duAn.LoaiDuAnId,
+                NgayQuyetDinhDuToan = duAn.NgayKyDuToan,
+                SoQuyetDinhDuToan = duAn.SoQuyetDinhDuToan,
             };
         }).ToList();
 

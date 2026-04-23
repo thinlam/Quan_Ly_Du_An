@@ -9,6 +9,10 @@ public class DanhMucBuocManHinhConfiguration : AggregateRootConfiguration<DanhMu
         builder.ToTable("DmBuocManHinh");
         builder.HasKey(e => new { e.BuocId, e.ManHinhId });
 
+        builder.Property(e => e.Stt)
+            .HasDefaultValue(0)
+            .IsRequired();
+
         builder.HasOne(e => e.Buoc)
             .WithMany(e => e.BuocManHinhs)
             .HasForeignKey(e => e.BuocId)

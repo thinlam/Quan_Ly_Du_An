@@ -20,6 +20,7 @@ public class KetQuaTrungThauDto : IHasKey<Guid>,
     public int? LoaiGoiThauId { get; set; }
     public DateTimeOffset? NgayEHSMT { get; set; }
     public DateTimeOffset? NgayMoThau { get; set; }
+    public int? SoNgayThucHienHopDong { get; set; }
     #region Issue 9208
     /// <summary>
     /// Số quyết định

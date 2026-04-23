@@ -1,5 +1,6 @@
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Domain.Interfaces;
+using QLDA.Application.KeHoachVons.DTOs;
 
 namespace QLDA.Application.DuAns.DTOs;
 
@@ -32,8 +33,11 @@ public class DuAnUpdateModel : IHasKey<Guid>, IMayHaveParent<Guid?> {
     public long? DonViPhuTrachChinhId { get; set; }
     public List<long>? DonViPhoiHopIds { get; set; }
     public List<DuToanUpdateModel>? DuToans { get; set; }
-    public long? DuToanBanDauId { get; set; }
-    public long? SoDuToanBanDau { get; set; }
+    public List<KeHoachVonUpdateDto>? KeHoachVons { get; set; }
+     /// <summary>
+     /// Số dư dự toán cuối cùng
+     /// </summary>
+    public long? SoDuToanCuoiCung { get; set; }
     /// <summary>
     /// Khái toán kinh phí
     /// </summary>

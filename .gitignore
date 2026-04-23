@@ -8,7 +8,9 @@
 *.userosscache
 *.sln.docstates
 
-# Build results
+# Build results - Ignore all bin and obj directories recursively
+**/bin/
+**/obj/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -19,15 +21,18 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
 
-# Build artifacts
+# Build artifacts - Ignore all compiled files
 *.dll
 *.exe
+*.so
+*.dylib
 *.pdb
 *.cache
 *.nupkg
+*.nuspec
+*.DotSettings
+**/Properties/AssemblyInfo.cs
 
 # User-specific files
 *.rsuser

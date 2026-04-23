@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
 #nullable disable
 
-namespace QLDA.Persistence.Migrations
+namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422021019_AddSoDuToanCuoiCungColumnToDuAn")]
+    partial class AddSoDuToanCuoiCungColumnToDuAn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,6 +244,11 @@ namespace QLDA.Persistence.Migrations
 
                     b.Property<int>("ManHinhId")
                         .HasColumnType("int");
+
+                    b.Property<int>("Stt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.HasKey("BuocId", "ManHinhId");
 
@@ -1925,11 +1933,8 @@ namespace QLDA.Persistence.Migrations
                     b.Property<bool>("DuAnTrongDiem")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("DuToanBanDauId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("DuToanBanDauId1")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long?>("DuToanBanDauId")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid?>("DuToanHienTaiId")
                         .HasColumnType("uniqueidentifier");
@@ -1953,6 +1958,9 @@ namespace QLDA.Persistence.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<decimal?>("KhaiToanKinhPhi")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<long?>("LanhDaoPhuTrachId")
                         .HasColumnType("bigint");
@@ -1987,9 +1995,6 @@ namespace QLDA.Persistence.Migrations
                     b.Property<DateTimeOffset?>("NgayKyDuToan")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("NgayQuyetDinhDuToan")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<int?>("NhomDuAnId")
                         .HasColumnType("int");
 
@@ -2008,9 +2013,18 @@ namespace QLDA.Persistence.Migrations
                     b.Property<long>("SoDuToan")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("SoDuToanBanDau")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SoDuToanCuoiCung")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("SoQuyetDinhDuToan")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("SoTienDuToanBanDau")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TenDuAn")
                         .HasColumnType("nvarchar(max)");
@@ -2044,8 +2058,6 @@ namespace QLDA.Persistence.Migrations
                         .HasFilter("[BuocHienTaiId] IS NOT NULL");
 
                     b.HasIndex("ChuDauTuId");
-
-                    b.HasIndex("DuToanBanDauId1");
 
                     b.HasIndex("DuToanHienTaiId")
                         .IsUnique()
@@ -2228,6 +2240,9 @@ namespace QLDA.Persistence.Migrations
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("DuAnId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("GhiChu")
                         .HasColumnType("nvarchar(max)");
 
@@ -2262,6 +2277,10 @@ namespace QLDA.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DuAnId");
+
+                    b.HasIndex("DuAnId1")
+                        .IsUnique()
+                        .HasFilter("[DuAnId1] IS NOT NULL");
 
                     b.HasIndex("Index");
 
@@ -2519,6 +2538,9 @@ namespace QLDA.Persistence.Migrations
 
                     b.Property<DateTimeOffset?>("NgayQuyetDinh")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("SoNgayThucHienHopDong")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("SoNgayTrienKhai")
                         .HasColumnType("bigint");
@@ -3997,10 +4019,6 @@ namespace QLDA.Persistence.Migrations
                         .WithMany("DuAns")
                         .HasForeignKey("ChuDauTuId");
 
-                    b.HasOne("QLDA.Domain.Entities.DuToan", "DuToanBanDau")
-                        .WithMany()
-                        .HasForeignKey("DuToanBanDauId1");
-
                     b.HasOne("QLDA.Domain.Entities.DuToan", "DuToanHienTai")
                         .WithOne()
                         .HasForeignKey("QLDA.Domain.Entities.DuAn", "DuToanHienTaiId")
@@ -4050,8 +4068,6 @@ namespace QLDA.Persistence.Migrations
                     b.Navigation("BuocHienTai");
 
                     b.Navigation("ChuDauTu");
-
-                    b.Navigation("DuToanBanDau");
 
                     b.Navigation("DuToanHienTai");
 
@@ -4151,6 +4167,10 @@ namespace QLDA.Persistence.Migrations
                         .HasForeignKey("DuAnId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("QLDA.Domain.Entities.DuAn", null)
+                        .WithOne("DuToanBanDau")
+                        .HasForeignKey("QLDA.Domain.Entities.DuToan", "DuAnId1");
 
                     b.Navigation("DuAn");
                 });
@@ -4814,6 +4834,8 @@ namespace QLDA.Persistence.Migrations
                     b.Navigation("DuAnChiuTrachNhiemXuLys");
 
                     b.Navigation("DuAnNguonVons");
+
+                    b.Navigation("DuToanBanDau");
 
                     b.Navigation("DuToans");
 
