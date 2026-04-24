@@ -45,4 +45,4 @@ Log/
 # Published files
 publish/
 *.Publish.xml
-*/plans
+*plans/
