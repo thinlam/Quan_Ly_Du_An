@@ -44,6 +44,4 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         return new JunctionRepository<TEntity>(this);
     }
 
-    // Link table: DuAn <-> CongViec (GiaoViecService)
-    public DbSet<DuAnCongViec> DuAnCongViecs { get; set; } = null!;
 }
