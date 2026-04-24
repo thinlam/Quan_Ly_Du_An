@@ -19,7 +19,6 @@ internal class DuAnGetQueryHandler(IServiceProvider serviceProvider) : IRequestH
         var queryable = DuAnRepository.GetOriginalSet()
                 .Where(o => o.Id == request.Id)
                 .Include(e => e.BuocHienTai!.Buoc!.GiaiDoan)
-                .Include(e => e.DuToanHienTai)
                 .WhereFunc(request.IsNoTracking, q => q.AsNoTracking())
                 .WhereFunc(request.IncludeChiuTrachNhiemXuLy, q => q.Include(o => o.DuAnChiuTrachNhiemXuLys))
                 .WhereFunc(request.IncludeNguonVon, q => q.Include(o => o.DuAnNguonVons))

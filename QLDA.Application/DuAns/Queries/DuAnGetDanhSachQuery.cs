@@ -21,7 +21,6 @@ internal class DuAnGetDanhSachQueryHandler : IRequestHandler<DuAnGetDanhSachQuer
         CancellationToken cancellationToken = default) {
         var queryable = DuAn.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
-            .Include(e => e.DuToanHienTai)
             .Include(e => e.DuToans)
             .WhereIf(request.SearchDto.TenDuAn.IsNotNullOrWhitespace(),
                 e => e.TenDuAn!.ToLower().Contains(request.SearchDto.TenDuAn!.ToLower()))

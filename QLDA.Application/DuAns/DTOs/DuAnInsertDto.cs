@@ -137,10 +137,6 @@ public class DuAnInsertDto : IMayHaveParent<Guid?> {
     /// </summary>
     public List<long>? DonViPhoiHopIds { get; set; }
     /// <summary>
-    /// Số dư dự toán cuối cùng
-    /// </summary>
-    public long? SoDuToanCuoiCung { get; set; }
-    /// <summary>
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }

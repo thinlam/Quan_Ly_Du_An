@@ -157,14 +157,7 @@ namespace QLDA.WebApi.Controllers {
             if (duToans.Count != 0) {
 
                 //Thêm dự toán
-                var duToanMoiNhat = await Mediator.Send(new DuToanInsertRangeCommand([.. duToans.Select(e => e.Item1)]), cancellationToken);
-                if (duToanMoiNhat != null) {
-                    entity.DuToanHienTai = duToanMoiNhat;
-                    entity.SoDuToan = duToanMoiNhat.SoDuToan;
-                    entity.SoQuyetDinhDuToan = duToanMoiNhat.SoQuyetDinhDuToan;
-                    entity.NamDuToan = duToanMoiNhat.NamDuToan;
-                    entity.NgayKyDuToan = duToanMoiNhat.NgayKyDuToan;
-                }
+                await Mediator.Send(new DuToanInsertRangeCommand([.. duToans.Select(e => e.Item1)]), cancellationToken);
 
                 //Thêm files
                 foreach (var (duToan, files) in duToans) {

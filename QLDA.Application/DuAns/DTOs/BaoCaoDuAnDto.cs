@@ -28,6 +28,4 @@ public class BaoCaoDuAnDto : IHasKey<Guid> {
 
     public int? HinhThucDauTuId { get; set; }
     public int? LoaiDuAnId { get; set; }
-    public DateTimeOffset? NgayQuyetDinhDuToan { get; set; }
-    public string? SoQuyetDinhDuToan { get; set; }
 }

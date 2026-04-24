@@ -8,6 +8,8 @@ public class DuAnConfiguration : AggregateRootConfiguration<DuAn> {
         builder.ToTable(nameof(DuAn));
         builder.ConfigureForBase();
 
+        builder.Property(e => e.KhaiToanKinhPhi).HasPrecision(18, 2);
+
         builder.Property(e => e.ParentId)
             .HasConversion(
                 toDb => toDb == Guid.Empty ? null : toDb, // EF insert sẽ chuyển 0 → null
@@ -98,18 +100,5 @@ public class DuAnConfiguration : AggregateRootConfiguration<DuAn> {
             .HasForeignKey(e => e.DuAnId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(e => e.SoQuyetDinhDuToan)
-            .HasMaxLength(50);
-
-        builder.Property(e => e.NgayKyDuToan)
-            .HasConversion(
-                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
-                fromDb => fromDb
-            );
-
-        builder.HasOne(e => e.DuToanHienTai)
-            .WithOne()
-            .HasForeignKey<DuAn>(e => e.DuToanHienTaiId)
-            .OnDelete(DeleteBehavior.NoAction);
     }
 }
