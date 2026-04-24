@@ -12,8 +12,8 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250704061911_Update_GoiThau")]
-    partial class Update_GoiThau
+    [Migration("20260424043806_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace QLDA.Migrator.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoTienDo", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCao", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -38,13 +38,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -52,12 +50,13 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Loai")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("Ngay")
                         .HasColumnType("datetimeoffset");
@@ -66,19 +65,15 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("DuAnId");
 
@@ -86,29 +81,29 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
-                    b.ToTable("BaoCaoTienDo", (string)null);
+                    b.ToTable("BaoCao", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.ChiuTrachNhiemXuLy", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.DangTaiKeHoachLcntLenMang", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWSEQUENTIALID()");
 
-                    b.Property<long>("ChiuTrachNhiemXuLyId")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("BuocId")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -116,39 +111,40 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Loai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("KeHoachLuaChonNhaThauId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("NgayEHSMT")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TrangThaiId")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DuAnId");
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
-                    b.ToTable("ChiuTrachNhiemXuLy", (string)null);
+                    b.HasIndex("KeHoachLuaChonNhaThauId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("DangTaiKeHoachLcntLenMang", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuoc", b =>
@@ -162,23 +158,22 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("GiaiDoanId")
+                        .HasColumnType("int");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<int>("Level")
                         .HasColumnType("int");
@@ -187,7 +182,7 @@ namespace QLDA.Migrator.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -203,6 +198,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<int>("QuyTrinhId")
                         .HasColumnType("int");
 
+                    b.Property<int>("SoNgayThucHien")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("1");
+
                     b.Property<int?>("Stt")
                         .HasColumnType("int");
 
@@ -211,26 +211,26 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("GiaiDoanId");
+
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.HasIndex("QuyTrinhId");
 
@@ -239,61 +239,20 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocManHinh", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("LeftId")
+                        .HasColumnType("int")
+                        .HasColumnName("BuocId");
+
+                    b.Property<int>("RightId")
+                        .HasColumnType("int")
+                        .HasColumnName("ManHinhId");
+
+                    b.Property<int?>("Stt")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.HasKey("LeftId", "RightId");
 
-                    b.Property<int>("BuocId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(106)
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<int>("ManHinhId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BuocId");
-
-                    b.HasIndex("Index");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.HasIndex("ManHinhId");
+                    b.HasIndex("RightId");
 
                     b.ToTable("DmBuocManHinh", (string)null);
                 });
@@ -312,29 +271,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -349,17 +304,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -371,6 +320,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.HasIndex("TrangThaiId");
 
@@ -388,29 +341,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -422,17 +371,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -442,6 +385,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmChuDauTu", (string)null);
                 });
@@ -457,29 +404,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -491,17 +434,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -512,7 +449,74 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
                     b.ToTable("DmChucVu", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucGiaiDoan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Ma")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int?>("Stt")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ten")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.ToTable("DmGiaiDoan", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucHinhThucDauTu", b =>
@@ -526,29 +530,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -560,17 +560,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -580,6 +574,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmHinhThucDauTu", (string)null);
                 });
@@ -595,29 +593,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -629,17 +623,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -649,6 +637,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmHinhThucLuaChonNhaThau", (string)null);
                 });
@@ -664,29 +656,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -698,17 +686,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -718,6 +700,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmHinhThucQuanLy", (string)null);
                 });
@@ -733,29 +719,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -767,17 +749,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -787,6 +763,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmLinhVuc", (string)null);
                 });
@@ -802,29 +782,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -836,17 +812,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -856,6 +826,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmLoaiDuAn", (string)null);
                 });
@@ -871,29 +845,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -905,17 +875,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -925,6 +889,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmLoaiDuAnTheoNam", (string)null);
 
@@ -990,29 +958,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1024,17 +988,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1044,6 +1002,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmLoaiGoiThau", (string)null);
                 });
@@ -1059,29 +1021,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1093,17 +1051,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1113,77 +1065,12 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmLoaiHopDong", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiQuyetDinh", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(106)
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<string>("Ma")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Mota")
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
-
-                    b.Property<int?>("Stt")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Ten")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
-
-                    b.Property<bool>("Used")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Index");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.ToTable("DmLoaiQuyetDinh", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiVanBan", b =>
@@ -1197,29 +1084,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1231,17 +1114,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1251,6 +1128,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmLoaiVanBan", (string)null);
                 });
@@ -1266,6 +1147,13 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("Label")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Ma")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("Stt")
+                        .HasColumnType("int");
+
                     b.Property<string>("Ten")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -1278,7 +1166,78 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.HasIndex("Ten")
+                        .IsUnique()
+                        .HasFilter("[Ten] IS NOT NULL");
+
                     b.ToTable("E_ManHinh", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucMucDoKhoKhan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Ma")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int?>("Stt")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ten")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.ToTable("DmMucDoKhoKhan", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucNguonVon", b =>
@@ -1292,29 +1251,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1326,17 +1281,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1346,6 +1295,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmNguonVon", (string)null);
                 });
@@ -1360,13 +1313,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DiaChi")
                         .HasColumnType("nvarchar(max)");
@@ -1377,12 +1328,10 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
@@ -1391,7 +1340,7 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("MaSoThue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1409,17 +1358,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1429,6 +1372,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmNhaThau", (string)null);
                 });
@@ -1444,29 +1391,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1478,17 +1421,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1498,6 +1435,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmNhomDuAn", (string)null);
                 });
@@ -1513,29 +1454,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1547,17 +1484,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1567,6 +1498,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmPhuongThucLuaChonNhaThau", (string)null);
                 });
@@ -1582,23 +1517,19 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
@@ -1607,7 +1538,7 @@ namespace QLDA.Migrator.Migrations
                     b.Property<bool>("MacDinh")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1619,17 +1550,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1639,6 +1564,14 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.HasIndex("MacDinh")
+                        .IsUnique()
+                        .HasFilter("[MacDinh] = 1 AND [IsDeleted] = 0");
 
                     b.ToTable("DmQuyTrinh", (string)null);
                 });
@@ -1654,29 +1587,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1688,17 +1617,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1709,7 +1632,74 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
                     b.ToTable("DmTinhTrangKhoKhan", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucTinhTrangThucHienLcnt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Ma")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int?>("Stt")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ten")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.ToTable("DmTinhTrangThucHienLcnt", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiDuAn", b =>
@@ -1723,29 +1713,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1757,17 +1743,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1777,6 +1757,10 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
                     b.ToTable("DmTrangThaiDuAn", (string)null);
 
@@ -1842,29 +1826,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ma")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Mota")
+                    b.Property<string>("MoTa")
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
@@ -1876,17 +1856,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -1897,15 +1871,46 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
                     b.ToTable("DmTrangThaiTienDo", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.ELoaiVanBanQuyetDinh", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Ma")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Ten")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.ToTable("E_LoaiVanBanQuyetDinh", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAn", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("BuocHienTaiId")
                         .HasColumnType("int");
@@ -1916,22 +1921,29 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DiaDiem")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("DonViPhuTrachChinhId")
+                        .HasColumnType("bigint");
+
                     b.Property<bool>("DuAnTrongDiem")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("DuToanHienTaiId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("GhiChu")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("GiaiDoanHienTaiId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("HinhThucDauTuId")
                         .HasColumnType("int");
@@ -1942,12 +1954,16 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("KhaiToanKinhPhi")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long?>("LanhDaoPhuTrachId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Level")
                         .HasColumnType("int");
@@ -1967,8 +1983,20 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("MaNganSach")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NamDuToan")
+                        .HasColumnType("int");
+
                     b.Property<string>("NangLucThietKe")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("NgayBatDau")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NgayKyDuToan")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NgayQuyetDinhDuToan")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int?>("NhomDuAnId")
                         .HasColumnType("int");
@@ -1984,6 +2012,16 @@ namespace QLDA.Migrator.Migrations
 
                     b.Property<int?>("QuyTrinhId")
                         .HasColumnType("int");
+
+                    b.Property<long>("SoDuToan")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SoDuToanCuoiCung")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SoQuyetDinhDuToan")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("TenDuAn")
                         .HasColumnType("nvarchar(max)");
@@ -2004,17 +2042,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -2023,6 +2055,12 @@ namespace QLDA.Migrator.Migrations
                         .HasFilter("[BuocHienTaiId] IS NOT NULL");
 
                     b.HasIndex("ChuDauTuId");
+
+                    b.HasIndex("DuToanHienTaiId")
+                        .IsUnique()
+                        .HasFilter("[DuToanHienTaiId] IS NOT NULL");
+
+                    b.HasIndex("GiaiDoanHienTaiId");
 
                     b.HasIndex("HinhThucDauTuId");
 
@@ -2057,19 +2095,17 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BuocId")
+                    b.Property<int>("BuocId")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -2080,18 +2116,13 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsKetThuc")
                         .HasColumnType("bit");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("NgayDuKienBatDau")
                         .HasColumnType("datetimeoffset");
@@ -2105,20 +2136,8 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset?>("NgayThucTeKetThuc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PartialView")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Path")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("QuyTrinhId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Stt")
-                        .HasColumnType("int");
 
                     b.Property<string>("TenBuoc")
                         .HasColumnType("nvarchar(max)");
@@ -2130,17 +2149,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Used")
                         .HasColumnType("bit");
@@ -2155,173 +2168,105 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
-                    b.HasIndex("QuyTrinhId");
-
                     b.ToTable("DuAnBuoc", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAnBuocManHinh", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<int>("LeftId")
+                        .HasColumnType("int")
+                        .HasColumnName("BuocId");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BuocId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(106)
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<string>("Ma")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("ManHinhId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Mota")
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
-
-                    b.Property<string>("Ten")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BuocId");
-
-                    b.HasIndex("Index");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.HasIndex("ManHinhId");
-
-                    b.ToTable("DuAnBuocManHinh", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.DuAnBuocTrangThaiTienDo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BuocId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(106)
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<string>("Ma")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Mota")
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
+                    b.Property<int>("RightId")
+                        .HasColumnType("int")
+                        .HasColumnName("ManHinhId");
 
                     b.Property<int?>("Stt")
                         .HasColumnType("int");
 
-                    b.Property<string>("Ten")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.HasKey("LeftId", "RightId");
 
-                    b.Property<int>("TrangThaiId")
-                        .HasColumnType("int");
+                    b.HasIndex("RightId");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                    b.ToTable("DuAnBuocManHinh", (string)null);
+                });
 
-                    b.Property<string>("UpdatedBy")
+            modelBuilder.Entity("QLDA.Domain.Entities.DuAnChiuTrachNhiemXuLy", b =>
+                {
+                    b.Property<Guid>("LeftId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DuAnId");
+
+                    b.Property<long>("RightId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ChiuTrachNhiemXuLyId");
+
+                    b.Property<string>("Loai")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                    b.HasKey("LeftId", "RightId");
 
-                    b.Property<bool>("Used")
+                    b.ToTable("DuAnChiuTrachNhiemXuLy", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DuAnCongViec", b =>
+                {
+                    b.Property<Guid>("LeftId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DuAnId");
+
+                    b.Property<long>("RightId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CongViecId");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool?>("IsHoanThanh")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id");
+                    b.Property<long?>("NguoiPhuTrachChinhId")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("BuocId");
+                    b.Property<long?>("NguoiTaoId")
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("Index");
+                    b.HasKey("LeftId", "RightId");
 
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.HasIndex("TrangThaiId");
-
-                    b.ToTable("DuAnBuocTrangThaiTienDo", (string)null);
+                    b.ToTable("DuAnCongViec", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAnNguonVon", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<Guid>("LeftId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("DuAnId");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("RightId")
+                        .HasColumnType("int")
+                        .HasColumnName("NguonVonId");
+
+                    b.HasKey("LeftId", "RightId");
+
+                    b.HasIndex("RightId");
+
+                    b.ToTable("DuAnNguonVon", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DuToan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -2330,14 +2275,29 @@ namespace QLDA.Migrator.Migrations
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("Index")
-                        .HasColumnType("bigint");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("NguonVonId")
+                    b.Property<int>("NamDuToan")
                         .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("NgayKyDuToan")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("SoDuToan")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SoQuyetDinhDuToan")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -2350,9 +2310,11 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasIndex("DuAnId");
 
-                    b.HasIndex("NguonVonId");
+                    b.HasIndex("Index");
 
-                    b.ToTable("DuAnNguonVon");
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.ToTable("DuToan", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.GoiThau", b =>
@@ -2368,16 +2330,17 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("DaDuyet")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("DuAnBuocId")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -2385,33 +2348,25 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long?>("GiaTri")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("GiamSatHoatDongDauThau")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("HinhThucLuaChonNhaThauId")
                         .HasColumnType("int");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<Guid?>("KeHoachLuaChonNhaThauId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("LoaiGoiThauId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("LoaiHopDongId")
                         .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("NgayEHSMT")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("NgayMoThau")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<int?>("NguonVonId")
                         .HasColumnType("int");
@@ -2422,26 +2377,34 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("Ten")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ThoiGianBatDauToChucLuaChonNhaThau")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ThoiGianHopDong")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ThoiGianLuaNhaThau")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ThoiGianThucHienGoiThau")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TomTatCongViecChinhGoiThau")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TuyChonMuaThem")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DuAnBuocId");
 
                     b.HasIndex("DuAnId");
 
@@ -2453,8 +2416,6 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasIndex("KeHoachLuaChonNhaThauId");
 
-                    b.HasIndex("LoaiGoiThauId");
-
                     b.HasIndex("LoaiHopDongId");
 
                     b.HasIndex("NguonVonId");
@@ -2462,71 +2423,6 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("PhuongThucLuaChonNhaThauId");
 
                     b.ToTable("GoiThau", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.HoSoMoiThau", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<int?>("BuocId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<bool>("DaDang")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("DuAnId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("GoiThauId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(106)
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GoiThauId")
-                        .IsUnique();
-
-                    b.HasIndex("Index");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.ToTable("HoSoMoiThau", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.HopDong", b =>
@@ -2542,13 +2438,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("DonViThucHienId")
                         .HasColumnType("uniqueidentifier");
@@ -2559,21 +2453,19 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long?>("GiaTri")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid?>("GoiThauId")
+                    b.Property<Guid>("GoiThauId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsBienBan")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<int?>("LoaiHopDongId")
                         .HasColumnType("int");
@@ -2596,23 +2488,16 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("Ten")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ThanhToanId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("DonViThucHienId");
 
@@ -2620,7 +2505,7 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasIndex("GoiThauId")
                         .IsUnique()
-                        .HasFilter("[GoiThauId] IS NOT NULL");
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.HasIndex("Index");
 
@@ -2628,9 +2513,74 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasIndex("LoaiHopDongId");
 
-                    b.HasIndex("ThanhToanId");
-
                     b.ToTable("HopDong", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachVon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DuAnId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Nam")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("NgayKy")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("NguonVonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SoQuyetDinh")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("SoVon")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("SoVonDieuChinh")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DuAnId");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.ToTable("KeHoachVon", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KetQuaTrungThau", b =>
@@ -2646,13 +2596,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("DonViTrungThauId")
                         .HasColumnType("uniqueidentifier");
@@ -2669,120 +2617,58 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("LoaiGoiThauId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("NgayEHSMT")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NgayMoThau")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NgayQuyetDinh")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<long?>("SoNgayTrienKhai")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("SoQuyetDinh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrichYeu")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("DonViTrungThauId");
 
                     b.HasIndex("DuAnId");
 
-                    b.HasIndex("GoiThauId");
+                    b.HasIndex("GoiThauId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("LoaiGoiThauId");
 
                     b.ToTable("KetQuaTrungThau", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.KhoKhanVuongMac", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<int?>("BuocId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<Guid>("DuAnId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("HuongXuLy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(106)
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<string>("KetQuaXuLy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("Ngay")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("NgayXuLy")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NoiDung")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TinhTrangId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DuAnId");
-
-                    b.HasIndex("Index");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.HasIndex("TinhTrangId");
-
-                    b.ToTable("KhoKhanVuongMac", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.NghiemThu", b =>
@@ -2798,32 +2684,34 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Dot")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("DuAnBuocId")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("HopDongId")
+                    b.Property<long>("GiaTri")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("HopDongId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("Ngay")
                         .HasColumnType("datetimeoffset");
@@ -2834,23 +2722,16 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("SoBienBan")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ThanhToanId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DuAnBuocId");
 
                     b.HasIndex("DuAnId");
 
@@ -2860,12 +2741,27 @@ namespace QLDA.Migrator.Migrations
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
-                    b.HasIndex("ThanhToanId");
-
                     b.ToTable("NghiemThu", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.NghiemThuPhuLucHopDong", b =>
+                {
+                    b.Property<Guid>("LeftId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("NghiemThuId");
+
+                    b.Property<Guid>("RightId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("PhuLucHopDongId");
+
+                    b.HasKey("LeftId", "RightId");
+
+                    b.HasIndex("RightId");
+
+                    b.ToTable("NghiemThuPhuLucHopDong", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.NhaThauNguoiDung", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -2874,119 +2770,45 @@ namespace QLDA.Migrator.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("Index")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("NghiemThuId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PhuLucHopDongId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NghiemThuId");
-
-                    b.HasIndex("PhuLucHopDongId");
-
-                    b.ToTable("NghiemThu_PhuLucHopDong", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.PheDuyetDuToan", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<int?>("BuocId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ChucVuId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
-
-                    b.Property<Guid>("DuAnId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<long?>("GiaTriDuThau")
-                        .HasColumnType("bigint");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("NgayKy")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<long>("NguoiDungId")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTimeOffset?>("NgayVanBan")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NguoiKy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SoVanBan")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TrichYeu")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("NhaThauId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ChucVuId");
-
-                    b.HasIndex("DuAnId");
 
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
-                    b.ToTable("PheDuyetDuToan", (string)null);
+                    b.HasIndex("NhaThauId", "NguoiDungId")
+                        .IsUnique();
+
+                    b.ToTable("NhaThauNguoiDung", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.PhuLucHopDong", b =>
@@ -3002,13 +2824,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -3022,12 +2842,10 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("Ngay")
                         .HasColumnType("datetimeoffset");
@@ -3044,23 +2862,16 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("Ten")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ThanhToanId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("DuAnId");
 
@@ -3069,8 +2880,6 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.HasIndex("ThanhToanId");
 
                     b.ToTable("PhuLucHopDong", (string)null);
                 });
@@ -3086,23 +2895,19 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("QuyMoHangMuc")
                         .HasColumnType("nvarchar(max)");
@@ -3117,17 +2922,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -3150,13 +2949,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("GiaTri")
                         .HasColumnType("bigint");
@@ -3164,12 +2961,10 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<int>("NguonVonId")
                         .HasColumnType("int");
@@ -3178,17 +2973,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -3214,13 +3003,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -3228,18 +3015,22 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long?>("GiaTri")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid?>("HopDongId")
+                    b.Property<Guid>("HopDongId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("NgayBaoLanh")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NgayKetThucBaoLanh")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("NgayTamUng")
                         .HasColumnType("datetimeoffset");
@@ -3247,29 +3038,29 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("NoiDung")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SoBaoLanh")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("SoPhieuChi")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("DuAnId");
 
                     b.HasIndex("HopDongId")
                         .IsUnique()
-                        .HasFilter("[HopDongId] IS NOT NULL");
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.HasIndex("Index");
 
@@ -3288,13 +3079,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
@@ -3310,12 +3099,10 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<string>("OriginalName")
                         .HasColumnType("nvarchar(max)");
@@ -3333,17 +3120,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -3367,13 +3148,11 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
@@ -3384,18 +3163,16 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
-
-                    b.Property<bool>("KhongCoHopDong")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("NgayHoaDon")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("NghiemThuId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("NoiDung")
                         .HasColumnType("nvarchar(max)");
@@ -3404,25 +3181,25 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuocId");
 
                     b.HasIndex("DuAnId");
 
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("NghiemThuId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("ThanhToan", (string)null);
                 });
@@ -3441,23 +3218,19 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(102)
                         .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(101);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Index")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(106)
                         .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnOrder(105);
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("QuyetDinhId")
                         .HasColumnType("uniqueidentifier");
@@ -3466,17 +3239,11 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(104);
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnOrder(103);
-
-                    b.Property<DateTimeOffset?>("UpdatedDateTime")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnOrder(100);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VaiTro")
                         .HasColumnType("nvarchar(max)");
@@ -3492,17 +3259,95 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("ThanhVienBanQLDA", (string)null);
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.UserSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("SessionId")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("DeviceName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsRemembered")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTimeOffset>("LastActivityAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("RefreshTokenExpiresAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("RefreshTokenExpiresAt");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserAuthInfoJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserInfoJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Platform")
+                        .HasDatabaseName("IX_UserSession_Platform");
+
+                    b.HasIndex("UserName")
+                        .HasDatabaseName("IX_UserSession_UserName");
+
+                    b.HasIndex("UserName", "Platform")
+                        .HasDatabaseName("IX_UserSession_UserName_Platform");
+
+                    b.ToTable("UserSession", (string)null);
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.VanBanQuyetDinh", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<int?>("BuocId")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -3512,7 +3357,9 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("Index")
-                        .HasColumnType("bigint");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -3544,20 +3391,388 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuocId");
+
                     b.HasIndex("DuAnId");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
                     b.ToTable("VanBanQuyetDinh", (string)null);
 
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.UserMaster", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.CanBo", b =>
                 {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("CanBoID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("ChucDanhId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ChucDanhID");
+
+                    b.Property<string>("ChuyenMon")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<long?>("ConNguoiId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ConNguoiID");
+
+                    b.Property<string>("MaSoCanBo")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("NgheNghiep")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("SoBhxh")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("SoBHXH");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CANBO", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.CanBoDonVi", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("CanBoDonViID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
                     b.Property<long?>("CanBoId")
                         .HasColumnType("bigint")
                         .HasColumnName("CanBoID");
 
+                    b.Property<long?>("ChucVuId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ChucVuID");
+
                     b.Property<long?>("DonViId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DonViID");
+
+                    b.Property<bool?>("LaChucVuChinh")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CanBoId");
+
+                    b.HasIndex("DonViId");
+
+                    b.ToTable("CANBO_DONVI", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DanhMucCapDonVi", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CapDonViID");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("TenCapDonVi")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("ThuTuHienThi")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("E_CAPDONVI", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DanhMucDonVi", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("DonViID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("Cap")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("CapDonViId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CapDonViID");
+
+                    b.Property<string>("DiaChiDayDu")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("DienThoai")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long?>("DonViCapChaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DonViCapChaID");
+
+                    b.Property<long?>("DuongId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DuongID");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Fax")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Latitude")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<long?>("LoaiDonViId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("LoaiDonViID");
+
+                    b.Property<string>("Longitude")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MaDonVi")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<long?>("PhuongXaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PhuongXaID");
+
+                    b.Property<long?>("QuanHuyenId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("QuanHuyenID");
+
+                    b.Property<string>("SoNha")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TenDonVi")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("TenVietTat")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long?>("TinhThanhId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("TinhThanhID");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Website")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id")
+                        .HasName("PK__DM_DONVI__1CB88576D84B4D4C");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
+
+                    b.HasIndex(new[] { "DonViCapChaId" }, "IDX_DM_DONVI_01");
+
+                    b.ToTable("DM_DONVI", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DanhMucVaiTroChucVu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("VaiTro");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Cap")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ChucVu")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("E_VAITROCHUCVU", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DmDuong", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DuongID");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("TenDuong")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TenVietTat")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.ToTable("DM_DUONG", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DmPhuongXa", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PhuongXaID");
+
+                    b.Property<string>("MaPhuongXa")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<long?>("QuanHuyenId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("QuanHuyenID");
+
+                    b.Property<string>("TenPhuongXa")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.ToTable("DM_PHUONGXA", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DmQuanHuyen", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("QuanHuyenID");
+
+                    b.Property<string>("MaQuanHuyen")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("TenQuanHuyen")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long?>("TinhThanhId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("TinhThanhID");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.ToTable("DM_QUANHUYEN", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DmTinhThanh", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("TinhThanhID");
+
+                    b.Property<string>("MaTinhThanh")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<long>("QuocGiaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("QuocGiaID");
+
+                    b.Property<string>("TenTinhThanh")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool?>("Used")
+                        .HasColumnType("bit");
+
+                    b.ToTable("DM_TINHTHANH", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DuongPhuongQuan", b =>
+                {
+                    b.Property<long?>("DuongId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DuongID");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DuongPhuongQuanID");
+
+                    b.Property<long?>("PhuongXaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PhuongXaID");
+
+                    b.Property<long?>("QuanHuyenId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("QuanHuyenID");
+
+                    b.ToTable("DUONG_PHUONG_QUAN", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.UserMaster", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("User_MasterID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("CanBoId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CanBoID");
+
+                    b.Property<long>("DonViId")
                         .HasColumnType("bigint")
                         .HasColumnName("DonViID");
 
@@ -3575,10 +3790,6 @@ namespace QLDA.Migrator.Migrations
                     b.Property<bool?>("Used")
                         .HasColumnType("bit");
 
-                    b.Property<long>("UserMasterId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("User_MasterID");
-
                     b.Property<string>("UserName")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -3587,7 +3798,86 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("User_PortalID");
 
+                    b.HasKey("Id")
+                        .HasName("PK__USER_MAS__CA9BC5E270CE69C2");
+
+                    b.HasIndex(new[] { "DonViId", "UserPortalId", "Used" }, "IDX_USER_MASTER_01");
+
+                    b.HasIndex(new[] { "UserPortalId" }, "IDX_USER_MASTER_02");
+
+                    b.HasIndex(new[] { "PhongBanId", "DonViId", "UserPortalId" }, "IDX_USER_MASTER_03");
+
+                    b.HasIndex(new[] { "DonViId", "UserPortalId" }, "IDX_USER_MASTER_04");
+
+                    b.HasIndex(new[] { "UserPortalId" }, "IDX_USER_MASTER_05");
+
+                    b.HasIndex(new[] { "DonViId" }, "IDX_USER_MASTER_06");
+
+                    b.HasIndex(new[] { "DonViId", "UserPortalId" }, "IDX_USER_MASTER_07");
+
+                    b.HasIndex(new[] { "Used" }, "IX_USER_MASTER_122_121");
+
+                    b.HasIndex(new[] { "CanBoId", "Used" }, "IX_USER_MASTER_CanBoID_Used");
+
                     b.ToTable("USER_MASTER", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoBanGiaoSanPham", b =>
+                {
+                    b.HasBaseType("QLDA.Domain.Entities.BaoCao");
+
+                    b.Property<Guid?>("DonViBanGiaoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long?>("DonViNhanBanGiaoId")
+                        .HasColumnType("bigint");
+
+                    b.HasIndex("DonViBanGiaoId");
+
+                    b.ToTable("BaoCaoBanGiaoSanPham", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoBaoHanhSanPham", b =>
+                {
+                    b.HasBaseType("QLDA.Domain.Entities.BaoCao");
+
+                    b.Property<long?>("LanhDaoPhuTrachId")
+                        .HasColumnType("bigint");
+
+                    b.ToTable("BaoCaoBaoHanhSanPham", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoKhoKhanVuongMac", b =>
+                {
+                    b.HasBaseType("QLDA.Domain.Entities.BaoCao");
+
+                    b.Property<string>("HuongXuLy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KetQuaXuLy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MucDoKhoKhanId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("NgayXuLy")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("TinhTrangId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("MucDoKhoKhanId");
+
+                    b.HasIndex("TinhTrangId");
+
+                    b.ToTable("BaoCaoKhoKhanVuongMac", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoTienDo", b =>
+                {
+                    b.HasBaseType("QLDA.Domain.Entities.BaoCao");
+
+                    b.ToTable("BaoCaoTienDo", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThau", b =>
@@ -3598,6 +3888,21 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable("KeHoachLuaChonNhaThau", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.PheDuyetDuToan", b =>
+                {
+                    b.HasBaseType("QLDA.Domain.Entities.VanBanQuyetDinh");
+
+                    b.Property<int?>("ChucVuId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("GiaTriDuThau")
+                        .HasColumnType("bigint");
+
+                    b.HasIndex("ChucVuId");
+
+                    b.ToTable("PheDuyetDuToan", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.QuyetDinhDuyetDuAn", b =>
@@ -3706,35 +4011,56 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("VanBanPhapLy", (string)null);
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoTienDo", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCao", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("BaoCaos")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
-                        .WithMany("BaoCaoTienDos")
+                        .WithMany("BaoCaos")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("DuAn");
+
+                    b.Navigation("DuAnBuoc");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.ChiuTrachNhiemXuLy", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.DangTaiKeHoachLcntLenMang", b =>
                 {
-                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
-                        .WithMany("ChiuTrachNhiemXuLys")
-                        .HasForeignKey("DuAnId")
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("DangTaiKeHoachLcntLenMangs")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("QLDA.Domain.Entities.KeHoachLuaChonNhaThau", "KeHoachLuaChonNhaThau")
+                        .WithOne("DangTaiKeHoachLcntLenMang")
+                        .HasForeignKey("QLDA.Domain.Entities.DangTaiKeHoachLcntLenMang", "KeHoachLuaChonNhaThauId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DuAn");
+                    b.Navigation("DuAnBuoc");
+
+                    b.Navigation("KeHoachLuaChonNhaThau");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuoc", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucGiaiDoan", "GiaiDoan")
+                        .WithMany("DanhMucBuocs")
+                        .HasForeignKey("GiaiDoanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucQuyTrinh", "QuyTrinh")
                         .WithMany("Buocs")
                         .HasForeignKey("QuyTrinhId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("GiaiDoan");
 
                     b.Navigation("QuyTrinh");
                 });
@@ -3743,13 +4069,13 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucBuoc", "Buoc")
                         .WithMany("BuocManHinhs")
-                        .HasForeignKey("BuocId")
+                        .HasForeignKey("LeftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucManHinh", "ManHinh")
                         .WithMany("DanhMucBuocManHinhs")
-                        .HasForeignKey("ManHinhId")
+                        .HasForeignKey("RightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -3786,6 +4112,16 @@ namespace QLDA.Migrator.Migrations
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucChuDauTu", "ChuDauTu")
                         .WithMany("DuAns")
                         .HasForeignKey("ChuDauTuId");
+
+                    b.HasOne("QLDA.Domain.Entities.DuToan", "DuToanHienTai")
+                        .WithOne()
+                        .HasForeignKey("QLDA.Domain.Entities.DuAn", "DuToanHienTaiId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucGiaiDoan", "GiaiDoanHienTai")
+                        .WithMany("DuAns")
+                        .HasForeignKey("GiaiDoanHienTaiId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucHinhThucDauTu", "HinhThucDauTu")
                         .WithMany("DuAns")
@@ -3827,6 +4163,10 @@ namespace QLDA.Migrator.Migrations
 
                     b.Navigation("ChuDauTu");
 
+                    b.Navigation("DuToanHienTai");
+
+                    b.Navigation("GiaiDoanHienTai");
+
                     b.Navigation("HinhThucDauTu");
 
                     b.Navigation("HinhThucQuanLy");
@@ -3850,7 +4190,9 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucBuoc", "Buoc")
                         .WithMany("DuAnBuocs")
-                        .HasForeignKey("BuocId");
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("DuAnBuocs")
@@ -3858,30 +4200,22 @@ namespace QLDA.Migrator.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucQuyTrinh", "QuyTrinh")
-                        .WithMany("DuAnBuocs")
-                        .HasForeignKey("QuyTrinhId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Buoc");
 
                     b.Navigation("DuAn");
-
-                    b.Navigation("QuyTrinh");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAnBuocManHinh", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
-                        .WithMany("BuocManHinhs")
-                        .HasForeignKey("BuocId")
+                        .WithMany("DuAnBuocManHinhs")
+                        .HasForeignKey("LeftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucManHinh", "ManHinh")
                         .WithMany("DuAnBuocManHinhs")
-                        .HasForeignKey("ManHinhId")
+                        .HasForeignKey("RightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -3890,37 +4224,40 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("ManHinh");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.DuAnBuocTrangThaiTienDo", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.DuAnChiuTrachNhiemXuLy", b =>
                 {
-                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
-                        .WithMany("BuocTrangThaiTienDos")
-                        .HasForeignKey("BuocId")
+                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
+                        .WithMany("DuAnChiuTrachNhiemXuLys")
+                        .HasForeignKey("LeftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiTienDo", "TrangThaiTienDo")
-                        .WithMany("DuAnBuocTrangThaiTienDos")
-                        .HasForeignKey("TrangThaiId")
+                    b.Navigation("DuAn");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DuAnCongViec", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
+                        .WithMany("DuAnCongViecs")
+                        .HasForeignKey("LeftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DuAnBuoc");
-
-                    b.Navigation("TrangThaiTienDo");
+                    b.Navigation("DuAn");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAnNguonVon", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
-                        .WithMany("DanhSachNguonVon")
-                        .HasForeignKey("DuAnId")
+                        .WithMany("DuAnNguonVons")
+                        .HasForeignKey("LeftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNguonVon", "NguonVon")
                         .WithMany("DuAnNguonVons")
-                        .HasForeignKey("NguonVonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("RightId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("DuAn");
@@ -3928,12 +4265,27 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("NguonVon");
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.DuToan", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
+                        .WithMany("DuToans")
+                        .HasForeignKey("DuAnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DuAn");
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.GoiThau", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany()
+                        .HasForeignKey("DuAnBuocId");
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("GoiThaus")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucHinhThucLuaChonNhaThau", "HinhThucLuaChonNhaThau")
@@ -3944,10 +4296,6 @@ namespace QLDA.Migrator.Migrations
                         .WithMany("GoiThaus")
                         .HasForeignKey("KeHoachLuaChonNhaThauId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiGoiThau", "LoaiGoiThau")
-                        .WithMany("GoiThaus")
-                        .HasForeignKey("LoaiGoiThauId");
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiHopDong", "LoaiHopDong")
                         .WithMany("GoiThaus")
@@ -3963,11 +4311,11 @@ namespace QLDA.Migrator.Migrations
 
                     b.Navigation("DuAn");
 
+                    b.Navigation("DuAnBuoc");
+
                     b.Navigation("HinhThucLuaChonNhaThau");
 
                     b.Navigation("KeHoachLuaChonNhaThau");
-
-                    b.Navigation("LoaiGoiThau");
 
                     b.Navigation("LoaiHopDong");
 
@@ -3976,19 +4324,13 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("PhuongThucLuaChonNhaThau");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.HoSoMoiThau", b =>
-                {
-                    b.HasOne("QLDA.Domain.Entities.GoiThau", "GoiThau")
-                        .WithOne("HoSoMoiThau")
-                        .HasForeignKey("QLDA.Domain.Entities.HoSoMoiThau", "GoiThauId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GoiThau");
-                });
-
             modelBuilder.Entity("QLDA.Domain.Entities.HopDong", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("HopDongs")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", "DonViThucHien")
                         .WithMany("HopDongs")
                         .HasForeignKey("DonViThucHienId");
@@ -3996,7 +4338,7 @@ namespace QLDA.Migrator.Migrations
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("HopDongs")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.GoiThau", "GoiThau")
@@ -4008,24 +4350,35 @@ namespace QLDA.Migrator.Migrations
                         .WithMany("HopDongs")
                         .HasForeignKey("LoaiHopDongId");
 
-                    b.HasOne("QLDA.Domain.Entities.ThanhToan", "ThanhToan")
-                        .WithMany("HopDongs")
-                        .HasForeignKey("ThanhToanId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("DonViThucHien");
 
                     b.Navigation("DuAn");
 
+                    b.Navigation("DuAnBuoc");
+
                     b.Navigation("GoiThau");
 
                     b.Navigation("LoaiHopDong");
+                });
 
-                    b.Navigation("ThanhToan");
+            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachVon", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
+                        .WithMany("KeHoachVons")
+                        .HasForeignKey("DuAnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DuAn");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KetQuaTrungThau", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("KetQuaTrungThaus")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", "DonViTrungThau")
                         .WithMany("KetQuaTrungThaus")
                         .HasForeignKey("DonViTrungThauId");
@@ -4033,45 +4386,40 @@ namespace QLDA.Migrator.Migrations
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("KetQuaTrungThaus")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.GoiThau", "GoiThau")
-                        .WithMany("KetQuaTrungThaus")
-                        .HasForeignKey("GoiThauId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithOne("KetQuaTrungThau")
+                        .HasForeignKey("QLDA.Domain.Entities.KetQuaTrungThau", "GoiThauId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiGoiThau", "LoaiGoiThau")
+                        .WithMany("KetQuaTrungThaus")
+                        .HasForeignKey("LoaiGoiThauId");
 
                     b.Navigation("DonViTrungThau");
 
                     b.Navigation("DuAn");
 
+                    b.Navigation("DuAnBuoc");
+
                     b.Navigation("GoiThau");
-                });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.KhoKhanVuongMac", b =>
-                {
-                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
-                        .WithMany("KhoKhanVuongMacs")
-                        .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTinhTrangKhoKhan", "TinhTrang")
-                        .WithMany("KhoKhanVuongMacs")
-                        .HasForeignKey("TinhTrangId");
-
-                    b.Navigation("DuAn");
-
-                    b.Navigation("TinhTrang");
+                    b.Navigation("LoaiGoiThau");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.NghiemThu", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany()
+                        .HasForeignKey("DuAnBuocId");
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("NghiemThus")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.HopDong", "HopDong")
@@ -4079,29 +4427,24 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("HopDongId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("QLDA.Domain.Entities.ThanhToan", "ThanhToan")
-                        .WithMany("NghiemThus")
-                        .HasForeignKey("ThanhToanId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("DuAn");
 
-                    b.Navigation("HopDong");
+                    b.Navigation("DuAnBuoc");
 
-                    b.Navigation("ThanhToan");
+                    b.Navigation("HopDong");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.NghiemThuPhuLucHopDong", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.NghiemThu", "NghiemThu")
                         .WithMany("NghiemThuPhuLucHopDongs")
-                        .HasForeignKey("NghiemThuId")
+                        .HasForeignKey("LeftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.PhuLucHopDong", "PhuLucHopDong")
                         .WithMany("NghiemThuPhuLucHopDongs")
-                        .HasForeignKey("PhuLucHopDongId")
+                        .HasForeignKey("RightId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -4110,29 +4453,28 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("PhuLucHopDong");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.PheDuyetDuToan", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.NhaThauNguoiDung", b =>
                 {
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucChucVu", "ChucVu")
-                        .WithMany("PheDuyetDuToans")
-                        .HasForeignKey("ChucVuId");
-
-                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
-                        .WithMany("PheDuyetDuToans")
-                        .HasForeignKey("DuAnId")
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", "NhaThau")
+                        .WithMany("NhaThauNguoiDungs")
+                        .HasForeignKey("NhaThauId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ChucVu");
-
-                    b.Navigation("DuAn");
+                    b.Navigation("NhaThau");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.PhuLucHopDong", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("PhuLucHopDongs")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("PhuLucHopDongs")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.HopDong", "HopDong")
@@ -4140,16 +4482,11 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("HopDongId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("QLDA.Domain.Entities.ThanhToan", "ThanhToan")
-                        .WithMany("PhuLucHopDongs")
-                        .HasForeignKey("ThanhToanId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("DuAn");
 
-                    b.Navigation("HopDong");
+                    b.Navigation("DuAnBuoc");
 
-                    b.Navigation("ThanhToan");
+                    b.Navigation("HopDong");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.QuyetDinhDuyetDuAnHangMuc", b =>
@@ -4176,31 +4513,53 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.TamUng", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("TamUngs")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("TamUngs")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.HopDong", "HopDong")
                         .WithOne("TamUng")
                         .HasForeignKey("QLDA.Domain.Entities.TamUng", "HopDongId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("DuAn");
+
+                    b.Navigation("DuAnBuoc");
 
                     b.Navigation("HopDong");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.ThanhToan", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("ThanhToans")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("ThanhToans")
                         .HasForeignKey("DuAnId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("QLDA.Domain.Entities.NghiemThu", "NghiemThu")
+                        .WithOne("ThanhToan")
+                        .HasForeignKey("QLDA.Domain.Entities.ThanhToan", "NghiemThuId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("DuAn");
+
+                    b.Navigation("DuAnBuoc");
+
+                    b.Navigation("NghiemThu");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.ThanhVienBanQLDA", b =>
@@ -4216,6 +4575,11 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.VanBanQuyetDinh", b =>
                 {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany("VanBanQuyetDinhs")
+                        .HasForeignKey("BuocId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany("VanBanQuyetDinhs")
                         .HasForeignKey("DuAnId")
@@ -4223,6 +4587,79 @@ namespace QLDA.Migrator.Migrations
                         .IsRequired();
 
                     b.Navigation("DuAn");
+
+                    b.Navigation("DuAnBuoc");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.CanBoDonVi", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.ViMaster.CanBo", "CanBo")
+                        .WithMany("CanBoDonVis")
+                        .HasForeignKey("CanBoId");
+
+                    b.HasOne("QLDA.Domain.Entities.ViMaster.DanhMucDonVi", "DonVi")
+                        .WithMany("CanBoDonVis")
+                        .HasForeignKey("DonViId");
+
+                    b.Navigation("CanBo");
+
+                    b.Navigation("DonVi");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoBanGiaoSanPham", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", "DonViBanGiao")
+                        .WithMany("BaoCaoBanGiaoSanPhams")
+                        .HasForeignKey("DonViBanGiaoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("QLDA.Domain.Entities.BaoCao", null)
+                        .WithOne()
+                        .HasForeignKey("QLDA.Domain.Entities.BaoCaoBanGiaoSanPham", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DonViBanGiao");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoBaoHanhSanPham", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.BaoCao", null)
+                        .WithOne()
+                        .HasForeignKey("QLDA.Domain.Entities.BaoCaoBaoHanhSanPham", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoKhoKhanVuongMac", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.BaoCao", null)
+                        .WithOne()
+                        .HasForeignKey("QLDA.Domain.Entities.BaoCaoKhoKhanVuongMac", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucMucDoKhoKhan", "MucDo")
+                        .WithMany("BaoCaoKhoKhanVuongMacs")
+                        .HasForeignKey("MucDoKhoKhanId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTinhTrangKhoKhan", "TinhTrang")
+                        .WithMany("KhoKhanVuongMacs")
+                        .HasForeignKey("TinhTrangId");
+
+                    b.Navigation("MucDo");
+
+                    b.Navigation("TinhTrang");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.BaoCaoTienDo", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.BaoCao", null)
+                        .WithOne()
+                        .HasForeignKey("QLDA.Domain.Entities.BaoCaoTienDo", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThau", b =>
@@ -4232,6 +4669,21 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("QLDA.Domain.Entities.KeHoachLuaChonNhaThau", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.PheDuyetDuToan", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucChucVu", "ChucVu")
+                        .WithMany("PheDuyetDuToans")
+                        .HasForeignKey("ChucVuId");
+
+                    b.HasOne("QLDA.Domain.Entities.VanBanQuyetDinh", null)
+                        .WithOne()
+                        .HasForeignKey("QLDA.Domain.Entities.PheDuyetDuToan", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChucVu");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.QuyetDinhDuyetDuAn", b =>
@@ -4365,6 +4817,13 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("VanBanPhapLys");
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucGiaiDoan", b =>
+                {
+                    b.Navigation("DanhMucBuocs");
+
+                    b.Navigation("DuAns");
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucHinhThucDauTu", b =>
                 {
                     b.Navigation("DuAns");
@@ -4397,7 +4856,7 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiGoiThau", b =>
                 {
-                    b.Navigation("GoiThaus");
+                    b.Navigation("KetQuaTrungThaus");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucLoaiHopDong", b =>
@@ -4421,6 +4880,11 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("DuAnBuocManHinhs");
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucMucDoKhoKhan", b =>
+                {
+                    b.Navigation("BaoCaoKhoKhanVuongMacs");
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucNguonVon", b =>
                 {
                     b.Navigation("DuAnNguonVons");
@@ -4430,9 +4894,13 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", b =>
                 {
+                    b.Navigation("BaoCaoBanGiaoSanPhams");
+
                     b.Navigation("HopDongs");
 
                     b.Navigation("KetQuaTrungThaus");
+
+                    b.Navigation("NhaThauNguoiDungs");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucNhomDuAn", b =>
@@ -4448,8 +4916,6 @@ namespace QLDA.Migrator.Migrations
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucQuyTrinh", b =>
                 {
                     b.Navigation("Buocs");
-
-                    b.Navigation("DuAnBuocs");
 
                     b.Navigation("DuAns");
                 });
@@ -4468,32 +4934,32 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.Navigation("DanhMucBuocTrangThaiTienDos");
 
-                    b.Navigation("DuAnBuocTrangThaiTienDos");
-
                     b.Navigation("DuAns");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAn", b =>
                 {
-                    b.Navigation("BaoCaoTienDos");
-
-                    b.Navigation("ChiuTrachNhiemXuLys");
-
-                    b.Navigation("DanhSachNguonVon");
+                    b.Navigation("BaoCaos");
 
                     b.Navigation("DuAnBuocs");
+
+                    b.Navigation("DuAnChiuTrachNhiemXuLys");
+
+                    b.Navigation("DuAnCongViecs");
+
+                    b.Navigation("DuAnNguonVons");
+
+                    b.Navigation("DuToans");
 
                     b.Navigation("GoiThaus");
 
                     b.Navigation("HopDongs");
 
+                    b.Navigation("KeHoachVons");
+
                     b.Navigation("KetQuaTrungThaus");
 
-                    b.Navigation("KhoKhanVuongMacs");
-
                     b.Navigation("NghiemThus");
-
-                    b.Navigation("PheDuyetDuToans");
 
                     b.Navigation("PhuLucHopDongs");
 
@@ -4506,20 +4972,32 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.DuAnBuoc", b =>
                 {
-                    b.Navigation("BuocManHinhs");
+                    b.Navigation("BaoCaos");
 
-                    b.Navigation("BuocTrangThaiTienDos");
+                    b.Navigation("DangTaiKeHoachLcntLenMangs");
+
+                    b.Navigation("DuAnBuocManHinhs");
 
                     b.Navigation("DuAnHienTai");
+
+                    b.Navigation("HopDongs");
+
+                    b.Navigation("KetQuaTrungThaus");
+
+                    b.Navigation("PhuLucHopDongs");
+
+                    b.Navigation("TamUngs");
+
+                    b.Navigation("ThanhToans");
+
+                    b.Navigation("VanBanQuyetDinhs");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.GoiThau", b =>
                 {
-                    b.Navigation("HoSoMoiThau");
-
                     b.Navigation("HopDong");
 
-                    b.Navigation("KetQuaTrungThaus");
+                    b.Navigation("KetQuaTrungThau");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.HopDong", b =>
@@ -4534,6 +5012,8 @@ namespace QLDA.Migrator.Migrations
             modelBuilder.Entity("QLDA.Domain.Entities.NghiemThu", b =>
                 {
                     b.Navigation("NghiemThuPhuLucHopDongs");
+
+                    b.Navigation("ThanhToan");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.PhuLucHopDong", b =>
@@ -4546,17 +5026,20 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("QuyetDinhDuyetDuAnHangMucs");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.ThanhToan", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.CanBo", b =>
                 {
-                    b.Navigation("HopDongs");
+                    b.Navigation("CanBoDonVis");
+                });
 
-                    b.Navigation("NghiemThus");
-
-                    b.Navigation("PhuLucHopDongs");
+            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DanhMucDonVi", b =>
+                {
+                    b.Navigation("CanBoDonVis");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThau", b =>
                 {
+                    b.Navigation("DangTaiKeHoachLcntLenMang");
+
                     b.Navigation("GoiThaus");
 
                     b.Navigation("QuyetDinhDuyetKHLCNT");

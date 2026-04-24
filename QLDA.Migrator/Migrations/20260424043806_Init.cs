@@ -5,12 +5,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace QLDA.Persistence.Migrations
+namespace QLDA.Migrator.Migrations
 {
     /// <inheritdoc />
-    public partial class AddSoDuToanBanDauColumnToDuAn : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
+        // protected override void Up(MigrationBuilder migrationBuilder){}
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -687,6 +689,7 @@ namespace QLDA.Persistence.Migrations
                     Used = table.Column<bool>(type: "bit", nullable: false),
                     Label = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Stt = table.Column<int>(type: "int", nullable: true),
                     Ma = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Ten = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
                 },
@@ -879,7 +882,8 @@ namespace QLDA.Persistence.Migrations
                 columns: table => new
                 {
                     BuocId = table.Column<int>(type: "int", nullable: false),
-                    ManHinhId = table.Column<int>(type: "int", nullable: false)
+                    ManHinhId = table.Column<int>(type: "int", nullable: false),
+                    Stt = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1098,7 +1102,10 @@ namespace QLDA.Persistence.Migrations
                     NamDuToan = table.Column<int>(type: "int", nullable: false),
                     SoQuyetDinhDuToan = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     NgayKyDuToan = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    NgayQuyetDinhDuToan = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     DuToanHienTaiId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    KhaiToanKinhPhi = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    SoDuToanCuoiCung = table.Column<long>(type: "bigint", nullable: true),
                     QuyTrinhId = table.Column<int>(type: "int", nullable: true),
                     BuocHienTaiId = table.Column<int>(type: "int", nullable: true),
                     GiaiDoanHienTaiId = table.Column<int>(type: "int", nullable: true),
@@ -1109,8 +1116,6 @@ namespace QLDA.Persistence.Migrations
                     NgayBatDau = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LanhDaoPhuTrachId = table.Column<long>(type: "bigint", nullable: true),
                     DonViPhuTrachChinhId = table.Column<long>(type: "bigint", nullable: true),
-                    DuToanBanDauId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DuToanBanDauId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
                     UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -1244,6 +1249,28 @@ namespace QLDA.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DuAnCongViec",
+                columns: table => new
+                {
+                    DuAnId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CongViecId = table.Column<long>(type: "bigint", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    IsHoanThanh = table.Column<bool>(type: "bit", nullable: true),
+                    NguoiPhuTrachChinhId = table.Column<long>(type: "bigint", nullable: true),
+                    NguoiTaoId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DuAnCongViec", x => new { x.DuAnId, x.CongViecId });
+                    table.ForeignKey(
+                        name: "FK_DuAnCongViec_DuAn_DuAnId",
+                        column: x => x.DuAnId,
+                        principalTable: "DuAn",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DuAnNguonVon",
                 columns: table => new
                 {
@@ -1297,11 +1324,43 @@ namespace QLDA.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "KeHoachVon",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    DuAnId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NguonVonId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Nam = table.Column<int>(type: "int", nullable: false),
+                    SoVon = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SoVonDieuChinh = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    SoQuyetDinh = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    NgayKy = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    GhiChu = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_KeHoachVon", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_KeHoachVon_DuAn_DuAnId",
+                        column: x => x.DuAnId,
+                        principalTable: "DuAn",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DuAnBuocManHinh",
                 columns: table => new
                 {
                     BuocId = table.Column<int>(type: "int", nullable: false),
-                    ManHinhId = table.Column<int>(type: "int", nullable: false)
+                    ManHinhId = table.Column<int>(type: "int", nullable: false),
+                    Stt = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -2487,11 +2546,6 @@ namespace QLDA.Persistence.Migrations
                 column: "ChuDauTuId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DuAn_DuToanBanDauId1",
-                table: "DuAn",
-                column: "DuToanBanDauId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_DuAn_DuToanHienTaiId",
                 table: "DuAn",
                 column: "DuToanHienTaiId",
@@ -2685,6 +2739,17 @@ namespace QLDA.Persistence.Migrations
                 name: "IX_HopDong_LoaiHopDongId",
                 table: "HopDong",
                 column: "LoaiHopDongId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_KeHoachVon_DuAnId",
+                table: "KeHoachVon",
+                column: "DuAnId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_KeHoachVon_Index",
+                table: "KeHoachVon",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_KetQuaTrungThau_BuocId",
@@ -3016,13 +3081,6 @@ namespace QLDA.Persistence.Migrations
                 principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_DuAn_DuToan_DuToanBanDauId1",
-                table: "DuAn",
-                column: "DuToanBanDauId1",
-                principalTable: "DuToan",
-                principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_DuAn_DuToan_DuToanHienTaiId",
                 table: "DuAn",
                 column: "DuToanHienTaiId",
@@ -3087,6 +3145,9 @@ namespace QLDA.Persistence.Migrations
                 name: "DuAnChiuTrachNhiemXuLy");
 
             migrationBuilder.DropTable(
+                name: "DuAnCongViec");
+
+            migrationBuilder.DropTable(
                 name: "DuAnNguonVon");
 
             migrationBuilder.DropTable(
@@ -3100,6 +3161,9 @@ namespace QLDA.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "E_VAITROCHUCVU");
+
+            migrationBuilder.DropTable(
+                name: "KeHoachVon");
 
             migrationBuilder.DropTable(
                 name: "KetQuaTrungThau");
