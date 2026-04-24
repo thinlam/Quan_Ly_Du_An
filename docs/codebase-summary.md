@@ -1,102 +1,71 @@
-# Codebase Summary
+# QLDA Codebase Summary
 
-This document provides a high-level overview of the QLDA codebase, detailing its solution structure, project layouts, key files, dependencies, and entry points.
+## Overview
+QLDA (Quản Lý Dự Án) is a comprehensive project management system built with .NET 8.0 following Clean Architecture principles. The system manages government IT projects for Ho Chi Minh City, Vietnam, with features for project lifecycle management, tender packages, contracts, payments, and reporting.
 
 ## Solution Structure
+The solution consists of 5 main projects following Clean Architecture:
 
-The QLDA solution follows a Clean Architecture pattern, comprising six distinct projects, each with a specific responsibility.
+- **QLDA.Domain**: Core business logic and entities
+- **QLDA.Application**: CQRS pattern implementation with MediatR
+- **QLDA.Infrastructure**: External service implementations (Aspose, file processing)
+- **QLDA.Persistence**: Data access with EF Core and Dapper
+- **QLDA.WebApi**: Web API presentation layer
 
-```
-.
-├── QLDA.sln
-├── QLDA.Domain
-├── QLDA.Application
-├── QLDA.Infrastructure
-├── QLDA.Persistence
-├── QLDA.WebApi
-└── QLDA.Migrator
-```
+## Architecture Highlights
 
-## Project Overviews
+### Domain Layer
+- **Core Entities**: DuAn (Project), GoiThau (Tender Package), HopDong (Contract), ThanhToan (Payment), BaoCao (Report), VanBanQuyetDinh (Decision Documents)
+- **Pattern**: MaterializedPathEntity for hierarchical data with ParentId relationships
+- **Interfaces**: IRepository<TEntity,TKey>, IUnitOfWork, IAggregateRoot
+- **Features**: Soft delete (IsDeleted), audit trail (CreatedAt/UpdatedAt/CreatedBy/UpdatedBy), DanhMuc master data entities
 
-### 1. `QLDA.Domain`
-- **Purpose**: Contains core business logic, entities, value objects, domain events, and interfaces. It is the innermost layer and has no dependencies on other layers.
-- **Key Directories/Files**:
-    - `Entities/`: Business entities (e.g., `DuAn.cs`, `GoiThau.cs`, `DanhMuc*.cs`). Includes `BaseEntity.cs`, `IAggregateRoot.cs`.
-    - `Enums/`: Enumerations used across the domain.
-    - `Exceptions/`: Custom domain-specific exception types.
-    - `Interfaces/`: Repository interfaces, domain services interfaces (e.g., `IRepository<T>`, `IUnitOfWork`).
-    - `Services/`: Domain services that encapsulate domain logic.
-    - `Events/`: Domain events.
-- **Dependencies**: None (pure C#).
+### Application Layer
+- **Pattern**: CQRS with MediatR for Commands/Queries/Handlers
+- **DTOs**: With ResultApi<T> pattern (Ok/Fail factory methods)
+- **Validation**: FluentValidation for all commands
+- **Behaviors**: Validation, Logging, Performance, UnhandledException behaviors
+- **Structure**: Module-based organization (EntityName/{Commands,Queries,DTOs,Validators})
 
-### 2. `QLDA.Application`
-- **Purpose**: Orchestrates domain entities to fulfill use cases, implementing the CQRS pattern. It contains application-specific business rules.
-- **Key Directories/Files**:
-    - `Features/`: Organized by feature, each containing:
-        - `Commands/`: Classes for modifying state (e.g., `CreateDuAnCommand.cs`).
-        - `Queries/`: Classes for retrieving data (e.g., `GetDuAnByIdQuery.cs`).
-        - `Handlers/`: Implementations for Commands and Queries (MediatR handlers).
-        - `Validators/`: FluentValidation rules for DTOs and commands.
-        - `DTOs/`: Data Transfer Objects for input and output.
-    - `Common/`: Common application logic (e.g., `Behaviours/` for MediatR pipelines like logging, validation, `Mappings/`).
-    - `Interfaces/`: Application services interfaces.
-- **Dependencies**: `QLDA.Domain`, MediatR, FluentValidation.
+### Persistence Layer
+- **Context**: AppDbContext implementing IUnitOfWork
+- **Configuration**: AggregateRootConfiguration pattern with Fluent API
+- **Migrations**: Single squashed migration (20260424043806_Init.cs)
+- **Seed Data**: For DanhMuc tables (LoaiDuAn, TrangThaiDuAn)
+- **Repository**: Generic Repository<TEntity,TKey> implementation
 
-### 3. `QLDA.Infrastructure`
-- **Purpose**: Provides implementations for external services and operations that are external to the application core.
-- **Key Directories/Files**:
-    - `Services/`: Implementations of application interfaces (e.g., `EmailService.cs`, `DateTimeService.cs`).
-    - `Files/`: Services for file operations (e.g., Aspose integration for Office documents).
-    - `Persistence/`: May contain concrete implementations for database access if not fully in `QLDA.Persistence`.
-- **Dependencies**: `QLDA.Application`, external libraries (e.g., Aspose).
+### WebApi Layer
+- **Controllers**: DuAnController, GoiThauController, HopDongController, Auth
+- **Middleware**: ExceptionMiddleware for global error handling
+- **Authentication**: JWT with configurable JwtSettings
+- **Features**: Response caching (12h for combobox endpoints), Swagger with Bearer token
 
-### 4. `QLDA.Persistence`
-- **Purpose**: Handles data access concerns, including database context, migrations, and repository implementations.
-- **Key Directories/Files**:
-    - `Context/`: EF Core `DbContext` (e.g., `ApplicationDbContext.cs`).
-    - `Migrations/`: Database migration scripts.
-    - `Repositories/`: Concrete implementations of `IRepository<T>` using EF Core and Dapper.
-    - `Configurations/`: EF Core entity type configurations (e.g., `DuAnConfiguration.cs`).
-    - `SeedData/`: Initial data seeding.
-- **Dependencies**: `QLDA.Domain`, `Microsoft.EntityFrameworkCore`, Dapper.
+### Infrastructure Layer
+- **Integration**: Aspose.Cells (v20.11.0) for Excel processing
+- **Interfaces**: IExporterHelper, IImporterHelper, IAsposeHelper for file operations
+- **Templates**: Template-based Excel export/import functionality
 
-### 5. `QLDA.WebApi`
-- **Purpose**: The entry point for HTTP requests, exposing the API endpoints, handling authentication, and presenting data.
-- **Key Directories/Files**:
-    - `Controllers/`: API controllers (e.g., `DuAnController.cs`, `AuthContoller.cs`).
-    - `Filters/`: Custom action filters (e.g., exception handling, authorization).
-    - `Middleware/`: Custom middleware.
-    - `Program.cs`: Application startup, dependency injection configuration.
-    - `appsettings.json`: Application settings.
-- **Dependencies**: `QLDA.Application`, `Microsoft.AspNetCore`, JWT.
+## Technology Stack
+- **Framework**: .NET 8.0, ASP.NET Core Web API
+- **Database**: SQL Server + EF Core + Dapper
+- **Patterns**: CQRS, Clean Architecture, Repository + Unit of Work
+- **Tools**: MediatR, FluentValidation, AutoMapper, JWT
+- **File Processing**: Aspose.Cells for Excel operations
 
-### 6. `QLDA.Migrator`
-- **Purpose**: A dedicated project for managing and applying database migrations. This separates migration concerns from the main `WebApi` project.
-- **Key Directories/Files**:
-    - `Migrations/`: Contains the actual migration files generated by EF Core.
-    - `Program.cs`: Entry point for applying migrations.
-- **Dependencies**: `QLDA.Persistence`, `Microsoft.EntityFrameworkCore.Design`.
+## Key Features
+- Hierarchical project structure with Materialized Path pattern
+- Comprehensive entity relationships with junction tables
+- Master data management (DanhMuc entities)
+- File processing capabilities with Aspose integration
+- JWT-based authentication and authorization
+- CQRS implementation for scalable architecture
 
-## Entry Points
+## Files and Statistics
+- **Total Files**: 1,568 files
+- **Total Tokens**: 1,297,183 tokens
+- **Total Characters**: 5,359,244 chars
 
-- **`QLDA.WebApi/Program.cs`**: The primary entry point for the Web API application.
-- **`QLDA.Migrator/Program.cs`**: The entry point for executing database migrations.
-
-## Dependencies Overview
-
-The dependency flow generally follows:
-`QLDA.WebApi` -> `QLDA.Application` -> `QLDA.Domain`
-`QLDA.WebApi` -> `QLDA.Infrastructure`
-`QLDA.Application` -> `QLDA.Persistence`
-`QLDA.Migrator` -> `QLDA.Persistence`
-
-This structure ensures that the `Domain` layer remains independent and the `Application` layer orchestrates domain logic without direct knowledge of infrastructure or presentation concerns.
-
----
-## Repomix Summary (Generated 2025-12-10)
-
-- **Total Files:** 942 files
-- **Total Tokens:** 2,742,044 tokens
-- **Total Chars:** 14,124,554 chars
-- **Security:** No suspicious files detected.
+## Security
+- **Status**: No suspicious files detected
+- **Authentication**: JWT Bearer with configurable settings
+- **Data Protection**: Soft delete implementation and audit trails
