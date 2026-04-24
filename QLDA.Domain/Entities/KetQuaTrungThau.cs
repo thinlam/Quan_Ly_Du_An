@@ -12,11 +12,19 @@ public class KetQuaTrungThau : Entity<Guid>, IAggregateRoot, ITienDo, IQuyetDinh
     public Guid GoiThauId { get; set; }
     public long GiaTriTrungThau { get; set; }
     public Guid? DonViTrungThauId { get; set; }
-    public long? SoNgayTrienKhai { get; set; }
+    /// <summary>
+    /// Task #9573 => Số ngày triển khai -> Thời gian thực hiện gói thầu
+    /// </summary>
+    public int? SoNgayTrienKhai { get; set; }
     public string? TrichYeu { get; set; }
     public int? LoaiGoiThauId { get; set; }
     public DateTimeOffset? NgayEHSMT { get; set; }
     public DateTimeOffset? NgayMoThau { get; set; }
+
+    /// <summary>
+    /// Task #9573 => Số ngày thực hiện hợp đồng
+    /// </summary>
+    public int? SoNgayThucHienHopDong { get; set; }
 
     #region Issue 9208
     /// <summary>

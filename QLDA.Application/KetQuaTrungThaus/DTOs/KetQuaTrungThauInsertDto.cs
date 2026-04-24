@@ -10,11 +10,17 @@ public class KetQuaTrungThauInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo, IT
     public Guid GoiThauId { get; set; }
     public long GiaTriTrungThau { get; set; }
     public Guid? DonViTrungThauId { get; set; }
-    public long? SoNgayTrienKhai { get; set; }
+    public int? SoNgayTrienKhai { get; set; }
     public string? TrichYeu { get; set; }
     public int? LoaiGoiThauId { get; set; }
     public DateTimeOffset? NgayEHSMT { get; set; }
     public DateTimeOffset? NgayMoThau { get; set; }
+
+    /// <summary>
+    /// Số ngày thực hiện hợp đồng
+    /// </summary>
+    public int? SoNgayThucHienHopDong { get; set; }
+
     #region Issue 9208
     /// <summary>
     /// Số quyết định
