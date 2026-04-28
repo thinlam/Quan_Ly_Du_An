@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DuAns.Queries;
 

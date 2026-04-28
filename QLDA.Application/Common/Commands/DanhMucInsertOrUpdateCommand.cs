@@ -28,6 +28,7 @@ internal class DanhMucInsertOrUpdateCommandHandler : IRequestHandler<DanhMucInse
     private readonly ICrudService<DanhMucLoaiHopDong, int> DanhMucLoaiHopDong;
     private readonly ICrudService<DanhMucTinhTrangKhoKhan, int> DanhMucTinhTrangKhoKhan;
     private readonly ICrudService<DanhMucGiaiDoan, int> DanhMucGiaiDoan;
+    private readonly ICrudService<DanhMucPhuongThucKySo, int> DanhMucPhuongThucKySo;
     private readonly ICrudService<DanhMucNhaThau, Guid> DanhMucNhaThau;
     private readonly ICrudService<DanhMucMucDoKhoKhan, int> DanhMucMucDoKhoKhan;
     private readonly ICrudService<DanhMucTinhTrangThucHienLcnt, int> DanhMucTinhTrangThucHienLcnt;
@@ -56,6 +57,7 @@ internal class DanhMucInsertOrUpdateCommandHandler : IRequestHandler<DanhMucInse
         DanhMucLoaiHopDong = serviceProvider.GetRequiredService<ICrudService<DanhMucLoaiHopDong, int>>();
         DanhMucTinhTrangKhoKhan = serviceProvider.GetRequiredService<ICrudService<DanhMucTinhTrangKhoKhan, int>>();
         DanhMucGiaiDoan = serviceProvider.GetRequiredService<ICrudService<DanhMucGiaiDoan, int>>();
+        DanhMucPhuongThucKySo = serviceProvider.GetRequiredService<ICrudService<DanhMucPhuongThucKySo, int>>();
         DanhMucNhaThau = serviceProvider.GetRequiredService<ICrudService<DanhMucNhaThau, Guid>>();
         DanhMucMucDoKhoKhan = serviceProvider.GetRequiredService<ICrudService<DanhMucMucDoKhoKhan, int>>();
         DanhMucTinhTrangThucHienLcnt = serviceProvider.GetRequiredService<ICrudService<DanhMucTinhTrangThucHienLcnt, int>>();
@@ -178,6 +180,11 @@ internal class DanhMucInsertOrUpdateCommandHandler : IRequestHandler<DanhMucInse
                 }
             case EDanhMuc.DanhMucGiaiDoan: {
                     await DanhMucGiaiDoan.AddOrUpdateAsync((DanhMucGiaiDoan)request.Entity,
+                        cancellationToken: cancellationToken);
+                    break;
+                }
+            case EDanhMuc.DanhMucPhuongThucKySo: {
+                    await DanhMucPhuongThucKySo.AddOrUpdateAsync((DanhMucPhuongThucKySo)request.Entity,
                         cancellationToken: cancellationToken);
                     break;
                 }
