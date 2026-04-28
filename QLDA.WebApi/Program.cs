@@ -13,3 +13,5 @@ var app = builder.Build();
 app.UseWebApiConfiguration(appSettings);
 
 app.Run();
+
+public partial class Program { }
