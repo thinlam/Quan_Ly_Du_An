@@ -64,4 +64,30 @@ public static class DependencyInjection {
             serviceScope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
         }
     }
+
+    public static IServiceCollection AddPersistenceSqlite(this IServiceCollection services,
+        string connectionString) {
+        services.AddDbContext<AppDbContext>((provider, options) => {
+            options.UseSqlite(connectionString);
+            var saveInterceptor = provider.GetService<ISaveChangesInterceptor>();
+            if (saveInterceptor != null)
+                options.AddInterceptors(saveInterceptor);
+        })
+            .AddDbContextFactory<AppDbContext>((Action<DbContextOptionsBuilder>)null!, ServiceLifetime.Scoped);
+
+        // Override AppDbContext resolution to create SqliteAppDbContext (clears SQL Server defaults)
+        services.AddScoped<AppDbContext>(sp => {
+            var options = sp.GetRequiredService<DbContextOptions<AppDbContext>>();
+            return new SqliteAppDbContext(options);
+        });
+
+        services.AddRepositories();
+        services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+        return services;
+    }
+
+    public static void EnsureCreatedAppDb(this IApplicationBuilder app) {
+        using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
+    }
 }
