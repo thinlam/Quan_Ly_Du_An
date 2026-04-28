@@ -585,4 +585,44 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     }
 
     #endregion
+    [HttpGet("api/print/bao-cao-tien-do-du-an")]
+    public async Task<IActionResult> InBaoCaoTienDoDuAn([FromQuery] BaoCaoDuAnSearchDto searchModel)
+    {
+        var fileNameTemplate = "BaoCaoTienDoDuAn.xlsx";
+        var procedureName = "usp_In_BaoCao_TienDo_DuAn";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory, // ví dụ: ...\QLDA.WebApi
+            "PrintTemplates", // chính xác tên folder trong project
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        
+        var query = new GetStoreQuery()
+        {
+            PathTemplate = templatePath,
+            ProcName = procedureName,
+            Params  = new
+            {
+                searchModel.LoaiDuAnTheoNamId,
+                searchModel.LoaiDuAnId,
+                searchModel.TenDuAn,
+                searchModel.ThoiGianKhoiCong,
+                searchModel.ThoiGianHoanThanh,
+                searchModel.HinhThucDauTuId,
+                searchModel.DonViPhuTrachChinhId,
+            },
+            HiddenColumns = []
+        };
+        var exportResult = await Mediator.Send(query);
+
+        return new FileContentResult(exportResult.FileBytes,    exportResult.ContentType)
+        {
+            FileDownloadName = fileNameTemplate
+        };
+    }
+
 }
