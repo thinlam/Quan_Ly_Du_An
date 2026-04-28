@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Persistence;
 
-namespace QLDA.DevSeeder;
+namespace QLDA.FakeDataTool;
 
 /// <summary>
 /// SQLite-compatible DbContext that clears SQL Server-specific defaults.
-/// Same pattern as QLDA.Tests.TestAppDbContext.
+/// Same pattern as QLDA.Tests.TestAppDbContext and QLDA.DevSeeder.SqliteAppDbContext.
 /// </summary>
 public class SqliteAppDbContext(DbContextOptions<AppDbContext> options) : AppDbContext(options)
 {
