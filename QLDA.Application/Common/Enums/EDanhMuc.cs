@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace QLDA.Application.Common.Enums;
 
 public enum EDanhMuc {
@@ -30,4 +32,5 @@ public enum EDanhMuc {
     [Description("Danh mục giai đoạn")] DanhMucGiaiDoan,
     [Description("Danh mục mức độ khó khăn")] DanhMucMucDoKhoKhan,
     [Description("Danh mục tình trạng thực hiện LCNT")] DanhMucTinhTrangThucHienLcnt,
+    [Description("Danh mục phương thức ký sổ")] DanhMucPhuongThucKySo,
 }

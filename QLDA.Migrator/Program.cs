@@ -54,5 +54,4 @@ else
     Console.WriteLine("SQL Server migrations applied successfully.");
 }
 
-app.MapGet("/", () => $"QLDA Migrator — Provider: {provider}");
-app.Run();
+await app.DisposeAsync();
