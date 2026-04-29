@@ -7,6 +7,7 @@ public class DuAnGetQuery : IRequest<DuAn> {
     public bool IncludeNguonVon { get; set; }
     public bool IncludeChiuTrachNhiemXuLy { get; set; }
     public bool IncludeDuToan { get; set; }
+    public bool IncludeKeHoachVon { get; set; }
     public bool ThrowIfNull { get; set; } = true;
     public bool IsNoTracking { get; set; }
 }
@@ -23,6 +24,7 @@ internal class DuAnGetQueryHandler(IServiceProvider serviceProvider) : IRequestH
                 .WhereFunc(request.IncludeChiuTrachNhiemXuLy, q => q.Include(o => o.DuAnChiuTrachNhiemXuLys))
                 .WhereFunc(request.IncludeNguonVon, q => q.Include(o => o.DuAnNguonVons))
                 .WhereFunc(request.IncludeDuToan, q => q.Include(o => o.DuToans!.Where(dt => !dt.IsDeleted)))
+                .WhereFunc(request.IncludeKeHoachVon, q => q.Include(o => o.KeHoachVons!.Where(kh => !kh.IsDeleted)))
             ;
 
         var entity = await queryable

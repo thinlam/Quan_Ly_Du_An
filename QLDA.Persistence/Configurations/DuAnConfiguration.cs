@@ -10,6 +10,16 @@ public class DuAnConfiguration : AggregateRootConfiguration<DuAn> {
 
         builder.Property(e => e.KhaiToanKinhPhi).HasPrecision(18, 2);
 
+        builder.Property(e => e.SoQuyetDinhPheDuyet)
+            .HasMaxLength(200)
+            .IsRequired(false);
+
+        builder.Property(e => e.NgayQuyetDinhPheDuyet)
+            .HasConversion(
+                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
+                fromDb => fromDb
+            );
+
         builder.Property(e => e.ParentId)
             .HasConversion(
                 toDb => toDb == Guid.Empty ? null : toDb, // EF insert sẽ chuyển 0 → null

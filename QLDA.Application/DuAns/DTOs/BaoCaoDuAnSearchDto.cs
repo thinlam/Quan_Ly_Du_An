@@ -1,4 +1,5 @@
 using QLDA.Application.Common.Interfaces;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAns.DTOs;
 
@@ -20,4 +21,12 @@ public record BaoCaoDuAnSearchDto : CommonSearchDto {
     public int? LoaiDuAnId { get; set; }
     /// <summary>Đơn vị phụ trách chính (null = no filter)</summary>
     public long? DonViPhuTrachChinhId { get; set; }
+    /// <summary>Kỳ báo cáo (None = no grouping)</summary>
+    public EKyBaoCao KyBaoCao { get; set; }
+    /// <summary>Lọc theo năm</summary>
+    public int? NamFilter { get; set; }
+    /// <summary>Lọc theo quý (1-4)</summary>
+    public int? QuyFilter { get; set; }
+    /// <summary>Lọc theo tháng (1-12)</summary>
+    public int? ThangFilter { get; set; }
 }

@@ -1,5 +1,6 @@
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Application.KeHoachVons.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.DuAns.DTOs;
@@ -140,6 +141,18 @@ public class DuAnInsertDto : IMayHaveParent<Guid?> {
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
+    /// <summary>
+    /// Số quyết định phê duyệt nhiệm vụ và dự toán kinh phí
+    /// </summary>
+    public string? SoQuyetDinhPheDuyet { get; set; }
+    /// <summary>
+    /// Ngày ra quyết định phê duyệt nhiệm vụ và dự toán kinh phí
+    /// </summary>
+    public DateTimeOffset? NgayQuyetDinhPheDuyet { get; set; }
+    /// <summary>
+    /// Danh sách tệp đính kèm quyết định phê duyệt
+    /// </summary>
+    public List<TepDinhKemInsertDto>? DanhSachTepQuyetDinh { get; set; }
     public List<DuToanInsertModel>? DuToans { get; set; }
     public List<KeHoachVonInsertModel>? KeHoachVons { get; set; }
 

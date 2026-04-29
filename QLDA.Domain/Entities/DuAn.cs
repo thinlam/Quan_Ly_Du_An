@@ -103,6 +103,16 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     public decimal? KhaiToanKinhPhi { get; set; }
 
     /// <summary>
+    /// Số quyết định phê duyệt nhiệm vụ và dự toán kinh phí
+    /// </summary>
+    public string? SoQuyetDinhPheDuyet { get; set; }
+
+    /// <summary>
+    /// Ngày ra quyết định phê duyệt nhiệm vụ và dự toán kinh phí
+    /// </summary>
+    public DateTimeOffset? NgayQuyetDinhPheDuyet { get; set; }
+
+    /// <summary>
     /// Danh mục quy trình
     /// </summary>
     public int? QuyTrinhId { get; set; }

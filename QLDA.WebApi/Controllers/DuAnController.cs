@@ -7,17 +7,19 @@ using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuAns.Queries;
 using QLDA.Application.DuToans.Commands;
 using QLDA.Application.DuToans.DTOs;
+using QLDA.Application.KeHoachVons.DTOs;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.DuAns;
 
 namespace QLDA.WebApi.Controllers {
     [Tags("Dự án")]
     [Route("api/du-an")]
     public class DuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
-        /// <summary>  
+        /// <summary>
         /// Chi tiết
         /// </summary>
         /// <param name="id"></param>
@@ -33,12 +35,25 @@ namespace QLDA.WebApi.Controllers {
                 IncludeNguonVon = true,
                 IncludeChiuTrachNhiemXuLy = true,
                 IncludeDuToan = true,
+                IncludeKeHoachVon = true,
             });
-            List<TepDinhKem>? files = null;
-            if (entity.DuToans != null && entity.DuToans.Count != 0) {
 
+            // Collect all GroupIds for file lookup
+            var groupIds = new List<string>();
+
+            if (entity.DuToans != null) {
+                groupIds.AddRange(entity.DuToans.Where(dt => !dt.IsDeleted).Select(dt => dt.Id.ToString()));
+            }
+            if (entity.KeHoachVons != null) {
+                groupIds.AddRange(entity.KeHoachVons.Where(kh => !kh.IsDeleted).Select(kh => kh.Id.ToString()));
+            }
+            // Include DuAn.Id for decision files
+            groupIds.Add(entity.Id.ToString());
+
+            List<TepDinhKem>? files = null;
+            if (groupIds.Count != 0) {
                 files = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-                    GroupId = [.. entity.DuToans.Select(dt => dt.Id.ToString())]
+                    GroupId = [.. groupIds]
                 });
             }
             return ResultApi.Ok(entity.ToDto(files));
@@ -153,6 +168,7 @@ namespace QLDA.WebApi.Controllers {
 
             await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
 
+            // Handle DuToan files
             List<(DuToan, List<TepDinhKem>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
             if (duToans.Count != 0) {
 
@@ -168,6 +184,37 @@ namespace QLDA.WebApi.Controllers {
                 }
 
             }
+
+            // Handle KeHoachVon files (KeHoachVons already created via DuAnMappings.ToEntity)
+            if (model.KeHoachVons != null && model.KeHoachVons.Count != 0 && entity.KeHoachVons != null) {
+                var khvList = entity.KeHoachVons.ToList();
+                for (int i = 0; i < model.KeHoachVons.Count && i < khvList.Count; i++) {
+                    var khvModel = model.KeHoachVons[i];
+                    if (khvModel.DanhSachTepDinhKem?.Count > 0) {
+                        var khvFiles = khvModel.DanhSachTepDinhKem.ToEntities(
+                            groupId: khvList[i].Id,
+                            groupType: EGroupType.KeHoachVon
+                        );
+                        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                            GroupId = khvList[i].Id.ToString(),
+                            Entities = [.. khvFiles],
+                        }, cancellationToken);
+                    }
+                }
+            }
+
+            // Handle DuAn decision files
+            if (model.DanhSachTepQuyetDinh?.Count > 0) {
+                var decisionFiles = model.DanhSachTepQuyetDinh.ToEntities(
+                    groupId: entity.Id,
+                    groupType: EGroupType.QuyetDinhPheDuyetNhiemVu
+                );
+                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                    GroupId = entity.Id.ToString(),
+                    Entities = [.. decisionFiles],
+                }, cancellationToken);
+            }
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
@@ -214,6 +261,31 @@ namespace QLDA.WebApi.Controllers {
                         Entities = files,
                     }, cancellationToken);
                 }
+            }
+
+            // Handle KeHoachVon files
+            if (updateDto.KeHoachVons != null && updateDto.KeHoachVons.Count != 0) {
+                foreach (var khvModel in updateDto.KeHoachVons) {
+                    if (khvModel.DanhSachTepDinhKem?.Count > 0) {
+                        var (khv, khvFiles) = khvModel.ToEntityWithFiles(entity.Id);
+                        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                            GroupId = khv.Id.ToString(),
+                            Entities = khvFiles,
+                        }, cancellationToken);
+                    }
+                }
+            }
+
+            // Handle DuAn decision files
+            if (updateDto.DanhSachTepQuyetDinh?.Count > 0) {
+                var decisionFiles = updateDto.DanhSachTepQuyetDinh.ToEntities(
+                    groupId: entity.Id,
+                    groupType: EGroupType.QuyetDinhPheDuyetNhiemVu
+                );
+                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                    GroupId = entity.Id.ToString(),
+                    Entities = [.. decisionFiles],
+                }, cancellationToken);
             }
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
