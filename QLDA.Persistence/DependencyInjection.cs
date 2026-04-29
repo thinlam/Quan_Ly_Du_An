@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using BuildingBlocks.CrossCutting.Factories;
+using QLDA.Domain.Entities;
 using QLDA.Domain.Interfaces;
 using QLDA.Persistence.Factories;
 using QLDA.Persistence.Repositories;
@@ -53,6 +54,7 @@ public static class DependencyInjection {
         services.AddScoped(typeof(IUnitOfWork),
             serviceProvider => { return serviceProvider.GetRequiredService<AppDbContext>(); });
         services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IDuAnRepository, DuAnRepository>();
 
         return services;
     }
@@ -61,5 +63,31 @@ public static class DependencyInjection {
         using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()!.CreateScope()) {
             serviceScope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
         }
+    }
+
+    public static IServiceCollection AddPersistenceSqlite(this IServiceCollection services,
+        string connectionString) {
+        services.AddDbContext<AppDbContext>((provider, options) => {
+            options.UseSqlite(connectionString);
+            var saveInterceptor = provider.GetService<ISaveChangesInterceptor>();
+            if (saveInterceptor != null)
+                options.AddInterceptors(saveInterceptor);
+        })
+            .AddDbContextFactory<AppDbContext>((Action<DbContextOptionsBuilder>)null!, ServiceLifetime.Scoped);
+
+        // Override AppDbContext resolution to create SqliteAppDbContext (clears SQL Server defaults)
+        services.AddScoped<AppDbContext>(sp => {
+            var options = sp.GetRequiredService<DbContextOptions<AppDbContext>>();
+            return new SqliteAppDbContext(options);
+        });
+
+        services.AddRepositories();
+        services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+        return services;
+    }
+
+    public static void EnsureCreatedAppDb(this IApplicationBuilder app) {
+        using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
     }
 }

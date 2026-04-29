@@ -88,22 +88,22 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
                 : $"{tenGiaiDoan}{(string.IsNullOrEmpty(tenGiaiDoan) || string.IsNullOrEmpty(tenBuoc) ? "" : " - ")}{tenBuoc}";
 
             return new BaoCaoDuAnDto {
-                Id = duAn.Id,
-                TenDuAn = duAn.TenDuAn,
-                DonViPhuTrachChinhId = duAn.DonViPhuTrachChinhId,
-                LoaiDuAnTheoNamId = duAn.LoaiDuAnTheoNamId,
-                KhaiToanKinhPhi = duAn.KhaiToanKinhPhi,
-                ThoiGianKhoiCong = duAn.ThoiGianKhoiCong,
-                ThoiGianHoanThanh = duAn.ThoiGianHoanThanh,
-                DuToanBanDau = duAn.SoDuToanCuoiCung,
-                DuToanDieuChinh = duAn.SoDuToanCuoiCung,
-                TienDo = tienDo,
-                GiaTriNghiemThu = giaTriNghiemThu > 0 ? giaTriNghiemThu : null,
-                GiaTriGiaiNgan = giaTriGiaiNgan > 0 ? giaTriGiaiNgan : null,
-                HinhThucDauTuId = duAn.HinhThucDauTuId,
-                LoaiDuAnId = duAn.LoaiDuAnId,
-                NgayQuyetDinhDuToan = duAn.NgayQuyetDinhDuToan ?? duAn.NgayKyDuToan,
-                SoQuyetDinhDuToan = duAn.SoQuyetDinhDuToan,
+                // Id = duAn.Id,
+                // TenDuAn = duAn.TenDuAn,
+                // DonViPhuTrachChinhId = duAn.DonViPhuTrachChinhId,
+                // LoaiDuAnTheoNamId = duAn.LoaiDuAnTheoNamId,
+                // KhaiToanKinhPhi = duAn.KhaiToanKinhPhi,
+                // ThoiGianKhoiCong = duAn.ThoiGianKhoiCong,
+                // ThoiGianHoanThanh = duAn.ThoiGianHoanThanh,
+                // DuToanBanDau = duAn.SoDuToanCuoiCung,
+                // DuToanDieuChinh = duAn.SoDuToanCuoiCung,
+                // TienDo = tienDo,
+                // GiaTriNghiemThu = giaTriNghiemThu > 0 ? giaTriNghiemThu : null,
+                // GiaTriGiaiNgan = giaTriGiaiNgan > 0 ? giaTriGiaiNgan : null,
+                // HinhThucDauTuId = duAn.HinhThucDauTuId,
+                // LoaiDuAnId = duAn.LoaiDuAnId,
+                // NgayQuyetDinhDuToan = duAn.NgayQuyetDinhDuToan ?? duAn.NgayKyDuToan,
+                // SoQuyetDinhDuToan = duAn.SoQuyetDinhDuToan,
             };
         }).ToList();
 
