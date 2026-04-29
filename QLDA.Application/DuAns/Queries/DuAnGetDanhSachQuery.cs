@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
+using QLDA.Application.Providers;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAns.Queries;
@@ -11,9 +13,13 @@ public record DuAnGetDanhSachQuery(DuAnSearchDto SearchDto) : AggregateRootPagin
 
 internal class DuAnGetDanhSachQueryHandler : IRequestHandler<DuAnGetDanhSachQuery, PaginatedList<DuAnDto>> {
     private readonly IRepository<DuAn, Guid> DuAn;
+    private readonly IUserProvider _userProvider;
+    private readonly IPolicyProvider _policyProvider;
 
     public DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
     }
 
 
@@ -22,6 +28,7 @@ internal class DuAnGetDanhSachQueryHandler : IRequestHandler<DuAnGetDanhSachQuer
         var queryable = DuAn.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Include(e => e.DuToans)
+            .ApplyDuAnVisibility(_userProvider, _policyProvider)
             .WhereIf(request.SearchDto.TenDuAn.IsNotNullOrWhitespace(),
                 e => e.TenDuAn!.ToLower().Contains(request.SearchDto.TenDuAn!.ToLower()))
             .WhereIf(request.SearchDto.MaDuAn.IsNotNullOrWhitespace(),
@@ -93,7 +100,7 @@ internal class DuAnGetDanhSachQueryHandler : IRequestHandler<DuAnGetDanhSachQuer
                 TongMucDauTu = e.TongMucDauTu,
                 TrangThaiDuAnId = e.TrangThaiDuAnId,
                 GhiChu = e.GhiChu,
-                NgayBatDau = e.NgayBatDau!.Value.Date,
+                NgayBatDau = e.NgayBatDau.HasValue ? e.NgayBatDau.Value.Date : null,
                 LanhDaoPhuTrachId = e.LanhDaoPhuTrachId,
                 DonViPhuTrachChinhId = e.DonViPhuTrachChinhId,
                 DonViPhoiHopIds = e.DuAnChiuTrachNhiemXuLys!

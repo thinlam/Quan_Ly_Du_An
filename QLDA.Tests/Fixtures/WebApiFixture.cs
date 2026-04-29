@@ -25,6 +25,7 @@ public interface IWebApiFixture
     HttpClient CreateAuthenticatedClient();
     HttpClient CreateBgdClient();
     HttpClient CreateKhTcClient();
+    HttpClient CreateChuyenVienClient(long phongBanId = 100);
     Task<Guid> CreatePheDuyetDuToanAsync();
 }
 
@@ -136,6 +137,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
             IsDeleted = false,
             Level = 0,
             Path = "",
+            NgayBatDau = DateTime.UtcNow,
         };
         _seedDb.Set<DuAn>().Add(duAn);
         await _seedDb.SaveChangesAsync();
@@ -191,14 +193,18 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
             new("UserId", userId.ToString()),
             new("UnitId", donViId.ToString()),
             new("PhongBanId", phongBanId.ToString()),
-            new(ClaimConstants.Roles, RoleConstants.QLDA_QuanTri),
-            new(ClaimConstants.Roles, RoleConstants.QLDA_TatCa),
         };
 
         if (roles != null)
         {
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimConstants.Roles, role));
+        }
+        else
+        {
+            // Default: admin roles
+            claims.Add(new Claim(ClaimConstants.Roles, RoleConstants.QLDA_QuanTri));
+            claims.Add(new Claim(ClaimConstants.Roles, RoleConstants.QLDA_TatCa));
         }
 
         var token = new JwtSecurityToken(
@@ -235,7 +241,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     /// </summary>
     public HttpClient CreateBgdClient()
     {
-        var token = GenerateToken(userId: 10, phongBanId: 1, roles: ["BGĐ"]);
+        var token = GenerateToken(userId: 10, phongBanId: 1, roles: [RoleConstants.QLDA_QuanTri, "BGĐ"]);
         return CreateClientWithToken(token);
     }
 
@@ -245,6 +251,15 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     public HttpClient CreateKhTcClient()
     {
         var token = GenerateToken(userId: 20, phongBanId: 219);
+        return CreateClientWithToken(token);
+    }
+
+    /// <summary>
+    /// Client with ChuyenVien role - restricted to department-scoped visibility
+    /// </summary>
+    public HttpClient CreateChuyenVienClient(long phongBanId = 100)
+    {
+        var token = GenerateToken(userId: 30, phongBanId: phongBanId, roles: [RoleConstants.QLDA_ChuyenVien]);
         return CreateClientWithToken(token);
     }
 

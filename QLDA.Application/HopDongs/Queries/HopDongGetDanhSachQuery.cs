@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
+using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.HopDongs.DTOs;
 
@@ -14,10 +16,16 @@ internal class
     PaginatedList<HopDongDto>> {
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAn, Guid> _duAn;
+    private readonly IUserProvider _userProvider;
+    private readonly IPolicyProvider _policyProvider;
 
     public HopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
     }
 
     public async Task<PaginatedList<HopDongDto>> Handle(HopDongGetDanhSachQuery request,
@@ -25,6 +33,7 @@ internal class
         var queryable = HopDong.GetQueryableSet().AsNoTracking()
             .Where(e => !e.DuAn!.IsDeleted)
             .Where(e => !e.GoiThau!.IsDeleted)
+            .ApplyDuAnChildVisibility(_duAn, _userProvider, _policyProvider, e => e.DuAnId)
             .WhereIf(request.SearchDto.IsBienBan.HasValue, e => e.IsBienBan == request.SearchDto.IsBienBan)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.DonViThucHienId != null, e => e.DonViThucHienId == request.SearchDto.DonViThucHienId)

@@ -110,6 +110,7 @@ public static class WebApiServiceExtensions {
     public static IServiceCollection AddProjectDependencies(this IServiceCollection services, IConfiguration configuration, AppSettings appSettings) {
         services.Configure<AppSettings>(configuration);
         services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
+        services.AddScoped<IPolicyProvider, PolicyProvider>();
 
         services
             .AddApplicationDependencies()
