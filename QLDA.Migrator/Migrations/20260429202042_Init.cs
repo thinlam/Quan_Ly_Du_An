@@ -11,7 +11,6 @@ namespace QLDA.Migrator.Migrations
     public partial class Init : Migration
     {
         /// <inheritdoc />
-        // protected override void Up(MigrationBuilder migrationBuilder){}
 
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -499,6 +498,29 @@ namespace QLDA.Migrator.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DmPhuongThucKySo",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Stt = table.Column<int>(type: "int", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())"),
+                    Ma = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Ten = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    MoTa = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: true),
+                    Used = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DmPhuongThucKySo", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DmPhuongThucLuaChonNhaThau",
                 columns: table => new
                 {
@@ -519,6 +541,30 @@ namespace QLDA.Migrator.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DmPhuongThucLuaChonNhaThau", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DmQuyen",
+                columns: table => new
+                {
+                    NhomQuyen = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Stt = table.Column<int>(type: "int", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())"),
+                    Ma = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Ten = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    MoTa = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: true),
+                    Used = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DmQuyen", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -612,6 +658,29 @@ namespace QLDA.Migrator.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DmTrangThaiDuAn", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DmTrangThaiPheDuyetDuToan",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Stt = table.Column<int>(type: "int", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())"),
+                    Ma = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Ten = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    MoTa = table.Column<string>(type: "nvarchar(400)", maxLength: 400, nullable: true),
+                    Used = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DmTrangThaiPheDuyetDuToan", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -833,6 +902,72 @@ namespace QLDA.Migrator.Migrations
                         principalTable: "DmNhaThau",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "KySo",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    ChuSoHuuId = table.Column<long>(type: "bigint", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    ChucVuId = table.Column<int>(type: "int", nullable: true),
+                    PhamVi = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    PhongBanId = table.Column<int>(type: "int", nullable: true),
+                    SerialChungThu = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ToChucCap = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    HieuLucTu = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    HieuLucDen = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PhuongThucKySoId = table.Column<int>(type: "int", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_KySo", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_KySo_DmChucVu_ChucVuId",
+                        column: x => x.ChucVuId,
+                        principalTable: "DmChucVu",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_KySo_DmPhuongThucKySo_PhuongThucKySoId",
+                        column: x => x.PhuongThucKySoId,
+                        principalTable: "DmPhuongThucKySo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CauHinhVaiTroQuyen",
+                columns: table => new
+                {
+                    VaiTro = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    QuyenId = table.Column<int>(type: "int", nullable: false),
+                    KichHoat = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CauHinhVaiTroQuyen", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CauHinhVaiTroQuyen_DmQuyen_QuyenId",
+                        column: x => x.QuyenId,
+                        principalTable: "DmQuyen",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1098,14 +1233,9 @@ namespace QLDA.Migrator.Migrations
                     HinhThucDauTuId = table.Column<int>(type: "int", nullable: true),
                     LoaiDuAnId = table.Column<int>(type: "int", nullable: true),
                     TongMucDauTu = table.Column<long>(type: "bigint", nullable: true),
-                    SoDuToan = table.Column<long>(type: "bigint", nullable: false),
-                    NamDuToan = table.Column<int>(type: "int", nullable: false),
-                    SoQuyetDinhDuToan = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    NgayKyDuToan = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    NgayQuyetDinhDuToan = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    DuToanHienTaiId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    KhaiToanKinhPhi = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    SoDuToanCuoiCung = table.Column<long>(type: "bigint", nullable: true),
+                    KhaiToanKinhPhi = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    SoQuyetDinhPheDuyet = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    NgayQuyetDinhPheDuyet = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     QuyTrinhId = table.Column<int>(type: "int", nullable: true),
                     BuocHienTaiId = table.Column<int>(type: "int", nullable: true),
                     GiaiDoanHienTaiId = table.Column<int>(type: "int", nullable: true),
@@ -1440,7 +1570,10 @@ namespace QLDA.Migrator.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
                     ChucVuId = table.Column<int>(type: "int", nullable: true),
-                    GiaTriDuThau = table.Column<long>(type: "bigint", nullable: true)
+                    GiaTriDuThau = table.Column<long>(type: "bigint", precision: 18, scale: 2, nullable: true),
+                    TrangThaiId = table.Column<int>(type: "int", nullable: false, defaultValue: 5),
+                    NguoiXuLyId = table.Column<long>(type: "bigint", nullable: true),
+                    NguoiGiaoViecId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1449,7 +1582,14 @@ namespace QLDA.Migrator.Migrations
                         name: "FK_PheDuyetDuToan_DmChucVu_ChucVuId",
                         column: x => x.ChucVuId,
                         principalTable: "DmChucVu",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PheDuyetDuToan_DmTrangThaiPheDuyetDuToan_TrangThaiId",
+                        column: x => x.TrangThaiId,
+                        principalTable: "DmTrangThaiPheDuyetDuToan",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PheDuyetDuToan_VanBanQuyetDinh_Id",
                         column: x => x.Id,
@@ -1709,6 +1849,47 @@ namespace QLDA.Migrator.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PheDuyetDuToanHistory",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    PheDuyetDuToanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DuAnId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NguoiXuLyId = table.Column<long>(type: "bigint", nullable: true),
+                    TrangThaiId = table.Column<int>(type: "int", nullable: false),
+                    NoiDung = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NgayXuLy = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false, defaultValueSql: "SYSDATETIMEOFFSET()"),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Index = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "DATEDIFF(SECOND, '19700101', GETUTCDATE())")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PheDuyetDuToanHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PheDuyetDuToanHistory_DmTrangThaiPheDuyetDuToan_TrangThaiId",
+                        column: x => x.TrangThaiId,
+                        principalTable: "DmTrangThaiPheDuyetDuToan",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PheDuyetDuToanHistory_DuAn_DuAnId",
+                        column: x => x.DuAnId,
+                        principalTable: "DuAn",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PheDuyetDuToanHistory_PheDuyetDuToan_PheDuyetDuToanId",
+                        column: x => x.PheDuyetDuToanId,
+                        principalTable: "PheDuyetDuToan",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "QuyetDinhDuyetDuAnNguonVon",
                 columns: table => new
                 {
@@ -1830,11 +2011,12 @@ namespace QLDA.Migrator.Migrations
                     GoiThauId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     GiaTriTrungThau = table.Column<long>(type: "bigint", nullable: false),
                     DonViTrungThauId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    SoNgayTrienKhai = table.Column<long>(type: "bigint", nullable: true),
+                    SoNgayTrienKhai = table.Column<int>(type: "int", nullable: true),
                     TrichYeu = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LoaiGoiThauId = table.Column<int>(type: "int", nullable: true),
                     NgayEHSMT = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     NgayMoThau = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    SoNgayThucHienHopDong = table.Column<int>(type: "int", nullable: true),
                     SoQuyetDinh = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NgayQuyetDinh = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -2115,6 +2297,35 @@ namespace QLDA.Migrator.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "DmQuyen",
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "IsDeleted", "Ma", "MoTa", "NhomQuyen", "Stt", "Ten", "UpdatedAt", "UpdatedBy", "Used" },
+                values: new object[,]
+                {
+                    { 1, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "DuAn.XemTatCa", null, "DuAn", 1, "Xem tất cả dự án", null, "", true },
+                    { 2, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "DuAn.XemTheoPhong", null, "DuAn", 2, "Xem theo phòng dự án", null, "", true },
+                    { 3, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "DuAn.Tao", null, "DuAn", 3, "Tạo dự án", null, "", true },
+                    { 4, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "DuAn.Sua", null, "DuAn", 4, "Sửa dự án", null, "", true },
+                    { 5, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "DuAn.Xoa", null, "DuAn", 5, "Xóa dự án", null, "", true },
+                    { 6, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "DuAn.PheDuyet", null, "DuAn", 6, "Phê duyệt dự án", null, "", true },
+                    { 7, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "GoiThau.XemTatCa", null, "GoiThau", 1, "Xem tất cả gói thầu", null, "", true },
+                    { 8, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "GoiThau.XemTheoPhong", null, "GoiThau", 2, "Xem theo phòng gói thầu", null, "", true },
+                    { 9, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "GoiThau.Tao", null, "GoiThau", 3, "Tạo gói thầu", null, "", true },
+                    { 10, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "GoiThau.Sua", null, "GoiThau", 4, "Sửa gói thầu", null, "", true },
+                    { 11, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "GoiThau.Xoa", null, "GoiThau", 5, "Xóa gói thầu", null, "", true },
+                    { 12, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "HopDong.XemTatCa", null, "HopDong", 1, "Xem tất cả hợp đồng", null, "", true },
+                    { 13, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "HopDong.XemTheoPhong", null, "HopDong", 2, "Xem theo phòng hợp đồng", null, "", true },
+                    { 14, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "HopDong.Tao", null, "HopDong", 3, "Tạo hợp đồng", null, "", true },
+                    { 15, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "HopDong.Sua", null, "HopDong", 4, "Sửa hợp đồng", null, "", true },
+                    { 16, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "HopDong.Xoa", null, "HopDong", 5, "Xóa hợp đồng", null, "", true },
+                    { 17, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "VanBan.XemTatCa", null, "VanBan", 1, "Xem tất cả văn bản", null, "", true },
+                    { 18, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "VanBan.XemTheoPhong", null, "VanBan", 2, "Xem theo phòng văn bản", null, "", true },
+                    { 19, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "VanBan.Tao", null, "VanBan", 3, "Tạo văn bản", null, "", true },
+                    { 20, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "VanBan.Sua", null, "VanBan", 4, "Sửa văn bản", null, "", true },
+                    { 21, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "VanBan.Xoa", null, "VanBan", 5, "Xóa văn bản", null, "", true },
+                    { 22, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, "ThanhToan.QuanLy", null, "ThanhToan", 1, "Quản lý thanh toán", null, "", true }
+                });
+
+            migrationBuilder.InsertData(
                 table: "DmTrangThaiDuAn",
                 columns: new[] { "Id", "CreatedBy", "IsDeleted", "Ma", "MoTa", "Stt", "Ten", "UpdatedAt", "UpdatedBy", "Used" },
                 values: new object[,]
@@ -2123,6 +2334,89 @@ namespace QLDA.Migrator.Migrations
                     { 2, "", false, "PDDT", null, null, "Đã phê duyệt đầu tư", null, "", false },
                     { 3, "", false, "HT", null, null, "Đã hoàn thành", null, "", false },
                     { 4, "", false, "TD", null, null, "Tạm dừng", null, "", false }
+                });
+
+            migrationBuilder.InsertData(
+                table: "DmTrangThaiPheDuyetDuToan",
+                columns: new[] { "Id", "CreatedBy", "IsDeleted", "Ma", "MoTa", "Stt", "Ten", "UpdatedAt", "UpdatedBy", "Used" },
+                values: new object[,]
+                {
+                    { 1, "", false, "DT", null, 1, "Dự thảo", null, "", true },
+                    { 2, "", false, "ĐTr", null, 2, "Đã trình", null, "", true },
+                    { 3, "", false, "ĐD", null, 3, "Đã duyệt", null, "", true },
+                    { 4, "", false, "TL", null, 4, "Trả lại", null, "", true },
+                    { 5, "", false, "LEG", null, 0, "Migrated", null, "", false }
+                });
+
+            migrationBuilder.InsertData(
+                table: "CauHinhVaiTroQuyen",
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "IsDeleted", "KichHoat", "QuyenId", "UpdatedAt", "UpdatedBy", "VaiTro" },
+                values: new object[,]
+                {
+                    { 1, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 1, null, "", "QLDA_TatCa" },
+                    { 2, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 2, null, "", "QLDA_TatCa" },
+                    { 3, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 3, null, "", "QLDA_TatCa" },
+                    { 4, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 4, null, "", "QLDA_TatCa" },
+                    { 5, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 5, null, "", "QLDA_TatCa" },
+                    { 6, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 6, null, "", "QLDA_TatCa" },
+                    { 7, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 7, null, "", "QLDA_TatCa" },
+                    { 8, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 8, null, "", "QLDA_TatCa" },
+                    { 9, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 9, null, "", "QLDA_TatCa" },
+                    { 10, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 10, null, "", "QLDA_TatCa" },
+                    { 11, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 11, null, "", "QLDA_TatCa" },
+                    { 12, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 12, null, "", "QLDA_TatCa" },
+                    { 13, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 13, null, "", "QLDA_TatCa" },
+                    { 14, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 14, null, "", "QLDA_TatCa" },
+                    { 15, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 15, null, "", "QLDA_TatCa" },
+                    { 16, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 16, null, "", "QLDA_TatCa" },
+                    { 17, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 17, null, "", "QLDA_TatCa" },
+                    { 18, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 18, null, "", "QLDA_TatCa" },
+                    { 19, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 19, null, "", "QLDA_TatCa" },
+                    { 20, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 20, null, "", "QLDA_TatCa" },
+                    { 21, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 21, null, "", "QLDA_TatCa" },
+                    { 22, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 22, null, "", "QLDA_TatCa" },
+                    { 23, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 1, null, "", "QLDA_QuanTri" },
+                    { 24, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 2, null, "", "QLDA_QuanTri" },
+                    { 25, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 3, null, "", "QLDA_QuanTri" },
+                    { 26, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 4, null, "", "QLDA_QuanTri" },
+                    { 27, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 5, null, "", "QLDA_QuanTri" },
+                    { 28, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 6, null, "", "QLDA_QuanTri" },
+                    { 29, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 7, null, "", "QLDA_QuanTri" },
+                    { 30, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 8, null, "", "QLDA_QuanTri" },
+                    { 31, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 9, null, "", "QLDA_QuanTri" },
+                    { 32, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 10, null, "", "QLDA_QuanTri" },
+                    { 33, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 11, null, "", "QLDA_QuanTri" },
+                    { 34, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 12, null, "", "QLDA_QuanTri" },
+                    { 35, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 13, null, "", "QLDA_QuanTri" },
+                    { 36, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 14, null, "", "QLDA_QuanTri" },
+                    { 37, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 15, null, "", "QLDA_QuanTri" },
+                    { 38, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 16, null, "", "QLDA_QuanTri" },
+                    { 39, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 17, null, "", "QLDA_QuanTri" },
+                    { 40, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 18, null, "", "QLDA_QuanTri" },
+                    { 41, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 19, null, "", "QLDA_QuanTri" },
+                    { 42, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 20, null, "", "QLDA_QuanTri" },
+                    { 43, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 21, null, "", "QLDA_QuanTri" },
+                    { 44, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 22, null, "", "QLDA_QuanTri" },
+                    { 45, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 1, null, "", "QLDA_LDDV" },
+                    { 46, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 7, null, "", "QLDA_LDDV" },
+                    { 47, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 12, null, "", "QLDA_LDDV" },
+                    { 48, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 17, null, "", "QLDA_LDDV" },
+                    { 49, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 1, null, "", "QLDA_LD" },
+                    { 50, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 7, null, "", "QLDA_LD" },
+                    { 51, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 12, null, "", "QLDA_LD" },
+                    { 52, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 17, null, "", "QLDA_LD" },
+                    { 53, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 2, null, "", "QLDA_ChuyenVien" },
+                    { 54, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 8, null, "", "QLDA_ChuyenVien" },
+                    { 55, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 13, null, "", "QLDA_ChuyenVien" },
+                    { 56, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 18, null, "", "QLDA_ChuyenVien" },
+                    { 57, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 3, null, "", "QLDA_ChuyenVien" },
+                    { 58, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 4, null, "", "QLDA_ChuyenVien" },
+                    { 59, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 9, null, "", "QLDA_ChuyenVien" },
+                    { 60, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 10, null, "", "QLDA_ChuyenVien" },
+                    { 61, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 14, null, "", "QLDA_ChuyenVien" },
+                    { 62, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 15, null, "", "QLDA_ChuyenVien" },
+                    { 63, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 19, null, "", "QLDA_ChuyenVien" },
+                    { 64, new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "", false, true, 20, null, "", "QLDA_ChuyenVien" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -2165,6 +2459,23 @@ namespace QLDA.Migrator.Migrations
                 name: "IX_CANBO_DONVI_DonViID",
                 table: "CANBO_DONVI",
                 column: "DonViID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CauHinhVaiTroQuyen_Index",
+                table: "CauHinhVaiTroQuyen",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CauHinhVaiTroQuyen_QuyenId",
+                table: "CauHinhVaiTroQuyen",
+                column: "QuyenId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CauHinhVaiTroQuyen_VaiTro_QuyenId",
+                table: "CauHinhVaiTroQuyen",
+                columns: new[] { "VaiTro", "QuyenId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DangTaiKeHoachLcntLenMang_BuocId",
@@ -2449,6 +2760,19 @@ namespace QLDA.Migrator.Migrations
                 filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DmPhuongThucKySo_Index",
+                table: "DmPhuongThucKySo",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DmPhuongThucKySo_Ma",
+                table: "DmPhuongThucKySo",
+                column: "Ma",
+                unique: true,
+                filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DmPhuongThucLuaChonNhaThau_Index",
                 table: "DmPhuongThucLuaChonNhaThau",
                 column: "Index")
@@ -2458,6 +2782,26 @@ namespace QLDA.Migrator.Migrations
                 name: "IX_DmPhuongThucLuaChonNhaThau_Ma",
                 table: "DmPhuongThucLuaChonNhaThau",
                 column: "Ma",
+                unique: true,
+                filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DmQuyen_Index",
+                table: "DmQuyen",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DmQuyen_Ma",
+                table: "DmQuyen",
+                column: "Ma",
+                unique: true,
+                filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DmQuyen_Ma_NhomQuyen",
+                table: "DmQuyen",
+                columns: new[] { "Ma", "NhomQuyen" },
                 unique: true,
                 filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
 
@@ -2521,6 +2865,19 @@ namespace QLDA.Migrator.Migrations
                 filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DmTrangThaiPheDuyetDuToan_Index",
+                table: "DmTrangThaiPheDuyetDuToan",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DmTrangThaiPheDuyetDuToan_Ma",
+                table: "DmTrangThaiPheDuyetDuToan",
+                column: "Ma",
+                unique: true,
+                filter: "[Ma] IS NOT NULL AND [Ma] <> ''");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DmTrangThaiTienDo_Index",
                 table: "DmTrangThaiTienDo",
                 column: "Index")
@@ -2544,13 +2901,6 @@ namespace QLDA.Migrator.Migrations
                 name: "IX_DuAn_ChuDauTuId",
                 table: "DuAn",
                 column: "ChuDauTuId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DuAn_DuToanHienTaiId",
-                table: "DuAn",
-                column: "DuToanHienTaiId",
-                unique: true,
-                filter: "[DuToanHienTaiId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DuAn_GiaiDoanHienTaiId",
@@ -2785,6 +3135,22 @@ namespace QLDA.Migrator.Migrations
                 column: "LoaiGoiThauId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_KySo_ChucVuId",
+                table: "KySo",
+                column: "ChucVuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_KySo_Index",
+                table: "KySo",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_KySo_PhuongThucKySoId",
+                table: "KySo",
+                column: "PhuongThucKySoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_NghiemThu_DuAnBuocId",
                 table: "NghiemThu",
                 column: "DuAnBuocId");
@@ -2826,6 +3192,32 @@ namespace QLDA.Migrator.Migrations
                 name: "IX_PheDuyetDuToan_ChucVuId",
                 table: "PheDuyetDuToan",
                 column: "ChucVuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PheDuyetDuToan_TrangThaiId",
+                table: "PheDuyetDuToan",
+                column: "TrangThaiId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PheDuyetDuToanHistory_DuAnId",
+                table: "PheDuyetDuToanHistory",
+                column: "DuAnId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PheDuyetDuToanHistory_Index",
+                table: "PheDuyetDuToanHistory",
+                column: "Index")
+                .Annotation("SqlServer:Clustered", false);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PheDuyetDuToanHistory_PheDuyetDuToanId",
+                table: "PheDuyetDuToanHistory",
+                column: "PheDuyetDuToanId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PheDuyetDuToanHistory_TrangThaiId",
+                table: "PheDuyetDuToanHistory",
+                column: "TrangThaiId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PhuLucHopDong_BuocId",
@@ -3079,13 +3471,6 @@ namespace QLDA.Migrator.Migrations
                 column: "BuocHienTaiId",
                 principalTable: "DuAnBuoc",
                 principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_DuAn_DuToan_DuToanHienTaiId",
-                table: "DuAn",
-                column: "DuToanHienTaiId",
-                principalTable: "DuToan",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
@@ -3094,10 +3479,6 @@ namespace QLDA.Migrator.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_DuAn_DuAnBuoc_BuocHienTaiId",
                 table: "DuAn");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_DuToan_DuAn_DuAnId",
-                table: "DuToan");
 
             migrationBuilder.DropTable(
                 name: "BaoCaoBanGiaoSanPham");
@@ -3113,6 +3494,9 @@ namespace QLDA.Migrator.Migrations
 
             migrationBuilder.DropTable(
                 name: "CANBO_DONVI");
+
+            migrationBuilder.DropTable(
+                name: "CauHinhVaiTroQuyen");
 
             migrationBuilder.DropTable(
                 name: "DangTaiKeHoachLcntLenMang");
@@ -3154,6 +3538,9 @@ namespace QLDA.Migrator.Migrations
                 name: "DUONG_PHUONG_QUAN");
 
             migrationBuilder.DropTable(
+                name: "DuToan");
+
+            migrationBuilder.DropTable(
                 name: "E_CAPDONVI");
 
             migrationBuilder.DropTable(
@@ -3169,13 +3556,16 @@ namespace QLDA.Migrator.Migrations
                 name: "KetQuaTrungThau");
 
             migrationBuilder.DropTable(
+                name: "KySo");
+
+            migrationBuilder.DropTable(
                 name: "NghiemThuPhuLucHopDong");
 
             migrationBuilder.DropTable(
                 name: "NhaThauNguoiDung");
 
             migrationBuilder.DropTable(
-                name: "PheDuyetDuToan");
+                name: "PheDuyetDuToanHistory");
 
             migrationBuilder.DropTable(
                 name: "QuyetDinhDuyetDuAnHangMuc");
@@ -3232,13 +3622,22 @@ namespace QLDA.Migrator.Migrations
                 name: "DM_DONVI");
 
             migrationBuilder.DropTable(
+                name: "DmQuyen");
+
+            migrationBuilder.DropTable(
                 name: "E_ManHinh");
 
             migrationBuilder.DropTable(
                 name: "DmLoaiGoiThau");
 
             migrationBuilder.DropTable(
+                name: "DmPhuongThucKySo");
+
+            migrationBuilder.DropTable(
                 name: "PhuLucHopDong");
+
+            migrationBuilder.DropTable(
+                name: "PheDuyetDuToan");
 
             migrationBuilder.DropTable(
                 name: "QuyetDinhDuyetDuAnNguonVon");
@@ -3250,10 +3649,13 @@ namespace QLDA.Migrator.Migrations
                 name: "QuyetDinhLapBanQLDA");
 
             migrationBuilder.DropTable(
+                name: "DmLoaiVanBan");
+
+            migrationBuilder.DropTable(
                 name: "DmChucVu");
 
             migrationBuilder.DropTable(
-                name: "DmLoaiVanBan");
+                name: "DmTrangThaiPheDuyetDuToan");
 
             migrationBuilder.DropTable(
                 name: "QuyetDinhDuyetDuAn");
@@ -3326,9 +3728,6 @@ namespace QLDA.Migrator.Migrations
 
             migrationBuilder.DropTable(
                 name: "DmTrangThaiTienDo");
-
-            migrationBuilder.DropTable(
-                name: "DuToan");
         }
     }
 }

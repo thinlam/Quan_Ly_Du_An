@@ -17,7 +17,8 @@ public class DanhMucTrangThaiPheDuyetDuToanConfiguration : AggregateRootConfigur
             new DanhMucTrangThaiPheDuyetDuToan { Id = 1, Ma = "DT", Ten = "Dự thảo", Stt = 1, Used = true, CreatedAt = DateTimeOffset.MinValue },
             new DanhMucTrangThaiPheDuyetDuToan { Id = 2, Ma = "ĐTr", Ten = "Đã trình", Stt = 2, Used = true, CreatedAt = DateTimeOffset.MinValue },
             new DanhMucTrangThaiPheDuyetDuToan { Id = 3, Ma = "ĐD", Ten = "Đã duyệt", Stt = 3, Used = true, CreatedAt = DateTimeOffset.MinValue },
-            new DanhMucTrangThaiPheDuyetDuToan { Id = 4, Ma = "TL", Ten = "Trả lại", Stt = 4, Used = true, CreatedAt = DateTimeOffset.MinValue }
+            new DanhMucTrangThaiPheDuyetDuToan { Id = 4, Ma = "TL", Ten = "Trả lại", Stt = 4, Used = true, CreatedAt = DateTimeOffset.MinValue },
+            new DanhMucTrangThaiPheDuyetDuToan { Id = 5, Ma = "LEG", Ten = "Migrated", Stt = 0, Used = false, CreatedAt = DateTimeOffset.MinValue }
         );
     }
 }
