@@ -105,6 +105,47 @@ public class PheDuyetDuToanController : AggregateRootController {
     }
 
     /// <summary>
+    /// Trình phê duyệt dự toán - chỉ phòng KH-TC
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPost("{id}/trinh")]
+    public async Task<ResultApi> Trinh(Guid id) {
+        var res = await Mediator.Send(new PheDuyetDuToanTrinhCommand(id));
+        return ResultApi.Ok(res);
+    }
+
+    /// <summary>
+    /// Duyệt phê duyệt dự toán - chỉ BGĐ
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPost("{id}/duyet")]
+    public async Task<ResultApi> Duyet(Guid id) {
+        var res = await Mediator.Send(new PheDuyetDuToanDuyetCommand(id));
+        return ResultApi.Ok(res);
+    }
+
+    /// <summary>
+    /// Trả lại phê duyệt dự toán - chỉ BGĐ, cần lý do
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPost("{id}/tra-lai")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public async Task<ResultApi> TraLai(Guid id, [FromBody] TraLaiModel model) {
+        var res = await Mediator.Send(new PheDuyetDuToanTraLaiCommand(id, model.NoiDung));
+        return ResultApi.Ok(res);
+    }
+
+    /// <summary>
     ///
     /// </summary>
     /// <param name="duAnId"></param>

@@ -3,12 +3,20 @@ using BuildingBlocks.Domain.Attributes;
 
 namespace BuildingBlocks.Domain.DTOs;
 
-public class UserInfo
-{
+public class UserInfo {
+    /// <summary>
+    /// UserMaster.UserPortalId
+    /// </summary>
     public long UserID { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string HoTen { get; set; } = string.Empty;
+    /// <summary>
+    /// UserMaster.DonViId or DmDonVi.DonViId
+    /// </summary>
     public long? DonViID { get; set; }
+    /// <summary>
+    /// UserMaster.PhongBanId or DmDonVi.DonViId
+    /// </summary>
     public long? PhongBanID { get; set; }
 
     [IgnoreClaim]
@@ -32,11 +40,9 @@ public class UserInfo
     [IgnoreClaim]
     public bool Used { get; set; }
 
-    public UserInfo()
-    {
+    public UserInfo() {
     }
-    public UserInfo(string userId, string donViId, string phongBanId)
-    {
+    public UserInfo(string userId, string donViId, string phongBanId) {
         UserID = long.TryParse(userId, out var uid) ? uid : -1;
         DonViID = long.TryParse(donViId, out var did) ? did : -1;
         PhongBanID = long.TryParse(phongBanId, out var pid) ? pid : -1;
