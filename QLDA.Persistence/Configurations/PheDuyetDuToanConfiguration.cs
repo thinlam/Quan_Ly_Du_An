@@ -16,9 +16,9 @@ public class PheDuyetDuToanConfiguration : IEntityTypeConfiguration<PheDuyetDuTo
             .HasForeignKey(e => e.ChucVuId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(e => e.TrangThaiPheDuyetDuToan)
+        builder.HasOne(e => e.TrangThai)
             .WithMany(e => e.PheDuyetDuToans)
-            .HasForeignKey(e => e.TrangThaiPheDuyetDuToanId)
+            .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(e => e.Histories)

@@ -10,8 +10,8 @@ public class DanhMucTrangThaiPheDuyetDuToanConfiguration : AggregateRootConfigur
         builder.ConfigureForDanhMuc();
 
         builder.HasMany(e => e.PheDuyetDuToans)
-            .WithOne(e => e.TrangThaiPheDuyetDuToan)
-            .HasForeignKey(e => e.TrangThaiPheDuyetDuToanId);
+            .WithOne(e => e.TrangThai)
+            .HasForeignKey(e => e.TrangThaiId);
 
         builder.HasData(
             new DanhMucTrangThaiPheDuyetDuToan { Id = 1, Ma = "DT", Ten = "Dự thảo", Stt = 1, CreatedAt = DateTimeOffset.MinValue },

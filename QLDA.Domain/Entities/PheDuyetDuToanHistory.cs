@@ -12,7 +12,7 @@ public class PheDuyetDuToanHistory : Entity<Guid>, IAggregateRoot {
     /// </summary>
     public long? NguoiXuLyId { get; set; }
 
-    public int TrangThaiActionId { get; set; }
+    public int TrangThaiId { get; set; }
     public string? NoiDung { get; set; }
     public DateTimeOffset NgayXuLy { get; set; }
 
@@ -20,7 +20,7 @@ public class PheDuyetDuToanHistory : Entity<Guid>, IAggregateRoot {
 
     public PheDuyetDuToan? PheDuyetDuToan { get; set; }
     public DuAn? DuAn { get; set; }
-    public DanhMuc.DanhMucTrangThaiPheDuyetDuToan? TrangThaiAction { get; set; }
+    public DanhMuc.DanhMucTrangThaiPheDuyetDuToan? TrangThai { get; set; }
 
     #endregion
 }

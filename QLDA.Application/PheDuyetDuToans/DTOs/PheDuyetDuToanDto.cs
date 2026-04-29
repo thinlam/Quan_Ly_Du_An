@@ -30,5 +30,17 @@ public class PheDuyetDuToanDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepD
     public int? ChucVuId { get; set; }
     public long? GiaTriDuThau { get; set; }
     public string? TrichYeu { get; set; }
+    public int TrangThaiId { get; set; } = 1;
+
+    /// <summary>
+    /// USER_MASTER.UserPortalId
+    /// </summary>
+    public long? NguoiXuLyId { get; set; }
+
+    /// <summary>
+    /// USER_MASTER.UserPortalId
+    /// </summary>
+    public long? NguoiGiaoViecId { get; set; }
+
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

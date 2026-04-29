@@ -18,9 +18,9 @@ public class PheDuyetDuToanHistoryConfiguration : AggregateRootConfiguration<Phe
             .HasForeignKey(e => e.DuAnId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(e => e.TrangThaiAction)
+        builder.HasOne(e => e.TrangThai)
             .WithMany()
-            .HasForeignKey(e => e.TrangThaiActionId)
+            .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
