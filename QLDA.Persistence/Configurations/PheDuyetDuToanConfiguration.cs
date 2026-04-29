@@ -10,9 +10,9 @@ public class PheDuyetDuToanConfiguration : IEntityTypeConfiguration<PheDuyetDuTo
 
         // Configure derived properties only
         builder.Property(e => e.GiaTriDuThau).HasPrecision(18, 2);
-
+        builder.Property(e=>e.TrangThaiId).HasDefaultValue(5); //Default : Migrated
         builder.HasOne(e => e.ChucVu)
-            .WithMany()
+            .WithMany(e => e.PheDuyetDuToans)
             .HasForeignKey(e => e.ChucVuId)
             .OnDelete(DeleteBehavior.Restrict);
 

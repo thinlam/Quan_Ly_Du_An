@@ -8,4 +8,5 @@ public static class TrangThaiPheDuyetDuToanCodes {
     public const string DaTrinh = "ĐTr";
     public const string DaDuyet = "ĐD";
     public const string TraLai = "TL";
+    public const string Legacy = "LEG";
 }

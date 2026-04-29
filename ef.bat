@@ -120,7 +120,7 @@ if "%MIGRATION_NAME%"=="" (
     exit /b 1
 )
 echo Adding migration: %MIGRATION_NAME%
-dotnet ef migrations add %MIGRATION_NAME% --project %PERSISTENCE_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
+dotnet ef migrations add %MIGRATION_NAME% --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
 goto :end
 
 REM ============================================
@@ -135,7 +135,7 @@ echo.
 set REMOVE_COUNT=0
 
 :remove_loop
-dotnet ef migrations remove --project %PERSISTENCE_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext --force 2>nul
+dotnet ef migrations remove --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext --force 2>nul
 if %ERRORLEVEL% EQU 0 (
     set /a REMOVE_COUNT+=1
     echo Removed migration #!REMOVE_COUNT!
@@ -150,7 +150,7 @@ goto :end
 
 :single_remove
 echo Removing last migration...
-dotnet ef migrations remove --project %PERSISTENCE_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext --force
+dotnet ef migrations remove --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
 goto :end
 
 REM ============================================
@@ -164,7 +164,7 @@ if /i "%PROVIDER%"=="sqlite" (
     dotnet run --project %MIGRATOR_PATH% -- --provider sqlite
 ) else (
     echo Updating SQL Server database via dotnet ef...
-    dotnet ef database update --project %PERSISTENCE_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
+    dotnet ef database update --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
 )
 goto :end
 
@@ -173,7 +173,7 @@ REM  LIST MIGRATIONS
 REM ============================================
 :list_migrations
 echo Listing migrations...
-dotnet ef migrations list --project %PERSISTENCE_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
+dotnet ef migrations list --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
 goto :end
 
 REM ============================================
