@@ -47,3 +47,4 @@ publish/
 *.Publish.xml
 *plans/
 repomix-output.xml
+*.db*

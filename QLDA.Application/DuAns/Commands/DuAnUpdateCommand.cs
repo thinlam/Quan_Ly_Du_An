@@ -58,8 +58,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
             existing.SoQuyetDinhDuToan = request.SoQuyetDinhDuToan;
             existing.NgayKyDuToan = request.NgayKyDuToan;
             existing.GhiChu = request.GhiChu;
-        }
-          , cancellationToken);
+        }, cancellationToken);
 
         await SyncHelper.SyncCollection(KeHoachVon, entity.KeHoachVons, [.. request.Model.KeHoachVons?.Select(e => e.ToEntity(entity.Id)) ?? []], (existing, request) => {
             existing.NguonVonId = request.NguonVonId;
@@ -72,17 +71,6 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         }
           , cancellationToken);
 
-        // Update SoDuToanCuoiCung based on the updated DuToans list
-        if (entity.DuToans != null && entity.DuToans.Count > 0) {
-            var sortedDuToans = entity.DuToans.Where(d => !d.IsDeleted).OrderBy(d => d.Index).ToList();
-            if (sortedDuToans.Count > 1) {
-                var lastDuToan = sortedDuToans.Last();
-                entity.SoDuToanCuoiCung = lastDuToan.SoDuToan;
-            } else {
-                entity.SoDuToanCuoiCung = null;
-            }
-        }
-
         if (_unitOfWork.HasTransaction) {
             await UpdateAsync(entity, cancellationToken);
         } else {
@@ -90,29 +78,6 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
             await UpdateAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        }
-
-        // Query latest DuToan after save to include newly added records from SyncCollection
-        var duToanMoiNhat = await DuToan.GetQueryableSet()
-            .Where(d => d.DuAnId == entity.Id && !d.IsDeleted)
-            .OrderByDescending(d => d.NamDuToan)
-            .ThenByDescending(d => d.NgayKyDuToan)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (duToanMoiNhat != null) {
-            entity.DuToanHienTaiId = duToanMoiNhat.Id;
-            entity.SoDuToan = duToanMoiNhat.SoDuToan;
-            entity.NamDuToan = duToanMoiNhat.NamDuToan;
-            entity.SoQuyetDinhDuToan = duToanMoiNhat.SoQuyetDinhDuToan;
-            entity.NgayKyDuToan = duToanMoiNhat.NgayKyDuToan;
-            await DuAn.UpdateAsync(entity, cancellationToken);
-        } else if (entity.DuToanHienTaiId != null) {
-            entity.DuToanHienTaiId = null;
-            entity.SoDuToan = 0;
-            entity.NamDuToan = 0;
-            entity.SoQuyetDinhDuToan = null;
-            entity.NgayKyDuToan = null;
-            await DuAn.UpdateAsync(entity, cancellationToken);
         }
 
         return entity;

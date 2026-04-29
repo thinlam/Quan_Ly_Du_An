@@ -97,48 +97,10 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     /// <remarks>: TMĐT theo QĐ phê duyệt chủ trương</remarks>
     public long? TongMucDauTu { get; set; }
 
-    #region Thông tin dự toán hiện tại - mới nhất
-
-    /// <summary>
-    /// Số dự toán
-    /// </summary>
-    public long SoDuToan { get; set; }
-
-    /// <summary>
-    /// Năm dự toán
-    /// </summary>
-    public int NamDuToan { get; set; }
-
-    /// <summary>
-    /// Số quyết định dự toán
-    /// </summary>
-    public string? SoQuyetDinhDuToan { get; set; }
-
-    /// <summary>
-    /// Ngày ký dự toán
-    /// </summary>
-    public DateTimeOffset? NgayKyDuToan { get; set; }
-
-    /// <summary>
-    /// Ngày quyết định dự toán
-    /// </summary>
-    public DateTimeOffset? NgayQuyetDinhDuToan { get; set; }
-
-    /// <summary>
-    /// Dự toán hiện tại
-    /// </summary>
-    public Guid? DuToanHienTaiId { get; set; }
-    #endregion
-
     /// <summary>
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
-
-    /// <summary>
-    /// Số dự toán cuối cùng (điều chỉnh)
-    /// </summary>
-    public long? SoDuToanCuoiCung { get; set; }
 
     /// <summary>
     /// Danh mục quy trình
@@ -215,7 +177,6 @@ public class DuAn : MaterializedPathEntity<Guid>, IAggregateRoot {
     #region Navigation Properties
 
     #region Self Reference
-    public DuToan? DuToanHienTai { get; set; }
     public DuAnBuoc? BuocHienTai { get; set; }
     public DanhMucGiaiDoan? GiaiDoanHienTai { get; set; }
     public DanhMucTrangThaiDuAn? TrangThaiDuAn { get; set; }

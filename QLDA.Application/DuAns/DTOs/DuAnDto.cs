@@ -185,9 +185,4 @@ public class DuAnDto : IHasKey<Guid> {
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
-    /// <summary>
-    /// Số dự toán cuối cùng (điều chỉnh)
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public long? SoDuToanCuoiCung { get; set; }
 }

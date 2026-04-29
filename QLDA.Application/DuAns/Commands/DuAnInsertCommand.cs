@@ -58,16 +58,6 @@ internal class DuAnInsertCommandHandler : IRequestHandler<DuAnInsertCommand, DuA
         }
 
         DuAn.InitializeNode(entity, parent);
-
-        // Auto-set SoDuToanCuoiCung from DuToan list
-        if (entity.DuToans?.Count > 0) {
-            var sortedDuToans = entity.DuToans.OrderBy(d => d.Index).ToList();
-            if (sortedDuToans.Count > 1) {
-                var lastDuToan = sortedDuToans.Last();
-                entity.SoDuToanCuoiCung = lastDuToan.SoDuToan;
-            }
-            await DuAn.UpdateAsync(entity, cancellationToken);
-        }
     }
 
     #endregion

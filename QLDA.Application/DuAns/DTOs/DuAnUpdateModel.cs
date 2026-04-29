@@ -35,10 +35,6 @@ public class DuAnUpdateModel : IHasKey<Guid>, IMayHaveParent<Guid?> {
     public List<DuToanUpdateModel>? DuToans { get; set; }
     public List<KeHoachVonUpdateModel>? KeHoachVons { get; set; }
     /// <summary>
-    /// Số dư dự toán cuối cùng
-    /// </summary>
-    public long? SoDuToanCuoiCung { get; set; }
-    /// <summary>
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
