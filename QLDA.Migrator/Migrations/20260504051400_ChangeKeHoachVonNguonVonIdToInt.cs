@@ -11,14 +11,23 @@ namespace QLDA.Migrator.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "NguonVonId",
+            // SQL Server cannot ALTER COLUMN from uniqueidentifier to int directly.
+            // Workflow: add new int column → drop old guid column → rename new to old name
+
+            migrationBuilder.AddColumn<int>(
+                name: "NguonVonId_New",
                 table: "KeHoachVon",
                 type: "int",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uniqueidentifier",
-                oldNullable: true);
+                nullable: true);
+
+            migrationBuilder.DropColumn(
+                name: "NguonVonId",
+                table: "KeHoachVon");
+
+            migrationBuilder.RenameColumn(
+                name: "NguonVonId_New",
+                table: "KeHoachVon",
+                newName: "NguonVonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KeHoachVon_NguonVonId",
@@ -45,14 +54,21 @@ namespace QLDA.Migrator.Migrations
                 name: "IX_KeHoachVon_NguonVonId",
                 table: "KeHoachVon");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "NguonVonId",
+            // Reverse: add guid column → drop int column → rename back
+            migrationBuilder.AddColumn<Guid>(
+                name: "NguonVonId_Old",
                 table: "KeHoachVon",
                 type: "uniqueidentifier",
-                nullable: true,
-                oldClrType: typeof(int),
-                oldType: "int",
-                oldNullable: true);
+                nullable: true);
+
+            migrationBuilder.DropColumn(
+                name: "NguonVonId",
+                table: "KeHoachVon");
+
+            migrationBuilder.RenameColumn(
+                name: "NguonVonId_Old",
+                table: "KeHoachVon",
+                newName: "NguonVonId");
         }
     }
 }
