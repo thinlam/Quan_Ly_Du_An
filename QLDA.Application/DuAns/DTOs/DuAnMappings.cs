@@ -36,6 +36,8 @@ public static class DuAnMappings {
             LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId,
             KhaiToanKinhPhi = dto.KhaiToanKinhPhi,
+            SoQuyetDinhPheDuyet = dto.SoQuyetDinhPheDuyet,
+            NgayQuyetDinhPheDuyet = dto.NgayQuyetDinhPheDuyet,
             DuAnNguonVons = [..dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
                 LeftId = id,
                 RightId = nguonVonId
@@ -84,6 +86,8 @@ public static class DuAnMappings {
         entity.LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId;
         entity.DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId;
         entity.KhaiToanKinhPhi = dto.KhaiToanKinhPhi;
+        entity.SoQuyetDinhPheDuyet = dto.SoQuyetDinhPheDuyet;
+        entity.NgayQuyetDinhPheDuyet = dto.NgayQuyetDinhPheDuyet;
         entity.DuAnNguonVons = [.. dto.DanhSachNguonVon?.Select(nguonVonId => new DuAnNguonVon {
             LeftId = dto.Id,
             RightId = nguonVonId
@@ -124,6 +128,8 @@ public static class DuAnMappings {
             LanhDaoPhuTrachId = entity.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
             KhaiToanKinhPhi = entity.KhaiToanKinhPhi,
+            SoQuyetDinhPheDuyet = entity.SoQuyetDinhPheDuyet,
+            NgayQuyetDinhPheDuyet = entity.NgayQuyetDinhPheDuyet,
             DanhSachNguonVon = [.. entity.DuAnNguonVons?.Select(nguonVon => nguonVon.RightId) ?? []],
             DonViPhoiHopIds = [.. entity.DuAnChiuTrachNhiemXuLys?.Where(e => e.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop).Select(chiuTrachNhiemXuLy => chiuTrachNhiemXuLy.RightId) ?? []],
             DuToans = [.. entity.DuToans?.Where(e => !e.IsDeleted)
@@ -137,11 +143,27 @@ public static class DuAnMappings {
     }
     public static DuAnDto ToDto(this DuAn entity, List<TepDinhKem>? files = null) {
         var dto = entity.ToDto();
-        if (dto.DuToans != null && dto.DuToans.Count != 0 && files != null && files.Count != 0) {
+        if (files == null || files.Count == 0) return dto;
+
+        // Attach DuToan files
+        if (dto.DuToans != null && dto.DuToans.Count != 0) {
             foreach (var duToan in dto.DuToans) {
                 duToan.DanhSachTepDinhKem = files.Where(f => f.GroupId == duToan.Id.ToString()).ToDtos();
             }
         }
+
+        // Attach KeHoachVon files
+        if (dto.KeHoachVons != null && dto.KeHoachVons.Count != 0) {
+            foreach (var khv in dto.KeHoachVons) {
+                khv.DanhSachTepDinhKem = files.Where(f => f.GroupId == khv.Id.ToString()).ToDtos();
+            }
+        }
+
+        // Attach DuAn decision files
+        dto.DanhSachTepQuyetDinh = files
+            .Where(f => f.GroupId == entity.Id.ToString() && f.GroupType == nameof(EGroupType.QuyetDinhPheDuyetNhiemVu))
+            .ToDtos();
+
         return dto;
     }
 }

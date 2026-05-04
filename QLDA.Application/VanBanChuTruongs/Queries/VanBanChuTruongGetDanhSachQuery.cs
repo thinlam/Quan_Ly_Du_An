@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
+using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.VanBanChuTruongs.DTOs;
 
@@ -17,10 +19,16 @@ internal class
     PaginatedList<VanBanChuTruongDto>> {
     private readonly IRepository<VanBanChuTruong, Guid> VanBanChuTruong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAn, Guid> _duAn;
+    private readonly IUserProvider _userProvider;
+    private readonly IPolicyProvider _policyProvider;
 
     public VanBanChuTruongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         VanBanChuTruong = serviceProvider.GetRequiredService<IRepository<VanBanChuTruong, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
     }
 
 
@@ -29,6 +37,7 @@ internal class
         var queryable = VanBanChuTruong.GetQueryableSet().AsNoTracking()
                 .Where(e => !e.IsDeleted)
                 .Where(e => !e.DuAn!.IsDeleted)
+                .ApplyDuAnChildVisibility(_duAn, _userProvider, _policyProvider, e => e.DuAnId)
                 .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
                 .WhereGlobalFilter(

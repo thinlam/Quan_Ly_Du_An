@@ -39,7 +39,10 @@ public static class PheDuyetDuToanMappings {
             NguoiKy = entity.NguoiKy,
             ChucVuId = entity.ChucVuId,
             GiaTriDuThau = entity.GiaTriDuThau,
-            TrichYeu = entity.TrichYeu
+            TrichYeu = entity.TrichYeu,
+            TrangThaiId = entity.TrangThaiId,
+            NguoiXuLyId = entity.NguoiXuLyId,
+            NguoiGiaoViecId = entity.NguoiGiaoViecId
         };
     }
 }

@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Application.KeHoachVons.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.DuAns.DTOs;
 
@@ -185,4 +186,20 @@ public class DuAnDto : IHasKey<Guid> {
     /// Khái toán kinh phí
     /// </summary>
     public decimal? KhaiToanKinhPhi { get; set; }
+
+    /// <summary>
+    /// Số quyết định phê duyệt nhiệm vụ và dự toán kinh phí
+    /// </summary>
+    public string? SoQuyetDinhPheDuyet { get; set; }
+
+    /// <summary>
+    /// Ngày ra quyết định phê duyệt nhiệm vụ và dự toán kinh phí
+    /// </summary>
+    public DateTimeOffset? NgayQuyetDinhPheDuyet { get; set; }
+
+    /// <summary>
+    /// Danh sách tệp đính kèm quyết định phê duyệt
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<TepDinhKemDto>? DanhSachTepQuyetDinh { get; set; }
 }

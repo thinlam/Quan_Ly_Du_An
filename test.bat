@@ -8,6 +8,7 @@
 ::   test.bat duan               - Run DuAn tests
 ::   test.bat goithau            - Run GoiThau tests
 ::   test.bat hopdong            - Run HopDong tests
+::   test.bat pheduyetdutoan     - Run PheDuyetDuToan tests
 ::   test.bat detailed           - Run all tests with detailed output
 
 set PROJECT=QLDA.Tests\QLDA.Tests.csproj
@@ -18,6 +19,7 @@ if "%~1"=="int" goto integration
 if "%~1"=="duan" goto duan
 if "%~1"=="goithau" goto goithau
 if "%~1"=="hopdong" goto hopdong
+if "%~1"=="pheduyetdutoan" goto pheduyetdutoan
 if "%~1"=="detailed" goto detailed
 goto filter
 
@@ -43,6 +45,10 @@ goto end
 
 :hopdong
 dotnet test %PROJECT% --filter "HopDongControllerTests" --logger "console;verbosity=detailed"
+goto end
+
+:pheduyetdutoan
+dotnet test %PROJECT% --filter "PheDuyetDuToanControllerTests" --logger "console;verbosity=detailed"
 goto end
 
 :detailed

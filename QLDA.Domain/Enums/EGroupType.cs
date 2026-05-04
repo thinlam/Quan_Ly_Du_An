@@ -32,7 +32,15 @@ public enum EGroupType {
     DangTaiKeHoachLcntLenMang,
     BaoCaoBaoHanhSanPham,
     BaoCaoBanGiaoSanPham,
-    DuToan
+    DuToan,
+    /// <summary>
+    /// Tệp đính kèm của Kế hoạch vốn
+    /// </summary>
+    KeHoachVon,
+    /// <summary>
+    /// Tệp quyết định phê duyệt nhiệm vụ và dự toán kinh phí của Dự án
+    /// </summary>
+    QuyetDinhPheDuyetNhiemVu
 
 
 }

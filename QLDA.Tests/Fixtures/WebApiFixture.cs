@@ -21,7 +21,12 @@ public interface IWebApiFixture
     Guid SeededDuAnId { get; }
     Guid SeededGoiThauId { get; }
     Guid SeededHopDongId { get; }
+    Guid SeededPheDuyetDuToanId { get; }
     HttpClient CreateAuthenticatedClient();
+    HttpClient CreateBgdClient();
+    HttpClient CreateKhTcClient();
+    HttpClient CreateChuyenVienClient(long phongBanId = 100);
+    Task<Guid> CreatePheDuyetDuToanAsync();
 }
 
 public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWebApiFixture
@@ -34,6 +39,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     public Guid SeededDuAnId { get; private set; }
     public Guid SeededGoiThauId { get; private set; }
     public Guid SeededHopDongId { get; private set; }
+    public Guid SeededPheDuyetDuToanId { get; private set; }
 
     private const string TestJwtKey = "12345678901234567890123456789012";
 
@@ -131,6 +137,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
             IsDeleted = false,
             Level = 0,
             Path = "",
+            NgayBatDau = DateTime.UtcNow,
         };
         _seedDb.Set<DuAn>().Add(duAn);
         await _seedDb.SaveChangesAsync();
@@ -158,21 +165,47 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
         _seedDb.Set<HopDong>().Add(hopDong);
         await _seedDb.SaveChangesAsync();
 
+        var pheDuyetDuToan = new PheDuyetDuToan
+        {
+            DuAnId = duAn.Id,
+            TrichYeu = "Test Phê duyệt dự toán",
+            So = "PDDT_TEST_001",
+            TrangThaiId = 1, // Dự thảo
+            CreatedAt = DateTimeOffset.UtcNow,
+            IsDeleted = false,
+        };
+        _seedDb.Set<PheDuyetDuToan>().Add(pheDuyetDuToan);
+        await _seedDb.SaveChangesAsync();
+
         SeededDuAnId = duAn.Id;
         SeededGoiThauId = goiThau.Id;
         SeededHopDongId = hopDong.Id;
+        SeededPheDuyetDuToanId = pheDuyetDuToan.Id;
     }
 
-    public string GenerateTestToken()
+    private string GenerateToken(long userId = 1, long donViId = 1, long phongBanId = 1, string[]? roles = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestJwtKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimConstants.Roles, RoleConstants.QLDA_QuanTri),
-            new Claim(ClaimConstants.Roles, RoleConstants.QLDA_TatCa),
+            new("UserId", userId.ToString()),
+            new("UnitId", donViId.ToString()),
+            new("PhongBanId", phongBanId.ToString()),
         };
+
+        if (roles != null)
+        {
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimConstants.Roles, role));
+        }
+        else
+        {
+            // Default: admin roles
+            claims.Add(new Claim(ClaimConstants.Roles, RoleConstants.QLDA_QuanTri));
+            claims.Add(new Claim(ClaimConstants.Roles, RoleConstants.QLDA_TatCa));
+        }
 
         var token = new JwtSecurityToken(
             issuer: "QLDA",
@@ -185,12 +218,73 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public HttpClient CreateAuthenticatedClient()
+    private HttpClient CreateClientWithToken(string token)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", GenerateTestToken());
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         return client;
+    }
+
+    public string GenerateTestToken()
+    {
+        return GenerateToken();
+    }
+
+    public HttpClient CreateAuthenticatedClient()
+    {
+        return CreateClientWithToken(GenerateToken());
+    }
+
+    /// <summary>
+    /// Client with BGĐ role - can approve/reject (Duyệt/Trả lại)
+    /// </summary>
+    public HttpClient CreateBgdClient()
+    {
+        var token = GenerateToken(userId: 10, phongBanId: 1, roles: [RoleConstants.QLDA_QuanTri, "BGĐ"]);
+        return CreateClientWithToken(token);
+    }
+
+    /// <summary>
+    /// Client with KH-TC department (PhongBanId=219) - can submit (Trình)
+    /// </summary>
+    public HttpClient CreateKhTcClient()
+    {
+        var token = GenerateToken(userId: 20, phongBanId: 219);
+        return CreateClientWithToken(token);
+    }
+
+    /// <summary>
+    /// Client with ChuyenVien role - restricted to department-scoped visibility
+    /// </summary>
+    public HttpClient CreateChuyenVienClient(long phongBanId = 100)
+    {
+        var token = GenerateToken(userId: 30, phongBanId: phongBanId, roles: [RoleConstants.QLDA_ChuyenVien]);
+        return CreateClientWithToken(token);
+    }
+
+    /// <summary>
+    /// Creates a fresh PheDuyetDuToan in Dự thảo status for test isolation.
+    /// </summary>
+    public async Task<Guid> CreatePheDuyetDuToanAsync()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(_connection)
+            .Options;
+        using var db = new SqliteAppDbContext(options);
+
+        var entity = new PheDuyetDuToan
+        {
+            DuAnId = SeededDuAnId,
+            TrichYeu = $"Test PDDT {Guid.NewGuid():N}",
+            So = $"PDDT_{Guid.NewGuid():N}",
+            TrangThaiId = 1, // Dự thảo
+            CreatedAt = DateTimeOffset.UtcNow,
+            IsDeleted = false,
+        };
+        db.Set<PheDuyetDuToan>().Add(entity);
+        await db.SaveChangesAsync();
+        return entity.Id;
     }
 }
 
