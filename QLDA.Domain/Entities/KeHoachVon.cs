@@ -1,3 +1,5 @@
+using QLDA.Domain.Entities.DanhMuc;
+
 namespace QLDA.Domain.Entities;
 
 /// <summary>
@@ -13,7 +15,7 @@ public class KeHoachVon : Entity<Guid>, IAggregateRoot {
 	/// <summary>
 	/// ID nguồn vốn (Optional FK to funding source)
 	/// </summary>
-	public Guid? NguonVonId { get; set; }
+	public int? NguonVonId { get; set; }
 
 	/// <summary>
 	/// Năm kế hoạch
@@ -52,5 +54,10 @@ public class KeHoachVon : Entity<Guid>, IAggregateRoot {
 	/// </summary>
 	public DuAn? DuAn { get; set; }
 
-	#endregion
+		/// <summary>
+		/// Nguồn vốn
+		/// </summary>
+		public DanhMucNguonVon? NguonVon { get; set; }
+
+		#endregion
 }

@@ -8,7 +8,7 @@ namespace QLDA.Application.KeHoachVons.DTOs;
 /// </summary>
 public class KeHoachVonUpdateModel : IHasKey<Guid?>, IMayHaveTepDinhKemInsertOrUpdateDto {
     public Guid? Id { get; set; }
-    public Guid? NguonVonId { get; set; }
+    public int? NguonVonId { get; set; }
     public int Nam { get; set; }
     public decimal SoVon { get; set; }
     public decimal? SoVonDieuChinh { get; set; }

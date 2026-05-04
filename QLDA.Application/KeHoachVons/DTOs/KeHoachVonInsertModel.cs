@@ -7,7 +7,7 @@ namespace QLDA.Application.KeHoachVons.DTOs;
 /// Input tạo mới kế hoạch vốn
 /// </summary>
 public class KeHoachVonInsertModel : IMayHaveTepDinhKemInsertDto {
-    public Guid? NguonVonId { get; set; }
+    public int? NguonVonId { get; set; }
     public int Nam { get; set; }
     public decimal SoVon { get; set; }
     public decimal? SoVonDieuChinh { get; set; }

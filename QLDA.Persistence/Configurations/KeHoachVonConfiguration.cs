@@ -30,5 +30,10 @@ public class KeHoachVonConfiguration : IEntityTypeConfiguration<KeHoachVon> {
             .WithMany(e => e.KeHoachVons)
             .HasForeignKey(e => e.DuAnId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(e => e.NguonVon)
+            .WithMany()
+            .HasForeignKey(e => e.NguonVonId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
