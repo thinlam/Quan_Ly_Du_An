@@ -91,11 +91,10 @@ public class HopDongController(IServiceProvider serviceProvider) : AggregateRoot
 
         var entity = await Mediator.Send(new HopDongInsertCommand(insertDto), cancellationToken);
         List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KetQuaTrungThau) ?? []];
-        if (files.Count != 0)
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                GroupId = entity.Id.ToString(),
-                Entities = files
-            }, cancellationToken);
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        }, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
         return ResultApi.Ok(new { entity.Id });
@@ -125,11 +124,10 @@ public class HopDongController(IServiceProvider serviceProvider) : AggregateRoot
         var entity = await Mediator.Send(new HopDongUpdateCommand(updateDto), cancellationToken);
 
         List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KetQuaTrungThau) ?? []];
-        if (files.Count != 0)
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                GroupId = entity.Id.ToString(),
-                Entities = files
-            }, cancellationToken);
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);

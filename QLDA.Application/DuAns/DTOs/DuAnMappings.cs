@@ -164,6 +164,11 @@ public static class DuAnMappings {
             .Where(f => f.GroupId == entity.Id.ToString() && f.GroupType == nameof(EGroupType.QuyetDinhPheDuyetNhiemVu))
             .ToDtos();
 
+        // Attach DuAn general files (GroupId == DuAn.Id, excluding decision files)
+        // dto.DanhSachTepDinhKem = files
+        //     .Where(f => f.GroupId == entity.Id.ToString() && f.GroupType != nameof(EGroupType.QuyetDinhPheDuyetNhiemVu))
+        //     .ToDtos();
+
         return dto;
     }
 }

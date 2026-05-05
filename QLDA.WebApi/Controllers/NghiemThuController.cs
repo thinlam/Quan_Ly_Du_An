@@ -82,11 +82,10 @@ public class NghiemThuController : AggregateRootController {
         var entity = await Mediator.Send(new NghiemThuInsertCommand(insertDto), cancellationToken);
 
         List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.NghiemThu) ?? []];
-        if (files.Count != 0)
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                GroupId = entity.Id.ToString(),
-                Entities = files
-            }, cancellationToken);
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -114,11 +113,10 @@ public class NghiemThuController : AggregateRootController {
         var entity = await Mediator.Send(new NghiemThuUpdateCommand(updateDto), cancellationToken);
 
         List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.NghiemThu) ?? []];
-        if (files.Count != 0)
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                GroupId = entity.Id.ToString(),
-                Entities = files
-            }, cancellationToken);
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
