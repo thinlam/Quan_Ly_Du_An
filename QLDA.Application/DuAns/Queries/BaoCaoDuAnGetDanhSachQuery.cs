@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
-using BuildingBlocks.Domain.Interfaces;
-using Dapper;
 
 namespace QLDA.Application.DuAns.Queries;
 
