@@ -202,4 +202,10 @@ public class DuAnDto : IHasKey<Guid> {
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<TepDinhKemDto>? DanhSachTepQuyetDinh { get; set; }
+
+    /// <summary>
+    /// Danh sách tệp đính kèm của dự án
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

@@ -28,35 +28,7 @@ namespace QLDA.WebApi.Controllers {
         [ProducesResponseType<ResultApi<DuAnDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         public async Task<ResultApi> Get(Guid id) {
-            var entity = await Mediator.Send(new DuAnGetQuery() {
-                Id = id,
-                ThrowIfNull = true,
-                IsNoTracking = true,
-                IncludeNguonVon = true,
-                IncludeChiuTrachNhiemXuLy = true,
-                IncludeDuToan = true,
-                IncludeKeHoachVon = true,
-            });
-
-            // Collect all GroupIds for file lookup
-            var groupIds = new List<string>();
-
-            if (entity.DuToans != null) {
-                groupIds.AddRange(entity.DuToans.Where(dt => !dt.IsDeleted).Select(dt => dt.Id.ToString()));
-            }
-            if (entity.KeHoachVons != null) {
-                groupIds.AddRange(entity.KeHoachVons.Where(kh => !kh.IsDeleted).Select(kh => kh.Id.ToString()));
-            }
-            // Include DuAn.Id for decision files
-            groupIds.Add(entity.Id.ToString());
-
-            List<TepDinhKem>? files = null;
-            if (groupIds.Count != 0) {
-                files = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-                    GroupId = [.. groupIds]
-                });
-            }
-            return ResultApi.Ok(entity.ToDto(files));
+            return ResultApi.Ok(await GetDuAnWithFiles(id, default));
         }
 
         /// <summary>
@@ -218,9 +190,7 @@ namespace QLDA.WebApi.Controllers {
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return ResultApi.Ok(new {
-                entity.Id
-            });
+            return ResultApi.Ok(await GetDuAnWithFiles(entity.Id, cancellationToken));
         }
 
         /// <summary>
@@ -251,46 +221,64 @@ namespace QLDA.WebApi.Controllers {
 
             // Xử lý DuToan và TepDinhKem tương tự như trong hàm tạo mới
             List<(DuToan, List<TepDinhKem>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
-            if (duToans.Count != 0) {
 
-                // Cập nhật dự toán và files
-                foreach (var (duToan, files) in duToans) {
-                    // Thêm hoặc cập nhật files cho mỗi dự toán
+            // Cập nhật dự toán và files
+            foreach (var (duToan, files) in duToans) {
+                // Thêm hoặc cập nhật files cho mỗi dự toán
+                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                    GroupId = duToan.Id.ToString(),
+                    Entities = files,
+                }, cancellationToken);
+            }
+
+            // Handle KeHoachVon files
+            if (updateDto.KeHoachVons != null) {
+                foreach (var khvModel in updateDto.KeHoachVons) {
+                    var (khv, khvFiles) = khvModel.ToEntityWithFiles(entity.Id);
                     await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                        GroupId = duToan.Id.ToString(),
-                        Entities = files,
+                        GroupId = khv.Id.ToString(),
+                        Entities = khvFiles,
                     }, cancellationToken);
                 }
             }
 
-            // Handle KeHoachVon files
-            if (updateDto.KeHoachVons != null && updateDto.KeHoachVons.Count != 0) {
-                foreach (var khvModel in updateDto.KeHoachVons) {
-                    if (khvModel.DanhSachTepDinhKem?.Count > 0) {
-                        var (khv, khvFiles) = khvModel.ToEntityWithFiles(entity.Id);
-                        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                            GroupId = khv.Id.ToString(),
-                            Entities = khvFiles,
-                        }, cancellationToken);
-                    }
-                }
-            }
-
-            // Handle DuAn decision files
-            if (updateDto.DanhSachTepQuyetDinh?.Count > 0) {
-                var decisionFiles = updateDto.DanhSachTepQuyetDinh.ToEntities(
-                    groupId: entity.Id,
-                    groupType: EGroupType.QuyetDinhPheDuyetNhiemVu
-                );
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-                    GroupId = entity.Id.ToString(),
-                    Entities = [.. decisionFiles],
-                }, cancellationToken);
-            }
+            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                GroupId = entity.Id.ToString(),
+                Entities = [.. updateDto.DanhSachTepQuyetDinh?.ToEntities(entity.Id, EGroupType.QuyetDinhPheDuyetNhiemVu) ?? []],
+            }, cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await unitOfWork.CommitTransactionAsync(cancellationToken);
-            return ResultApi.Ok(entity.ToDto());
+            return ResultApi.Ok(await GetDuAnWithFiles(entity.Id, cancellationToken));
+        }
+
+        private async Task<DuAnDto> GetDuAnWithFiles(Guid duAnId, CancellationToken cancellationToken) {
+            var entity = await Mediator.Send(new DuAnGetQuery() {
+                Id = duAnId,
+                ThrowIfNull = true,
+                IsNoTracking = true,
+                IncludeNguonVon = true,
+                IncludeChiuTrachNhiemXuLy = true,
+                IncludeDuToan = true,
+                IncludeKeHoachVon = true,
+            }, cancellationToken);
+
+            var groupIds = new List<string>();
+            if (entity.DuToans != null) {
+                groupIds.AddRange(entity.DuToans.Select(dt => dt.Id.ToString()));
+            }
+            if (entity.KeHoachVons != null) {
+                groupIds.AddRange(entity.KeHoachVons.Select(kh => kh.Id.ToString()));
+            }
+            groupIds.Add(entity.Id.ToString());
+
+            List<TepDinhKem>? files = null;
+            if (groupIds.Count != 0) {
+                files = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
+                    GroupId = [.. groupIds]
+                }, cancellationToken);
+            }
+            return entity.ToDto(files);
         }
     }
 }
