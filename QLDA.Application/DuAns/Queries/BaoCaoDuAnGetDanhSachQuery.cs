@@ -77,7 +77,8 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
                 GiaTriGiaiNgan = _thanhToan.GetQueryableSet()
                     .Where(x => !x.IsDeleted && x.DuAnId == e.Id)
                     .Sum(x => (long?)x.GiaTri) ?? 0,
-                SoQuyetDinhDuToan= e.SoQuyetDinhPheDuyet,
+                SoQuyetDinhPheDuyet= e.SoQuyetDinhPheDuyet,
+                NgayQuyetDinhPheDuyet = e.NgayQuyetDinhPheDuyet,
                 DuToanBanDau = e.DuToans.OrderBy(x => x.Index).Select(x => x.SoDuToan) .FirstOrDefault(),
                 DuToanDieuChinh = e.DuToans.OrderByDescending(x => x.Index) .Select(x => x.SoDuToan).FirstOrDefault(),
                 HinhThucDauTuId = e.HinhThucDauTuId,
