@@ -15,6 +15,8 @@ public static class PheDuyetDuToanMappingConfiguration {
             SoVanBan = entity.So,
             GiaTriDuThau = entity.GiaTriDuThau,
             TrichYeu = entity.TrichYeu,
+            TrangThaiId = entity.TrangThaiId,
+            TenTrangThai = entity.TrangThai != null ? entity.TrangThai.Ten : null,
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 // .Where(o => o.GroupType == nameof(EGroupType.PheDuyetDuToan))
                 .Select(o => o.ToModel()).ToList()

@@ -28,21 +28,4 @@ public static class PheDuyetDuToanMappings {
             TrichYeu = dto.TrichYeu
         };
     }
-
-    public static PheDuyetDuToanDto ToDto(this PheDuyetDuToan entity) {
-        return new PheDuyetDuToanDto {
-            Id = entity.Id,
-            DuAnId = entity.DuAnId,
-            BuocId = entity.BuocId,
-            SoVanBan = entity.So,
-            NgayKy = entity.NgayKy,
-            NguoiKy = entity.NguoiKy,
-            ChucVuId = entity.ChucVuId,
-            GiaTriDuThau = entity.GiaTriDuThau,
-            TrichYeu = entity.TrichYeu,
-            TrangThaiId = entity.TrangThaiId,
-            NguoiXuLyId = entity.NguoiXuLyId,
-            NguoiGiaoViecId = entity.NguoiGiaoViecId
-        };
-    }
 }

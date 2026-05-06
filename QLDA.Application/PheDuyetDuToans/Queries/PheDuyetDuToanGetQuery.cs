@@ -20,6 +20,7 @@ internal class PheDuyetDuToanGetQueryHandler(IServiceProvider serviceProvider)
     public async Task<PheDuyetDuToan> Handle(PheDuyetDuToanGetQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = PheDuyetDuToan.GetOrderedSet()
+            .Include(e => e.TrangThai)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

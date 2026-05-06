@@ -50,6 +50,9 @@ internal class
                 SoVanBan = e.So,
                 GiaTriDuThau = e.GiaTriDuThau,
                 TrichYeu = e.TrichYeu,
+                TrangThaiId = e.TrangThaiId,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
