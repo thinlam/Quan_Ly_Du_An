@@ -94,7 +94,7 @@ internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHi
                         ThoiGianBatDauToChucLuaChonNhaThau = e.ThoiGianBatDauToChucLuaChonNhaThau,
                     })
                     .ToListAsync(cancellationToken);
-        return PaginatedList<GoiThauDto>.Create(entities,  request.SearchDto.PageIndex, request.SearchDto.PageSize);  
+        return PaginatedList<GoiThauDto>.Create(entities,  request.SearchDto.Skip(), request.SearchDto.Take());  
     }
 
 }
