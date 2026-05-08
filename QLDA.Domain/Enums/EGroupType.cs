@@ -42,6 +42,7 @@ public enum EGroupType {
     /// </summary>
     QuyetDinhPheDuyetNhiemVu,
     HoSoDeXuatCapDoCntt,
+    HoSoMoiThauDienTu,
 
 
 }
