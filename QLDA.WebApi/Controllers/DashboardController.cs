@@ -111,14 +111,26 @@ public class DashboardController(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    /// Thống kê giải ngân theo nguồn vốn
+    /// Thống kê giải ngân theo nguồn vốn theo năm
     /// </summary>
-    /// <param name="duAnId">ID dự án (bắt buộc)</param>
+    /// <param name="nam">Năm cần thống kê (bắt buộc)</param>
     /// <returns>Danh sách giải ngân theo nguồn vốn</returns>
     [HttpGet("api/thong-ke/giai-ngan-theo-nguon-von")]
     [ProducesResponseType<ResultApi<List<DashboardGiaiNganTheoNguonVonDto>>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> GetGiaiNganTheoNguonVon([FromQuery] Guid duAnId) {
-        var result = await Mediator.Send(new DashboardGetGiaiNganTheoNguonVonQuery(duAnId));
+    public async Task<ResultApi> GetGiaiNganTheoNguonVon([FromQuery] int nam) {
+        var result = await Mediator.Send(new DashboardGetGiaiNganTheoNguonVonQuery(nam));
+        return ResultApi.Ok(result);
+    }
+
+    /// <summary>
+    /// Chi tiết giải ngân theo năm
+    /// </summary>
+    /// <param name="nam">Năm cần thống kê (bắt buộc)</param>
+    /// <returns>Danh sách chi tiết giải ngân</returns>
+    [HttpGet("api/thong-ke/chi-tiet-giai-ngan")]
+    [ProducesResponseType<ResultApi<List<DashboardChiTietGiaiNganDto>>>(StatusCodes.Status200OK)]
+    public async Task<ResultApi> GetChiTietGiaiNgan([FromQuery] int nam) {
+        var result = await Mediator.Send(new DashboardGetChiTietGiaiNganQuery(nam));
         return ResultApi.Ok(result);
     }
 
