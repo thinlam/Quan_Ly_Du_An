@@ -26,7 +26,7 @@ internal class DashboardTienDoGiaiNganNguonVonQueryHandler(IServiceProvider serv
 
         const string sql = """
         SELECT
-            SUM(tt.GiaTri) AS GiaTriGiaiNgan,
+            (SUM(tt.GiaTri)/1000000 ) AS GiaTriGiaiNgan,
             gt.NguonVonId,
             d.LoaiDuAnId,
             d.LoaiDuAnTheoNamId,
