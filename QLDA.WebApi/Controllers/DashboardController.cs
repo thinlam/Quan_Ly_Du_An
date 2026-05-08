@@ -123,14 +123,15 @@ public class DashboardController(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    /// Chi tiết giải ngân theo năm
+    /// Chi tiết giải ngân theo năm và nguồn vốn
     /// </summary>
     /// <param name="nam">Năm cần thống kê (bắt buộc)</param>
+    /// <param name="nguonVonId">Lọc theo nguồn vốn (tùy chọn)</param>
     /// <returns>Danh sách chi tiết giải ngân</returns>
     [HttpGet("api/thong-ke/chi-tiet-giai-ngan")]
     [ProducesResponseType<ResultApi<List<DashboardChiTietGiaiNganDto>>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> GetChiTietGiaiNgan([FromQuery] int nam) {
-        var result = await Mediator.Send(new DashboardGetChiTietGiaiNganQuery(nam));
+    public async Task<ResultApi> GetChiTietGiaiNgan([FromQuery] int nam, [FromQuery] int? nguonVonId = null) {
+        var result = await Mediator.Send(new DashboardGetChiTietGiaiNganQuery(nam, nguonVonId));
         return ResultApi.Ok(result);
     }
 
