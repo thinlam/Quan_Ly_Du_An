@@ -302,7 +302,7 @@ public class HoSoMoiThauDienTuDto {
     public Guid Id { get; set; }
     public Guid? DuAnId { get; set; }
     public string? TenDuAn { get; set; }
-    public Guid? BuocId { get; set; }
+    public int? BuocId { get; set; }
     public string? TenBuoc { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }
     public string? TenHinhThucLuaChonNhaThau { get; set; }
@@ -599,7 +599,7 @@ public class HoSoMoiThauDienTuModel : IHasKey<Guid?>, IMustHaveId<Guid>,
     }
 
     public Guid? DuAnId { get; set; }
-    public Guid? BuocId { get; set; }
+    public int? BuocId { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }
     public Guid? GoiThauId { get; set; }
     public long? GiaTri { get; set; }
