@@ -28,7 +28,6 @@ internal class PheDuyetGetLichSuQueryHandler : IRequestHandler<PheDuyetGetLichSu
             .WhereIf(request.DuAnId != null, h => h.DuAnId == request.DuAnId)
             .WhereIf(!string.IsNullOrEmpty(request.Type), h => h.EntityName == request.Type)
             .WhereIf(request.EntityId != null, h => h.EntityId == request.EntityId)
-            .OrderByDescending(h => h.NgayXuLy)
             .Select(h => new PheDuyetHistoryDto {
                 Id = h.Id,
                 EntityName = h.EntityName,
@@ -43,6 +42,11 @@ internal class PheDuyetGetLichSuQueryHandler : IRequestHandler<PheDuyetGetLichSu
                 TenDuAn = h.DuAn != null ? h.DuAn.TenDuAn : null
             });
 
-        return await query.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+        // Sort client-side (SQLite can't OrderBy DateTimeOffset)
+        var items = (await query.ToListAsync(cancellationToken))
+            .OrderByDescending(h => h.NgayXuLy)
+            .ToList();
+
+        return new PaginatedList<PheDuyetHistoryDto>(items.Skip(request.Skip()).Take(request.Take()).ToList(), items.Count, request.Skip(), request.Take());
     }
 }

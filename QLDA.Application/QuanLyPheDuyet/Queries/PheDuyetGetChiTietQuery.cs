@@ -30,10 +30,11 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
 
-        var lichSu = await _historyRepo.GetQueryableSet()
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy bản ghi phê duyệt");
+
+        var lichSu = (await _historyRepo.GetQueryableSet()
             .Include(h => h.TrangThai)
             .Where(h => h.EntityId == request.Id && h.EntityName == request.Type)
-            .OrderByDescending(h => h.NgayXuLy)
             .Select(h => new PheDuyetHistoryDto {
                 Id = h.Id,
                 EntityName = h.EntityName,
@@ -46,7 +47,9 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 NoiDung = h.NoiDung,
                 NgayXuLy = h.NgayXuLy
             })
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken))
+            .OrderByDescending(h => h.NgayXuLy)
+            .ToList();
 
         return new PheDuyetChiTietDto {
             Type = request.Type,

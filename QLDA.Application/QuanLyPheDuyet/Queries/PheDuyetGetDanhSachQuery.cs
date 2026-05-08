@@ -34,13 +34,17 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     }
 
     private async Task<PaginatedList<PheDuyetListItemDto>> GetDuToanItems(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken) {
-        // Subquery: latest history per entity
-        var latestHistory = _historyRepo.GetQueryableSet()
+        // Materialize latest history per entity (client-side for SQLite compat — Max(DateTimeOffset) unsupported)
+        var historyData = await _historyRepo.GetQueryableSet()
             .Where(h => h.EntityName == PheDuyetEntityNames.PheDuyetDuToan)
-            .GroupBy(h => h.EntityId)
-            .Select(g => new { EntityId = g.Key, NgayXuLy = g.Max(x => x.NgayXuLy) });
+            .Select(h => new { h.EntityId, h.NgayXuLy })
+            .ToListAsync(cancellationToken);
 
-        // Main query: join entity + latest history
+        var latestDates = historyData
+            .GroupBy(h => h.EntityId)
+            .ToDictionary(g => g.Key, g => g.Max(x => x.NgayXuLy));
+
+        // Main query
         var query = _duToanRepo.GetQueryableSet().AsNoTracking()
             .Include(e => e.TrangThai)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
@@ -62,13 +66,15 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
                 TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
-                NgayXuLyMoiNhat = latestHistory
-                    .Where(h => h.EntityId == e.Id)
-                    .Select(h => (DateTimeOffset?)h.NgayXuLy)
-                    .FirstOrDefault()
-            })
-            .OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue);
+            });
 
-        return await query.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+        var items = await query.ToListAsync(cancellationToken);
+
+        // Merge latest dates + sort client-side (SQLite can't OrderBy DateTimeOffset)
+        foreach (var item in items)
+            item.NgayXuLyMoiNhat = latestDates.GetValueOrDefault(item.Id);
+
+        var sorted = items.OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue).ToList();
+        return new PaginatedList<PheDuyetListItemDto>(sorted.Skip(request.Skip()).Take(request.Take()).ToList(), sorted.Count, request.Skip(), request.Take());
     }
 }
