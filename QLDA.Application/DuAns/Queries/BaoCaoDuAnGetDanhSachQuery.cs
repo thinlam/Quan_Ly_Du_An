@@ -55,6 +55,9 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
         if (search.LoaiDuAnId > 0)
             query = query.Where(e => e.LoaiDuAnId == search.LoaiDuAnId);
 
+        if (search.DonViPhuTrachChinhId > 0)
+            query = query.Where(e => e.DonViPhuTrachChinhId == search.DonViPhuTrachChinhId);
+
         if (search.HinhThucDauTuId > 0)
             query = query.Where(e => e.HinhThucDauTuId == search.HinhThucDauTuId);
         var totalCount = await query.CountAsync();  
