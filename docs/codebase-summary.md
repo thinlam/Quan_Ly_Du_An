@@ -29,6 +29,8 @@ The solution consists of 5 main projects following Clean Architecture:
 
 ### Persistence Layer
 - **Context**: AppDbContext implementing IUnitOfWork
+- **Dual Provider**: SQL Server (production) + SQLite (dev/testing) via `AddPersistenceSqlite()`
+- **SQLite**: `SqliteAppDbContext` clears SQL Server-specific defaults for SQLite compatibility
 - **Configuration**: AggregateRootConfiguration pattern with Fluent API
 - **Migrations**: Single squashed migration (20260424043806_Init.cs)
 - **Seed Data**: For DanhMuc tables (LoaiDuAn, TrangThaiDuAn)
@@ -47,7 +49,7 @@ The solution consists of 5 main projects following Clean Architecture:
 
 ## Technology Stack
 - **Framework**: .NET 8.0, ASP.NET Core Web API
-- **Database**: SQL Server + EF Core + Dapper
+- **Database**: SQL Server (production) + SQLite (dev/testing) + EF Core + Dapper
 - **Patterns**: CQRS, Clean Architecture, Repository + Unit of Work
 - **Tools**: MediatR, FluentValidation, AutoMapper, JWT
 - **File Processing**: Aspose.Cells for Excel operations

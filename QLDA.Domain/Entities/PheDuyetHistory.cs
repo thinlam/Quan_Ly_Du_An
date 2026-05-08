@@ -3,10 +3,11 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Domain.Entities;
 
 /// <summary>
-/// Lịch sử phê duyệt nội dung trình duyệt
+/// Lịch sử phê duyệt dùng chung (polymorphic) — thay thế per-entity history tables
 /// </summary>
-public class PheDuyetNoiDungHistory : Entity<Guid>, IAggregateRoot {
-    public Guid PheDuyetNoiDungId { get; set; }
+public class PheDuyetHistory : Entity<Guid>, IAggregateRoot {
+    public string EntityName { get; set; } = default!;
+    public Guid EntityId { get; set; }
     public Guid DuAnId { get; set; }
 
     /// <summary>
@@ -20,7 +21,6 @@ public class PheDuyetNoiDungHistory : Entity<Guid>, IAggregateRoot {
 
     #region Navigation Properties
 
-    public PheDuyetNoiDung? PheDuyetNoiDung { get; set; }
     public DuAn? DuAn { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
 

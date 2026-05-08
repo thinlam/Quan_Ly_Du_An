@@ -24,7 +24,7 @@ public class PheDuyetDuToanModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTe
     public int? ChucVuId { get; set; }
     public long? GiaTriDuThau { get; set; }
     public string? TrichYeu { get; set; }
-    public int TrangThaiId { get; set; } = 1;
+    public int? TrangThaiId { get; set; }
     public string? TenTrangThai { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 }

@@ -1,0 +1,77 @@
+using Microsoft.EntityFrameworkCore;
+using QLDA.Application.QuanLyPheDuyet.DTOs;
+using QLDA.Domain.Constants;
+
+namespace QLDA.Application.QuanLyPheDuyet.Queries;
+
+/// <summary>
+/// Chi tiet ban ghi pheduyet theo type + id
+/// </summary>
+public record PheDuyetGetChiTietQuery : IRequest<PheDuyetChiTietDto> {
+    public string Type { get; set; } = default!;
+    public Guid Id { get; set; }
+    public bool IsNoTracking { get; set; }
+}
+
+internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTietQuery, PheDuyetChiTietDto> {
+    private readonly IRepository<PheDuyetDuToan, Guid> _duToanRepo;
+    private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
+    private readonly IServiceProvider _serviceProvider;
+
+    public PheDuyetGetChiTietQueryHandler(IServiceProvider serviceProvider) {
+        _serviceProvider = serviceProvider;
+        _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
+        _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+    }
+
+    public async Task<PheDuyetChiTietDto> Handle(PheDuyetGetChiTietQuery request, CancellationToken cancellationToken) {
+        object? entity = request.Type switch {
+            PheDuyetEntityNames.PheDuyetDuToan => await GetDuToanDetail(request.Id, cancellationToken),
+            _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
+        };
+
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy bản ghi phê duyệt");
+
+        var lichSu = (await _historyRepo.GetQueryableSet()
+            .Include(h => h.TrangThai)
+            .Where(h => h.EntityId == request.Id && h.EntityName == request.Type)
+            .Select(h => new PheDuyetHistoryDto {
+                Id = h.Id,
+                EntityName = h.EntityName,
+                EntityId = h.EntityId,
+                DuAnId = h.DuAnId,
+                NguoiXuLyId = h.NguoiXuLyId,
+                TrangThaiId = h.TrangThaiId,
+                MaTrangThai = h.TrangThai != null ? h.TrangThai.Ma : null,
+                TenTrangThai = h.TrangThai != null ? h.TrangThai.Ten : null,
+                NoiDung = h.NoiDung,
+                NgayXuLy = h.NgayXuLy
+            })
+            .ToListAsync(cancellationToken))
+            .OrderByDescending(h => h.NgayXuLy)
+            .ToList();
+
+        return new PheDuyetChiTietDto {
+            Type = request.Type,
+            Id = request.Id,
+            Entity = entity,
+            LichSu = lichSu
+        };
+    }
+
+    private async Task<object?> GetDuToanDetail(Guid id, CancellationToken cancellationToken) {
+        return await _duToanRepo.GetQueryableSet()
+            .Include(e => e.TrangThai)
+            .Include(e => e.ChucVu)
+            .Where(e => e.Id == id)
+            .Select(e => new {
+                e.Id, e.DuAnId, e.BuocId, SoVanBan = e.So, e.NgayKy, e.NguoiKy,
+                e.ChucVuId, e.GiaTriDuThau, e.TrichYeu, e.TrangThaiId,
+                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                e.NguoiXuLyId, e.NguoiGiaoViecId,
+                TenChucVu = e.ChucVu != null ? e.ChucVu.Ten : null
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+}

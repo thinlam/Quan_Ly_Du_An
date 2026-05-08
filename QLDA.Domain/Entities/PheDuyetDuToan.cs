@@ -8,7 +8,7 @@ namespace QLDA.Domain.Entities;
 public class PheDuyetDuToan : VanBanQuyetDinh {
     public int? ChucVuId { get; set; }
     public long? GiaTriDuThau { get; set; }
-    public int TrangThaiId { get; set; } = 1; // Default: Dự thảo
+    public int? TrangThaiId { get; set; }
 
     /// <summary>
     /// USER_MASTER.UserPortalId
@@ -24,7 +24,5 @@ public class PheDuyetDuToan : VanBanQuyetDinh {
 
     public DanhMucChucVu? ChucVu { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
-    public ICollection<PheDuyetDuToanHistory>? Histories { get; set; } = [];
-
     #endregion
 }

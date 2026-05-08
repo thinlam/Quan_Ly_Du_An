@@ -11,7 +11,7 @@ public class AppSettings {
     public long PhongKeToanID { get; set; }
 
     /// <summary>
-    /// ID phòng Hành chính - Tổng hợp (phát hành PheDuyetNoiDung)
+    /// ID phòng Hành chính - Tổng hợp
     /// </summary>
     public long PhongHCTHID { get; set; }
 }

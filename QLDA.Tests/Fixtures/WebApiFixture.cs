@@ -28,7 +28,6 @@ public interface IWebApiFixture {
     HttpClient CreateChuyenVienClient(long phongBanId = 100);
     HttpClient CreateHcthClient();
     Task<Guid> CreatePheDuyetDuToanAsync();
-    Task<Guid> CreatePheDuyetNoiDungAsync(int? trangThaiId = null);
     SqliteConnection GetSqliteConnection();
 }
 
@@ -282,27 +281,6 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     public HttpClient CreateHcthClient() {
         var token = GenerateToken(userId: 40, phongBanId: 300, roles: [RoleConstants.QLDA_HC_TH]);
         return CreateClientWithToken(token);
-    }
-
-    /// <summary>
-    /// Creates a fresh PheDuyetNoiDung in specified status for test isolation.
-    /// </summary>
-    public async Task<Guid> CreatePheDuyetNoiDungAsync(int? trangThaiId = null) {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-        using var db = new SqliteAppDbContext(options);
-
-        var entity = new PheDuyetNoiDung {
-            VanBanQuyetDinhId = SeededVanBanQuyetDinhId,
-            DuAnId = SeededDuAnId,
-            TrangThaiId = trangThaiId,
-            CreatedAt = DateTimeOffset.UtcNow,
-            IsDeleted = false,
-        };
-        db.Set<PheDuyetNoiDung>().Add(entity);
-        await db.SaveChangesAsync();
-        return entity.Id;
     }
 
     public SqliteConnection GetSqliteConnection() => _connection;
