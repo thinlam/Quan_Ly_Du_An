@@ -30,7 +30,7 @@ public class DanhMucTrangThaiPheDuyetConfiguration : AggregateRootConfiguration<
             new DanhMucTrangThaiPheDuyet { Id = 2, Ma = "ĐTr", Ten = "Đã trình", Loai = TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 3, Ma = "ĐD", Ten = "Đã duyệt", Loai = TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 4, Ma = "TL", Ten = "Trả lại", Loai = TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 5, Ma = "LEG", Ten = "Migrated", Loai = TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan, Stt = 0, Used = false, CreatedAt = SeedCreatedAt }
+            new DanhMucTrangThaiPheDuyet { Id = 5, Ma = "LEG", Ten = "Migrated", Loai = TrangThaiPheDuyetCodes.Loai.DungChung, Stt = 0, Used = false, CreatedAt = SeedCreatedAt }
         );
     }
 }
