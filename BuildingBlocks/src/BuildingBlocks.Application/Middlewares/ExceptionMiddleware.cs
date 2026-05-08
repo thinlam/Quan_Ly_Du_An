@@ -27,11 +27,12 @@ public class ExceptionMiddleware(RequestDelegate next)
             {
                 var msg = sqlEx.Number switch
                 {
-                    251 => "Sai kiểu dữ liệu",
-                    515 => "Giá trị không được để trống",
+                    245 => ParseDataTypeConversionError(sqlEx),
+                    251 => ParseDataTypeConversionError(sqlEx),
+                    515 => ParseNotNullError(sqlEx),
                     547 => ParseForeignKeyError(sqlEx),
-                    2601 => "Khoá chính đã tồn tại",
-                    2627 => "Trường dữ liệu trùng lặp",
+                    2601 => ParseDuplicateKeyError(sqlEx),
+                    2627 => ParseUniqueConstraintError(sqlEx),
                     _ => null
                 };
 
@@ -70,6 +71,120 @@ public class ExceptionMiddleware(RequestDelegate next)
         }
 
         return "Khoá ngoại không hợp lệ";
+    }
+
+    /// <summary>
+    /// Parses error 245/251 - data type conversion failure.
+    /// Message: "Conversion failed when converting the [source] value '[val]' to data type [target]."
+    /// </summary>
+    private static string ParseDataTypeConversionError(SqlException sqlEx)
+    {
+        var message = sqlEx.Message;
+
+        // "Conversion failed when converting the varchar value 'abc' to data type int."
+        var match = Regex.Match(message,
+            @"converting the (\w+)\s+value\s+'[^']*'\s+to\s+data\s+type\s+(\w+)",
+            RegexOptions.IgnoreCase);
+
+        if (match.Success)
+        {
+            var sourceType = match.Groups[1].Value;
+            var targetType = match.Groups[2].Value;
+            return $"Sai kiểu dữ liệu: không thể chuyển từ {sourceType} sang {targetType}";
+        }
+
+        return "Sai kiểu dữ liệu";
+    }
+
+    /// <summary>
+    /// Parses error 515 - NULL violation.
+    /// Message: "Cannot insert the value NULL into column '[col]', table '[table]'; column does not allow nulls."
+    /// </summary>
+    private static string ParseNotNullError(SqlException sqlEx)
+    {
+        var message = sqlEx.Message;
+
+        var colMatch = Regex.Match(message, @"column\s+'([^']+)'", RegexOptions.IgnoreCase);
+        var tableMatch = Regex.Match(message, @"table\s+'([^']+)'", RegexOptions.IgnoreCase);
+
+        if (colMatch.Success && tableMatch.Success)
+        {
+            var column = colMatch.Groups[1].Value;
+            var table = ExtractTableName(tableMatch.Groups[1].Value);
+            return $"Giá trị không được để trống: cột [{column}] trong bảng [{table}]";
+        }
+
+        if (colMatch.Success)
+        {
+            return $"Giá trị không được để trống: cột [{colMatch.Groups[1].Value}]";
+        }
+
+        return "Giá trị không được để trống";
+    }
+
+    /// <summary>
+    /// Parses error 2601 - duplicate key with unique index.
+    /// Message: "Cannot insert duplicate key row in object '[schema].[table]' with unique index '[index]'. The duplicate key value is [value]."
+    /// </summary>
+    private static string ParseDuplicateKeyError(SqlException sqlEx)
+    {
+        var message = sqlEx.Message;
+
+        var tableMatch = Regex.Match(message, @"object\s+'([^']+)'", RegexOptions.IgnoreCase);
+        var indexMatch = Regex.Match(message, @"index\s+'([^']+)'", RegexOptions.IgnoreCase);
+        var valueMatch = Regex.Match(message, @"duplicate key value is\s+\(?([^).]+)\)?", RegexOptions.IgnoreCase);
+
+        var table = tableMatch.Success ? ExtractTableName(tableMatch.Groups[1].Value) : null;
+        var index = indexMatch.Success ? indexMatch.Groups[1].Value : null;
+        var value = valueMatch.Success ? valueMatch.Groups[1].Value.Trim() : null;
+
+        if (table != null && index != null)
+            return $"Khoá chính đã tồn tại: bảng [{table}], chỉ mục [{index}]{(value != null ? $", giá trị trùng: {value}" : "")}";
+
+        if (table != null)
+            return $"Khoá chính đã tồn tại: bảng [{table}]{(value != null ? $", giá trị trùng: {value}" : "")}";
+
+        return "Khoá chính đã tồn tại";
+    }
+
+    /// <summary>
+    /// Parses error 2627 - unique constraint or PK violation.
+    /// Message: "Violation of UNIQUE KEY constraint '[constraint]'. Cannot insert duplicate key in object '[table]'. The duplicate key value is (value)."
+    /// or: "Violation of PRIMARY KEY constraint '[PK]'. Cannot insert duplicate key in object '[table]'."
+    /// </summary>
+    private static string ParseUniqueConstraintError(SqlException sqlEx)
+    {
+        var message = sqlEx.Message;
+
+        var constraintMatch = Regex.Match(message, @"constraint\s+'([^']+)'", RegexOptions.IgnoreCase);
+        var tableMatch = Regex.Match(message, @"object\s+'([^']+)'", RegexOptions.IgnoreCase);
+        var valueMatch = Regex.Match(message, @"duplicate key value is\s+\(?([^).]+)\)?", RegexOptions.IgnoreCase);
+
+        var constraint = constraintMatch.Success ? constraintMatch.Groups[1].Value : null;
+        var table = tableMatch.Success ? ExtractTableName(tableMatch.Groups[1].Value) : null;
+        var value = valueMatch.Success ? valueMatch.Groups[1].Value.Trim() : null;
+
+        var isPK = message.Contains("PRIMARY KEY", StringComparison.OrdinalIgnoreCase);
+
+        if (constraint != null && table != null)
+        {
+            var type = isPK ? "khóa chính" : "ràng buộc duy nhất";
+            return $"Trường dữ liệu trùng lặp: {type} [{constraint}] trong bảng [{table}]{(value != null ? $", giá trị trùng: {value}" : "")}";
+        }
+
+        if (table != null)
+            return $"Trường dữ liệu trùng lặp trong bảng [{table}]{(value != null ? $", giá trị trùng: {value}" : "")}";
+
+        return "Trường dữ liệu trùng lặp";
+    }
+
+    /// <summary>
+    /// Extracts clean table name from "[schema].[table]" or "[dbo].[table]" format.
+    /// </summary>
+    private static string ExtractTableName(string rawTable)
+    {
+        var parts = rawTable.Split('.');
+        return parts.Length > 1 ? parts[^1].Trim('[', ']') : rawTable.Trim('[', ']');
     }
 
     private async Task HandleException(HttpContext context, HttpStatusCode statusCode, Exception exception, string? customMessage = null)
