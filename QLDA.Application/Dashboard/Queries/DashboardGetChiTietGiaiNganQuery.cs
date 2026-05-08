@@ -4,9 +4,9 @@ using QLDA.Domain.Interfaces;
 namespace QLDA.Application.Dashboard.Queries;
 
 /// <summary>
-/// Query chi tiết giải ngân theo năm
+/// Query chi tiết giải ngân theo năm và nguồn vốn
 /// </summary>
-public record DashboardGetChiTietGiaiNganQuery(int Nam) : IRequest<List<DashboardChiTietGiaiNganDto>>;
+public record DashboardGetChiTietGiaiNganQuery(int Nam, int? NguonVonId = null) : IRequest<List<DashboardChiTietGiaiNganDto>>;
 
 internal class DashboardGetChiTietGiaiNganQueryHandler(IServiceProvider serviceProvider)
     : IRequestHandler<DashboardGetChiTietGiaiNganQuery, List<DashboardChiTietGiaiNganDto>> {
@@ -16,7 +16,7 @@ internal class DashboardGetChiTietGiaiNganQueryHandler(IServiceProvider serviceP
     public async Task<List<DashboardChiTietGiaiNganDto>> Handle(
         DashboardGetChiTietGiaiNganQuery request, CancellationToken cancellationToken) {
 
-        const string sql = """
+        var sql = """
             SELECT da.TenDuAn,
                 tt.GiaTri AS GiaTriGiaiNgan,
                 hd.GiaTri AS GiaTriHopDong,
@@ -31,7 +31,11 @@ internal class DashboardGetChiTietGiaiNganQueryHandler(IServiceProvider serviceP
             AND YEAR(tt.NgayHoaDon) = @Nam
             """;
 
-        var result = await _dapper.QueryAsync<DashboardChiTietGiaiNganDto>(sql, new { request.Nam });
+        if (request.NguonVonId.HasValue) {
+            sql += " AND gt.NguonVonId = @NguonVonId";
+        }
+
+        var result = await _dapper.QueryAsync<DashboardChiTietGiaiNganDto>(sql, new { request.Nam, request.NguonVonId });
         return [.. result];
     }
 }
