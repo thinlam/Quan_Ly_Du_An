@@ -1,10 +1,11 @@
 # UC22 - Implementation Report: Quản lý phê duyệt (unified)
 
 ## Issue #9459 | Branch: `feature/9459-quan-ly-phe-duyet-noi-dung-trinh-duyet`
+## Status: MERGED via PR #59 (2026-05-08)
 
 ## Summary
 
-Triển khai module QuanLyPheDuyet — màn hình tổng hợp quản lý phê duyệt cho TẤT CẢ các loại entity (PheDuyetDuToan, và mở rộng cho các entity khác). BGĐ duyệt/từ chối/trả lại, P.HC-TH phát hành. Thay thế module PheDuyetNoiDung riêng lẻ bằng unified dispatch pattern.
+Module QuanLyPheDuyet — màn hình tổng hợp quản lý phê duyệt cho TẤT CẢ các loại entity. BGĐ duyệt/từ chối/trả lại, P.HC-TH phát hành. Unified dispatch pattern thay thế module PheDuyetNoiDung riêng lẻ.
 
 ## Architecture
 
@@ -25,7 +26,7 @@ QuanLyPheDuyetController (api/phe-duyet)
 
 ### Unified PheDuyetHistory (Polymorphic)
 
-Replaced per-entity history tables with single `PheDuyetHistory`:
+Single `PheDuyetHistory` thay vì N per-entity history tables:
 
 ```csharp
 public class PheDuyetHistory : Entity<Guid>, IAggregateRoot
@@ -46,19 +47,16 @@ Single entity với `Loai` discriminator:
 
 | Loai | Id | Ma | Ten |
 |------|----|----|-----|
-| DuToan | 1 | DT | Dự thảo |
-| DuToan | 2 | ĐTr | Đã trình |
-| DuToan | 3 | ĐD | Đã duyệt |
-| DuToan | 4 | TL | Trả lại |
-| DuToan | 5 | LEG | Migrated |
+| PheDuyetDuToan | 1 | DT | Dự thảo |
+| PheDuyetDuToan | 2 | ĐTr | Đã trình |
+| PheDuyetDuToan | 3 | ĐD | Đã duyệt |
+| PheDuyetDuToan | 4 | TL | Trả lại |
+| DungChung | 5 | LEG | Migrated |
 
 ### Constants
 
-`TrangThaiPheDuyetCodes` - merged status codes with nested classes:
 - `TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan` - Loai discriminator
 - `TrangThaiPheDuyetCodes.DuToan.*` - DuToan status codes (DT, ĐTr, ĐD, TL, LEG)
-
-`PheDuyetEntityNames` - entity name constants:
 - `PheDuyetEntityNames.PheDuyetDuToan` = "PheDuyetDuToan"
 
 ## Files Created
@@ -66,7 +64,7 @@ Single entity với `Loai` discriminator:
 ### Domain Layer (3 files)
 - `QLDA.Domain/Constants/TrangThaiPheDuyetCodes.cs` - Status codes + Loai constants
 - `QLDA.Domain/Constants/PheDuyetEntityNames.cs` - Entity name constants for polymorphic dispatch
-- `QLDA.Domain/Entities/PheDuyetHistory.cs` - Unified history entity (replaces per-entity history)
+- `QLDA.Domain/Entities/PheDuyetHistory.cs` - Unified history entity
 
 ### Persistence Layer (1 file)
 - `QLDA.Persistence/Configurations/PheDuyetHistoryConfiguration.cs` - Composite index (EntityName, EntityId)
@@ -89,6 +87,12 @@ Single entity với `Loai` discriminator:
 - `QLDA.WebApi/Models/QuanLyPheDuyet/TrinhModel.cs`
 - `QLDA.WebApi/Models/QuanLyPheDuyet/ChuyenPhatHanhModel.cs`
 
+### Migration (1 file)
+- `QLDA.Migrator/Migrations/20260508035251_RefactorPheDuyet.cs` - DB migration
+
+### Tests (1 file)
+- `QLDA.Tests/Integration/QuanLyPheDuyetControllerTests.cs` - 20 integration tests
+
 ## Files Deleted (refactored away)
 
 | Layer | Files | Reason |
@@ -97,7 +101,7 @@ Single entity với `Loai` discriminator:
 | Persistence | `PheDuyetNoiDungConfiguration.cs`, `PheDuyetNoiDungHistoryConfiguration.cs` | No longer needed |
 | Application | `PheDuyetNoiDungs/` (11 files: Commands, Queries, DTOs) | Replaced by QuanLyPheDuyet dispatch pattern |
 | WebApi | `PheDuyetNoiDungController.cs`, `Models/PheDuyetNoiDungs/` (6 files) | Replaced by QuanLyPheDuyetController |
-| Tests | `PheDuyetNoiDungControllerTests.cs` | Controller deleted, no replacement tests yet |
+| Tests | `PheDuyetNoiDungControllerTests.cs` | Controller deleted |
 | Domain | `TrangThaiPheDuyetDuToanCodes.cs`, `TrangThaiPheDuyetNoiDungCodes.cs` | Merged into `TrangThaiPheDuyetCodes.cs` |
 | Domain | `DanhMucTrangThaiPheDuyetDuToan.cs` | Merged into shared `DanhMucTrangThaiPheDuyet` |
 
@@ -119,22 +123,30 @@ Single entity với `Loai` discriminator:
 
 ## QuanLyPheDuyet API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `api/phe-duyet/danh-sach` | GET | Danh sách tất cả phê duyệt (filter by type, duAnId) |
-| `api/phe-duyet/lich-su` | GET | Lịch sử phê duyệt (unified PheDuyetHistory) |
-| `api/phe-duyet/{type}/{id}/chi-tiet` | GET | Chi tiết theo type + id |
-| `api/phe-duyet/{type}/{id}/trinh` | POST | Trình phê duyệt |
-| `api/phe-duyet/{type}/{id}/duyet` | POST | Duyệt (LDDV role required) |
-| `api/phe-duyet/{type}/{id}/tra-lai` | POST | Trả lại (LDDV role required, cần lý do) |
-| `api/phe-duyet/{type}/{id}/chuyen-phat-hanh` | POST | Chuyển P.HC-TH phát hành |
+| Endpoint | Method | Role | Description |
+|----------|--------|------|-------------|
+| `api/phe-duyet/danh-sach` | GET | Any | Danh sách phê duyệt (filter by type, duAnId) |
+| `api/phe-duyet/lich-su` | GET | Any | Lịch sử phê duyệt (unified PheDuyetHistory) |
+| `api/phe-duyet/{type}/{id}/chi-tiet` | GET | Any | Chi tiết theo type + id |
+| `api/phe-duyet/{type}/{id}/trinh` | POST | KH-TC | Trình phê duyệt |
+| `api/phe-duyet/{type}/{id}/duyet` | POST | LDDV | Duyệt (requires LDDV role) |
+| `api/phe-duyet/{type}/{id}/tra-lai` | POST | LDDV | Trả lại (requires LDDV role + lý do) |
+| `api/phe-duyet/{type}/{id}/chuyen-phat-hanh` | POST | HC-TH/LDDV | Chuyển P.HC-TH phát hành |
+
+## PR History
+
+| PR | Date | Description |
+|----|------|-------------|
+| #55 | 2026-05-07 | PheDuyetNoiDung UC22 + FK-based status tracking |
+| #59 | 2026-05-08 | QuanLyPheDuyet unified dispatch + SQLite support + 20 integration tests |
 
 ## Build & Test Results
 
 - **Build**: 0 errors, 0 warnings
-- **Tests**: 42 total, 38 passed, 4 skipped, 0 failed
-- **PheDuyetDuToan tests**: 7 passed (role-based Duyet/TraLai/Trinh)
-- **Skipped tests**: 4 pre-existing (GoiThau/HopDong/VanBan TienDo endpoints, not related)
+- **Tests**: 62 total, 58 passed, 4 skipped, 0 failed
+- **PheDuyetDuToan tests**: 10 passed (role-based Duyet/TraLai/Trinh)
+- **QuanLyPheDuyet tests**: 20 passed (dispatch pattern, all flows)
+- **Skipped tests**: 4 pre-existing (GoiThau/HopDong/VanBan TienDo endpoints)
 
 ## Design Decisions
 
@@ -147,6 +159,6 @@ Single entity với `Loai` discriminator:
 
 ## Unresolved Questions
 
-1. Chưa có QuanLyPheDuyet integration tests (PheDuyetNoiDung tests were deleted, not yet replaced)
+1. Chưa có notification/gửi thông báo kết quả xử lý đến đơn vị trình duyệt
 2. `PhongHCTHID` trong `appsettings.json` đang = 0, cần cấu hình ID phòng HC-TH thực tế
-3. Chưa có notification/gửi thông báo kết quả xử lý đến đơn vị trình duyệt
+3. Chưa mở rộng dispatch cho các entity khác (chỉ có PheDuyetDuToan hiện tại)
