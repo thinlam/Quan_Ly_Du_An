@@ -4,9 +4,9 @@ using QLDA.Domain.Interfaces;
 namespace QLDA.Application.Dashboard.Queries;
 
 /// <summary>
-/// Query thống kê giải ngân theo nguồn vốn cho 1 dự án
+/// Query thống kê giải ngân theo nguồn vốn theo năm
 /// </summary>
-public record DashboardGetGiaiNganTheoNguonVonQuery(Guid DuAnId) : IRequest<List<DashboardGiaiNganTheoNguonVonDto>>;
+public record DashboardGetGiaiNganTheoNguonVonQuery(int Nam) : IRequest<List<DashboardGiaiNganTheoNguonVonDto>>;
 
 internal class DashboardGetGiaiNganTheoNguonVonQueryHandler(IServiceProvider serviceProvider)
     : IRequestHandler<DashboardGetGiaiNganTheoNguonVonQuery, List<DashboardGiaiNganTheoNguonVonDto>> {
@@ -26,11 +26,11 @@ internal class DashboardGetGiaiNganTheoNguonVonQueryHandler(IServiceProvider ser
             JOIN dbo.GoiThau gt ON gt.Id = hd.GoiThauId
             JOIN dbo.DmNguonVon nv ON nv.Id = gt.NguonVonId
             WHERE tt.IsDeleted = 0 AND hd.IsDeleted = 0
-            AND gt.DuAnId = @DuAnId
+            AND YEAR(tt.NgayHoaDon) = @Nam
             GROUP BY gt.NguonVonId, nv.Ten
             """;
 
-        var result = await _dapper.QueryAsync<DashboardGiaiNganTheoNguonVonDto>(sql, new { request.DuAnId });
+        var result = await _dapper.QueryAsync<DashboardGiaiNganTheoNguonVonDto>(sql, new { request.Nam });
         return [.. result];
     }
 }

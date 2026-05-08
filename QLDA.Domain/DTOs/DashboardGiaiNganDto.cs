@@ -9,3 +9,16 @@ public class DashboardGiaiNganTheoNguonVonDto {
     public decimal GiaTriGiaiNgan { get; set; }
     public decimal GiaTriHopDong { get; set; }
 }
+
+/// <summary>
+/// DTO chi tiết giải ngân theo năm
+/// </summary>
+public class DashboardChiTietGiaiNganDto {
+    public string? TenDuAn { get; set; }
+    /// <summary>Số tiền đã giải ngân (ThanhToan.GiaTri)</summary>
+    public decimal GiaTriGiaiNgan { get; set; }
+    /// <summary>Giá trị hợp đồng (HopDong.GiaTri)</summary>
+    public decimal GiaTriHopDong { get; set; }
+    public DateTimeOffset? Ngay { get; set; }
+    public string? TrangThaiGiaiNgan { get; set; }
+}
