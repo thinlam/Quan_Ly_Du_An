@@ -5,7 +5,7 @@
 
 ## Summary
 
-Module QuanLyPheDuyet — màn hình tổng hợp quản lý phê duyệt cho TẤT CẢ các loại entity. BGĐ duyệt/từ chối/trả lại, P.HC-TH phát hành. Unified dispatch pattern thay thế module PheDuyetNoiDung riêng lẻ.
+Module QuanLyPheDuyet — màn hình tổng hợp quản lý phê duyệt cho TẤT CẢ các loại entity. BGĐ duyệt/từ chối/trả lại, P.HC-TH phát hành. Unified dispatch pattern thay thế module PheDuyetNoiDung riêng lẻ. **3 entity types hỗ trợ:** PheDuyetDuToan, HoSoDeXuatCapDoCntt, HoSoMoiThauDienTu.
 
 ## Architecture
 
@@ -18,7 +18,8 @@ QuanLyPheDuyetController (api/phe-duyet)
     ├── {type}/{id}/trinh → PheDuyetDispatchTrinhCommand → type switch → entity command
     ├── {type}/{id}/duyet → PheDuyetDispatchDuyetCommand → type switch → entity command
     ├── {type}/{id}/tra-lai → PheDuyetDispatchTraLaiCommand → type switch → entity command
-    ├── {type}/{id}/chuyen-phat-hanh → PheDuyetChuyenPhatHanhCommand
+    ├── {type}/{id}/tu-choi → PheDuyetDispatchTuChoiCommand → type switch → entity command
+    ├── {type}/{id}/chuyen-phat-hanh → PheDuyetChuyenPhatHanhCommand (only DuToan)
     ├── danh-sach → PheDuyetGetDanhSachQuery (filter by type, duAnId)
     ├── lich-su → PheDuyetGetLichSuQuery (unified PheDuyetHistory)
     └── {type}/{id}/chi-tiet → PheDuyetGetChiTietQuery
@@ -51,13 +52,28 @@ Single entity với `Loai` discriminator:
 | PheDuyetDuToan | 2 | ĐTr | Đã trình |
 | PheDuyetDuToan | 3 | ĐD | Đã duyệt |
 | PheDuyetDuToan | 4 | TL | Trả lại |
-| DungChung | 5 | LEG | Migrated |
+| Default | 5 | LEG | Migrated |
+| PheDuyetDuToan | 6 | TC | Từ chối |
+| HoSoDeXuatCapDoCntt | 7 | DT | Dự thảo |
+| HoSoDeXuatCapDoCntt | 8 | ĐTr | Đã trình |
+| HoSoDeXuatCapDoCntt | 9 | ĐD | Đã duyệt |
+| HoSoDeXuatCapDoCntt | 10 | TL | Trả lại |
+| HoSoDeXuatCapDoCntt | 11 | TC | Từ chối |
+| HoSoMoiThauDienTu | 12 | DT | Dự thảo |
+| HoSoMoiThauDienTu | 13 | ĐTr | Đã trình |
+| HoSoMoiThauDienTu | 14 | ĐD | Đã duyệt |
+| HoSoMoiThauDienTu | 15 | TL | Trả lại |
+| HoSoMoiThauDienTu | 16 | TC | Từ chối |
 
 ### Constants
 
-- `TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan` - Loai discriminator
-- `TrangThaiPheDuyetCodes.DuToan.*` - DuToan status codes (DT, ĐTr, ĐD, TL, LEG)
-- `PheDuyetEntityNames.PheDuyetDuToan` = "PheDuyetDuToan"
+- `PheDuyetEntityNames.PheDuyetDuToan` - Entity name cho dispatch & history
+- `PheDuyetEntityNames.HoSoDeXuatCapDoCntt` - Entity name cho dispatch & history
+- `PheDuyetEntityNames.HoSoMoiThauDienTu` - Entity name cho dispatch & history
+- `PheDuyetEntityNames.Default` - Default/legacy Loai
+- `TrangThaiPheDuyetCodes.DuToan.*` - DuToan status codes (DT, ĐTr, ĐD, TL, TC)
+- `TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.*` - HoSoDeXuatCapDoCntt status codes
+- `TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.*` - HoSoMoiThauDienTu status codes
 
 ## Files Created
 
@@ -69,12 +85,13 @@ Single entity với `Loai` discriminator:
 ### Persistence Layer (1 file)
 - `QLDA.Persistence/Configurations/PheDuyetHistoryConfiguration.cs` - Composite index (EntityName, EntityId)
 
-### Application Layer — QuanLyPheDuyet (10 files)
-- `QLDA.Application/QuanLyPheDuyet/Commands/` - 4 dispatch command handlers
+### Application Layer — QuanLyPheDuyet (11 files)
+- `QLDA.Application/QuanLyPheDuyet/Commands/` - 5 dispatch command handlers
   - `PheDuyetDispatchTrinhCommand` - dispatch trinh theo type
   - `PheDuyetDispatchDuyetCommand` - dispatch duyet theo type
   - `PheDuyetDispatchTraLaiCommand` - dispatch tra lai theo type
-  - `PheDuyetChuyenPhatHanhCommand` - chuyen P.HC-TH phat hanh
+  - `PheDuyetDispatchTuChoiCommand` - dispatch tu choi theo type (GroupAdminOrManager role)
+  - `PheDuyetChuyenPhatHanhCommand` - chuyen P.HC-TH phat hanh (only DuToan)
 - `QLDA.Application/QuanLyPheDuyet/Queries/` - 3 query handlers
   - `PheDuyetGetDanhSachQuery` - paginated list (filter by type, duAnId)
   - `PheDuyetGetChiTietQuery` - chi tiet theo type + id
@@ -82,13 +99,26 @@ Single entity với `Loai` discriminator:
 - `QLDA.Application/QuanLyPheDuyet/DTOs/` - 3 DTOs
   - `PheDuyetListItemDto`, `PheDuyetChiTietDto`, `PheDuyetHistoryDto`
 
-### WebApi Layer (3 files)
-- `QLDA.WebApi/Controllers/QuanLyPheDuyetController.cs` - 7 endpoints
+### WebApi Layer (4 files)
+- `QLDA.WebApi/Controllers/QuanLyPheDuyetController.cs` - 8 endpoints
 - `QLDA.WebApi/Models/QuanLyPheDuyet/TrinhModel.cs`
+- `QLDA.WebApi/Models/QuanLyPheDuyet/TuChoiModel.cs`
 - `QLDA.WebApi/Models/QuanLyPheDuyet/ChuyenPhatHanhModel.cs`
 
-### Migration (1 file)
-- `QLDA.Migrator/Migrations/20260508035251_RefactorPheDuyet.cs` - DB migration
+### Application Layer — Entity-specific commands (12 files)
+- `QLDA.Application/PheDuyetDuToans/Commands/PheDuyetDuToanTuChoiCommand.cs`
+- `QLDA.Application/HoSoDeXuatCapDoCntts/Commands/HoSoDeXuatCapDoCnttTrinhCommand.cs`
+- `QLDA.Application/HoSoDeXuatCapDoCntts/Commands/HoSoDeXuatCapDoCnttDuyetCommand.cs`
+- `QLDA.Application/HoSoDeXuatCapDoCntts/Commands/HoSoDeXuatCapDoCnttTraLaiCommand.cs`
+- `QLDA.Application/HoSoDeXuatCapDoCntts/Commands/HoSoDeXuatCapDoCnttTuChoiCommand.cs`
+- `QLDA.Application/HoSoMoiThauDienTus/Commands/HoSoMoiThauDienTuTrinhCommand.cs`
+- `QLDA.Application/HoSoMoiThauDienTus/Commands/HoSoMoiThauDienTuDuyetCommand.cs`
+- `QLDA.Application/HoSoMoiThauDienTus/Commands/HoSoMoiThauDienTuTraLaiCommand.cs`
+- `QLDA.Application/HoSoMoiThauDienTus/Commands/HoSoMoiThauDienTuTuChoiCommand.cs`
+
+### Migration (2 files)
+- `QLDA.Migrator/Migrations/20260508035251_RefactorPheDuyet.cs` - Initial unified migration
+- `QLDA.Migrator/Migrations/20260511031018_AddPheDuyetTuChoiAndHoSoSeedData.cs` - TuChoi + HoSo seed data
 
 ### Tests (1 file)
 - `QLDA.Tests/Integration/QuanLyPheDuyetControllerTests.cs` - 20 integration tests
@@ -131,7 +161,9 @@ Single entity với `Loai` discriminator:
 | `api/phe-duyet/{type}/{id}/trinh` | POST | KH-TC | Trình phê duyệt |
 | `api/phe-duyet/{type}/{id}/duyet` | POST | LDDV | Duyệt (requires LDDV role) |
 | `api/phe-duyet/{type}/{id}/tra-lai` | POST | LDDV | Trả lại (requires LDDV role + lý do) |
-| `api/phe-duyet/{type}/{id}/chuyen-phat-hanh` | POST | HC-TH/LDDV | Chuyển P.HC-TH phát hành |
+| `api/phe-duyet/{type}/{id}/tra-lai` | POST | LDDV | Trả lại (requires LDDV role + lý do) |
+| `api/phe-duyet/{type}/{id}/tu-choi` | POST | LDDV/HC-TH/QuanTri | Từ chối (requires management role + lý do) |
+| `api/phe-duyet/{type}/{id}/chuyen-phat-hanh` | POST | HC-TH/LDDV | Chuyển P.HC-TH phát hành (only DuToan) |
 
 ## PR History
 
@@ -153,12 +185,16 @@ Single entity với `Loai` discriminator:
 1. **Unified dispatch pattern** — single controller handles all approval types via `type` parameter
 2. **Unified PheDuyetHistory** — 1 polymorphic table thay vì N per-entity history tables
 3. **FK-based status** (`int? TrangThaiId`) — DB-enforced referential integrity
-4. **Role enforcement active** — Duyet/TraLai commands enforce `QLDA_LDDV` role
+4. **Role enforcement active** — Duyet/TraLai: `QLDA_LDDV`, TuChoi: GroupAdminOrManager (LDDV + HC_TH + QuanTri)
 5. **SQLite provider support** — `--provider sqlite` CLI arg for local dev/testing
 6. **Shared DanhMucTrangThaiPheDuyet** with `Loai` discriminator — DRY, extensible
+7. **PheDuyetEntityNames replaces Loai** — `TrangThaiPheDuyetCodes.Loai` removed, use `PheDuyetEntityNames` directly
+8. **Auto-assign Dự thảo** — Insert commands auto-lookup "DT" status and assign `TrangThaiId`
+9. **3 entity types** — PheDuyetDuToan, HoSoDeXuatCapDoCntt, HoSoMoiThauDienTu all supported in dispatch
+10. **ChuyenPhatHanh** — only applicable to PheDuyetDuToan, not HoSo entities
 
 ## Unresolved Questions
 
 1. Chưa có notification/gửi thông báo kết quả xử lý đến đơn vị trình duyệt
 2. `PhongHCTHID` trong `appsettings.json` đang = 0, cần cấu hình ID phòng HC-TH thực tế
-3. Chưa mở rộng dispatch cho các entity khác (chỉ có PheDuyetDuToan hiện tại)
+3. Cần update integration tests cho TuChoi + HoSo entity types
