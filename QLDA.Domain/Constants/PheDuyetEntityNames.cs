@@ -5,6 +5,9 @@ namespace QLDA.Domain.Constants;
 /// </summary>
 public static class PheDuyetEntityNames
 {
+    public const string Default = "Default";
     public const string PheDuyetDuToan = "PheDuyetDuToan";
-    // Future: KhaiToanKinhPhi, HoSo, etc.
+    public const string HoSoDeXuatCapDoCntt = "HoSoDeXuatCapDoCntt";
+    public const string HoSoMoiThauDienTu = "HoSoMoiThauDienTu";
+    public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
 }

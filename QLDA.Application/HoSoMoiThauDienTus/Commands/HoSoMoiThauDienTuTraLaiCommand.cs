@@ -2,45 +2,43 @@ using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities.DanhMuc;
 
-namespace QLDA.Application.PheDuyetDuToans.Commands;
+namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
 /// <summary>
-/// Trả lại phê duyệt dự toán - chỉ BGĐ role, cần lý do
+/// Trả lại hồ sơ mời thầu điện tử - chỉ BGĐ role, cần lý do
 /// </summary>
-public record PheDuyetDuToanTraLaiCommand(Guid Id, string NoiDung) : IRequest<int>;
+public record HoSoMoiThauDienTuTraLaiCommand(Guid Id, string NoiDung) : IRequest<int>;
 
-internal class PheDuyetDuToanTraLaiCommandHandler : IRequestHandler<PheDuyetDuToanTraLaiCommand, int> {
-    private readonly IRepository<PheDuyetDuToan, Guid> _repository;
+internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiThauDienTuTraLaiCommand, int> {
+    private readonly IRepository<HoSoMoiThauDienTu, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public PheDuyetDuToanTraLaiCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
+    public HoSoMoiThauDienTuTraLaiCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(PheDuyetDuToanTraLaiCommand request, CancellationToken cancellationToken) {
-        // Permission check: LDDV role only
+    public async Task<int> Handle(HoSoMoiThauDienTuTraLaiCommand request, CancellationToken cancellationToken) {
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại phê duyệt dự toán");
+            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại hồ sơ mời thầu điện tử");
         }
 
-        // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");
         }
 
-        // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaTrinh && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaTrinh && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
         var trangThaiTraLai = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.TraLai && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.TraLai && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiTraLai, "Không tìm thấy trạng thái 'Trả lại'");
@@ -48,23 +46,19 @@ internal class PheDuyetDuToanTraLaiCommandHandler : IRequestHandler<PheDuyetDuTo
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 
-        // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
 
-        // Update status to Trả lại
         entity.TrangThaiId = trangThaiTraLai.Id;
-        entity.NguoiGiaoViecId = _userProvider.Info.UserID;
 
-        // Create history record with reason
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.PheDuyetDuToan,
+            EntityName = PheDuyetEntityNames.HoSoMoiThauDienTu,
             EntityId = entity.Id,
-            DuAnId = entity.DuAnId,
+            DuAnId = entity.DuAnId ?? Guid.Empty,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiTraLai.Id,
             NoiDung = request.NoiDung,
