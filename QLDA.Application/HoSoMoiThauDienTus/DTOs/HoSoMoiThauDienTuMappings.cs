@@ -1,4 +1,5 @@
 using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Domain.Constants;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.DTOs;
 
@@ -44,7 +45,7 @@ public static class HoSoMoiThauDienTuMappings {
         ThoiGianThucHien = entity.ThoiGianThucHien,
         TrangThaiDangTai = entity.TrangThaiDangTai,
         TrangThaiId = entity.TrangThaiId,
-        TenTrangThai = entity.TrangThaiPheDuyet?.Ten,
+        TenTrangThai = entity.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : entity.TrangThaiPheDuyet?.Ten,
         DanhSachTepDinhKem = files?.Select(f => new TepDinhKemDto {
             Id = f.Id,
             ParentId = f.ParentId,

@@ -76,8 +76,8 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 NguoiKy = e.NguoiKy,
                 NgayKy = e.NgayKy,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);
@@ -108,8 +108,8 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
                 TrichYeu = e.NoiDungDeNghi,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);
@@ -139,8 +139,8 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 DuAnId = e.DuAnId ?? Guid.Empty,
                 TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThaiPheDuyet != null ? e.TrangThaiPheDuyet.Ma : null,
-                TenTrangThai = e.TrangThaiPheDuyet != null ? e.TrangThaiPheDuyet.Ten : null,
+                MaTrangThai = e.TrangThaiPheDuyet != null ? e.TrangThaiPheDuyet.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThaiPheDuyet != null ? e.TrangThaiPheDuyet.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);

@@ -4,33 +4,33 @@ using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
-namespace QLDA.Application.PheDuyetDuToans.Commands;
+namespace QLDA.Application.PhanKhaiKinhPhis.Commands;
 
 /// <summary>
-/// Từ chối phê duyệt dự toán - tất cả roles quản lý, cần lý do
+/// Từ chối phân khai kinh phí - tất cả roles quản lý, cần lý do
 /// </summary>
-public record PheDuyetDuToanTuChoiCommand(Guid Id, string NoiDung) : IRequest<int>;
+public record PhanKhaiKinhPhiTuChoiCommand(Guid Id, string NoiDung) : IRequest<int>;
 
-internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuToanTuChoiCommand, int> {
-    private readonly IRepository<PheDuyetDuToan, Guid> _repository;
+internal class PhanKhaiKinhPhiTuChoiCommandHandler : IRequestHandler<PhanKhaiKinhPhiTuChoiCommand, int> {
+    private readonly IRepository<Domain.Entities.PhanKhaiKinhPhi, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public PheDuyetDuToanTuChoiCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
+    public PhanKhaiKinhPhiTuChoiCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.PhanKhaiKinhPhi, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(PheDuyetDuToanTuChoiCommand request, CancellationToken cancellationToken) {
-        // Permission check: management roles only
+    public async Task<int> Handle(PhanKhaiKinhPhiTuChoiCommand request, CancellationToken cancellationToken) {
+        // Permission check: management roles only (LDDV, HC_TH, QuanTri)
         var roles = _userProvider.AuthInfo?.Roles ?? [];
         if (!roles.Contains(Domain.Constants.RoleConstants.QLDA_LDDV) && !roles.Contains(Domain.Constants.RoleConstants.QLDA_HC_TH) && !roles.Contains(Domain.Constants.RoleConstants.QLDA_QuanTri)) {
-            throw new ManagedException("Chỉ quản lý có quyền từ chối phê duyệt dự toán");
+            throw new ManagedException("Chỉ quản lý có quyền từ chối phân khai kinh phí");
         }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
@@ -38,9 +38,9 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
         }
 
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaTrinh && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.PhanKhaiKinhPhi.DaTrinh && s.Loai == PheDuyetEntityNames.PhanKhaiKinhPhi, cancellationToken);
         var trangThaiTuChoi = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.TuChoi && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.PhanKhaiKinhPhi.TraLai && s.Loai == PheDuyetEntityNames.PhanKhaiKinhPhi, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiTuChoi, "Không tìm thấy trạng thái 'Từ chối'");
@@ -48,7 +48,7 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
 
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
             throw new ManagedException("Chỉ có thể từ chối khi trạng thái là Đã trình");
@@ -58,7 +58,7 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.PheDuyetDuToan,
+            EntityName = PheDuyetEntityNames.PhanKhaiKinhPhi,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,

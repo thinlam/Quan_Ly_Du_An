@@ -4,39 +4,39 @@ using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
-namespace QLDA.Application.PheDuyetDuToans.Commands;
+namespace QLDA.Application.PhanKhaiKinhPhis.Commands;
 
 /// <summary>
-/// Duyệt phê duyệt dự toán - chỉ BGĐ role
+/// Duyệt phân khai kinh phí - LDDV role
 /// </summary>
-public record PheDuyetDuToanDuyetCommand(Guid Id) : IRequest<int>;
+public record PhanKhaiKinhPhiDuyetCommand(Guid Id) : IRequest<int>;
 
-internal class PheDuyetDuToanDuyetCommandHandler : IRequestHandler<PheDuyetDuToanDuyetCommand, int> {
-    private readonly IRepository<PheDuyetDuToan, Guid> _repository;
+internal class PhanKhaiKinhPhiDuyetCommandHandler : IRequestHandler<PhanKhaiKinhPhiDuyetCommand, int> {
+    private readonly IRepository<Domain.Entities.PhanKhaiKinhPhi, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public PheDuyetDuToanDuyetCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
+    public PhanKhaiKinhPhiDuyetCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.PhanKhaiKinhPhi, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(PheDuyetDuToanDuyetCommand request, CancellationToken cancellationToken) {
+    public async Task<int> Handle(PhanKhaiKinhPhiDuyetCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt phê duyệt dự toán");
+            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt phân khai kinh phí");
         }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaTrinh && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.PhanKhaiKinhPhi.DaTrinh && s.Loai == PheDuyetEntityNames.PhanKhaiKinhPhi, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaDuyet && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.PhanKhaiKinhPhi.DaDuyet && s.Loai == PheDuyetEntityNames.PhanKhaiKinhPhi, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
@@ -44,7 +44,7 @@ internal class PheDuyetDuToanDuyetCommandHandler : IRequestHandler<PheDuyetDuToa
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
@@ -57,7 +57,7 @@ internal class PheDuyetDuToanDuyetCommandHandler : IRequestHandler<PheDuyetDuToa
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.PheDuyetDuToan,
+            EntityName = PheDuyetEntityNames.PhanKhaiKinhPhi,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
