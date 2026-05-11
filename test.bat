@@ -20,6 +20,7 @@ if "%~1"=="duan" goto duan
 if "%~1"=="goithau" goto goithau
 if "%~1"=="hopdong" goto hopdong
 if "%~1"=="pheduyetdutoan" goto pheduyetdutoan
+if "%~1"=="phankhaikinhphi" goto phankhaikinhphi
 if "%~1"=="detailed" goto detailed
 goto filter
 
@@ -49,6 +50,10 @@ goto end
 
 :pheduyetdutoan
 dotnet test %PROJECT% --filter "PheDuyetDuToanControllerTests" --logger "console;verbosity=detailed"
+goto end
+
+:phankhaikinhphi
+dotnet test %PROJECT% --filter "PhanKhaiKinhPhiControllerTests" --logger "console;verbosity=detailed"
 goto end
 
 :detailed
