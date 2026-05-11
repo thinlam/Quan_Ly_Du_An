@@ -1,7 +1,9 @@
 using System.Net.Mime;
+using System.Reflection;
 using QLDA.Application.QuanLyPheDuyet.Commands;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.QuanLyPheDuyet.Queries;
+using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.PheDuyetDuToans;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
 
@@ -14,6 +16,21 @@ namespace QLDA.WebApi.Controllers;
 [Route("api/phe-duyet")]
 public class QuanLyPheDuyetController : AggregateRootController {
     public QuanLyPheDuyetController(IServiceProvider serviceProvider) : base(serviceProvider) { }
+
+    /// <summary>
+    /// Danh sach entity types cho FE truyen vao tham so {type}
+    /// </summary>
+    [ProducesResponseType<ResultApi<List<string>>>(StatusCodes.Status200OK)]
+    [HttpGet("types")]
+    public ResultApi GetTypes() {
+        var types = typeof(PheDuyetEntityNames)
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .Where(f => f.IsLiteral && f.Name != nameof(PheDuyetEntityNames.Default))
+            .Select(f => (string?)f.GetRawConstantValue())
+            .Where(v => v != null)
+            .ToList()!;
+        return ResultApi.Ok(types);
+    }
 
     /// <summary>
     /// Danh sach tat ca ban ghi pheduyet voi trang thai moi nhat
