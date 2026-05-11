@@ -80,6 +80,44 @@ Lý do: chưa cấu hình role thực tế trên server.
 
 ---
 
+## 11/05 — TuChoi + HoSo workflow + auto-assign Dự thảo
+
+**Thay đổi:**
+
+**Phase 1: PheDuyetDuToanTuChoiCommand**
+- Tạo `PheDuyetDuToanTuChoiCommand` — Từ chối (Đã trình → Từ chối), role: GroupAdminOrManager (LDDV + HC_TH + QuanTri), lý do bắt buộc
+- Tạo `PheDuyetDispatchTuChoiCommand` — dispatch tu-choi theo type
+- Thêm endpoint `POST {type}/{id}/tu-choi` vào QuanLyPheDuyetController
+- Thêm `TuChoi = "TC"` vào `TrangThaiPheDuyetCodes.DuToan`
+- Seed data: Id=6, Ma="TC", Ten="Từ chối", Loai=PheDuyetDuToan
+
+**Phase 2: HoSoDeXuatCapDoCntt workflow**
+- Tạo 4 commands: `HoSoDeXuatCapDoCnttTrinhCommand`, `DuyetCommand`, `TraLaiCommand`, `TuChoiCommand`
+- Cập nhật 4 dispatch commands thêm HoSoDeXuatCapDoCntt switch case
+- `PheDuyetGetDanhSachQuery` + `PheDuyetGetChiTietQuery` hỗ trợ HoSoDeXuatCapDoCntt
+- Thêm `TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt` constants
+- Seed data: 5 rows (Id=7-11, DT/ĐTr/ĐD/TL/TC)
+
+**Phase 3: HoSoMoiThauDienTu workflow**
+- Tạo 4 commands: `HoSoMoiThauDienTuTrinhCommand`, `DuyetCommand`, `TraLaiCommand`, `TuChoiCommand`
+- Cập nhật 4 dispatch commands + 2 queries
+- Thêm `TrangThaiPheDuyetCodes.HoSoMoiThauDienTu` constants
+- Seed data: 5 rows (Id=12-16, DT/ĐTr/ĐD/TL/TC)
+- Note: `DuAnId` nullable → dùng `?? Guid.Empty` cho PheDuyetHistory
+
+**Auto-assign Dự thảo**
+- `PheDuyetDuToanInsertCommand` — tự lookup "DT" status, gán `entity.TrangThaiId`
+- `HoSoDeXuatCapDoCnttInsertCommand` — tự lookup "DT" status, gán `entity.TrangThaiId`
+- `HoSoMoiThauDienTuInsertCommand` — tự lookup "DT" status, gán `entity.TrangThaiId`
+
+**Refactoring: Loai removal**
+- Xóa `TrangThaiPheDuyetCodes.Loai` class — thay bằng `PheDuyetEntityNames` trực tiếp
+- Thêm `PheDuyetEntityNames.Default` thay cho `Loai.DungChung`
+
+**Migration:** `AddPheDuyetTuChoiAndHoSoSeedData` — 16 seed rows total (6 DuToan, 5 HoSoDeXuatCapDoCntt, 5 HoSoMoiThauDienTu)
+
+---
+
 ## Timeline tổng hợp
 
 ```
@@ -92,6 +130,8 @@ Lý do: chưa cấu hình role thực tế trên server.
 07/05  FK refactoring + unify history + merge DanhMuc
   ↓
 08/05  QuanLyPheDuyet unified dispatch + SQLite + 20 tests → MERGED
+  ↓
+11/05  TuChoi + HoSoDeXuatCapDoCntt + HoSoMoiThauDienTu workflows + auto-assign Dự thảo
 ```
 
 ## Lessons learned

@@ -97,6 +97,18 @@ public class QuanLyPheDuyetController : AggregateRootController {
     }
 
     /// <summary>
+    /// Tu choi phe duyet theo type — can ly do
+    /// </summary>
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPost("{type}/{id}/tu-choi")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public async Task<ResultApi> TuChoi(string type, Guid id, [FromBody] TuChoiModel model) {
+        var res = await Mediator.Send(new PheDuyetDispatchTuChoiCommand(type, id, model.NoiDung));
+        return ResultApi.Ok(res);
+    }
+
+    /// <summary>
     /// Chuyen P.HC-TH de phat hanh so (issue #9459)
     /// </summary>
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]

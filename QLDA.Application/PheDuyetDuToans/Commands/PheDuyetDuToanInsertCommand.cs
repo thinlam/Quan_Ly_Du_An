@@ -1,6 +1,9 @@
 using System.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.PheDuyetDuToans.DTOs;
+using QLDA.Domain.Constants;
+using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.PheDuyetDuToans.Commands;
 
@@ -11,6 +14,7 @@ internal class PheDuyetDuToanInsertCommandHandler : IRequestHandler<PheDuyetDuTo
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
+    private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PheDuyetDuToanInsertCommandHandler> _logger;
 
@@ -20,6 +24,7 @@ internal class PheDuyetDuToanInsertCommandHandler : IRequestHandler<PheDuyetDuTo
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
+        _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _logger = logger;
         _unitOfWork = PheDuyetDuToan.UnitOfWork;
     }
@@ -33,7 +38,11 @@ internal class PheDuyetDuToanInsertCommandHandler : IRequestHandler<PheDuyetDuTo
                 !DanhMucChucVu.GetQueryableSet().Any(e => e.Id == request.Dto.ChucVuId),
                 "Không tồn tại chức vụ này");
 
+            var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+                .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DuThao && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
+
             var entity = request.Dto.ToEntity();
+            entity.TrangThaiId = trangThaiDuThao?.Id;
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await PheDuyetDuToan.AddAsync(entity, cancellationToken);

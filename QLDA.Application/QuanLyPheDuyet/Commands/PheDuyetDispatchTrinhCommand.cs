@@ -1,4 +1,6 @@
 using QLDA.Application.Common;
+using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
+using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.PheDuyetDuToans.Commands;
 using QLDA.Domain.Constants;
 
@@ -19,6 +21,8 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
     public async Task<int> Handle(PheDuyetDispatchTrinhCommand request, CancellationToken cancellationToken) {
         IRequest<int> command = request.Type switch {
             PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.HoSoDeXuatCapDoCntt => new HoSoDeXuatCapDoCnttTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTrinhCommand(request.Id, request.NoiDung),
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
         return await _mediator.Send(command, cancellationToken);

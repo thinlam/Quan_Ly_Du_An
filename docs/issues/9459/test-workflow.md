@@ -38,8 +38,22 @@ test.bat build
 ```
 DT (id:1, Dự thảo) ──Trinh──→ ĐTr (id:2, Đã trình) ──Duyet──→ ĐD (id:3, Đã duyệt) ──PhatHanh──→ Done
                                   │
-                                  └──TraLai──→ TL (id:4, Trả lại) ──Trinh──→ ĐTr (loop)
+                                  ├──TraLai──→ TL (id:4, Trả lại) ──Trinh──→ ĐTr (loop)
+                                  │
+                                  └──TuChoi──→ TC (id:6, Từ chối)
 ```
+
+## Flow trạng thái (HoSoDeXuatCapDoCntt / HoSoMoiThauDienTu)
+
+```
+DT (id:7/12, Dự thảo) ──Trinh──→ ĐTr (id:8/13, Đã trình) ──Duyet──→ ĐD (id:9/14, Đã duyệt)
+                                      │
+                                      ├──TraLai──→ TL (id:10/15, Trả lại) ──Trinh──→ ĐTr (loop)
+                                      │
+                                      └──TuChoi──→ TC (id:11/16, Từ chối)
+```
+
+Note: HoSo entities không có ChuyenPhatHanh.
 
 ## QuanLyPheDuyet Dispatch Pattern
 
@@ -50,24 +64,51 @@ type = "PheDuyetDuToan"
     ├── /trinh → PheDuyetDispatchTrinhCommand → PheDuyetDuToanTrinhCommand (KH-TC role)
     ├── /duyet → PheDuyetDispatchDuyetCommand → PheDuyetDuToanDuyetCommand (LDDV role)
     ├── /tra-lai → PheDuyetDispatchTraLaiCommand → PheDuyetDuToanTraLaiCommand (LDDV role + lý do)
+    ├── /tu-choi → PheDuyetDispatchTuChoiCommand → PheDuyetDuToanTuChoiCommand (LDDV/HC-TH/QuanTri + lý do)
     └── /chuyen-phat-hanh → PheDuyetChuyenPhatHanhCommand (HC-TH or LDDV role, requires Đã duyệt)
+
+type = "HoSoDeXuatCapDoCntt"
+    ├── /trinh → HoSoDeXuatCapDoCnttTrinhCommand (KH-TC role)
+    ├── /duyet → HoSoDeXuatCapDoCnttDuyetCommand (LDDV role)
+    ├── /tra-lai → HoSoDeXuatCapDoCnttTraLaiCommand (LDDV role + lý do)
+    └── /tu-choi → HoSoDeXuatCapDoCnttTuChoiCommand (LDDV/HC-TH/QuanTri + lý do)
+
+type = "HoSoMoiThauDienTu"
+    ├── /trinh → HoSoMoiThauDienTuTrinhCommand (KH-TC role)
+    ├── /duyet → HoSoMoiThauDienTuDuyetCommand (LDDV role)
+    ├── /tra-lai → HoSoMoiThauDienTuTraLaiCommand (LDDV role + lý do)
+    └── /tu-choi → HoSoMoiThauDienTuTuChoiCommand (LDDV/HC-TH/QuanTri + lý do)
 ```
 
 ## Constants Reference
 
 ```csharp
 // Entity names (for polymorphic dispatch & history)
-PheDuyetEntityNames.PheDuyetDuToan  // "PheDuyetDuToan"
-
-// Loai discriminator
-TrangThaiPheDuyetCodes.Loai.PheDuyetDuToan  // "PheDuyetDuToan"
+PheDuyetEntityNames.PheDuyetDuToan       // "PheDuyetDuToan"
+PheDuyetEntityNames.HoSoDeXuatCapDoCntt  // "HoSoDeXuatCapDoCntt"
+PheDuyetEntityNames.HoSoMoiThauDienTu    // "HoSoMoiThauDienTu"
+PheDuyetEntityNames.Default              // "Default"
 
 // DuToan status codes
 TrangThaiPheDuyetCodes.DuToan.DuThao   // "DT"
 TrangThaiPheDuyetCodes.DuToan.DaTrinh  // "ĐTr"
 TrangThaiPheDuyetCodes.DuToan.DaDuyet  // "ĐD"
 TrangThaiPheDuyetCodes.DuToan.TraLai   // "TL"
-TrangThaiPheDuyetCodes.DuToan.Legacy   // "LEG"
+TrangThaiPheDuyetCodes.DuToan.TuChoi   // "TC"
+
+// HoSoDeXuatCapDoCntt status codes
+TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DuThao   // "DT"
+TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DaTrinh  // "ĐTr"
+TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DaDuyet  // "ĐD"
+TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.TraLai   // "TL"
+TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.TuChoi   // "TC"
+
+// HoSoMoiThauDienTu status codes
+TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DuThao   // "DT"
+TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaTrinh  // "ĐTr"
+TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaDuyet  // "ĐD"
+TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.TraLai   // "TL"
+TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.TuChoi   // "TC"
 ```
 
 ## Seeded DanhMucTrangThaiPheDuyet IDs
@@ -78,7 +119,18 @@ TrangThaiPheDuyetCodes.DuToan.Legacy   // "LEG"
 | 2 | ĐTr | Đã trình | PheDuyetDuToan |
 | 3 | ĐD | Đã duyệt | PheDuyetDuToan |
 | 4 | TL | Trả lại | PheDuyetDuToan |
-| 5 | LEG | Migrated | DungChung |
+| 5 | LEG | Migrated | Default |
+| 6 | TC | Từ chối | PheDuyetDuToan |
+| 7 | DT | Dự thảo | HoSoDeXuatCapDoCntt |
+| 8 | ĐTr | Đã trình | HoSoDeXuatCapDoCntt |
+| 9 | ĐD | Đã duyệt | HoSoDeXuatCapDoCntt |
+| 10 | TL | Trả lại | HoSoDeXuatCapDoCntt |
+| 11 | TC | Từ chối | HoSoDeXuatCapDoCntt |
+| 12 | DT | Dự thảo | HoSoMoiThauDienTu |
+| 13 | ĐTr | Đã trình | HoSoMoiThauDienTu |
+| 14 | ĐD | Đã duyệt | HoSoMoiThauDienTu |
+| 15 | TL | Trả lại | HoSoMoiThauDienTu |
+| 16 | TC | Từ chối | HoSoMoiThauDienTu |
 
 ## QuanLyPheDuyet API Endpoints
 
@@ -90,7 +142,8 @@ TrangThaiPheDuyetCodes.DuToan.Legacy   // "LEG"
 | `api/phe-duyet/{type}/{id}/trinh` | POST | KH-TC | Trình phê duyệt |
 | `api/phe-duyet/{type}/{id}/duyet` | POST | LDDV | Duyệt (requires LDDV role) |
 | `api/phe-duyet/{type}/{id}/tra-lai` | POST | LDDV | Trả lại (requires LDDV role + lý do) |
-| `api/phe-duyet/{type}/{id}/chuyen-phat-hanh` | POST | HC-TH/LDDV | Chuyển P.HC-TH phát hành |
+| `api/phe-duyet/{type}/{id}/tu-choi` | POST | LDDV/HC-TH/QuanTri | Từ chối (requires management role + lý do) |
+| `api/phe-duyet/{type}/{id}/chuyen-phat-hanh` | POST | HC-TH/LDDV | Chuyển P.HC-TH phát hành (only DuToan) |
 
 ## Ma trận test case — PheDuyetDuToanController (direct endpoints)
 
