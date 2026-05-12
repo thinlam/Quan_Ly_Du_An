@@ -31,7 +31,7 @@
 | `TenHoSo` | `string(500)` | Tên hồ sơ |
 | `PhongBanChuTriId` | `long?` | FK → DanhMucDonVi |
 | `TrangThai` | `ETrangThaiBanGiao` | 0: Khởi tạo, 1: Đã bàn giao |
-| `NgayBanGiao` | `DateTime?` | Ngày thực hiện bàn giao |
+| `NgayBanGiao` | `DateTimeOffset?` | Ngày thực hiện bàn giao |
 | `UserId` | `long?` | FK → UserMaster (người tạo) |
 | `IsDeleted` | `bit` | Soft delete flag |
 | `CreatedAt`, `UpdatedAt` | `DateTime` | Audit fields |
@@ -63,7 +63,7 @@ public enum ETrangThaiBanGiao {
 **Ủy quyền:** Tất cả endpoints đều `[Authorize]`
 
 **Filter Logic:**
-- Danh sách chỉ hiển thị bản giao **của chính người dùng hiện tại** (từ `IUserContext`)
+- Danh sách chỉ hiển thị bản giao **của chính người dùng hiện tại** (từ `IUserProvider`)
 - UI chỉ truyền duy nhất 1 filter param: `TrangThai` (0 hoặc 1)
 - `UserId` luôn lấy từ Auth, không cho UI truyền
 
@@ -259,7 +259,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ```
 ✅ Cho phép: Tất cả authenticated user
 ❌ Không cho phép: -
-✅ UserId: Auto set từ IUserContext
+✅ UserId: Auto set từ IUserProvider.Id (JWT token)
 ```
 
 ### Ban-Giao Endpoint
@@ -268,7 +268,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ✅ Logic:
   1. Lấy entity by Id
   2. Đổi TrangThai: 0 → 1
-  3. Set NgayBanGiao (default: DateTime.Now nếu null)
+  3. Set NgayBanGiao (default: DateTimeOffset.Now nếu null)
   4. Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
   
 ✅ Cho phép: TrangThai = 0 (chưa bàn giao)
@@ -295,11 +295,12 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 
 ## 7. ⚙️ Dependency Injection & Services
 
-### 1. `IUserContext` Service
-- **Tạo:** `/QLDA.WebApi/Models/Common/Interfaces/IUserContext.cs`
-- **Implement:** `/QLDA.WebApi/Models/Common/UserContext.cs`
-- **Register:** `WebApplicationExtensions.AddCommonServices()`
-- **Scope:** Scoped (per-request)
+### 1. `IUserProvider` Service
+- **Interface:** `BuildingBlocks.Domain.Providers.IUserProvider`
+- **Implement:** `BuildingBlocks.Application.Common.Services.UserProvider`
+- **Register:** Đã đăng ký sẵn trong DI của dự án
+- **Cách dùng:** Inject qua `serviceProvider.GetRequiredService<IUserProvider>()` trong handler constructor
+- `IUserProvider.Id` → `long` UserId từ JWT claim `UserId`
 
 ### 2. MediatR Commands & Queries
 - Auto-register via `AddMediatR(typeof(Program).Assembly)`
@@ -327,9 +328,8 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 - [x] **6. Application - Mappings**
 - [x] **7. Application - Commands** (4 files)
 - [x] **8. Application - Queries** (2 files)
-- [x] **9. WebApi - IUserContext + UserContext**
-- [x] **10. WebApi - UserContext Registration**
-- [x] **11. WebApi - Models** (BanGiaoHoSoModel, BanGiaoHoSoBanGiaoModel)
+- [x] **9. Application - Inject IUserProvider** trong Insert handler và GetDanhSach handler
+- [x] **10. WebApi - Models** (BanGiaoHoSoModel, BanGiaoHoSoBanGiaoModel)
 - [x] **12. WebApi - Mapping Configuration**
 - [x] **13. WebApi - BanGiaoHoSoController** (6 endpoints)
 - [x] **14. Enum - Add EGroupType.BanGiaoHoSo & EGroupType.BienBanBanGiao**
@@ -391,10 +391,11 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 | **Audit** | `CreatedAt`, `UpdatedAt` |
 | **Status Enum** | `ETrangThaiBanGiao` (0/1) |
 | **FK Relations** | PhongBanChuTriId (long?), UserId (long?) |
+| **NgayBanGiao** | `DateTimeOffset?` (đổi từ `DateTime?`) |
 | **File Types** | 2 loại: BanGiaoHoSo, BienBanBanGiao |
 | **Delete Condition** | Chỉ TrangThai = 0 |
 | **Ban-Giao Logic** | 0→1, set NgayBanGiao, save biên bản |
-| **User Filter** | Luôn filter theo UserId từ Auth |
+| **User Filter** | Luôn filter theo `IUserProvider.Id` từ JWT token |
 | **Transaction** | ReadCommitted isolation level |
 
 ---

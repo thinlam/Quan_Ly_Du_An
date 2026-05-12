@@ -9,7 +9,7 @@
 
 > **✅ Updated (12/05/2026)**
 > - Đổi tên endpoint `thay-doi-trang-thai` → `ban-giao`
-> - Thêm cột `NgayBanGiao` (DateTime?) vào entity
+> - Thêm cột `NgayBanGiao` (DateTimeOffset?) vào entity
 > - Endpoint `ban-giao` nhận thêm `DanhSachBienBan` (biên bản bàn giao)
 > - Bộ hồ sơ lưu trữ bàn giao gồm 2 loại tệp: **tệp HS bàn giao** (`EGroupType.BanGiaoHoSo`) và **biên bản bàn giao** (`EGroupType.BienBanBanGiao`)
 
@@ -35,7 +35,7 @@
 | `TenHoSo` | `string` | Tên hồ sơ |
 | `PhongBanChuTriId` | `int?` | FK → Danh mục phòng ban (HC-TH) |
 | `TrangThai` | `bit` (0/1) | 0: Khởi tạo, 1: Đã bàn giao → Enum `ETrangThaiBanGiao` |
-| `NgayBanGiao` | `DateTime?` | Ngày bàn giao – set khi gọi endpoint `ban-giao` |
+| `NgayBanGiao` | `DateTimeOffset?` | Ngày bàn giao – set khi gọi endpoint `ban-giao` |
 | `UserId` | `long?` | FK → UserMaster (người tạo/chủ sở hữu - từ Auth) |
 | `IsDeleted` | `bit` | Soft delete flag |
 | `CreatedAt`, `UpdatedAt` | `DateTime` | Audit fields |
@@ -193,7 +193,7 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     /// <summary>
     /// Ngày bàn giao – set khi gọi endpoint ban-giao
     /// </summary>
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
 
     /// <summary>
     /// FK → UserMaster (người tạo hồ sơ - từ Auth)
@@ -323,8 +323,8 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 /// DTO cho endpoint ban-giao: đổi trạng thái 0→1, set ngày bàn giao, đính kèm biên bản
 /// </summary>
 public class BanGiaoHoSoBanGiaoDto {
-    /// <summary>Ngày bàn giao, mặc định là DateTime.Now nếu null</summary>
-    public DateTime? NgayBanGiao { get; set; }
+    /// <summary>Ngày bàn giao, mặc định là DateTimeOffset.Now nếu null</summary>
+    public DateTimeOffset? NgayBanGiao { get; set; }
     // Biên bản bàn giao (gắn khi thực hiện bàn giao)
     public List<TepDinhKemDto>? DanhSachBienBan { get; set; }
 }
@@ -355,7 +355,7 @@ public class BanGiaoHoSoDto {
     public string? TenPhongBan { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
     public string? TenTrangThai { get; set; }
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
     public long? UserId { get; set; }
     public string? TenNguoiTao { get; set; }
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
@@ -434,23 +434,26 @@ public static class BanGiaoHoSoMappings {
 
 ```csharp
 using System.Data;
+using BuildingBlocks.Domain.Providers;
 
 namespace QLDA.Application.BanGiaoHoSos.Commands;
 
-public record BanGiaoHoSoInsertCommand(BanGiaoHoSoInsertDto Dto, long UserId) : IRequest<BanGiaoHoSo>;
+public record BanGiaoHoSoInsertCommand(BanGiaoHoSoInsertDto Dto) : IRequest<BanGiaoHoSo>;
 
 internal class BanGiaoHoSoInsertCommandHandler : IRequestHandler<BanGiaoHoSoInsertCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> BanGiaoHoSo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoInsertCommandHandler(IServiceProvider serviceProvider) {
         BanGiaoHoSo = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _unitOfWork = BanGiaoHoSo.UnitOfWork;
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<BanGiaoHoSo> Handle(BanGiaoHoSoInsertCommand request, CancellationToken cancellationToken = default) {
         var entity = request.Dto.ToEntity();
-        entity.UserId = request.UserId;  // Set từ Auth
+        entity.UserId = _userProvider.Id;  // Lấy từ JWT token qua IUserProvider
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await BanGiaoHoSo.AddAsync(entity, cancellationToken);
@@ -512,8 +515,7 @@ namespace QLDA.Application.BanGiaoHoSos.Commands;
 /// </summary>
 public record BanGiaoHoSoBanGiaoCommand(
     Guid Id,
-    DateTime NgayBanGiao,
-    List<TepDinhKem> DanhSachBienBan
+    DateTimeOffset NgayBanGiao
 ) : IRequest<BanGiaoHoSo>;
 
 internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
@@ -630,18 +632,20 @@ using QLDA.Application.TepDinhKems.Queries;
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 
 // Không implement IMayHaveGlobalFilter - không có search full-text
-// UserId luôn lấy từ Auth, không cho UI truyền
-public record BanGiaoHoSoGetDanhSachQuery(BanGiaoHoSoSearchDto SearchDto, long UserId) 
+// UserId luôn lấy từ IUserProvider trong handler, không cho UI truyền
+public record BanGiaoHoSoGetDanhSachQuery(BanGiaoHoSoSearchDto SearchDto) 
     : AggregateRootPagination, IRequest<PaginatedList<BanGiaoHoSoDto>> {
 }
 
 internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>> {
     private readonly IRepository<BanGiaoHoSo, Guid> BanGiaoHoSo;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         BanGiaoHoSo = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<BanGiaoHoSoDto>> Handle(BanGiaoHoSoGetDanhSachQuery request,
@@ -650,7 +654,7 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
         IQueryable<BanGiaoHoSo> queryable = BanGiaoHoSo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => !e.IsDeleted)
-            .Where(e => e.UserId == request.UserId)  // Luôn filter theo người dùng hiện tại (từ Auth)
+            .Where(e => e.UserId == _userProvider.Id)  // Luôn filter theo người dùng hiện tại (từ IUserProvider)
             .Include(e => e.User)
             .Include(e => e.PhongBanChuTri);
 
@@ -694,57 +698,9 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
 }
 ```
 
-### Bước 8 – WebApi: BanGiaoHoSo Model + Mapping + UserContext
+### Bước 8 – WebApi: BanGiaoHoSo Model + Mapping
 
-**File:** `QLDA.WebApi/Models/Common/Interfaces/IUserContext.cs` *(tạo mới)*
-
-```csharp
-namespace QLDA.WebApi.Models.Common.Interfaces;
-
-public interface IUserContext
-{
-    long UserId { get; set; }
-}
-```
-
-**File:** `QLDA.WebApi/Models/Common/UserContext.cs` *(tạo mới)*
-
-```csharp
-using QLDA.WebApi.Models.Common.Interfaces;
-
-namespace QLDA.WebApi.Models.Common;
-
-public class UserContext : IUserContext
-{
-    public long UserId { get; set; }
-}
-```
-
-**File:** `QLDA.WebApi/WebApplicationExtensions.cs` *(sửa `AddCommonServices`)*
-
-Thêm đoạn sau vào method `AddCommonServices()`:
-
-```csharp
-public static IServiceCollection AddCommonServices(this IServiceCollection services) {
-    services.AddDateTimeProvider();
-    services.AddHealthChecks();
-    services.AddMemoryCache();
-    services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-    
-    // Register UserContext - ⚠️ Throw nếu chưa auth, tránh silent fallback về UserId=0
-    services.AddScoped<QLDA.WebApi.Models.Common.Interfaces.IUserContext>(sp => {
-        var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-        if (httpContext?.User.Identity?.IsAuthenticated != true)
-            throw new UnauthorizedAccessException("User is not authenticated.");
-        var userIdString = httpContext.User.FindFirst("sub")?.Value;
-        if (!long.TryParse(userIdString, out var userId))
-            throw new UnauthorizedAccessException("Invalid or missing 'sub' claim in token.");
-        return new QLDA.WebApi.Models.Common.UserContext { UserId = userId };
-    });
-    
-    return services;
-}
-```
+> **IUserProvider** (đã đăng ký sẵn trong BuildingBlocks DI) được inject trực tiếp trong handler – **không cần tạo `IUserContext` hay sửa `WebApplicationExtensions.cs`**.
 
 **File:** `QLDA.WebApi/Models/BanGiaoHoSos/BanGiaoHoSoModel.cs`
 
@@ -766,7 +722,7 @@ public class BanGiaoHoSoModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDi
     public string? TenHoSo { get; set; }
     public int? PhongBanChuTriId { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo) - từ interface IMayHaveTepDinhKemDto
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
     // Biên bản bàn giao (EGroupType.BienBanBanGiao) – chỉ đọc khi hiển thị
@@ -783,8 +739,8 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 /// Model cho endpoint PUT /ban-giao: nhận ngày bàn giao + biên bản bàn giao
 /// </summary>
 public class BanGiaoHoSoBanGiaoModel {
-    /// <summary>Ngày bàn giao, nếu null sẽ dùng DateTime.Now</summary>
-    public DateTime? NgayBanGiao { get; set; }
+    /// <summary>Ngày bàn giao, nếu null sẽ dùng DateTimeOffset.Now</summary>
+    public DateTimeOffset? NgayBanGiao { get; set; }
     // Biên bản bàn giao (đính kèm khi thực hiện bàn giao)
     public List<TepDinhKemModel>? DanhSachBienBan { get; set; }
 }
@@ -909,9 +865,8 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [HttpGet("danh-sach")]
     [ProducesResponseType<ResultApi<PaginatedList<BanGiaoHoSoDto>>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> GetList([FromQuery] BanGiaoHoSoSearchDto searchDto, 
-        [FromQuery] AggregateRootPagination pagination,
-        [FromServices] IUserContext userContext) {
-        var res = await Mediator.Send(new BanGiaoHoSoGetDanhSachQuery(searchDto, userContext.UserId) {
+        [FromQuery] AggregateRootPagination pagination) {
+        var res = await Mediator.Send(new BanGiaoHoSoGetDanhSachQuery(searchDto) {
             PageIndex = pagination.PageIndex,
             PageSize = pagination.PageSize
         });
@@ -921,8 +876,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoModel model,
-        [FromServices] IUserContext userContext) {
+    public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoModel model) {
         var insertDto = new BanGiaoHoSoInsertDto {
             Ma = model.Ma,
             TenHoSo = model.TenHoSo,
@@ -930,7 +884,8 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
             DanhSachTepDinhKem = model.DanhSachTepDinhKem  // Tệp HS bàn giao
         };
         
-        var entity = await Mediator.Send(new BanGiaoHoSoInsertCommand(insertDto, userContext.UserId));
+        var entity = await Mediator.Send(new BanGiaoHoSoInsertCommand(insertDto));
+        // UserId được set từ IUserProvider.Id trong handler
         
         // Save tệp HS bàn giao (EGroupType.BanGiaoHoSo)
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
@@ -969,7 +924,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> BanGiao(Guid id, [FromBody] BanGiaoHoSoBanGiaoModel model) {
-        var ngayBanGiao = model.NgayBanGiao ?? DateTime.Now;
+        var ngayBanGiao = model.NgayBanGiao ?? DateTimeOffset.Now;
         var bienBanEntities = model.GetDanhSachBienBanBanGiao(id);
 
         // Thực hiện bàn giao: đổi TrangThai 0→1, set NgayBanGiao
@@ -1005,8 +960,8 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 [x] 5. Tạo BanGiaoHoSo DTOs + Mappings
 [x] 6. Tạo BanGiaoHoSoInsertCommand / UpdateCommand / BanGiaoCommand / DeleteCommand
 [x] 7. Tạo BanGiaoHoSoGetQuery / GetDanhSachQuery
-[x] 8. Tạo IUserContext interface + UserContext implementation
-[x] 9. Sửa WebApplicationExtensions.AddCommonServices - đăng ký IUserContext
+[x] 8. IUserProvider đã đăng ký sẵn trong BuildingBlocks DI - inject trong handler
+[ ] 9. WebApplicationExtensions.cs - KHÔNG cần sửa (IUserProvider đã có sẵn)
 [x] 10. Tạo BanGiaoHoSo Model + BanGiaoHoSoBanGiaoModel + Mapping + Controller
 [x] 11. Thêm EGroupType.BanGiaoHoSo và EGroupType.BienBanBanGiao vào enum
 [ ] 12. Build + Test
@@ -1017,7 +972,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 ## 6. Lưu ý kỹ thuật
 
 - **⚠️ KHÔNG chạy `drop-database`** – chỉ chạy `migrations add` và `database update`
-- **UserId từ Auth:** Lấy từ `IUserContext` hoặc middleware auth (không cho phép user tự chỉ định)
+- **UserId từ Auth:** Lấy từ `IUserProvider.Id` (BuildingBlocks) inject trong handler – không cho user tự chỉ định
 - **Delete có điều kiện:** Chỉ xóa được khi `TrangThai = 0` (Khởi tạo), throw exception nếu vi phạm
 - **Ban-giao endpoint:** Đổi trạng thái 0→1, set `NgayBanGiao`, lưu biên bản bàn giao
 - **Filter:** Chỉ theo `TrangThai` (1 param duy nhất từ UI) - không có GlobalFilter
@@ -1057,12 +1012,10 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 - Commands: Insert, Update, BanGiao, Delete
 - Queries: Get, GetList
 
-**WebApi Layer (6 files)**
-- `Models/Common/Interfaces/IUserContext.cs` (interface mới)
-- `Models/Common/UserContext.cs` (implementation mới)
-- `WebApplicationExtensions.cs` (sửa `AddCommonServices` - thêm DI registration)
+**WebApi Layer (4 files – 4 mới)**
 - `BanGiaoHoSoModel.cs` + `BanGiaoHoSoBanGiaoModel.cs` + `BanGiaoHoSoMappingConfiguration.cs`
 - `BanGiaoHoSoController.cs` (6 endpoints)
+- `WebApplicationExtensions.cs` – **không sửa** (IUserProvider đã đăng ký sẵn)
 
 ---
 
@@ -1141,25 +1094,14 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 
 ---
 
-### ⚙️ Dependency Injection
+**⚩️ Dependency Injection**
 
-**`IUserContext` / `UserContext`** — 2 file mới trong `QLDA.WebApi/Models/Common/`
-
-**`WebApplicationExtensions.cs`** — thêm vào `AddCommonServices()`:
+`IUserProvider` đã được đăng ký sẵn trong BuildingBlocks DI – **không cần sửa `WebApplicationExtensions.cs`**.
 
 ```csharp
-// DTOs, Commands, Queries (MediatR auto-register)
-builder.Services.AddMediatR(typeof(Program).Assembly);
+// Inject trong handler constructor:
+_userProvider = serviceProvider.GetRequiredService<IUserProvider>();
 
-// UserContext (từ auth middleware)
-// ⚠️ Throw exception nếu chưa auth - tránh silent fallback về UserId=0
-services.AddScoped<IUserContext>(sp => {
-    var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-    if (httpContext?.User.Identity?.IsAuthenticated != true)
-        throw new UnauthorizedAccessException("User is not authenticated.");
-    var userIdString = httpContext.User.FindFirst("sub")?.Value;
-    if (!long.TryParse(userIdString, out var userId))
-        throw new UnauthorizedAccessException("Invalid or missing 'sub' claim in token.");
-    return new UserContext { UserId = userId };
-});
+// Sử dụng:
+entity.UserId = _userProvider.Id;  // long – lấy từ JWT claim "UserId"
 ```

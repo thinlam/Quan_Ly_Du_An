@@ -9,7 +9,6 @@ using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.WebApi.Models;
 using QLDA.WebApi.Models.BanGiaoHoSos;
-using QLDA.WebApi.Models.Common.Interfaces;
 using QLDA.Domain.Entities;
 
 namespace QLDA.WebApi.Controllers;
@@ -41,11 +40,9 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [HttpGet("danh-sach")]
     [ProducesResponseType<ResultApi<PaginatedList<BanGiaoHoSoDto>>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> GetList([FromQuery] BanGiaoHoSoSearchDto searchDto, 
-        [FromQuery] AggregateRootPagination pagination,
-        [FromServices] IUserContext userContext) {
+        [FromQuery] AggregateRootPagination pagination) {
         var res = await _mediator.Send(new BanGiaoHoSoGetDanhSachQuery {
             SearchDto = searchDto,
-            UserId = userContext.UserId,
             PageIndex = pagination.PageIndex,
             PageSize = pagination.PageSize
         });
@@ -55,15 +52,14 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoModel model,
-        [FromServices] IUserContext userContext) {
+    public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoModel model) {
         var insertDto = new BanGiaoHoSoInsertDto {
             Ma = model.Ma,
             TenHoSo = model.TenHoSo,
             PhongBanChuTriId = model.PhongBanChuTriId
         };
         
-        var entity = await _mediator.Send(new BanGiaoHoSoInsertCommand(insertDto, userContext.UserId));
+        var entity = await _mediator.Send(new BanGiaoHoSoInsertCommand(insertDto));
         
         // Save tệp HS bàn giao (EGroupType.BanGiaoHoSo)
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {

@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Providers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Entities;
@@ -9,19 +10,20 @@ using QLDA.Application.TepDinhKems.DTOs;
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 
 // Không implement IMayHaveGlobalFilter - không có search full-text
-// UserId luôn lấy từ Auth, không cho UI truyền
+// UserId luôn lấy từ IUserProvider (JWT token), không cho UI truyền
 public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<BanGiaoHoSoDto>> {
     public BanGiaoHoSoSearchDto SearchDto { get; set; } = new();
-    public long UserId { get; set; }
 }
 
 internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>> {
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository;
+    private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<BanGiaoHoSoDto>> Handle(BanGiaoHoSoGetDanhSachQuery request,
@@ -30,7 +32,7 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
         IQueryable<BanGiaoHoSo> queryable = _banGiaoRepository.GetQueryableSet()
             .AsNoTracking()
             .Where(e => !e.IsDeleted)
-            .Where(e => e.UserId == request.UserId)  // Luôn filter theo người dùng hiện tại (từ Auth)
+            .Where(e => e.UserId == _userProvider.Id)  // Luôn filter theo người dùng hiện tại (từ JWT token)
             .Include(e => e.User)
             .Include(e => e.PhongBanChuTri);
 

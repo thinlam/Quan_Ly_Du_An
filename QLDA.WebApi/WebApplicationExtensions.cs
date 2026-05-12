@@ -102,17 +102,6 @@ public static class WebApiServiceExtensions {
         services.AddMemoryCache();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-        // Register UserContext - ⚠️ Throw nếu chưa auth, tránh silent fallback về UserId=0
-        services.AddScoped<QLDA.WebApi.Models.Common.Interfaces.IUserContext>(sp => {
-            var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            if (httpContext?.User.Identity?.IsAuthenticated != true)
-                throw new UnauthorizedAccessException("User is not authenticated.");
-            var userIdString = httpContext.User.FindFirst("sub")?.Value;
-            if (!long.TryParse(userIdString, out var userId))
-                throw new UnauthorizedAccessException("Invalid or missing 'sub' claim in token.");
-            return new QLDA.WebApi.Models.Common.UserContext { UserId = userId };
-        });
-
         return services;
     }
 
