@@ -26,18 +26,30 @@ public class DanhMucTrangThaiPheDuyetConfiguration : AggregateRootConfiguration<
             .HasFilter("[Ma] IS NOT NULL AND [Ma] <> '' AND [IsDeleted] = 0");
 
         builder.HasData(
-            new DanhMucTrangThaiPheDuyet { Id = 1, Ma = "DT", Ten = "Dự thảo", Loai = TrangThaiPheDuyetCodes.Loai.DuToan, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 2, Ma = "ĐTr", Ten = "Đã trình", Loai = TrangThaiPheDuyetCodes.Loai.DuToan, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 3, Ma = "ĐD", Ten = "Đã duyệt", Loai = TrangThaiPheDuyetCodes.Loai.DuToan, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 4, Ma = "TL", Ten = "Trả lại", Loai = TrangThaiPheDuyetCodes.Loai.DuToan, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 5, Ma = "LEG", Ten = "Migrated", Loai = TrangThaiPheDuyetCodes.Loai.DuToan, Stt = 0, Used = false, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 6, Ma = "CXL", Ten = "Chờ xử lý", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 10, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 7, Ma = "TC", Ten = "Từ chối", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 11, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 8, Ma = "DKS", Ten = "Đã ký số", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 12, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 9, Ma = "DQLVB", Ten = "Đã chuyển QLVB", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 13, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 10, Ma = "DPH", Ten = "Đã phát hành", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 14, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 11, Ma = "DD", Ten = "Đã duyệt", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 15, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 12, Ma = "TL", Ten = "Trả lại", Loai = TrangThaiPheDuyetCodes.Loai.NoiDung, Stt = 16, Used = true, CreatedAt = SeedCreatedAt }
+            // PheDuyetDuToan statuses
+            new DanhMucTrangThaiPheDuyet { Id = 1, Ma = "DT", Ten = "Dự thảo", Loai = PheDuyetEntityNames.PheDuyetDuToan, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 2, Ma = "ĐTr", Ten = "Đã trình", Loai = PheDuyetEntityNames.PheDuyetDuToan, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 3, Ma = "ĐD", Ten = "Đã duyệt", Loai = PheDuyetEntityNames.PheDuyetDuToan, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 4, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.PheDuyetDuToan, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 5, Ma = "TC", Ten = "Từ chối", Loai = PheDuyetEntityNames.PheDuyetDuToan, Stt = 5, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 6, Ma = "LEG", Ten = "Migrated", Loai = PheDuyetEntityNames.Default, Stt = 0, Used = false, CreatedAt = SeedCreatedAt },
+            // HoSoDeXuatCapDoCntt statuses
+            new DanhMucTrangThaiPheDuyet { Id = 7, Ma = "DT", Ten = "Dự thảo", Loai = PheDuyetEntityNames.HoSoDeXuatCapDoCntt, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 8, Ma = "ĐTr", Ten = "Đã trình", Loai = PheDuyetEntityNames.HoSoDeXuatCapDoCntt, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 9, Ma = "ĐD", Ten = "Đã duyệt", Loai = PheDuyetEntityNames.HoSoDeXuatCapDoCntt, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 10, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.HoSoDeXuatCapDoCntt, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 11, Ma = "TC", Ten = "Từ chối", Loai = PheDuyetEntityNames.HoSoDeXuatCapDoCntt, Stt = 5, Used = true, CreatedAt = SeedCreatedAt },
+            // HoSoMoiThauDienTu statuses
+            new DanhMucTrangThaiPheDuyet { Id = 12, Ma = "DT", Ten = "Dự thảo", Loai = PheDuyetEntityNames.HoSoMoiThauDienTu, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 13, Ma = "ĐTr", Ten = "Đã trình", Loai = PheDuyetEntityNames.HoSoMoiThauDienTu, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 14, Ma = "ĐD", Ten = "Đã duyệt", Loai = PheDuyetEntityNames.HoSoMoiThauDienTu, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 15, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.HoSoMoiThauDienTu, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 16, Ma = "TC", Ten = "Từ chối", Loai = PheDuyetEntityNames.HoSoMoiThauDienTu, Stt = 5, Used = true, CreatedAt = SeedCreatedAt },
+            // PhanKhaiKinhPhi statuses (UC40 - #9467)
+            new DanhMucTrangThaiPheDuyet { Id = 17, Ma = "DT", Ten = "Dự thảo", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 18, Ma = "ĐTr", Ten = "Đã trình", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 19, Ma = "ĐD", Ten = "Đã duyệt", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 20, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 4, Used = true, CreatedAt = SeedCreatedAt }
         );
     }
 }

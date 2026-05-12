@@ -164,7 +164,11 @@ if /i "%PROVIDER%"=="sqlite" (
     dotnet run --project %MIGRATOR_PATH% -- --provider sqlite
 ) else (
     echo Updating SQL Server database via dotnet ef...
-    dotnet ef database update --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
+    if "%MIGRATION_NAME%"=="" (
+        dotnet ef database update --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
+    ) else (
+        dotnet ef database update %MIGRATION_NAME% --project %MIGRATOR_PATH% --startup-project %MIGRATOR_PATH% --context AppDbContext
+    )
 )
 goto :end
 

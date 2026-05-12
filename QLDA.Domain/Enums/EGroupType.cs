@@ -50,4 +50,8 @@ public enum EGroupType {
     /// Biên bản bàn giao
     /// </summary>
     BienBanBanGiao,
+    HoSoMoiThauDienTu,
+    PhanKhaiKinhPhi,
+
+
 }

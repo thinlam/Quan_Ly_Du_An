@@ -10,7 +10,7 @@ public interface IAppSettingsProvider {
     long PhongKeToanID { get; }
 
     /// <summary>
-    /// ID phòng Hành chính - Tổng hợp (phát hành PheDuyetNoiDung)
+    /// ID phòng Hành chính - Tổng hợp
     /// </summary>
     long PhongHCTHID { get; }
 }

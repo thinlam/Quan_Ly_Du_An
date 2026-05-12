@@ -64,19 +64,22 @@ graph TD
 
 ## 3. Data Access Patterns (EF Core + Dapper)
 
-The system employs a hybrid data access strategy, combining the benefits of Entity Framework Core (ORM) and Dapper (micro-ORM).
+The system employs a hybrid data access strategy, combining the benefits of Entity Framework Core (ORM) and Dapper (micro-ORM), with dual database provider support.
 
 ```mermaid
 graph LR
     A[QLDA.Persistence] --> B{Data Access Layer}
     B -- Write Operations <br> (CRUD, Complex Transactions) --> C[Entity Framework Core]
     B -- Read Operations <br> (Complex Queries, Projections) --> D[Dapper]
-    C --> E[SQL Server]
-    D --> E
+    C --> E{Provider Selection}
+    E -- Production --> F[SQL Server<br>AddPersistence]
+    E -- Dev/Testing<br>--provider sqlite --> G[SQLite<br>AddPersistenceSqlite]
+    D --> F
 ```
 
 -   **Entity Framework Core:** Used for most CRUD operations and complex transactions where object-relational mapping capabilities are beneficial. It handles tracking changes, concurrency, and relationship management. Configured with `AggregateRootConfiguration` pattern for entity configurations.
 -   **Dapper:** Employed for highly optimized read operations, especially for complex queries, reporting, or scenarios where direct SQL query execution provides significant performance advantages. This bypasses EF Core's change tracking overhead for reads.
+-   **Dual Provider:** `AddPersistence()` registers SQL Server (default). `AddPersistenceSqlite()` registers SQLite via `SqliteAppDbContext` which clears SQL Server-specific defaults. Selected via `--provider sqlite` CLI argument in both WebApi and Migrator.
 -   **Repository Pattern:** A generic repository pattern is implemented with `Repository<TEntity,TKey>`, exposing common data access methods. Specific repositories might extend this for entity-specific operations.
 -   **Unit of Work:** The `AppDbContext` acts as the Unit of Work, coordinating changes across multiple repositories and ensuring atomicity.
 

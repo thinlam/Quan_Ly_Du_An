@@ -15,6 +15,10 @@ public static class VisibilityFilterExtensions {
     /// Apply DuAn visibility filter: if user has XemTatCa → show all; if XemTheoPhong → show own department's projects only
     /// </summary>
     public static IQueryable<DuAn> ApplyDuAnVisibility(this IQueryable<DuAn> query, IUserProvider user, IPolicyProvider policy) {
+
+        //Tạm tắt
+        return query;
+
         if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
             return query;
 
@@ -39,6 +43,8 @@ public static class VisibilityFilterExtensions {
         IUserProvider user,
         IPolicyProvider policy,
         Func<T, Guid> duAnIdSelector) where T : class {
+        //Tạm tắt
+        return query;
         if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
             return query;
 

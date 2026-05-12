@@ -119,15 +119,21 @@ public static class WebApiServiceExtensions {
     /// <summary>
     /// Adds project-specific dependencies.
     /// </summary>
-    public static IServiceCollection AddProjectDependencies(this IServiceCollection services, IConfiguration configuration, AppSettings appSettings) {
+    public static IServiceCollection AddProjectDependencies(this IServiceCollection services, IConfiguration configuration, AppSettings appSettings, bool useSqlite = false) {
         services.Configure<AppSettings>(configuration);
         services.AddSingleton<IAppSettingsProvider, AppSettingsProvider>();
         services.AddScoped<IPolicyProvider, PolicyProvider>();
 
         services
             .AddApplicationDependencies()
-            .AddInfrastructureDependencies()
-            .AddPersistence(appSettings.ConnectionStrings);
+            .AddInfrastructureDependencies();
+
+        // Select DB provider: CLI --provider sqlite takes priority, then config fallback
+        var sqliteConn = appSettings.ConnectionStrings.SqliteConnection;
+        if (useSqlite && !string.IsNullOrEmpty(sqliteConn))
+            services.AddPersistenceSqlite(sqliteConn);
+        else
+            services.AddPersistence(appSettings.ConnectionStrings);
 
         return services;
     }
@@ -135,12 +141,12 @@ public static class WebApiServiceExtensions {
     /// <summary>
     /// Adds all web API services to the service collection.
     /// </summary>
-    public static IServiceCollection AddWebApiServices(this IServiceCollection services, IConfiguration configuration, AppSettings appSettings, IWebHostEnvironment environment) {
+    public static IServiceCollection AddWebApiServices(this IServiceCollection services, IConfiguration configuration, AppSettings appSettings, IWebHostEnvironment environment, bool useSqlite = false) {
         services.AddControllersWithJson();
         services.AddSwagger();
         services.AddAuthentication(appSettings, environment);
         services.AddCommonServices();
-        services.AddProjectDependencies(configuration, appSettings);
+        services.AddProjectDependencies(configuration, appSettings, useSqlite);
         services.AddResponseCaching(); // Required for VaryByQueryKeys
 
         return services;

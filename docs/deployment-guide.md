@@ -62,15 +62,39 @@ ASPOSE__LICENSEPATH="/app/config/aspose.lic"
 
 ## Database Setup
 
-### 1. Migration Execution
+### Database Provider Selection
+The system supports two database providers:
+
+| Provider | Use Case | CLI Flag |
+|----------|----------|----------|
+| **SQL Server** | Production, staging (default) | *(none)* |
+| **SQLite** | Local development, testing | `--provider sqlite` |
+
+```bash
+# SQL Server (default)
+./run.bat
+
+# SQLite (local dev/testing)
+./run.bat --sqlite
+
+# Direct dotnet CLI
+dotnet run --project QLDA.WebApi -- --provider sqlite
+```
+
+SQLite connection is configured via `ConnectionStrings:SqliteConnection` in `appsettings.Development.json`. When using SQLite, the database is auto-created via `EnsureCreated()` (no migrations needed).
+
+### 1. Migration Execution (SQL Server)
 Before first deployment, apply database migrations:
 
 ```bash
 # Navigate to the migrator project
 cd QLDA.Migrator
 
-# Apply migrations (using .NET CLI)
+# Apply SQL Server migrations (default)
 dotnet run
+
+# Apply with SQLite
+dotnet run -- --provider sqlite
 
 # Alternative: Using Entity Framework tools
 dotnet ef database update --project ../QLDA.Persistence --startup-project .

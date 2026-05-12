@@ -12,7 +12,7 @@ public class PheDuyetDuToanConfiguration : IEntityTypeConfiguration<PheDuyetDuTo
 
         // Configure derived properties only
         builder.Property(e => e.GiaTriDuThau).HasPrecision(18, 2);
-        builder.Property(e => e.TrangThaiId).HasDefaultValue(5); //Default : Migrated
+        
         builder.HasOne(e => e.ChucVu)
             .WithMany(e => e.PheDuyetDuToans)
             .HasForeignKey(e => e.ChucVuId)
@@ -21,11 +21,8 @@ public class PheDuyetDuToanConfiguration : IEntityTypeConfiguration<PheDuyetDuTo
         builder.HasOne(e => e.TrangThai)
             .WithMany()
             .HasForeignKey(e => e.TrangThaiId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
 
-        builder.HasMany(e => e.Histories)
-            .WithOne(e => e.PheDuyetDuToan)
-            .HasForeignKey(e => e.PheDuyetDuToanId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

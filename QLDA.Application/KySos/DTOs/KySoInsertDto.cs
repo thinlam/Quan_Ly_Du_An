@@ -7,7 +7,7 @@ public class KySoInsertDto {
 
     public int? ChucVuId { get; set; }
 
-    public string? PhamVi { get; set; }
+    public int? PhamVi { get; set; }
 
     public int? PhongBanId { get; set;}
 

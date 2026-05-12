@@ -1,0 +1,32 @@
+using QLDA.Application.Common;
+using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
+using QLDA.Application.HoSoMoiThauDienTus.Commands;
+using QLDA.Application.PhanKhaiKinhPhis.Commands;
+using QLDA.Application.PheDuyetDuToans.Commands;
+using QLDA.Domain.Constants;
+
+namespace QLDA.Application.QuanLyPheDuyet.Commands;
+
+/// <summary>
+/// Dispatch trinh phe duyet theo type → den dung entity command
+/// </summary>
+public record PheDuyetDispatchTrinhCommand(string Type, Guid Id, string? NoiDung = null) : IRequest<int>;
+
+internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDispatchTrinhCommand, int> {
+    private readonly IMediator _mediator;
+
+    public PheDuyetDispatchTrinhCommandHandler(IServiceProvider serviceProvider) {
+        _mediator = serviceProvider.GetRequiredService<IMediator>();
+    }
+
+    public async Task<int> Handle(PheDuyetDispatchTrinhCommand request, CancellationToken cancellationToken) {
+        IRequest<int> command = request.Type switch {
+            PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.HoSoDeXuatCapDoCntt => new HoSoDeXuatCapDoCnttTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiTrinhCommand(request.Id, request.NoiDung),
+            _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
+        };
+        return await _mediator.Send(command, cancellationToken);
+    }
+}

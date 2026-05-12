@@ -36,3 +36,8 @@ Ví dụ: Tiến độ có bước trình BGĐ duyệt/ký số => Bên "Quản 
 ![alt text](image-1.png)
 
 
+Liên quan các phê duyệt hồ sơ tờ trình các issue sau:
+Feature #9467 Bổ sung UC Phân khai kinh phí cho các nội dung được giao dự toán
+Feature #9485 / #9473 : Bổ sung UC Lập và phê duyệt E-HSMT gói xây lắp/Thiết bị
+Feature #9483 Bổ sung UC Điều chỉnh QĐ phê duyệt dự toán/dự án/kế hoạch thuê dịch vụ công nghệ thông tin theo yêu cầu riêng (các lần nếu có)
+Feature #9574 Bổ sung UC Lập và phê duyệt E-HSMT đối với các gói thầu tư vấn (Tư vấn lập hồ sơ mời thầu, đánh giá hồ sơ dự thầu; Tư vấn thẩm định hồ sơ mời thầu và đánh giá kết quả lựa chọn nhà thầu; ......

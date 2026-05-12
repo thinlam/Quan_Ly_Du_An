@@ -9,6 +9,8 @@ using QLDA.Application.GoiThaus;
 using QLDA.Domain.Constants;
 using System.Data;
 using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Application.DuAns.DTOs;
+using QLDA.Domain.DTOs;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -151,6 +153,14 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
             IsNoTracking = true,
             IsCbo = true,
         });
+        return ResultApi.Ok(res);
+    }
+    [ProducesResponseType<ResultApi<PaginatedList<GoiThauDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpGet("tinh-hinh-thuc-hien-dau-thau")]
+    public async Task<ResultApi> GetTinhHinhThucHienDauThau(  [FromQuery] TinhHinhDauThauSearchDto searchDto)
+    {
+        var res = await Mediator.Send(new GoiThauGetTinhHinhDauThauQuery(searchDto));
         return ResultApi.Ok(res);
     }
 }

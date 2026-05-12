@@ -13,30 +13,30 @@ public record PheDuyetDuToanDuyetCommand(Guid Id) : IRequest<int>;
 
 internal class PheDuyetDuToanDuyetCommandHandler : IRequestHandler<PheDuyetDuToanDuyetCommand, int> {
     private readonly IRepository<PheDuyetDuToan, Guid> _repository;
-    private readonly IRepository<PheDuyetDuToanHistory, Guid> _historyRepository;
+    private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public PheDuyetDuToanDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
-        _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToanHistory, Guid>>();
+        _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(PheDuyetDuToanDuyetCommand request, CancellationToken cancellationToken) {
-        // Permission check: BGĐ role only
-        // if (!_userProvider.AuthInfo.HasRole("BGĐ")) {
-        //     throw new ManagedException("Chỉ Ban Giám đốc có quyền duyệt phê duyệt dự toán");
-        // }
+        // Permission check: LDDV role only
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LD)) {
+            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt phê duyệt dự toán");
+        }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaTrinh && s.Loai == TrangThaiPheDuyetCodes.Loai.DuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaTrinh && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaDuyet && s.Loai == TrangThaiPheDuyetCodes.Loai.DuToan, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DuToan.DaDuyet && s.Loai == PheDuyetEntityNames.PheDuyetDuToan, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
@@ -53,12 +53,12 @@ internal class PheDuyetDuToanDuyetCommandHandler : IRequestHandler<PheDuyetDuToa
 
         // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet.Id;
-        entity.NguoiGiaoViecId = _userProvider.Info.UserID;
 
         // Create history record
-        var history = new PheDuyetDuToanHistory {
+        var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            PheDuyetDuToanId = entity.Id,
+            EntityName = PheDuyetEntityNames.PheDuyetDuToan,
+            EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaDuyet.Id,

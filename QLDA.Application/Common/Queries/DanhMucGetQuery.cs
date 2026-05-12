@@ -38,6 +38,7 @@ public class DanhMucGetQueryHandler(IServiceProvider serviceProvider) : IRequest
     private readonly IRepository<DanhMucTinhTrangThucHienLcnt, int> DanhMucTinhTrangThucHienLcnt = serviceProvider.GetRequiredService<IRepository<DanhMucTinhTrangThucHienLcnt, int>>();
     private readonly IRepository<DmCapDoCntt, int> DmCapDoCntt = serviceProvider.GetRequiredService<IRepository<DmCapDoCntt, int>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> DanhMucTrangThaiPheDuyet = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+    private readonly IRepository<DanhMucPhuongThucKySo, int> DanhMucPhuongThucKySo = serviceProvider.GetRequiredService<IRepository<DanhMucPhuongThucKySo, int>>();
 
 
     public async Task<object> Handle(DanhMucGetQuery request, CancellationToken cancellationToken) {
@@ -70,8 +71,9 @@ public class DanhMucGetQueryHandler(IServiceProvider serviceProvider) : IRequest
             EDanhMuc.DanhMucMucDoKhoKhan => await Get(request, DanhMucMucDoKhoKhan, cancellationToken),
             EDanhMuc.DanhMucTinhTrangThucHienLcnt => await Get(request, DanhMucTinhTrangThucHienLcnt, cancellationToken),
             EDanhMuc.DmCapDoCntt => await Get(request, DmCapDoCntt, cancellationToken),
+            EDanhMuc.DanhMucPhuongThucKySo => await Get(request, DanhMucPhuongThucKySo, cancellationToken),
             EDanhMuc.DanhMucTrangThaiPheDuyet => await Get(request, DanhMucTrangThaiPheDuyet, cancellationToken),
-            _ => throw new ManagedException()
+            _ => throw new ManagedException(),
         };
     }
 
