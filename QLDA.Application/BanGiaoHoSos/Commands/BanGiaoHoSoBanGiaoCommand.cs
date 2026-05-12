@@ -1,0 +1,38 @@
+using System.Data;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using QLDA.Domain.Entities;
+using QLDA.Domain.Enums;
+
+namespace QLDA.Application.BanGiaoHoSos.Commands;
+
+/// <summary>
+/// Thực hiện bàn giao hồ sơ: đổi trạng thái 0→1, set NgayBanGiao, lưu biên bản
+/// </summary>
+public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateTime NgayBanGiao) : IRequest<BanGiaoHoSo>;
+
+internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
+    private readonly IRepository<BanGiaoHoSo, Guid> _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public BanGiaoHoSoBanGiaoCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
+        _unitOfWork = _repository.UnitOfWork;
+    }
+
+    public async Task<BanGiaoHoSo> Handle(BanGiaoHoSoBanGiaoCommand request, CancellationToken cancellationToken = default) {
+        var entity = await _repository.GetQueryableSet()
+            .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
+        ManagedException.ThrowIfNull(entity);
+
+        entity.TrangThai = ETrangThaiBanGiao.DaBanGiao;
+        entity.NgayBanGiao = request.NgayBanGiao;
+
+        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await _repository.UpdateAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+        return entity;
+    }
+}
