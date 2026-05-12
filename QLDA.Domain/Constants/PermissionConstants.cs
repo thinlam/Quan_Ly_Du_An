@@ -84,7 +84,7 @@ public static class PermissionConstants {
     /// <summary>
     /// PheDuyet action permissions (Duyet, KySo, ChuyenQLVB, TuChoi)
     /// </summary>
-    private static readonly string[] PheDuyetActions =
+    public static readonly string[] PheDuyetActions =
         [PheDuyet_Duyet, PheDuyet_KySo, PheDuyet_ChuyenQLVB, PheDuyet_TuChoi];
 
     /// <summary>
