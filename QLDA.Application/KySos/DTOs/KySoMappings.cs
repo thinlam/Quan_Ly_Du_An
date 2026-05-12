@@ -9,7 +9,7 @@ public static class KySoMappings {
         ChuSoHuuId = dto.ChuSoHuuId,
         Email = dto.Email,
         ChucVuId = dto.ChucVuId,
-        PhamVi = Enum.TryParse<EPhamViKySo>(dto.PhamVi, true, out var phamVi) ? phamVi : null,
+        PhamVi = dto.PhamVi.HasValue ? (EPhamViKySo)dto.PhamVi : null,
         PhongBanId = dto.PhongBanId,
         SerialChungThu = dto.SerialChungThu,
         ToChucCap = dto.ToChucCap,
@@ -18,12 +18,11 @@ public static class KySoMappings {
         PhuongThucKySoId = dto.PhuongThucKySoId
     };
 
-    public static void Update (this KySo entity, KySoUpdateModel dto)
-    {
+    public static void Update(this KySo entity, KySoUpdateModel dto) {
         entity.ChuSoHuuId = dto.ChuSoHuuId;
         entity.Email = dto.Email;
         entity.ChucVuId = dto.ChucVuId;
-        entity.PhamVi = Enum.TryParse<EPhamViKySo>(dto.PhamVi, true, out var phamVi) ? phamVi : null;
+        entity.PhamVi = dto.PhamVi.HasValue ? (EPhamViKySo)dto.PhamVi : null;
         entity.PhongBanId = dto.PhongBanId;
         entity.SerialChungThu = dto.SerialChungThu;
         entity.ToChucCap = dto.ToChucCap;

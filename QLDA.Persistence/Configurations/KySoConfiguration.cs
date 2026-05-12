@@ -12,7 +12,7 @@ public class KySoConfiguration : AggregateRootConfiguration<KySo> {
         builder.Property(e => e.Email).HasMaxLength(255);
         builder.Property(e => e.SerialChungThu).HasMaxLength(200);
         builder.Property(e => e.ToChucCap).HasMaxLength(500);
-        builder.Property(e => e.PhamVi).HasConversion<string>().HasMaxLength(20);
+        builder.Property(e => e.PhamVi).HasConversion<int>();
         builder.HasOne(e => e.PhuongThucKySo)
             .WithMany(e => e.KySos)
             .HasForeignKey(e => e.PhuongThucKySoId)

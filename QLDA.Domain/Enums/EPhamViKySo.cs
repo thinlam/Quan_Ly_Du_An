@@ -1,6 +1,6 @@
 namespace QLDA.Domain.Enums;
 
 public enum EPhamViKySo {
-    CANHAN,
-    DONVI
+    CANHAN = 2,
+    DONVI = 1
 }
