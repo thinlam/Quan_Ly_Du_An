@@ -6,8 +6,8 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 /// Model cho endpoint PUT /ban-giao: nhận ngày bàn giao + biên bản bàn giao
 /// </summary>
 public class BanGiaoHoSoBanGiaoModel {
-    /// <summary>Ngày bàn giao, nếu null sẽ dùng DateTime.Now</summary>
-    public DateTimeOffset? NgayBanGiao { get; set; }
+    /// <summary>Ngày bàn giao (DateOnly), nếu null sẽ dùng ngày hiện tại. Server tự quy đổi sang UTC.</summary>
+    public DateOnly? NgayBanGiao { get; set; }
     // Biên bản bàn giao (đính kèm khi thực hiện bàn giao)
     public List<TepDinhKemModel>? DanhSachBienBan { get; set; }
 }

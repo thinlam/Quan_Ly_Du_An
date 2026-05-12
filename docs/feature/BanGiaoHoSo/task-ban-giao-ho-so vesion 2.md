@@ -323,8 +323,8 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 /// DTO cho endpoint ban-giao: đổi trạng thái 0→1, set ngày bàn giao, đính kèm biên bản
 /// </summary>
 public class BanGiaoHoSoBanGiaoDto {
-    /// <summary>Ngày bàn giao, mặc định là DateTimeOffset.Now nếu null</summary>
-    public DateTimeOffset? NgayBanGiao { get; set; }
+    /// <summary>Ngày bàn giao (DateOnly). Server tự convert sang DateTimeOffset UTC via DateOnlyExtensions.</summary>
+    public DateOnly? NgayBanGiao { get; set; }
     // Biên bản bàn giao (gắn khi thực hiện bàn giao)
     public List<TepDinhKemDto>? DanhSachBienBan { get; set; }
 }
@@ -513,10 +513,7 @@ namespace QLDA.Application.BanGiaoHoSos.Commands;
 /// <summary>
 /// Thực hiện bàn giao hồ sơ: đổi trạng thái 0→1, set NgayBanGiao, lưu biên bản
 /// </summary>
-public record BanGiaoHoSoBanGiaoCommand(
-    Guid Id,
-    DateTimeOffset NgayBanGiao
-) : IRequest<BanGiaoHoSo>;
+public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateOnly? NgayBanGiao) : IRequest<BanGiaoHoSo>;
 
 internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> BanGiaoHoSo;
@@ -533,7 +530,7 @@ internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBan
         ManagedException.ThrowIfNull(entity);
 
         entity.TrangThai = ETrangThaiBanGiao.DaBanGiao;
-        entity.NgayBanGiao = request.NgayBanGiao;
+        entity.NgayBanGiao = request.NgayBanGiao?.ToStartOfDayUtc() ?? DateTimeOffset.UtcNow;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await BanGiaoHoSo.UpdateAsync(entity, cancellationToken);
@@ -739,8 +736,8 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 /// Model cho endpoint PUT /ban-giao: nhận ngày bàn giao + biên bản bàn giao
 /// </summary>
 public class BanGiaoHoSoBanGiaoModel {
-    /// <summary>Ngày bàn giao, nếu null sẽ dùng DateTimeOffset.Now</summary>
-    public DateTimeOffset? NgayBanGiao { get; set; }
+    /// <summary>Ngày bàn giao (DateOnly), nếu null sẽ dùng ngày hiện tại. Server tự quy đổi sang UTC.</summary>
+    public DateOnly? NgayBanGiao { get; set; }
     // Biên bản bàn giao (đính kèm khi thực hiện bàn giao)
     public List<TepDinhKemModel>? DanhSachBienBan { get; set; }
 }
@@ -924,11 +921,10 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> BanGiao(Guid id, [FromBody] BanGiaoHoSoBanGiaoModel model) {
-        var ngayBanGiao = model.NgayBanGiao ?? DateTimeOffset.Now;
         var bienBanEntities = model.GetDanhSachBienBanBanGiao(id);
 
-        // Thực hiện bàn giao: đổi TrangThai 0→1, set NgayBanGiao
-        var entity = await Mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, ngayBanGiao));
+        // Thực hiện bàn giao: đổi TrangThai 0→1, set NgayBanGiao (DateOnly → DateTimeOffset UTC trong handler)
+        var entity = await Mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao));
 
         // Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {

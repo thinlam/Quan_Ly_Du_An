@@ -268,7 +268,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ✅ Logic:
   1. Lấy entity by Id
   2. Đổi TrangThai: 0 → 1
-  3. Set NgayBanGiao (default: DateTimeOffset.Now nếu null)
+  3. Set NgayBanGiao (client truyền DateOnly?, server convert sang DateTimeOffset UTC via DateOnlyExtensions. Default: ngày hiện tại nếu null)
   4. Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
   
 ✅ Cho phép: TrangThai = 0 (chưa bàn giao)
@@ -391,7 +391,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 | **Audit** | `CreatedAt`, `UpdatedAt` |
 | **Status Enum** | `ETrangThaiBanGiao` (0/1) |
 | **FK Relations** | PhongBanChuTriId (long?), UserId (long?) |
-| **NgayBanGiao** | `DateTimeOffset?` (đổi từ `DateTime?`) |
+| **NgayBanGiao** | Entity: `DateTimeOffset?` (DB lưu UTC). Request/DTO nhận `DateOnly?`, server tự convert qua `DateOnlyExtensions.ToStartOfDayUtc()` |
 | **File Types** | 2 loại: BanGiaoHoSo, BienBanBanGiao |
 | **Delete Condition** | Chỉ TrangThai = 0 |
 | **Ban-Giao Logic** | 0→1, set NgayBanGiao, save biên bản |

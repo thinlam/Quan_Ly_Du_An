@@ -9,7 +9,7 @@ namespace QLDA.Application.BanGiaoHoSos.Commands;
 /// <summary>
 /// Thực hiện bàn giao hồ sơ: đổi trạng thái 0→1, set NgayBanGiao, lưu biên bản
 /// </summary>
-public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateTimeOffset NgayBanGiao) : IRequest<BanGiaoHoSo>;
+public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateOnly? NgayBanGiao) : IRequest<BanGiaoHoSo>;
 
 internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> _repository;
@@ -26,7 +26,7 @@ internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBan
         ManagedException.ThrowIfNull(entity);
 
         entity.TrangThai = ETrangThaiBanGiao.DaBanGiao;
-        entity.NgayBanGiao = request.NgayBanGiao;
+        entity.NgayBanGiao = request.NgayBanGiao?.ToStartOfDayUtc() ?? DateTimeOffset.UtcNow;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repository.UpdateAsync(entity, cancellationToken);
