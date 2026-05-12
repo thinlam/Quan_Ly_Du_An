@@ -72,7 +72,7 @@ Lý do: chưa cấu hình role thực tế trên server.
 **Thay đổi:**
 - Tạo `QuanLyPheDuyetController` — unified dispatch pattern, 7 endpoints
 - Dispatch commands theo `type` parameter → entity-specific handlers
-- Bật lại role enforcement: Duyet/TraLai yêu cầu `QLDA_LDDV`, Trinh yêu cầu KH-TC
+- Bật lại role enforcement: Duyet/TraLai yêu cầu `QLDA_LD`, Trinh yêu cầu KH-TC
 - Tạo migration `RefactorPheDuyet` — chuẩn LEG Loai thành DungChung
 - Thêm 20 integration tests cho QuanLyPheDuyet (dispatch, role-based, flow states)
 - SQLite provider support: `--provider sqlite` CLI arg
@@ -118,6 +118,74 @@ Lý do: chưa cấu hình role thực tế trên server.
 
 ---
 
+## 12/05 — Fix NghiemThuUpdate duplicate key violation on junction table
+
+**Issue:** `NghiemThuPhuLucHopDong` PK duplicate — `[08deace2-8e36-4f4a-687a-7b136406d2c1, 08deaa4c-2c25-4d29-687a-7b28580728af]`
+
+**Root cause:** `NghiemThuMappings.Update()` tạo hoàn toàn mới collection `NghiemThuPhuLucHopDongs`. Khi entity được EF tracking với navigation property, `DbSet.Update()` + new junction records → tracking conflict → duplicate key.
+
+**Fix (2 attempts):**
+
+1. **Attempt 1 (failed):** Clear collection + recreate via `NghiemThuMappings.Update()` → still tracked by EF
+2. **Attempt 2 (success):** 
+   - Query entity với `.AsNoTracking()` — tránh tracking junction records
+   - Update scalar properties trực tiếp (not via `entity.Update()`)
+   - Sync junction table riêng trong handler — raw `DbContext.Set<>()` delete/insert
+
+**Files changed:**
+- `QLDA.Application/NghiemThus/Commands/NghiemThuUpdateCommand.cs` — handler xử lý junction table riêng
+- `QLDA.Application/NghiemThus/NghiemThuMappings.cs` — revert `Update()` (không còn xử lý junction)
+
+**Pattern cho junction table với composite key:**
+```csharp
+// 1. Query entity AsNoTracking để tránh tracking navigation
+var entity = await repo.GetQueryableSet().AsNoTracking().FirstOrDefaultAsync(...);
+
+// 2. Update scalar properties directly
+entity.Property1 = dto.Property1;
+entity.Property2 = dto.Property2;
+
+// 3. Sync junction table via raw DbContext (tránh EF tracking conflict)
+var db = repo.UnitOfWork as DbContext;
+db.Set<JunctionEntity>().Where(x => x.LeftId == entity.Id).ExecuteDelete();
+db.Set<JunctionEntity>().AddRangeAsync(newRecords);
+```
+
+---
+
+## 12/05 — Refactor role constants (QLDA_LDDV → QLDA_LD, QLDA_HC_TH → PhongBanID check)
+
+**Thay đổi:**
+
+**QLDA_LDDV → QLDA_LD (Lãnh đạo đơn vị)**
+- Xóa `QLDA_LDDV` constant khỏi `RoleConstants.cs`
+- `QLDA_LD` giờ là role duy nhất cho Lãnh đạo (LDDV - Lãnh đạo đơn vị)
+- Cập nhật `GroupAdminOrManager` dùng `QLDA_LD` thay vì `QLDA_LDDV`
+- Cập nhật `PermissionConstants.RolePermissions[QLDA_LD]` = XemTatCa + PheDuyetActions
+- Cập nhật `CauHinhVaiTroQuyenConfiguration` seed data
+- Thay tất cả references trong 13 command files
+
+**QLDA_HC_TH → PhongBanID check**
+- Thay role check `QLDA_HC_TH` bằng `PhongBanID == PhongHCTHID` từ appsettings.json
+- `IAppSettingsProvider.PhongHCTHID` đọc từ `appsettings.json`
+- Đăng ký `TestAppSettingsProvider` trong test fixture với `PhongHCTHID = 300`
+- 5 command files cập nhật: PheDuyetChuyenPhatHanh, PhanKhaiKinhPhiTuChoi, PheDuyetDuToanTuChoi, HoSoMoiThauDienTuTuChoi, HoSoDeXuatCapDoCnttTuChoi
+- Xóa `QLDA_HC_TH` permission mapping trong `PermissionConstants.cs` (không còn role-based)
+
+**Files modified:**
+- `QLDA.Domain/Constants/RoleConstants.cs` — xóa QLDA_LDDV, cập nhật comment QLDA_LD
+- `QLDA.Domain/Constants/PermissionConstants.cs` — cập nhật RolePermissions, xóa QLDA_HC_TH entry
+- `QLDA.Persistence/Configurations/CauHinhVaiTroQuyenConfiguration.cs` — seed QLDA_LD với XemTatCa + PheDuyetActions
+- `QLDA.Application/*/Commands/*TuChoiCommand.cs` — 4 files đổi sang PhongBanID check
+- `QLDA.Application/QuanLyPheDuyet/Commands/PheDuyetChuyenPhatHanhCommand.cs` — đổi sang PhongBanID check
+- `QLDA.WebApi/Controllers/DanhMucUserController.cs` — combobox lãnh đạo chỉ dùng QLDA_LD
+- `QLDA.Tests/Fixtures/WebApiFixture.cs` — thêm TestAppSettingsProvider, CreateHcthClient() dùng PhongBanId=300
+- Docs: `report.md`, `journal.md`, `test-workflow.md` — cập nhật role references
+
+**Note:** Migrations trong `QLDA.Migrator/Migrations/` không được sửa (immutable snapshots). Database seed data sẽ dùng `QLDA_LD` từ code mới.
+
+---
+
 ## Timeline tổng hợp
 
 ```
@@ -132,6 +200,8 @@ Lý do: chưa cấu hình role thực tế trên server.
 08/05  QuanLyPheDuyet unified dispatch + SQLite + 20 tests → MERGED
   ↓
 11/05  TuChoi + HoSoDeXuatCapDoCntt + HoSoMoiThauDienTu workflows + auto-assign Dự thảo
+  ↓
+12/05  Refactor role constants: QLDA_LDDV→QLDA_LD, QLDA_HC_TH→PhongBanID check
 ```
 
 ## Lessons learned
