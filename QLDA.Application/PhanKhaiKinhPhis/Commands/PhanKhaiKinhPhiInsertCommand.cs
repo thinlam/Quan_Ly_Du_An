@@ -31,6 +31,7 @@ internal class PhanKhaiKinhPhiInsertCommandHandler : IRequestHandler<PhanKhaiKin
             NguonVonId = request.Dto.NguonVonId,
             KinhPhiDeXuat = request.Dto.KinhPhiDeXuat,
             KinhPhiPhanKhai = request.Dto.KinhPhiPhanKhai,
+            ThuyetMinh = request.Dto.ThuyetMinh,
             TrangThaiId = trangThaiDuThao?.Id,
         };
 

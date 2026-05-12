@@ -20,7 +20,7 @@ public class QuanLyPheDuyetController : AggregateRootController {
     /// <summary>
     /// Danh sach entity types cho FE truyen vao tham so {type}
     /// </summary>
-    [ProducesResponseType<ResultApi<List<string>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<List<PheDuyetTypeItemDto>>>(StatusCodes.Status200OK)]
     [HttpGet("types")]
     public ResultApi GetTypes() {
         var types = typeof(PheDuyetEntityNames)
@@ -28,9 +28,18 @@ public class QuanLyPheDuyetController : AggregateRootController {
             .Where(f => f.IsLiteral && f.Name != nameof(PheDuyetEntityNames.Default))
             .Select(f => (string?)f.GetRawConstantValue())
             .Where(v => v != null)
+            .Select(v => new PheDuyetTypeItemDto { Key = v!, Label = GetLabelForType(v!) })
             .ToList()!;
         return ResultApi.Ok(types);
     }
+
+    private static string GetLabelForType(string type) => type switch {
+        PheDuyetEntityNames.PheDuyetDuToan => "Phê duyệt dự toán",
+        PheDuyetEntityNames.HoSoDeXuatCapDoCntt => "Hồ sơ đề xuất cấp CNTT",
+        PheDuyetEntityNames.HoSoMoiThauDienTu => "Hồ sơ mua thầu điện tử",
+        PheDuyetEntityNames.PhanKhaiKinhPhi => "Phân khai kinh phí",
+        _ => type
+    };
 
     /// <summary>
     /// Danh sach tat ca ban ghi pheduyet voi trang thai moi nhat

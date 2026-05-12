@@ -25,6 +25,7 @@ internal class PhanKhaiKinhPhiUpdateCommandHandler : IRequestHandler<PhanKhaiKin
         entity.NguonVonId = request.Dto.NguonVonId;
         entity.KinhPhiDeXuat = request.Dto.KinhPhiDeXuat;
         entity.KinhPhiPhanKhai = request.Dto.KinhPhiPhanKhai;
+        entity.ThuyetMinh = request.Dto.ThuyetMinh;
         entity.DuAnId = request.Dto.DuAnId;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);

@@ -1,8 +1,15 @@
+using System.Data;
 using System.Net.Mime;
+using QLDA.Domain.Constants;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
+using QLDA.Application.TepDinhKems.Commands;
+using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Application.TepDinhKems.Queries;
+using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
+using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -24,7 +31,11 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         var entity = await Mediator.Send(new PhanKhaiKinhPhiGetQuery {
             Id = id, ThrowIfNull = true, IsNoTracking = true,
         });
-        return ResultApi.Ok(entity.ToModel());
+
+        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
+            GroupId = [entity.Id.ToString()]
+        });
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     /// <summary>
@@ -46,11 +57,16 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
     /// <summary>
     /// Thêm mới phân khai kinh phí
     /// </summary>
-    [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create([FromBody] PhanKhaiKinhPhiModel model) {
+    public async Task<ResultApi> Create(
+        [FromBody] PhanKhaiKinhPhiModel model,
+        [FromServices] IUnitOfWork unitOfWork,
+        CancellationToken cancellationToken = default) {
+        using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+
         var entity = await Mediator.Send(new PhanKhaiKinhPhiInsertCommand(
             new() {
                 DuAnId = model.DuAnId,
@@ -60,8 +76,17 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
                 KinhPhiDeXuat = model.KinhPhiDeXuat,
                 KinhPhiPhanKhai = model.KinhPhiPhanKhai,
             }
-        ));
-        return ResultApi.Ok(entity.Id);
+        ), cancellationToken);
+
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PhanKhaiKinhPhi) ?? []];
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        }, cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitTransactionAsync(cancellationToken);
+        return ResultApi.Ok(new { entity.Id });
     }
 
     /// <summary>
@@ -71,7 +96,12 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Update([FromBody] PhanKhaiKinhPhiModel model) {
+    public async Task<ResultApi> Update(
+        [FromBody] PhanKhaiKinhPhiModel model,
+        [FromServices] IUnitOfWork unitOfWork,
+        CancellationToken cancellationToken = default) {
+        using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+
         var entity = await Mediator.Send(new PhanKhaiKinhPhiUpdateCommand(
             new() {
                 Id = model.GetId(),
@@ -82,8 +112,21 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
                 KinhPhiDeXuat = model.KinhPhiDeXuat,
                 KinhPhiPhanKhai = model.KinhPhiPhanKhai,
             }
-        ));
-        return ResultApi.Ok(entity.ToModel());
+        ), cancellationToken);
+
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PhanKhaiKinhPhi) ?? []];
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        }, cancellationToken);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitTransactionAsync(cancellationToken);
+
+        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
+            GroupId = [entity.Id.ToString()]
+        }, cancellationToken);
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     /// <summary>

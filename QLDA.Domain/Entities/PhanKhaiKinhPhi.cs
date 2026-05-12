@@ -10,8 +10,9 @@ public class PhanKhaiKinhPhi : Entity<Guid>, IAggregateRoot {
     public string? SoToTrinh { get; set; }
     public DateTimeOffset? NgayToTrinh { get; set; }
     public int? NguonVonId { get; set; }
-    public long? KinhPhiDeXuat { get; set; }
-    public long? KinhPhiPhanKhai { get; set; }
+    public decimal? KinhPhiDeXuat { get; set; }
+    public decimal? KinhPhiPhanKhai { get; set; }
+    public string? ThuyetMinh { get; set; }
     public int? TrangThaiId { get; set; }
 
     #region Navigation Properties

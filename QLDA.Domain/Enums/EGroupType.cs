@@ -43,6 +43,7 @@ public enum EGroupType {
     QuyetDinhPheDuyetNhiemVu,
     HoSoDeXuatCapDoCntt,
     HoSoMoiThauDienTu,
+    PhanKhaiKinhPhi,
 
 
 }
