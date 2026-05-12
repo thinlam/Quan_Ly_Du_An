@@ -7,7 +7,7 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 /// </summary>
 public class BanGiaoHoSoBanGiaoModel {
     /// <summary>Ngày bàn giao, nếu null sẽ dùng DateTime.Now</summary>
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
     // Biên bản bàn giao (đính kèm khi thực hiện bàn giao)
     public List<TepDinhKemModel>? DanhSachBienBan { get; set; }
 }

@@ -101,7 +101,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> BanGiao(Guid id, [FromBody] BanGiaoHoSoBanGiaoModel model) {
-        var ngayBanGiao = model.NgayBanGiao ?? DateTime.Now;
+        var ngayBanGiao = model.NgayBanGiao ?? DateTimeOffset.Now;
         var bienBanEntities = model.GetDanhSachBienBanBanGiao(id);
 
         var entity = await _mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, ngayBanGiao));

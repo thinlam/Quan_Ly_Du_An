@@ -10,7 +10,7 @@ public class BanGiaoHoSoDto {
     public string? TenPhongBan { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
     public string? TenTrangThai { get; set; }
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
     public long? UserId { get; set; }
     public string? TenNguoiTao { get; set; }
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)

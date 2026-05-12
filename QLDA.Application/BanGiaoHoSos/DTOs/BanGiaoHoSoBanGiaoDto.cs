@@ -7,7 +7,7 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 /// </summary>
 public class BanGiaoHoSoBanGiaoDto {
     /// <summary>Ngày bàn giao, mặc định là DateTime.Now nếu null</summary>
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
     // Biên bản bàn giao (gắn khi thực hiện bàn giao)
     public List<TepDinhKemDto>? DanhSachBienBan { get; set; }
 }

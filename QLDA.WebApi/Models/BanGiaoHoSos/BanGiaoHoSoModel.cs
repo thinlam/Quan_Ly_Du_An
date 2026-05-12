@@ -15,7 +15,7 @@ public class BanGiaoHoSoModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDi
     public string? TenHoSo { get; set; }
     public long? PhongBanChuTriId { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
     // Biên bản bàn giao (EGroupType.BienBanBanGiao) – chỉ đọc khi hiển thị

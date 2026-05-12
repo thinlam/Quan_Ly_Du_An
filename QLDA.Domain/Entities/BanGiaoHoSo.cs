@@ -30,7 +30,7 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     /// <summary>
     /// Ngày bàn giao – set khi gọi endpoint ban-giao
     /// </summary>
-    public DateTime? NgayBanGiao { get; set; }
+    public DateTimeOffset? NgayBanGiao { get; set; }
 
     /// <summary>
     /// FK → UserMaster (người tạo hồ sơ - từ Auth)

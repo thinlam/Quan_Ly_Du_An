@@ -9,7 +9,7 @@ namespace QLDA.Application.BanGiaoHoSos.Commands;
 /// <summary>
 /// Thực hiện bàn giao hồ sơ: đổi trạng thái 0→1, set NgayBanGiao, lưu biên bản
 /// </summary>
-public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateTime NgayBanGiao) : IRequest<BanGiaoHoSo>;
+public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateTimeOffset NgayBanGiao) : IRequest<BanGiaoHoSo>;
 
 internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> _repository;
