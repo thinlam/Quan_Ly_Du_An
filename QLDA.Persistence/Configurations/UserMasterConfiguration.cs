@@ -7,8 +7,6 @@ namespace QLDA.Persistence.Configurations;
 public class UserMasterConfiguration : AggregateRootConfiguration<UserMaster> {
     public override void Configure(EntityTypeBuilder<UserMaster> builder) {
 
-        builder.HasNoKey().ToTable("USER_MASTER");
-
         builder.HasKey(e => e.Id).HasName("PK__USER_MAS__CA9BC5E270CE69C2");
 
         builder.ToTable("USER_MASTER");

@@ -101,6 +101,7 @@ public static class WebApiServiceExtensions {
         services.AddHealthChecks();
         services.AddMemoryCache();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
         return services;
     }
 

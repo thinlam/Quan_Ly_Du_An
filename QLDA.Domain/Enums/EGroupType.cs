@@ -42,6 +42,14 @@ public enum EGroupType {
     /// </summary>
     QuyetDinhPheDuyetNhiemVu,
     HoSoDeXuatCapDoCntt,
+    /// <summary>
+    /// Tệp hồ sơ bàn giao
+    /// </summary>
+    BanGiaoHoSo,
+    /// <summary>
+    /// Biên bản bàn giao
+    /// </summary>
+    BienBanBanGiao,
     HoSoMoiThauDienTu,
     PhanKhaiKinhPhi,
 
