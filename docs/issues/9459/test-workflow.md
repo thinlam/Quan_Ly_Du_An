@@ -190,9 +190,9 @@ TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.TuChoi   // "TC"
 | Client | Roles | PhongBanId | Mô tả |
 |--------|-------|------------|-------|
 | AuthedClient | QLDA_QuanTri, QLDA_TatCa | 1 | Admin mặc định (không có LDDV, không phải KH-TC, không phải HC-TH) |
-| BgdClient | QLDA_QuanTri, QLDA_LDDV | 1 | Lãnh đạo (Duyet/TraLai/ChuyenPhatHanh) |
+| BgdClient | QLDA_QuanTri, QLDA_LD | 1 | Lãnh đạo (Duyet/TraLai/ChuyenPhatHanh) |
 | KhTcClient | *(none)* | 219 | P.Kế toán (Trinh) |
-| HcthClient | QLDA_HC_TH | 300 | P.HC-TH (ChuyenPhatHanh) |
+| HcthClient | *(PhongBanId=300)* | 300 | P.HC-TH (ChuyenPhatHanh) — kiểm tra theo PhongBanID đối chiếu PhongHCTHID |
 
 ## SQLite Compatibility Notes
 
@@ -205,7 +205,7 @@ SQLite EF Core không hỗ trợ `DateTimeOffset` trong aggregate/ORDER BY. Quer
 
 1. Migration đã được tạo, chứa seed data `DmTrangThaiPheDuyet` (5 statuses with Loai)
 2. Unified `PheDuyetHistory` table đã có trong migration
-3. Role `QLDA_LDDV` cần được cấu hình cho users BGĐ
-4. Role `QLDA_HC_TH` cần được cấu hình cho users P.HC-TH
+3. Role `QLDA_LD` cần được cấu hình cho users BGĐ
+4. P.HC-TH được kiểm tra qua PhongBanID đối chiếu PhongHCTHID trong appsettings.json (không qua role QLDA_HC_TH)
 5. `PhongHCTHID` trong `appsettings.json` cần set ID phòng HC-TH thực tế
 6. SQLite provider: `./run.bat --sqlite` hoặc `dotnet run -- --provider sqlite`

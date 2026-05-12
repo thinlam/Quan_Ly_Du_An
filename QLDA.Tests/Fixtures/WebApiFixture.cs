@@ -7,10 +7,13 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Persistence;
+using QLDA.WebApi.ConfigurationOptions;
 using Xunit;
 
 namespace QLDA.Tests.Fixtures;
@@ -94,7 +97,18 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
             });
 
             services.AddSingleton(new ConnectionStrings { DefaultConnection = "DataSource=:memory:" });
+
+            // Register IAppSettingsProvider for HCTH permission checks
+            services.AddSingleton<IAppSettingsProvider>(new TestAppSettingsProvider());
         });
+    }
+
+    /// <summary>
+    /// Test implementation of IAppSettingsProvider with configurable PhongHCTHID
+    /// </summary>
+    private class TestAppSettingsProvider : IAppSettingsProvider {
+        public long PhongKeToanID => 0;
+        public long PhongHCTHID => 300; // Match PhongBanId in CreateHcthClient()
     }
 
     public async Task InitializeAsync() {
@@ -233,7 +247,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     /// Client with BGĐ role - can approve/reject (Duyệt/Trả lại)
     /// </summary>
     public HttpClient CreateBgdClient() {
-        var token = GenerateToken(userId: 10, phongBanId: 1, roles: [RoleConstants.QLDA_QuanTri, RoleConstants.QLDA_LDDV]);
+        var token = GenerateToken(userId: 10, phongBanId: 1, roles: [RoleConstants.QLDA_QuanTri, RoleConstants.QLDA_LD]);
         return CreateClientWithToken(token);
     }
 
@@ -276,10 +290,11 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Client with P.HC-TH role - can publish (Phát hành)
+    /// Client with P.HC-TH role - PhongBanId=300 matches PhongHCTHID in test settings
     /// </summary>
     public HttpClient CreateHcthClient() {
-        var token = GenerateToken(userId: 40, phongBanId: 300, roles: [RoleConstants.QLDA_HC_TH]);
+        // PhongBanID=300 matches PhongHCTHID=300 in TestAppSettingsProvider
+        var token = GenerateToken(userId: 40, phongBanId: 300, roles: [RoleConstants.QLDA_QuanTri]);
         return CreateClientWithToken(token);
     }
 

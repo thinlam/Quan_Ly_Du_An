@@ -62,9 +62,13 @@ public static class NghiemThuMappings {
         entity.Ngay = dto.Ngay;
         entity.NoiDung = dto.NoiDung;
         entity.GiaTri = dto.GiaTri;
-        entity.NghiemThuPhuLucHopDongs = [..dto.PhuLucHopDongIds?.Select(phuLucHopDongId => new NghiemThuPhuLucHopDong{
-            LeftId = dto.Id,
-            RightId = phuLucHopDongId
-        })?? []];
+        // Clear existing junction records to avoid duplicate key violations
+        entity.NghiemThuPhuLucHopDongs?.Clear();
+        if (dto.PhuLucHopDongIds?.Any() == true) {
+            entity.NghiemThuPhuLucHopDongs = [..dto.PhuLucHopDongIds.Select(phuLucHopDongId => new NghiemThuPhuLucHopDong{
+                LeftId = dto.Id,
+                RightId = phuLucHopDongId
+            })];
+        }
     }
 }

@@ -1,3 +1,4 @@
+using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.PheDuyetDuToans;
@@ -16,7 +17,9 @@ public static class PheDuyetDuToanMappingConfiguration {
             GiaTriDuThau = entity.GiaTriDuThau,
             TrichYeu = entity.TrichYeu,
             TrangThaiId = entity.TrangThaiId,
-            TenTrangThai = entity.TrangThai != null ? entity.TrangThai.Ten : null,
+            TenTrangThai = entity.TrangThai != null && entity.TrangThai.Ma != "LEG"
+                ? entity.TrangThai.Ten
+                : TrangThaiPheDuyetCodes.Default.TenDuThao,
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 // .Where(o => o.GroupType == nameof(EGroupType.PheDuyetDuToan))
                 .Select(o => o.ToModel()).ToList()

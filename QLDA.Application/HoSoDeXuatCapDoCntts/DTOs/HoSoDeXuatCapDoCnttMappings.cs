@@ -1,4 +1,5 @@
 using QLDA.Application.Common.DTOs;
+using QLDA.Domain.Constants;
 
 namespace QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 
@@ -41,6 +42,7 @@ public static class HoSoDeXuatCapDoCnttMappings
         DonViChuTriId = entity.DonViChuTriId,
         NoiDungDeNghi = entity.NoiDungDeNghi,
         NoiDungBaoCao = entity.NoiDungBaoCao,
-        NoiDungDuThao = entity.NoiDungDuThao,  
+        NoiDungDuThao = entity.NoiDungDuThao,
+        TenTrangThai = entity.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : entity.TrangThai?.Ten,
     };
 }

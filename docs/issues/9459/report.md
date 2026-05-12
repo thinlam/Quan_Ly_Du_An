@@ -185,7 +185,7 @@ Single entity với `Loai` discriminator:
 1. **Unified dispatch pattern** — single controller handles all approval types via `type` parameter
 2. **Unified PheDuyetHistory** — 1 polymorphic table thay vì N per-entity history tables
 3. **FK-based status** (`int? TrangThaiId`) — DB-enforced referential integrity
-4. **Role enforcement active** — Duyet/TraLai: `QLDA_LDDV`, TuChoi: GroupAdminOrManager (LDDV + HC_TH + QuanTri)
+4. **Role enforcement active** — Duyet/TraLai: `QLDA_LD` (LDDV), TuChoi: GroupAdminOrManager (LD + HC_TH + QuanTri)
 5. **SQLite provider support** — `--provider sqlite` CLI arg for local dev/testing
 6. **Shared DanhMucTrangThaiPheDuyet** with `Loai` discriminator — DRY, extensible
 7. **PheDuyetEntityNames replaces Loai** — `TrangThaiPheDuyetCodes.Loai` removed, use `PheDuyetEntityNames` directly

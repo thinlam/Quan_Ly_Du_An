@@ -15,11 +15,6 @@ public class PheDuyetDuToan : VanBanQuyetDinh {
     /// </summary>
     public long? NguoiXuLyId { get; set; }
 
-    /// <summary>
-    /// USER_MASTER.UserPortalId
-    /// </summary>
-    public long? NguoiGiaoViecId { get; set; }
-
     #region Navigation Properties
 
     public DanhMucChucVu? ChucVu { get; set; }

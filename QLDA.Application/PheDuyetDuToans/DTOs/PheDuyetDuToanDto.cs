@@ -44,10 +44,5 @@ public class PheDuyetDuToanDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepD
     /// </summary>
     public long? NguoiXuLyId { get; set; }
 
-    /// <summary>
-    /// USER_MASTER.UserPortalId
-    /// </summary>
-    public long? NguoiGiaoViecId { get; set; }
-
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

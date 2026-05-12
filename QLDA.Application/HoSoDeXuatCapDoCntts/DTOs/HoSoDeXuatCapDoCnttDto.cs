@@ -8,6 +8,7 @@ public class HoSoDeXuatCapDoCnttDto {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public int? TrangThaiId { get; set; }
+    public string? TenTrangThai { get; set; }
     public int? CapDoId { get; set; }
     public string? TenCapDo { get; set; }
     public DateTime? NgayTrinh { get; set; }

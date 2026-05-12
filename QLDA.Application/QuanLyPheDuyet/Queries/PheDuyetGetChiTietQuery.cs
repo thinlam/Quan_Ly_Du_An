@@ -75,7 +75,7 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.ChucVuId, e.GiaTriDuThau, e.TrichYeu, e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
                 TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
-                e.NguoiXuLyId, e.NguoiGiaoViecId,
+                e.NguoiXuLyId,
                 TenChucVu = e.ChucVu != null ? e.ChucVu.Ten : null
             })
             .FirstOrDefaultAsync(cancellationToken);

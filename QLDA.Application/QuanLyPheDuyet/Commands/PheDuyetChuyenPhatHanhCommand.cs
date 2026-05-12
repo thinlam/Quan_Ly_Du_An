@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -17,6 +18,7 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
 
     public PheDuyetChuyenPhatHanhCommandHandler(IServiceProvider serviceProvider) {
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
@@ -24,12 +26,14 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _duToanRepo.UnitOfWork;
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
     }
 
     public async Task<int> Handle(PheDuyetChuyenPhatHanhCommand request, CancellationToken cancellationToken) {
-        // Permission: P.HC-TH or BGĐ
-        var roles = _userProvider.AuthInfo?.Roles ?? [];
-        if (!roles.Contains(QLDA.Domain.Constants.RoleConstants.QLDA_HC_TH) && !roles.Contains(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV)) {
+        // Permission: P.HC-TH (by PhongBanID from appsettings) or BGĐ
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isBgd = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LD) ?? false;
+        if (!isHcth && !isBgd) {
             throw new ManagedException("Chỉ P.HC-TH hoặc BGĐ có quyền phát hành");
         }
 

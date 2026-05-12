@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -16,6 +17,7 @@ internal class HoSoMoiThauDienTuTuChoiCommandHandler : IRequestHandler<HoSoMoiTh
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
+    private readonly IAppSettingsProvider _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public HoSoMoiThauDienTuTuChoiCommandHandler(IServiceProvider serviceProvider) {
@@ -23,12 +25,16 @@ internal class HoSoMoiThauDienTuTuChoiCommandHandler : IRequestHandler<HoSoMoiTh
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuTuChoiCommand request, CancellationToken cancellationToken) {
-        var roles = _userProvider.AuthInfo?.Roles ?? [];
-        if (!roles.Contains(Domain.Constants.RoleConstants.QLDA_LDDV) && !roles.Contains(Domain.Constants.RoleConstants.QLDA_HC_TH) && !roles.Contains(Domain.Constants.RoleConstants.QLDA_QuanTri)) {
+        // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LD) ?? false;
+        var isQuanTri = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_QuanTri) ?? false;
+        if (!isLanhDao && !isHcth && !isQuanTri) {
             throw new ManagedException("Chỉ quản lý có quyền từ chối hồ sơ mời thầu điện tử");
         }
 
