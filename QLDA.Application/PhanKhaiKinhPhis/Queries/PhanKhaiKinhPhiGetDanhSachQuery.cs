@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
+using QLDA.Domain.Constants;
 
 namespace QLDA.Application.PhanKhaiKinhPhis.Queries;
 
@@ -39,8 +40,8 @@ internal class PhanKhaiKinhPhiGetDanhSachQueryHandler : IRequestHandler<PhanKhai
                 KinhPhiDeXuat = e.KinhPhiDeXuat,
                 KinhPhiPhanKhai = e.KinhPhiPhanKhai,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
     }

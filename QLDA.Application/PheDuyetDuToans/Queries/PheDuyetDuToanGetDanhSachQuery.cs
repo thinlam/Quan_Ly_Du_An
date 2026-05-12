@@ -52,8 +52,8 @@ internal class
                 GiaTriDuThau = e.GiaTriDuThau,
                 TrichYeu = e.TrichYeu,
                 TrangThaiId = e.TrangThaiId,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
