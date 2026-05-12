@@ -96,17 +96,12 @@ public static class PermissionConstants {
         [RoleConstants.QLDA_TatCa] = AllPermissions,
         [RoleConstants.QLDA_QuanTri] = AllPermissions,
 
-        // BGĐ → xem tất cả + PheDuyet actions
-        [RoleConstants.QLDA_LDDV] = [.. AllXemTatCa, .. PheDuyetActions],
 
-        // Lãnh đạo → xem tất cả mọi module
-        [RoleConstants.QLDA_LD] = AllXemTatCa,
+        // Lãnh đạo → xem tất cả mọi module + PheDuyet actions
+        [RoleConstants.QLDA_LD] = [.. AllXemTatCa, .. PheDuyetActions],
 
         // Chuyên viên → xem theo phòng + tạo/sửa
         [RoleConstants.QLDA_ChuyenVien] =
             [.. AllXemTheoPhong, .. AllTaoSua],
-
-        // P.HC-TH → xem tất cả + phát hành
-        [RoleConstants.QLDA_HC_TH] = [PheDuyet_XemTatCa, PheDuyet_PhatHanh],
     };
 }

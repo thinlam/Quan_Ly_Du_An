@@ -44,13 +44,11 @@ public class CauHinhVaiTroQuyenConfiguration : AggregateRootConfiguration<CauHin
             data.Add(MakeEntry(ref id, RoleConstants.QLDA_QuanTri, perm));
         }
 
-        // QLDA_LDDV → XemTatCa only
+        // QLDA_LD → XemTatCa + PheDuyetActions (LDDV - Lãnh đạo đơn vị)
         foreach (var perm in PermissionConstants.AllXemTatCa) {
-            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LDDV, perm));
+            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LD, perm));
         }
-
-        // QLDA_LD → XemTatCa only
-        foreach (var perm in PermissionConstants.AllXemTatCa) {
+        foreach (var perm in new[] { PermissionConstants.PheDuyet_Duyet, PermissionConstants.PheDuyet_KySo, PermissionConstants.PheDuyet_ChuyenQLVB, PermissionConstants.PheDuyet_TuChoi }) {
             data.Add(MakeEntry(ref id, RoleConstants.QLDA_LD, perm));
         }
 

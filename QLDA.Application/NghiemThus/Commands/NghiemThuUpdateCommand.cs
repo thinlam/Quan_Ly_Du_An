@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.NghiemThus.DTOs;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Commands;
 
@@ -21,11 +22,22 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
     public async Task<NghiemThu> Handle(NghiemThuUpdateCommand request, CancellationToken cancellationToken = default) {
         await ValidateAsync(request, cancellationToken);
 
+        // Use AsNoTracking to avoid EF tracking conflicts with junction table
         var entity = await NghiemThu.GetQueryableSet()
+            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        entity.Update(request.Dto);
+        // Update scalar properties only (not navigation collections)
+        entity.HopDongId = request.Dto.HopDongId;
+        entity.SoBienBan = request.Dto.SoBienBan;
+        entity.Dot = request.Dto.Dot;
+        entity.Ngay = request.Dto.Ngay;
+        entity.NoiDung = request.Dto.NoiDung;
+        entity.GiaTri = request.Dto.GiaTri;
+
+        // Sync junction table via raw delete/insert to avoid EF tracking issues
+        await SyncNghiemThuPhuLucHopDongAsync(entity.Id, request.Dto.PhuLucHopDongIds, cancellationToken);
 
         if (_unitOfWork.HasTransaction) {
             await UpdateAsync(entity, cancellationToken);
@@ -36,6 +48,36 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
         return entity;
+    }
+
+    private async Task SyncNghiemThuPhuLucHopDongAsync(Guid nghiemThuId, List<Guid>? newPhuLucHopDongIds, CancellationToken cancellationToken) {
+        var dbContext = NghiemThu.UnitOfWork as DbContext;
+        if (dbContext == null) return;
+
+        // Delete existing junction records for this NghiemThu
+        var existingRecords = await dbContext.Set<NghiemThuPhuLucHopDong>()
+            .Where(x => x.LeftId == nghiemThuId)
+            .ToListAsync(cancellationToken);
+
+        if (existingRecords.Any()) {
+            dbContext.Set<NghiemThuPhuLucHopDong>().RemoveRange(existingRecords);
+        }
+
+        // Insert new junction records (only if not already existing)
+        if (newPhuLucHopDongIds?.Any() == true) {
+            var existingRightIds = existingRecords.Select(x => x.RightId).ToHashSet();
+            var newRecords = newPhuLucHopDongIds
+                .Where(id => !existingRightIds.Contains(id))
+                .Select(phuLucId => new NghiemThuPhuLucHopDong {
+                    LeftId = nghiemThuId,
+                    RightId = phuLucId
+                })
+                .ToList();
+
+            if (newRecords.Any()) {
+                await dbContext.Set<NghiemThuPhuLucHopDong>().AddRangeAsync(newRecords, cancellationToken);
+            }
+        }
     }
 
     #region  Private helper methods

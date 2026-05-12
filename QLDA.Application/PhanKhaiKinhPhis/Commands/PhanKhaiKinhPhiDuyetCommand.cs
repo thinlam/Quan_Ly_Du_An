@@ -28,7 +28,7 @@ internal class PhanKhaiKinhPhiDuyetCommandHandler : IRequestHandler<PhanKhaiKinh
 
     public async Task<int> Handle(PhanKhaiKinhPhiDuyetCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LD)) {
             throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt phân khai kinh phí");
         }
 

@@ -27,7 +27,7 @@ internal class PheDuyetDuToanTraLaiCommandHandler : IRequestHandler<PheDuyetDuTo
 
     public async Task<int> Handle(PheDuyetDuToanTraLaiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LD)) {
             throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại phê duyệt dự toán");
         }
 

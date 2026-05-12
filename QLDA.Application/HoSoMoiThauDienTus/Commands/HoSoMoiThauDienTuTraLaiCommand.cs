@@ -27,7 +27,7 @@ internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiTh
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuTraLaiCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LD)) {
             throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại hồ sơ mời thầu điện tử");
         }
 

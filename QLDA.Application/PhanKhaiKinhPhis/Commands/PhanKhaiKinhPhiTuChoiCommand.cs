@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -16,6 +17,7 @@ internal class PhanKhaiKinhPhiTuChoiCommandHandler : IRequestHandler<PhanKhaiKin
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
+    private readonly IAppSettingsProvider _settings;
     private readonly IUnitOfWork _unitOfWork;
 
     public PhanKhaiKinhPhiTuChoiCommandHandler(IServiceProvider serviceProvider) {
@@ -23,13 +25,16 @@ internal class PhanKhaiKinhPhiTuChoiCommandHandler : IRequestHandler<PhanKhaiKin
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(PhanKhaiKinhPhiTuChoiCommand request, CancellationToken cancellationToken) {
-        // Permission check: management roles only (LDDV, HC_TH, QuanTri)
-        var roles = _userProvider.AuthInfo?.Roles ?? [];
-        if (!roles.Contains(Domain.Constants.RoleConstants.QLDA_LDDV) && !roles.Contains(Domain.Constants.RoleConstants.QLDA_HC_TH) && !roles.Contains(Domain.Constants.RoleConstants.QLDA_QuanTri)) {
+        // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LD) ?? false;
+        var isQuanTri = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_QuanTri) ?? false;
+        if (!isLanhDao && !isHcth && !isQuanTri) {
             throw new ManagedException("Chỉ quản lý có quyền từ chối phân khai kinh phí");
         }
 

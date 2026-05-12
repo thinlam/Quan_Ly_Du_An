@@ -27,7 +27,7 @@ internal class HoSoDeXuatCapDoCnttDuyetCommandHandler : IRequestHandler<HoSoDeXu
     }
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttDuyetCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LD)) {
             throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt hồ sơ đề xuất cấp độ CNTT");
         }
 
