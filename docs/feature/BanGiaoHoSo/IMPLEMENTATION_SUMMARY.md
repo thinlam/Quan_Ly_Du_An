@@ -2,7 +2,7 @@
 
 **Status:** ✅ Thiết kế hoàn toàn, sẵn sàng code  
 **Date:** 13/05/2026  
-**Version:** 8.0
+**Version:** 9.0
 
 ---
 
@@ -12,7 +12,7 @@
 
 **Phạm vi:**
 - ✅ 1 Entity mới (`BanGiaoHoSo`) - Aggregate Root với GUID key
-- ✅ 1 Enum mới (`ETrangThaiBanGiao`) - 2 trạng thái: Khởi tạo (0), Đã bàn giao (1)
+- ✅ 1 Enum mới (`ETrangThaiBanGiao`) - 2 trạng thái: Khởi tạo (1), Đã bàn giao (2)
 - ✅ 6 API Endpoints mới (CRUD + ban-giao operation)
 - ✅ Hỗ trợ **2 loại tệp đính kèm** qua `TepDinhKem`:
   - **Tệp HS bàn giao** (`EGroupType.BanGiaoHoSo`) - gắn lúc Insert/Update
@@ -33,7 +33,7 @@
 | `BuocId` | `int?` | FK → DuAnBuoc |
 | `GhiChu` | `string(2000)?` | Ghi chú |
 | `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK; **⚠️ V8: KHÔNG cho UI truyền** – tự động set trong `InsertCommandHandler` từ `_userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID`) |
-| `TrangThai` | `ETrangThaiBanGiao` | 0: Khởi tạo, 1: Đã bàn giao |
+| `TrangThai` | `ETrangThaiBanGiao` | 1: Khởi tạo, 2: Đã bàn giao |
 | `NgayBanGiao` | `DateTimeOffset?` | Ngày thực hiện bàn giao (Entity lưu UTC; DTO/Model trả về `DateOnly?`) |
 | `CreatedBy` | `string` | Người tạo – từ base class `Entity<T>`, tự động set bởi EF interceptor |
 | `IsDeleted` | `bit` | Soft delete flag |
@@ -50,8 +50,8 @@
 
 ```csharp
 public enum ETrangThaiBanGiao {
-    KhoiTao = 0,        // Khởi tạo - chưa bàn giao
-    DaBanGiao = 1       // Đã bàn giao cho phòng HC-TH
+    KhoiTao = 1,        // Khởi tạo - chưa bàn giao
+    DaBanGiao = 2       // Đã bàn giao cho phòng HC-TH
 }
 ```
 
@@ -65,8 +65,8 @@ public enum ETrangThaiBanGiao {
 | `GET` | `/api/ban-giao-ho-so/danh-sach` | Danh sách phân trang (filter theo user) | `BanGiaoHoSoSearchDto, pagination` | `PaginatedList<BanGiaoHoSoDto>` |
 | `POST` | `/api/ban-giao-ho-so/them-moi` | Thêm mới + tệp HS bàn giao | `BanGiaoHoSoInsertDto` | `Guid` (Id) |
 | `PUT` | `/api/ban-giao-ho-so/cap-nhat` | Cập nhật + tệp HS bàn giao | `BanGiaoHoSoUpdateModel` | `Guid` (Id) |
-| `PUT` | `/api/ban-giao-ho-so/{id}/ban-giao` | **Thực hiện bàn giao**: đổi TrangThai 0→1, set NgayBanGiao, lưu biên bản | `BanGiaoHoSoBanGiaoModel` | `int` (1) |
-| `DELETE` | `/api/ban-giao-ho-so/{id}/xoa-tam` | Xóa soft (chỉ TrangThai = 0) | `Guid id` | `int` (1) |
+| `PUT` | `/api/ban-giao-ho-so/{id}/ban-giao` | **Thực hiện bàn giao**: đổi TrangThai 1→2, set NgayBanGiao, lưu biên bản | `BanGiaoHoSoBanGiaoModel` | `int` (1) |
+| `DELETE` | `/api/ban-giao-ho-so/{id}/xoa-tam` | Xóa soft (chỉ TrangThai = 1) | `Guid id` | `int` (1) |
 
 **Ủy quyền:** Tất cả endpoints đều `[Authorize]`
 
@@ -131,9 +131,9 @@ public enum ETrangThaiBanGiao {
 | Command | Mô tả |
 |---------|-------|
 | `BanGiaoHoSoInsertCommand` | Thêm mới entity – **⚠️ V8: inject `IUserProvider`, sau `ToEntity()` gán `entity.PhongBanChuTriId = _userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID`** |
-| `BanGiaoHoSoUpdateCommand` | Cập nhật entity **(chỉ TrangThai=0)** |
-| `BanGiaoHoSoBanGiaoCommand` | **Ban-giao**: TrangThai 0→1, set NgayBanGiao |
-| `BanGiaoHoSoDeleteCommand` | Soft delete **(chỉ TrangThai=0)** |
+| `BanGiaoHoSoUpdateCommand` | Cập nhật entity **(chỉ TrangThai=1)** |
+| `BanGiaoHoSoBanGiaoCommand` | **Ban-giao**: TrangThai 1→2, set NgayBanGiao |
+| `BanGiaoHoSoDeleteCommand` | Soft delete **(chỉ TrangThai=1)** |
 
 **Xử lý Transaction:**
 - Isolation Level: `ReadCommitted`
@@ -251,8 +251,8 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ✅ CreatedBy: Auto set bởi EF interceptor từ JWT token – không gán thủ công
 ✅ PhongBanChuTriId: Auto set trong InsertCommandHandler = _userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID
    (không cho UI truyền; không cập nhật khi Update – phòng ban cố định theo người tạo)
-✅ Cho phép Update: Chỉ khi TrangThai = 0 (Khởi tạo)
-❌ Không cho phép Update: TrangThai = 1 (đã bàn giao)
+✅ Cho phép Update: Chỉ khi TrangThai = 1 (Khởi tạo)
+❌ Không cho phép Update: TrangThai = 2 (đã bàn giao)
 ❌ Exception Update: "Chỉ có thể cập nhật bản giao hồ sơ ở trạng thái 'Khởi tạo'"
 ```
 
@@ -261,19 +261,19 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ```
 ✅ Logic:
   1. Lấy entity by Id
-  2. Đổi TrangThai: 0 → 1
+  2. Đổi TrangThai: 1 → 2
   3. Set NgayBanGiao (client truyền DateOnly?, server convert sang DateTimeOffset UTC via DateOnlyExtensions. Default: ngày hiện tại nếu null)
   4. Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
   
-✅ Cho phép: TrangThai = 0 (chưa bàn giao)
-❌ Không cho phép: TrangThai = 1 (đã bàn giao)
+✅ Cho phép: TrangThai = 1 (chưa bàn giao)
+❌ Không cho phép: TrangThai = 2 (đã bàn giao)
 ```
 
 ### Delete (Soft Delete)
 
 ```
-✅ Cho phép: Chỉ khi TrangThai = 0
-❌ Không cho phép: TrangThai = 1
+✅ Cho phép: Chỉ khi TrangThai = 1
+❌ Không cho phép: TrangThai = 2
 ❌ Exception: "Chỉ có thể xóa bản giao hồ sơ ở trạng thái 'Khởi tạo'"
 ```
 
@@ -383,20 +383,20 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 | **PK Type** | `Guid` (sequential) |
 | **Soft Delete** | `IsDeleted` bit |
 | **Audit** | `CreatedAt`, `UpdatedAt` |
-| **Status Enum** | `ETrangThaiBanGiao` (0/1) |
+| **Status Enum** | `ETrangThaiBanGiao` (1/2) |
 | **FK Relations** | DuAnId (Guid?), BuocId (int?) – `PhongBanChuTriId` và `CreatedBy` dùng LeftOuterJoin, không FK |
 | **PhongBanChuTriId** | ⚠️ V8: Không cho UI truyền; auto-set trong InsertCommandHandler = `_userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID`; không thay đổi khi Update |
 | **NgayBanGiao** | Entity: `DateTimeOffset?` (DB lưu UTC). Input nhận `DateOnly?`, convert qua `ToStartOfDayUtc()`. Response (`BanGiaoHoSoDto`, `BanGiaoHoSoModel`) trả về `DateOnly?` |
 | **File Types** | 2 loại: BanGiaoHoSo, BienBanBanGiao |
-| **Delete Condition** | Chỉ TrangThai = 0 |
-| **Update Condition** | Chỉ TrangThai = 0 |
-| **Ban-Giao Logic** | 0→1, set NgayBanGiao, save biên bản |
+| **Delete Condition** | Chỉ TrangThai = 1 |
+| **Update Condition** | Chỉ TrangThai = 1 |
+| **Ban-Giao Logic** | 1→2, set NgayBanGiao, save biên bản |
 | **User Filter** | Luôn filter theo `CreatedBy == _userProvider.Id.ToString()` (`CreatedBy` là `string` trong `Entity<T>`) |
 | **Transaction** | ReadCommitted isolation level |
 
 ---
 
-**Version:** 8.0  
+**Version:** 9.0  
 **Last Updated:** 13/05/2026  
 **Prepared By:** Design Phase  
 **Status:** Implemented ✅

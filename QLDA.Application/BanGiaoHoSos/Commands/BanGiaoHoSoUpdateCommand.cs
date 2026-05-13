@@ -23,7 +23,7 @@ internal class BanGiaoHoSoUpdateCommandHandler : IRequestHandler<BanGiaoHoSoUpda
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        // Chỉ cho phép cập nhật khi TrangThai = 0 (Khởi tạo)
+        // Chỉ cho phép cập nhật khi TrangThai = 1 (Khởi tạo)
         if (entity.TrangThai != ETrangThaiBanGiao.KhoiTao) {
             throw new InvalidOperationException("Chỉ có thể cập nhật bản giao hồ sơ ở trạng thái 'Khởi tạo'");
         }
