@@ -55,7 +55,7 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 DuAnId = x.e.DuAnId,
                 TenDuAn = x.e.DuAn!.TenDuAn,
                 BuocId = x.e.BuocId,
-                TenBuoc = x.e.Buoc!.Ten,
+                TenBuoc = x.e.Buoc!.TenBuoc,
                 GhiChu = x.e.GhiChu,
                 PhongBanChuTriId = x.e.PhongBanChuTriId,
                 TenPhongBan = x.donVi != null ? x.donVi.TenDonVi : null,

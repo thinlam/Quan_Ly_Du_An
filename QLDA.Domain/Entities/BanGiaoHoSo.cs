@@ -1,5 +1,4 @@
 using QLDA.Domain.Enums;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Domain.Entities;
 
@@ -23,7 +22,7 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     public Guid? DuAnId { get; set; }
 
     /// <summary>
-    /// FK → DanhMucBuoc
+    /// FK → DuAnBuoc
     /// </summary>
     public int? BuocId { get; set; }
 
@@ -52,6 +51,6 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
 
     #region Navigation Properties
     public DuAn? DuAn { get; set; }
-    public DanhMucBuoc? Buoc { get; set; }
+    public DuAnBuoc? Buoc { get; set; }
     #endregion
 }

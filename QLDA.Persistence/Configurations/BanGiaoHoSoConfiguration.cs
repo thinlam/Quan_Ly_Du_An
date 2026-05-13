@@ -40,7 +40,7 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
             .HasForeignKey(e => e.DuAnId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // FK → DanhMucBuoc
+        // FK → DuAnBuoc
         builder.HasOne(e => e.Buoc)
             .WithMany()
             .HasForeignKey(e => e.BuocId)
