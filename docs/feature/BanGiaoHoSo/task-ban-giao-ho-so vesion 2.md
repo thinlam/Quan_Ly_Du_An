@@ -14,7 +14,7 @@
 > - Bộ hồ sơ lưu trữ bàn giao gồm 2 loại tệp: **tệp HS bàn giao** (`EGroupType.BanGiaoHoSo`) và **biên bản bàn giao** (`EGroupType.BienBanBanGiao`)
 
 > **✅ Updated (13/05/2026) – Version 2**
-> - Thêm 3 trường bị thiếu vào entity và tất cả các layer: `DuAnId` (Guid? – FK → DuAn), `BuocId` (int? – FK → DanhMucBuoc), `GhiChu` (string?)
+> - Thêm 3 trường bị thiếu vào entity và tất cả các layer: `DuAnId` (Guid? – FK → DuAn), `BuocId` (int? – FK → DuAnBuoc), `GhiChu` (string?)
 > - Trả thêm `CreatedAt` trong danh sách
 > - Validate Update và Delete: chỉ được thực hiện khi `TrangThai = KhoiTao`
 > - Bỏ `UserId` khỏi entity – dùng `CreatedBy` từ base class `Entity<T>` (tự động set bởi EF interceptor)
@@ -72,7 +72,7 @@
 | `Ma` | `string` | Mã bản giao hồ sơ (unique) |
 | `TenHoSo` | `string` | Tên hồ sơ |
 | `DuAnId` | `Guid?` | FK → DuAn |
-| `BuocId` | `int?` | FK → DanhMucBuoc |
+| `BuocId` | `int?` | FK → DuAnBuoc |
 | `GhiChu` | `string?` | Ghi chú |
 | `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) |
 | `TrangThai` | `bit` (0/1) | 0: Khởi tạo, 1: Đã bàn giao → Enum `ETrangThaiBanGiao` |
@@ -227,7 +227,7 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     public Guid? DuAnId { get; set; }
 
     /// <summary>
-    /// FK → DanhMucBuoc
+    /// FK → DuAnBuoc
     /// </summary>
     public int? BuocId { get; set; }
 
@@ -257,7 +257,7 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
 
     #region Navigation Properties
     public DuAn? DuAn { get; set; }
-    public DanhMucBuoc? Buoc { get; set; }
+    public DuAnBuoc? Buoc { get; set; }
     #endregion
 }
 ```
@@ -313,7 +313,7 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
             .HasForeignKey(e => e.DuAnId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // FK → DanhMucBuoc
+        // FK → DuAnBuoc
         builder.HasOne(e => e.Buoc)
             .WithMany()
             .HasForeignKey(e => e.BuocId)
@@ -445,7 +445,7 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 public class BanGiaoHoSoSearchDto {
     public int? TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
     public Guid? DuAnId { get; set; }   // Lọc theo dự án
-    public int? BuocId { get; set; }    // Lọc theo bước (int? vì DanhMucBuoc.Id là int)
+    public int? BuocId { get; set; }    // Lọc theo bước (int? vì DuAnBuoc.Id là int)
 }
 ```
 
@@ -487,7 +487,7 @@ public static class BanGiaoHoSoMappings {
         DuAnId = entity.DuAnId,
         TenDuAn = entity.DuAn?.Ten,
         BuocId = entity.BuocId,
-        TenBuoc = entity.Buoc?.Ten,
+        TenBuoc = entity.Buoc?.TenBuoc,
         GhiChu = entity.GhiChu,
         PhongBanChuTriId = entity.PhongBanChuTriId,
         TenPhongBan = entity.PhongBanChuTri?.Ten,

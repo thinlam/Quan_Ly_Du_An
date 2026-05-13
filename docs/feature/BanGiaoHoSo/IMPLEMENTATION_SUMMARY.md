@@ -30,7 +30,7 @@
 | `Ma` | `string(100)` | Mã bản giao (unique) |
 | `TenHoSo` | `string(500)` | Tên hồ sơ |
 | `DuAnId` | `Guid?` | FK → DuAn |
-| `BuocId` | `int?` | FK → DanhMucBuoc |
+| `BuocId` | `int?` | FK → DuAnBuoc |
 | `GhiChu` | `string(2000)?` | Ghi chú |
 | `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) |
 | `TrangThai` | `ETrangThaiBanGiao` | 0: Khởi tạo, 1: Đã bàn giao |
@@ -88,7 +88,7 @@ public enum ETrangThaiBanGiao {
 **Chi tiết:**
 - **Entity kế thừa** `Entity<Guid>, IAggregateRoot`
 - FK: `DuAnId` (Guid?) → `DuAn`
-- FK: `BuocId` (int?) → `DanhMucBuoc`
+- FK: `BuocId` (int?) → `DuAnBuoc`
 - `PhongBanChuTriId` (long?) → ref DanhMucDonVi **⚠️ không FK, không navigation**
 - `CreatedBy` (long?) → ref UserMaster **⚠️ không FK, không navigation** – từ base class
 - Navigation properties: `DuAn`, `Buoc` (chỉ 2 cái)
@@ -103,7 +103,7 @@ public enum ETrangThaiBanGiao {
 **BanGiaoHoSoConfiguration:**
 - Table: `BanGiaoHoSo`
 - Index: `(CreatedBy, TrangThai)`
-- FK constraints: Chỉ cho `DuAn` và `DanhMucBuoc` → SetNull
+- FK constraints: Chỉ cho `DuAn` và `DuAnBuoc` → SetNull
 - ⚠️ **KHÔNG FK đến `UserMaster` và `DanhMucDonVi`** – dùng LeftOuterJoin
 - Conversion: `TrangThai` as int
 
