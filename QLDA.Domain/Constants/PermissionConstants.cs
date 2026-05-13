@@ -98,7 +98,7 @@ public static class PermissionConstants {
 
 
         // Lãnh đạo → xem tất cả mọi module + PheDuyet actions
-        [RoleConstants.QLDA_LD] = [.. AllXemTatCa, .. PheDuyetActions],
+        [RoleConstants.QLDA_LDDV] = [.. AllXemTatCa, .. PheDuyetActions],
 
         // Chuyên viên → xem theo phòng + tạo/sửa
         [RoleConstants.QLDA_ChuyenVien] =

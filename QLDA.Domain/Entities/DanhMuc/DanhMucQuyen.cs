@@ -12,6 +12,5 @@ public class DanhMucQuyen : DanhMuc<int>, IAggregateRoot, IMayHaveStt {
     public string? NhomQuyen { get; set; }
 
     #region Navigation Properties
-
     #endregion
 }
