@@ -16,7 +16,7 @@ public class GoiThauUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
     public string? ThoiGianHopDong { get; set; }
     public string? TomTatCongViecChinhGoiThau { get; set; }
     public string? ThoiGianBatDauToChucLuaChonNhaThau { get; set; }
-    public string? ThoiGianThucHienGoiThau { get; set; }
+    public int? ThoiGianThucHienGoiThau { get; set; }
     public string? TuyChonMuaThem { get; set; }
     public string? GiamSatHoatDongDauThau { get; set; }
     public List<TepDinhKemInsertOrUpdateDto>? DanhSachTepDinhKem { get; set; }
