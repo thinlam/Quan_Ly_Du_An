@@ -32,7 +32,7 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
     public async Task<int> Handle(PheDuyetChuyenPhatHanhCommand request, CancellationToken cancellationToken) {
         // Permission: P.HC-TH (by PhongBanID from appsettings) or BGĐ
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
-        var isBgd = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LD) ?? false;
+        var isBgd = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) ?? false;
         if (!isHcth && !isBgd) {
             throw new ManagedException("Chỉ P.HC-TH hoặc BGĐ có quyền phát hành");
         }

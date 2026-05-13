@@ -27,7 +27,7 @@ internal class HoSoDeXuatCapDoCnttTraLaiCommandHandler : IRequestHandler<HoSoDeX
     }
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttTraLaiCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LD)) {
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
             throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại hồ sơ đề xuất cấp độ CNTT");
         }
 
