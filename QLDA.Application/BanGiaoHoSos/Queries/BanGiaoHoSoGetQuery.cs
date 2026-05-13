@@ -16,8 +16,6 @@ internal class BanGiaoHoSoGetQueryHandler : IRequestHandler<BanGiaoHoSoGetQuery,
     public async Task<BanGiaoHoSo> Handle(BanGiaoHoSoGetQuery request, CancellationToken cancellationToken = default) {
         var entity = await _repository.GetQueryableSet()
             .AsNoTracking()
-            .Include(e => e.User)
-            .Include(e => e.PhongBanChuTri)
             .Include(e => e.DuAn)
             .Include(e => e.Buoc)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);

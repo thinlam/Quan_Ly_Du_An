@@ -2,7 +2,7 @@
 
 **Status:** ✅ Thiết kế hoàn toàn, sẵn sàng code  
 **Date:** 13/05/2026  
-**Version:** 2.1
+**Version:** 7.0
 
 ---
 
@@ -32,14 +32,19 @@
 | `DuAnId` | `Guid?` | FK → DuAn |
 | `BuocId` | `int?` | FK → DanhMucBuoc |
 | `GhiChu` | `string(2000)?` | Ghi chú |
-| `PhongBanChuTriId` | `long?` | FK → DanhMucDonVi |
+| `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) |
 | `TrangThai` | `ETrangThaiBanGiao` | 0: Khởi tạo, 1: Đã bàn giao |
-| `NgayBanGiao` | `DateTimeOffset?` | Ngày thực hiện bàn giao |
-| `UserId` | `long?` | FK → UserMaster (người tạo) |
+| `NgayBanGiao` | `DateTimeOffset?` | Ngày thực hiện bàn giao (Entity lưu UTC; DTO/Model trả về `DateOnly?`) |
+| `CreatedBy` | `string` | Người tạo – từ base class `Entity<T>`, tự động set bởi EF interceptor |
 | `IsDeleted` | `bit` | Soft delete flag |
 | `CreatedAt`, `UpdatedAt` | `DateTime` | Audit fields |
 
-**Index:** `(UserId, TrangThai)` - tối ưu query danh sách
+**Index:** `(CreatedBy, TrangThai)` - tối ưu query danh sách
+
+> ⚠️ **Bảng ngoại lệ (không tạo FK):**
+> - `UserMaster` (DB: `USER_MASTER`) – bị force-replace bởi DB khác → dùng **LeftOuterJoin** để lấy `TenNguoiTao`
+> - `DanhMucDonVi` (DB: `DM_DONVI`) – bị force-replace tương tự → dùng **LeftOuterJoin** để lấy `TenPhongBan`
+> - Dùng `LinqExtensions.LeftOuterJoin()` đã implement sẵn, **KHÔNG** dùng `GroupJoin + SelectMany` thủ công
 
 ### Enum: `ETrangThaiBanGiao`
 
@@ -58,8 +63,8 @@ public enum ETrangThaiBanGiao {
 |------|-------|-------|-------|--------|
 | `GET` | `/api/ban-giao-ho-so/{id}/chi-tiet` | Chi tiết 1 bản giao (cả 2 loại tệp) | `Guid id` | `BanGiaoHoSoModel` |
 | `GET` | `/api/ban-giao-ho-so/danh-sach` | Danh sách phân trang (filter theo user) | `BanGiaoHoSoSearchDto, pagination` | `PaginatedList<BanGiaoHoSoDto>` |
-| `POST` | `/api/ban-giao-ho-so/them-moi` | Thêm mới + tệp HS bàn giao | `BanGiaoHoSoModel` | `Guid` (Id) |
-| `PUT` | `/api/ban-giao-ho-so/cap-nhat` | Cập nhật + tệp HS bàn giao | `BanGiaoHoSoModel` | `Guid` (Id) |
+| `POST` | `/api/ban-giao-ho-so/them-moi` | Thêm mới + tệp HS bàn giao | `BanGiaoHoSoInsertDto` | `Guid` (Id) |
+| `PUT` | `/api/ban-giao-ho-so/cap-nhat` | Cập nhật + tệp HS bàn giao | `BanGiaoHoSoUpdateModel` | `Guid` (Id) |
 | `PUT` | `/api/ban-giao-ho-so/{id}/ban-giao` | **Thực hiện bàn giao**: đổi TrangThai 0→1, set NgayBanGiao, lưu biên bản | `BanGiaoHoSoBanGiaoModel` | `int` (1) |
 | `DELETE` | `/api/ban-giao-ho-so/{id}/xoa-tam` | Xóa soft (chỉ TrangThai = 0) | `Guid id` | `int` (1) |
 
@@ -67,8 +72,8 @@ public enum ETrangThaiBanGiao {
 
 **Filter Logic:**
 - Danh sách chỉ hiển thị bản giao **của chính người dùng hiện tại** (từ `IUserProvider`)
-- UI chỉ truyền duy nhất 1 filter param: `TrangThai` (0 hoặc 1)
-- `UserId` luôn lấy từ Auth, không cho UI truyền
+- UI truyền filter params: `TrangThai`, `DuAnId`, `BuocId`
+- `CreatedBy` luôn lấy từ Auth (`IUserProvider`), không cho UI truyền
 
 ---
 
@@ -84,9 +89,9 @@ public enum ETrangThaiBanGiao {
 - **Entity kế thừa** `Entity<Guid>, IAggregateRoot`
 - FK: `DuAnId` (Guid?) → `DuAn`
 - FK: `BuocId` (int?) → `DanhMucBuoc`
-- FK: `PhongBanChuTriId` (long?) → `DanhMucDonVi`
-- FK: `UserId` (long?) → `UserMaster`
-- Navigation properties: `User`, `PhongBanChuTri`, `DuAn`, `Buoc`
+- `PhongBanChuTriId` (long?) → ref DanhMucDonVi **⚠️ không FK, không navigation**
+- `CreatedBy` (long?) → ref UserMaster **⚠️ không FK, không navigation** – từ base class
+- Navigation properties: `DuAn`, `Buoc` (chỉ 2 cái)
 
 ---
 
@@ -94,19 +99,12 @@ public enum ETrangThaiBanGiao {
 
 **File:**
 - `QLDA.Persistence/Configurations/BanGiaoHoSoConfiguration.cs` (mới)
-- `QLDA.Persistence/Configurations/UserMasterConfiguration.cs` (sửa - **xoá dòng `HasNoKey()`**)
-
-**Sửa UserMasterConfiguration:**
-```csharp
-// ❌ XOÁ dòng: builder.HasNoKey().ToTable("USER_MASTER");
-// ✅ GIỮ: builder.HasKey(e => e.Id).HasName("...");
-```
-**Lý do:** Khiến UserMaster trở thành keyless entity, không cho phép FK + navigation property
 
 **BanGiaoHoSoConfiguration:**
 - Table: `BanGiaoHoSo`
-- Index: `(UserId, TrangThai)`
-- FK constraints: Cascade delete → SetNull
+- Index: `(CreatedBy, TrangThai)`
+- FK constraints: Chỉ cho `DuAn` và `DanhMucBuoc` → SetNull
+- ⚠️ **KHÔNG FK đến `UserMaster` và `DanhMucDonVi`** – dùng LeftOuterJoin
 - Conversion: `TrangThai` as int
 
 ---
@@ -122,7 +120,7 @@ public enum ETrangThaiBanGiao {
 | `BanGiaoHoSoInsertDto.cs` | Insert payload (inherit `IMayHaveTepDinhKemDto`) |
 | `BanGiaoHoSoUpdateModel.cs` | Update payload (+ `Id`) |
 | `BanGiaoHoSoDto.cs` | Response model (kèm cả 2 loại tệp + `CreatedAt`) |
-| `BanGiaoHoSoSearchDto.cs` | Filter query (chỉ `TrangThai?`) |
+| `BanGiaoHoSoSearchDto.cs` | Filter query (`TrangThai?`, `DuAnId?`, `BuocId?`) |
 
 #### Mappings (1 file)
 
@@ -146,7 +144,7 @@ public enum ETrangThaiBanGiao {
 | Query | Mô tả |
 |-------|-------|
 | `BanGiaoHoSoGetQuery` | Lấy 1 entity by Id (include nav properties) |
-| `BanGiaoHoSoGetDanhSachQuery` | Lấy danh sách phân trang, filter theo UserId + TrangThai |
+| `BanGiaoHoSoGetDanhSachQuery` | Lấy danh sách phân trang, filter theo CreatedBy + TrangThai + DuAnId + BuocId; LeftOuterJoin UserMaster + DanhMucDonVi |
 
 ---
 
@@ -158,30 +156,17 @@ public enum ETrangThaiBanGiao {
 
 | Model | Ý nghĩa |
 |-------|---------|
-| `BanGiaoHoSoModel.cs` | Standard CRUD model (implement `IMayHaveTepDinhKemModel`) |
+| `BanGiaoHoSoModel.cs` | **Response-only** model cho endpoint `chi-tiet` – không implement request interfaces |
 | `BanGiaoHoSoBanGiaoModel.cs` | Ban-giao payload (NgayBanGiao, DanhSachBienBan) |
 
-#### Supporting Infrastructure (3 files)
+> ⚠️ **`BanGiaoHoSoModel` là pure response model** – controller Insert nhận `BanGiaoHoSoInsertDto`, Update nhận `BanGiaoHoSoUpdateModel`; không qua model trung gian.
+> ⚠️ **KHÔNG sửa `WebApplicationExtensions.cs`** – `IUserProvider` đã đăng ký sẵn trong BuildingBlocks DI.
+
+#### Supporting Infrastructure (1 file)
 
 | File | Ý nghĩa |
 |------|---------|
-| `QLDA.WebApi/Models/Common/Interfaces/IUserContext.cs` | Interface lấy UserId từ auth |
-| `QLDA.WebApi/Models/Common/UserContext.cs` | Implementation IUserContext |
-| `QLDA.WebApi/Models/BanGiaoHoSos/BanGiaoHoSoMappingConfiguration.cs` | Model ↔ Entity mappings + TepDinhKem helpers |
-
-**Sửa WebApplicationExtensions.cs:**
-```csharp
-// Thêm vào AddCommonServices():
-services.AddScoped<IUserContext>(sp => {
-    var httpContext = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-    if (httpContext?.User.Identity?.IsAuthenticated != true)
-        throw new UnauthorizedAccessException("User is not authenticated.");
-    var userIdString = httpContext.User.FindFirst("sub")?.Value;
-    if (!long.TryParse(userIdString, out var userId))
-        throw new UnauthorizedAccessException("Invalid or missing 'sub' claim.");
-    return new UserContext { UserId = userId };
-});
-```
+| `QLDA.WebApi/Models/BanGiaoHoSos/BanGiaoHoSoMappingConfiguration.cs` | `ToModel()` + `GetDanhSachBienBanBanGiao()` |
 
 #### Controller (1 file)
 
@@ -262,11 +247,11 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ### Insert / Update
 
 ```
-✅ Cho phép: Chỉ khi TrangThai = 0 (Khởi tạo) - với Update
 ✅ Cho phép Insert: Tất cả authenticated user
+✅ CreatedBy: Auto set bởi EF interceptor từ JWT token – không gán thủ công
+✅ Cho phép Update: Chỉ khi TrangThai = 0 (Khởi tạo)
 ❌ Không cho phép Update: TrangThai = 1 (đã bàn giao)
 ❌ Exception Update: "Chỉ có thể cập nhật bản giao hồ sơ ở trạng thái 'Khởi tạo'"
-✅ UserId: Auto set từ IUserProvider.Id (JWT token)
 ```
 
 ### Ban-Giao Endpoint
@@ -293,8 +278,8 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ### List / Get
 
 ```
-✅ Filter: UserId = người dùng hiện tại (luôn)
-✅ Filter: TrangThai = ? (tuỳ chọn từ UI)
+✅ Filter: CreatedBy = IUserProvider.Id (luôn, từ JWT)
+✅ Filter: TrangThai, DuAnId, BuocId (tuỳ chọn từ UI)
 ✅ No GlobalFilter: Không search full-text
 ```
 
@@ -304,10 +289,9 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 
 ### 1. `IUserProvider` Service
 - **Interface:** `BuildingBlocks.Domain.Providers.IUserProvider`
-- **Implement:** `BuildingBlocks.Application.Common.Services.UserProvider`
-- **Register:** Đã đăng ký sẵn trong DI của dự án
-- **Cách dùng:** Inject qua `serviceProvider.GetRequiredService<IUserProvider>()` trong handler constructor
-- `IUserProvider.Id` → `long` UserId từ JWT claim `UserId`
+- **Register:** Đã đăng ký sẵn trong DI của dự án – **không cần sửa `WebApplicationExtensions.cs`**
+- **Cách dùng:** Inject trong `GetDanhSachQueryHandler` để lọc theo `CreatedBy`
+- `IUserProvider.Id` → `long` UserId từ JWT claim
 
 ### 2. MediatR Commands & Queries
 - Auto-register via `AddMediatR(typeof(Program).Assembly)`
@@ -326,20 +310,17 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 
 ### ✅ Completed
 
-- [x] **0. Fix UserMasterConfiguration** - Xoá `HasNoKey()`
 - [x] **1. Domain - Enum ETrangThaiBanGiao**
-- [x] **2. Domain - Entity BanGiaoHoSo** (PhongBanChuTriId: long?, NgayBanGiao)
-- [x] **3. Persistence - BanGiaoHoSoConfiguration**
-- [x] **4. Persistence - UserMasterConfiguration** (sửa)
-- [x] **5. Application - DTOs** (4 files)
-- [x] **6. Application - Mappings**
-- [x] **7. Application - Commands** (4 files)
-- [x] **8. Application - Queries** (2 files)
-- [x] **9. Application - Inject IUserProvider** trong Insert handler và GetDanhSach handler
-- [x] **10. WebApi - Models** (BanGiaoHoSoModel, BanGiaoHoSoBanGiaoModel)
-- [x] **12. WebApi - Mapping Configuration**
-- [x] **13. WebApi - BanGiaoHoSoController** (6 endpoints)
-- [x] **14. Enum - Add EGroupType.BanGiaoHoSo & EGroupType.BienBanBanGiao**
+- [x] **2. Domain - Entity BanGiaoHoSo** – bỏ `UserId`, bỏ navigation `User`/`PhongBanChuTri`; chỉ nav `DuAn`, `Buoc`
+- [x] **3. Persistence - BanGiaoHoSoConfiguration** – bỏ FK UserMaster + DanhMucDonVi; index `(CreatedBy, TrangThai)`
+- [x] **4. Application - DTOs** – `SearchDto` thêm `DuAnId`/`BuocId`; `Dto` thêm `CreatedAt`, bỏ `UserId`
+- [x] **5. Application - Mappings** – thêm `GetDanhSachTepHSBanGiao()` + `GetDanhSachBienBanBanGiao()`
+- [x] **6. Application - Commands** (4 files) – Insert bỏ `IUserProvider`/`entity.UserId`
+- [x] **7. Application - Queries** – GetQuery bỏ Include User/PhongBanChuTri; GetDanhSachQuery dùng `LeftOuterJoin()` cho UserMaster + DanhMucDonVi, thêm `WhereIf` DuAnId/BuocId
+- [x] **8. WebApi - Models** – `BanGiaoHoSoModel` là pure response model (bỏ IHasKey, IMustHaveId...)
+- [x] **9. WebApi - MappingConfiguration** – chỉ giữ `ToModel()` + `GetDanhSachBienBanBanGiao()`; bỏ dead code
+- [x] **10. WebApi - BanGiaoHoSoController** – Insert nhận `BanGiaoHoSoInsertDto`, Update nhận `BanGiaoHoSoUpdateModel`
+- [x] **11. Enum - Add EGroupType.BanGiaoHoSo & EGroupType.BienBanBanGiao**
 
 ### ⏳ TODO
 
@@ -397,18 +378,18 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 | **Soft Delete** | `IsDeleted` bit |
 | **Audit** | `CreatedAt`, `UpdatedAt` |
 | **Status Enum** | `ETrangThaiBanGiao` (0/1) |
-| **FK Relations** | PhongBanChuTriId (long?), UserId (long?) |
-| **NgayBanGiao** | Entity: `DateTimeOffset?` (DB lưu UTC). Request/DTO nhận `DateOnly?`, server tự convert qua `DateOnlyExtensions.ToStartOfDayUtc()` |
+| **FK Relations** | DuAnId (Guid?), BuocId (int?) – `PhongBanChuTriId` và `CreatedBy` dùng LeftOuterJoin, không FK |
+| **NgayBanGiao** | Entity: `DateTimeOffset?` (DB lưu UTC). Input nhận `DateOnly?`, convert qua `ToStartOfDayUtc()`. Response (`BanGiaoHoSoDto`, `BanGiaoHoSoModel`) trả về `DateOnly?` |
 | **File Types** | 2 loại: BanGiaoHoSo, BienBanBanGiao |
 | **Delete Condition** | Chỉ TrangThai = 0 |
 | **Update Condition** | Chỉ TrangThai = 0 |
 | **Ban-Giao Logic** | 0→1, set NgayBanGiao, save biên bản |
-| **User Filter** | Luôn filter theo `IUserProvider.Id` từ JWT token |
+| **User Filter** | Luôn filter theo `CreatedBy == _userProvider.Id.ToString()` (`CreatedBy` là `string` trong `Entity<T>`) |
 | **Transaction** | ReadCommitted isolation level |
 
 ---
 
-**Version:** 2.1  
+**Version:** 7.0  
 **Last Updated:** 13/05/2026  
 **Prepared By:** Design Phase  
-**Status:** Ready for Implementation ✅
+**Status:** Implemented ✅

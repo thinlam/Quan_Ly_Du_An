@@ -27,20 +27,12 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
         builder.Property(e => e.NgayBanGiao)
             .IsRequired(false);
 
-        // Index: Tìm kiếm nhanh theo UserId + TrangThai
-        builder.HasIndex(e => new { e.UserId, e.TrangThai });
+        // Index: Tìm kiếm nhanh theo CreatedBy + TrangThai
+        builder.HasIndex(e => new { e.CreatedBy, e.TrangThai });
 
-        // FK → UserMaster
-        builder.HasOne(e => e.User)
-            .WithMany()
-            .HasForeignKey(e => e.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        // FK → Phòng Ban (DanhMucDonVi)
-        builder.HasOne(e => e.PhongBanChuTri)
-            .WithMany()
-            .HasForeignKey(e => e.PhongBanChuTriId)
-            .OnDelete(DeleteBehavior.SetNull);
+        // ⚠️ KHÔNG tạo FK → UserMaster (bảng bị force-replace bởi DB khác)
+        // ⚠️ KHÔNG tạo FK → DanhMucDonVi/PhongBanChuTri (bảng DM_DONVI, bị force-replace)
+        // TenNguoiTao và TenPhongBan lấy qua LeftOuterJoin trong GetDanhSachQuery
 
         // FK → DuAn
         builder.HasOne(e => e.DuAn)

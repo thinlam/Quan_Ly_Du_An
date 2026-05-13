@@ -12,12 +12,12 @@ public class BanGiaoHoSoDto {
     public string? TenBuoc { get; set; }
     public long? PhongBanChuTriId { get; set; }
     public string? TenPhongBan { get; set; }
-    public long? UserId { get; set; }
     public string? TenNguoiTao { get; set; }
     public string? GhiChu { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
     public string? TenTrangThai { get; set; }
-    public DateTimeOffset? NgayBanGiao { get; set; }
+    public DateOnly? NgayBanGiao { get; set; }  // Entity lưu DateTimeOffset, convert khi map
+    public DateTimeOffset? CreatedAt { get; set; }
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
     public List<TepDinhKemDto>? DanhSachTepHSBanGiao { get; set; }
     // Biên bản bàn giao (EGroupType.BienBanBanGiao)

@@ -52,22 +52,12 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoModel model) {
-        var insertDto = new BanGiaoHoSoInsertDto {
-            Ma = model.Ma,
-            TenHoSo = model.TenHoSo,
-            DuAnId = model.DuAnId,
-            BuocId = model.BuocId,
-            PhongBanChuTriId = model.PhongBanChuTriId,
-            GhiChu = model.GhiChu
-        };
-        
-        var entity = await _mediator.Send(new BanGiaoHoSoInsertCommand(insertDto));
-        
-        // Save tệp HS bàn giao (EGroupType.BanGiaoHoSo)
+    public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoInsertDto dto) {
+        var entity = await _mediator.Send(new BanGiaoHoSoInsertCommand(dto));
+
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = model.GetDanhSachTepHSBanGiao(entity.Id)
+            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id)
         });
 
         return ResultApi.Ok(entity.Id);
@@ -76,24 +66,12 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> Update([FromBody] BanGiaoHoSoModel model) {
-        var entity = await _mediator.Send(new BanGiaoHoSoGetQuery(model.GetId()));
-        entity.Update(model);
-        
-        await _mediator.Send(new BanGiaoHoSoUpdateCommand(new BanGiaoHoSoUpdateModel {
-            Id = entity.Id,
-            Ma = entity.Ma,
-            TenHoSo = entity.TenHoSo,
-            DuAnId = entity.DuAnId,
-            BuocId = entity.BuocId,
-            PhongBanChuTriId = entity.PhongBanChuTriId,
-            GhiChu = entity.GhiChu
-        }));
+    public async Task<ResultApi> Update([FromBody] BanGiaoHoSoUpdateModel dto) {
+        var entity = await _mediator.Send(new BanGiaoHoSoUpdateCommand(dto));
 
-        // Update tệp HS bàn giao (EGroupType.BanGiaoHoSo)
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = model.GetDanhSachTepHSBanGiao(entity.Id)
+            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id)
         });
 
         return ResultApi.Ok(entity.Id);

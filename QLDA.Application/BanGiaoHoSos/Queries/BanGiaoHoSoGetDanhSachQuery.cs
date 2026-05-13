@@ -10,7 +10,7 @@ using QLDA.Application.TepDinhKems.DTOs;
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 
 // Không implement IMayHaveGlobalFilter - không có search full-text
-// UserId luôn lấy từ IUserProvider (JWT token), không cho UI truyền
+// CreatedBy luôn lấy từ IUserProvider (JWT token), không cho UI truyền
 public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<BanGiaoHoSoDto>> {
     public BanGiaoHoSoSearchDto SearchDto { get; set; } = new();
 }
@@ -18,58 +18,63 @@ public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<Pa
 internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>> {
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository;
+    private readonly IRepository<UserMaster, long> _userMasterRepository;
+    private readonly IRepository<DanhMucDonVi, long> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
     private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _userMasterRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
+        _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<BanGiaoHoSoDto>> Handle(BanGiaoHoSoGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        // Khai báo tường minh IQueryable để tránh lỗi type inference với IIncludableQueryable
-        IQueryable<BanGiaoHoSo> queryable = _banGiaoRepository.GetQueryableSet()
+        // LeftOuterJoin UserMaster và DanhMucDonVi (không FK – bảng đặc biệt)
+        var users = _userMasterRepository.GetQueryableSet().AsNoTracking();
+        var donVis = _danhMucDonViRepository.GetQueryableSet().AsNoTracking();
+
+        var queryable = _banGiaoRepository.GetQueryableSet()
             .AsNoTracking()
             .Where(e => !e.IsDeleted)
-            .Where(e => e.UserId == _userProvider.Id)  // Luôn filter theo người dùng hiện tại (từ JWT token)
-            .Include(e => e.User)
-            .Include(e => e.PhongBanChuTri)
+            .Where(e => e.CreatedBy == _userProvider.Id.ToString())
             .Include(e => e.DuAn)
-            .Include(e => e.Buoc);
-
-        // Filter theo TrangThai nếu được truyền (1 param duy nhất từ UI)
-        if (request.SearchDto.TrangThai.HasValue) {
-            queryable = queryable.Where(e => (int)e.TrangThai == request.SearchDto.TrangThai.Value);
-        }
-
-        return await queryable
-            .OrderByDescending(e => e.CreatedAt)
-            .Select(e => new BanGiaoHoSoDto {
-                Id = e.Id,
-                Ma = e.Ma,
-                TenHoSo = e.TenHoSo,
-                DuAnId = e.DuAnId,
-                TenDuAn = e.DuAn!.TenDuAn,
-                BuocId = e.BuocId,
-                TenBuoc = e.Buoc!.Ten,
-                PhongBanChuTriId = e.PhongBanChuTriId,
-                TenPhongBan = e.PhongBanChuTri!.TenDonVi,
-                UserId = e.UserId,
-                TenNguoiTao = e.User!.HoTen,
-                GhiChu = e.GhiChu,
-                TrangThai = (int)e.TrangThai,
-                TenTrangThai = GetTrangThaiText(e.TrangThai),
-                NgayBanGiao = e.NgayBanGiao,
+            .Include(e => e.Buoc)
+            .WhereIf(request.SearchDto.TrangThai.HasValue, e => (int)e.TrangThai == request.SearchDto.TrangThai!.Value)
+            .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId!.Value)
+            .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId!.Value)
+            .LeftOuterJoin(users, e => e.CreatedBy, u => u.Id.ToString(), (e, user) => new { e, user })
+            .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donVi) => new { x.e, x.user, donVi })
+            .OrderByDescending(x => x.e.CreatedAt)
+            .Select(x => new BanGiaoHoSoDto {
+                Id = x.e.Id,
+                Ma = x.e.Ma,
+                TenHoSo = x.e.TenHoSo,
+                DuAnId = x.e.DuAnId,
+                TenDuAn = x.e.DuAn!.TenDuAn,
+                BuocId = x.e.BuocId,
+                TenBuoc = x.e.Buoc!.Ten,
+                GhiChu = x.e.GhiChu,
+                PhongBanChuTriId = x.e.PhongBanChuTriId,
+                TenPhongBan = x.donVi != null ? x.donVi.TenDonVi : null,
+                TrangThai = (int)x.e.TrangThai,
+                TenTrangThai = GetTrangThaiText(x.e.TrangThai),
+                NgayBanGiao = x.e.NgayBanGiao.HasValue ? DateOnly.FromDateTime(x.e.NgayBanGiao.Value.LocalDateTime) : null,
+                TenNguoiTao = x.user != null ? x.user.HoTen : null,
+                CreatedAt = x.e.CreatedAt,
                 // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
                 DanhSachTepHSBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == e.Id.ToString() && f.GroupType == nameof(EGroupType.BanGiaoHoSo) && !f.IsDeleted)
+                    .Where(f => f.GroupId == x.e.Id.ToString() && f.GroupType == nameof(EGroupType.BanGiaoHoSo) && !f.IsDeleted)
                     .Select(f => f.ToDto()).ToList(),
                 // Biên bản bàn giao (EGroupType.BienBanBanGiao)
                 DanhSachBienBanBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == e.Id.ToString() && f.GroupType == nameof(EGroupType.BienBanBanGiao) && !f.IsDeleted)
+                    .Where(f => f.GroupId == x.e.Id.ToString() && f.GroupType == nameof(EGroupType.BienBanBanGiao) && !f.IsDeleted)
                     .Select(f => f.ToDto()).ToList()
-            })
+            });
+
+        return await queryable
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
     }
 
