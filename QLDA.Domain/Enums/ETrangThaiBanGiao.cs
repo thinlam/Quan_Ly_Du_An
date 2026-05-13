@@ -10,11 +10,11 @@ public enum ETrangThaiBanGiao {
     /// Khởi tạo - chưa bàn giao
     /// </summary>
     [Display(Name = "Khởi tạo")]
-    KhoiTao = 0,
+    KhoiTao = 1,
 
     /// <summary>
     /// Đã bàn giao cho phòng HC-TH
     /// </summary>
     [Display(Name = "Đã bàn giao")]
-    DaBanGiao = 1
+    DaBanGiao = 2
 }

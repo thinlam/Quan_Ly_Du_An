@@ -22,7 +22,7 @@ internal class BanGiaoHoSoDeleteCommandHandler : IRequestHandler<BanGiaoHoSoDele
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        // Chỉ cho phép xóa khi TrangThai = 0 (Khởi tạo)
+        // Chỉ cho phép xóa khi TrangThai = 1 (Khởi tạo)
         if (entity.TrangThai != ETrangThaiBanGiao.KhoiTao) {
             throw new InvalidOperationException("Chỉ có thể xóa bản giao hồ sơ ở trạng thái 'Khởi tạo'");
         }

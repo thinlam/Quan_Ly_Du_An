@@ -7,7 +7,7 @@ using QLDA.Domain.Enums;
 namespace QLDA.Application.BanGiaoHoSos.Commands;
 
 /// <summary>
-/// Thực hiện bàn giao hồ sơ: đổi trạng thái 0→1, set NgayBanGiao, lưu biên bản
+/// Thực hiện bàn giao hồ sơ: đổi trạng thái 1→2, set NgayBanGiao, lưu biên bản
 /// </summary>
 public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateOnly? NgayBanGiao) : IRequest<BanGiaoHoSo>;
 

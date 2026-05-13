@@ -11,8 +11,8 @@ public static class BanGiaoHoSoMappings {
         TenHoSo = dto.TenHoSo,
         DuAnId = dto.DuAnId,
         BuocId = dto.BuocId,
-        PhongBanChuTriId = dto.PhongBanChuTriId,
         GhiChu = dto.GhiChu,
+        // ⚠️ PhongBanChuTriId KHÔNG set ở đây – InsertCommandHandler set sau khi ToEntity()
         TrangThai = ETrangThaiBanGiao.KhoiTao,
     };
 
@@ -21,8 +21,8 @@ public static class BanGiaoHoSoMappings {
         entity.TenHoSo = dto.TenHoSo;
         entity.DuAnId = dto.DuAnId;
         entity.BuocId = dto.BuocId;
-        entity.PhongBanChuTriId = dto.PhongBanChuTriId;
         entity.GhiChu = dto.GhiChu;
+        // ⚠️ PhongBanChuTriId KHÔNG cập nhật khi update – phòng ban cố định theo người tạo
     }
 
     public static BanGiaoHoSoDto ToDto(this BanGiaoHoSo entity,
