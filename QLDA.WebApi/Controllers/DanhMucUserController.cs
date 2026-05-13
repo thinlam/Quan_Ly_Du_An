@@ -25,7 +25,7 @@ namespace QLDA.WebApi.Controllers {
         [ResponseCache(CacheProfileName = "Combobox")]
         [HttpGet("combobox/lanh-dao")]
         public async Task<ResultApi> GetLeaders() {
-            var data = await Mediator.Send(new GetUserByRoleNameQuery($"{RoleConstants.QLDA_LD}", DonViID: null, PhongBanID: null));
+            var data = await Mediator.Send(new GetUserByRoleNameQuery($"{RoleConstants.QLDA_LDDV}", DonViID: null, PhongBanID: null));
             return ResultApi.Ok(data);
         }
     }

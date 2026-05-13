@@ -51,7 +51,7 @@ public class CauHinhVaiTroQuyenConfiguration : AggregateRootConfiguration<CauHin
 
         // QLDA_LD → XemTatCa + PheDuyetActions (LDDV - Lãnh đạo đơn vị)
         foreach (var perm in PermissionConstants.AllXemTatCa.Concat(PermissionConstants.PheDuyetActions)) {
-            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LD, perm));
+            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LDDV, perm));
         }
 
         // QLDA_ChuyenVien → XemTheoPhong + Tao/Sua for own department

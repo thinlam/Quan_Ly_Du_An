@@ -247,7 +247,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     /// Client with BGĐ role - can approve/reject (Duyệt/Trả lại)
     /// </summary>
     public HttpClient CreateBgdClient() {
-        var token = GenerateToken(userId: 10, phongBanId: 1, roles: [RoleConstants.QLDA_QuanTri, RoleConstants.QLDA_LD]);
+        var token = GenerateToken(userId: 10, phongBanId: 1, roles: [RoleConstants.QLDA_QuanTri, RoleConstants.QLDA_LDDV]);
         return CreateClientWithToken(token);
     }
 
