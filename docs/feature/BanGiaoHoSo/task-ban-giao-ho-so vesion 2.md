@@ -51,6 +51,14 @@
 >   - `DateTimeOffset?` → `DateOnly?`: `entity.NgayBanGiao.HasValue ? DateOnly.FromDateTime(entity.NgayBanGiao.Value.LocalDateTime) : null`
 > - Input (BanGiaoHoSoBanGiaoDto / BanGiaoHoSoBanGiaoModel) đã là `DateOnly?` từ trước – **không đổi**
 
+> **✅ Updated (13/05/2026) – Version 8**
+> - `PhongBanChuTriId` **KHÔNG cho UI truyền** – tự động lấy từ phòng ban của người tạo via `IUserProvider`
+> - Giá trị: `_userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId` (ưu tiên PhongBanId, fallback DonViId)
+> - `BanGiaoHoSoInsertDto`: Bỏ `public long? PhongBanChuTriId { get; set; }` khỏi DTO
+> - `BanGiaoHoSoMappings.ToEntity()`: Bỏ `PhongBanChuTriId = dto.PhongBanChuTriId`
+> - `BanGiaoHoSoMappings.Update()`: Bỏ `entity.PhongBanChuTriId = dto.PhongBanChuTriId` (phòng ban không thay đổi sau khi tạo)
+> - `BanGiaoHoSoInsertCommandHandler`: Inject `IUserProvider`, sau `dto.ToEntity()` gán `entity.PhongBanChuTriId = _userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId`
+
 ---
 
 ## 1. Phân tích yêu cầu
@@ -74,7 +82,7 @@
 | `DuAnId` | `Guid?` | FK → DuAn |
 | `BuocId` | `int?` | FK → DuAnBuoc |
 | `GhiChu` | `string?` | Ghi chú |
-| `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) |
+| `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) – **tự động set từ `_userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId`; UI không truyền** |
 | `TrangThai` | `bit` (0/1) | 0: Khởi tạo, 1: Đã bàn giao → Enum `ETrangThaiBanGiao` |
 | `NgayBanGiao` | `DateTimeOffset?` | Ngày bàn giao – set khi gọi endpoint `ban-giao` (Entity lưu UTC; DTO/Model trả về `DateOnly?`) |
 | `IsDeleted` | `bit` | Soft delete flag |
@@ -372,7 +380,7 @@ public class BanGiaoHoSoInsertDto : IMayHaveTepDinhKemDto {
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string? GhiChu { get; set; }
-    public long? PhongBanChuTriId { get; set; }
+    // ⚠️ PhongBanChuTriId KHÔNG khai báo ở đây – tự động set từ _userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId trong InsertCommand
     // Tệp HS bàn giao (gắn khi insert/update)
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
@@ -465,7 +473,7 @@ public static class BanGiaoHoSoMappings {
         DuAnId = dto.DuAnId,
         BuocId = dto.BuocId,
         GhiChu = dto.GhiChu,
-        PhongBanChuTriId = dto.PhongBanChuTriId,
+        // ⚠️ PhongBanChuTriId KHÔNG set ở đây – InsertCommandHandler set sau khi ToEntity() qua _userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId
         TrangThai = ETrangThaiBanGiao.KhoiTao,
     };
 
@@ -475,7 +483,7 @@ public static class BanGiaoHoSoMappings {
         entity.DuAnId = dto.DuAnId;
         entity.BuocId = dto.BuocId;
         entity.GhiChu = dto.GhiChu;
-        entity.PhongBanChuTriId = dto.PhongBanChuTriId;
+        // ⚠️ PhongBanChuTriId KHÔNG cập nhật khi update – phòng ban cố định theo người tạo
     }
 
     public static BanGiaoHoSoDto ToDto(this BanGiaoHoSo entity,
@@ -560,14 +568,18 @@ public record BanGiaoHoSoInsertCommand(BanGiaoHoSoInsertDto Dto) : IRequest<BanG
 internal class BanGiaoHoSoInsertCommandHandler : IRequestHandler<BanGiaoHoSoInsertCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> BanGiaoHoSo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoInsertCommandHandler(IServiceProvider serviceProvider) {
         BanGiaoHoSo = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _unitOfWork = BanGiaoHoSo.UnitOfWork;
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<BanGiaoHoSo> Handle(BanGiaoHoSoInsertCommand request, CancellationToken cancellationToken = default) {
         var entity = request.Dto.ToEntity();
+        // PhongBanChuTriId = phòng ban của người tạo (ưu tiên PhongBanId, fallback DonViId)
+        entity.PhongBanChuTriId = _userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId;
         // CreatedBy được tự động set bởi EF interceptor từ JWT token – không cần gán thủ công
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);

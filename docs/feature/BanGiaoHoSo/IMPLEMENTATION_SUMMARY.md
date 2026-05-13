@@ -2,7 +2,7 @@
 
 **Status:** ✅ Thiết kế hoàn toàn, sẵn sàng code  
 **Date:** 13/05/2026  
-**Version:** 7.0
+**Version:** 8.0
 
 ---
 
@@ -32,7 +32,7 @@
 | `DuAnId` | `Guid?` | FK → DuAn |
 | `BuocId` | `int?` | FK → DuAnBuoc |
 | `GhiChu` | `string(2000)?` | Ghi chú |
-| `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) |
+| `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK; **⚠️ V8: KHÔNG cho UI truyền** – tự động set trong `InsertCommandHandler` từ `_userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID`) |
 | `TrangThai` | `ETrangThaiBanGiao` | 0: Khởi tạo, 1: Đã bàn giao |
 | `NgayBanGiao` | `DateTimeOffset?` | Ngày thực hiện bàn giao (Entity lưu UTC; DTO/Model trả về `DateOnly?`) |
 | `CreatedBy` | `string` | Người tạo – từ base class `Entity<T>`, tự động set bởi EF interceptor |
@@ -117,7 +117,7 @@ public enum ETrangThaiBanGiao {
 
 | File | Ý nghĩa |
 |------|---------|
-| `BanGiaoHoSoInsertDto.cs` | Insert payload (inherit `IMayHaveTepDinhKemDto`) |
+| `BanGiaoHoSoInsertDto.cs` | Insert payload (inherit `IMayHaveTepDinhKemDto`) – **⚠️ V8: KHÔNG có `PhongBanChuTriId`** |
 | `BanGiaoHoSoUpdateModel.cs` | Update payload (+ `Id`) |
 | `BanGiaoHoSoDto.cs` | Response model (kèm cả 2 loại tệp + `CreatedAt`) |
 | `BanGiaoHoSoSearchDto.cs` | Filter query (`TrangThai?`, `DuAnId?`, `BuocId?`) |
@@ -130,7 +130,7 @@ public enum ETrangThaiBanGiao {
 
 | Command | Mô tả |
 |---------|-------|
-| `BanGiaoHoSoInsertCommand` | Thêm mới entity |
+| `BanGiaoHoSoInsertCommand` | Thêm mới entity – **⚠️ V8: inject `IUserProvider`, sau `ToEntity()` gán `entity.PhongBanChuTriId = _userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID`** |
 | `BanGiaoHoSoUpdateCommand` | Cập nhật entity **(chỉ TrangThai=0)** |
 | `BanGiaoHoSoBanGiaoCommand` | **Ban-giao**: TrangThai 0→1, set NgayBanGiao |
 | `BanGiaoHoSoDeleteCommand` | Soft delete **(chỉ TrangThai=0)** |
@@ -249,6 +249,8 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ```
 ✅ Cho phép Insert: Tất cả authenticated user
 ✅ CreatedBy: Auto set bởi EF interceptor từ JWT token – không gán thủ công
+✅ PhongBanChuTriId: Auto set trong InsertCommandHandler = _userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID
+   (không cho UI truyền; không cập nhật khi Update – phòng ban cố định theo người tạo)
 ✅ Cho phép Update: Chỉ khi TrangThai = 0 (Khởi tạo)
 ❌ Không cho phép Update: TrangThai = 1 (đã bàn giao)
 ❌ Exception Update: "Chỉ có thể cập nhật bản giao hồ sơ ở trạng thái 'Khởi tạo'"
@@ -290,8 +292,12 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ### 1. `IUserProvider` Service
 - **Interface:** `BuildingBlocks.Domain.Providers.IUserProvider`
 - **Register:** Đã đăng ký sẵn trong DI của dự án – **không cần sửa `WebApplicationExtensions.cs`**
-- **Cách dùng:** Inject trong `GetDanhSachQueryHandler` để lọc theo `CreatedBy`
+- **Cách dùng:**
+  - Inject trong `InsertCommandHandler` để auto-set `PhongBanChuTriId` = `Info.PhongBanID ?? Info.DonViID`
+  - Inject trong `GetDanhSachQueryHandler` để lọc theo `CreatedBy`
 - `IUserProvider.Id` → `long` UserId từ JWT claim
+- `IUserProvider.Info.PhongBanID` → `long?` (phòng ban)
+- `IUserProvider.Info.DonViID` → `long?` (đơn vị – fallback khi PhongBanID null)
 
 ### 2. MediatR Commands & Queries
 - Auto-register via `AddMediatR(typeof(Program).Assembly)`
@@ -315,7 +321,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 - [x] **3. Persistence - BanGiaoHoSoConfiguration** – bỏ FK UserMaster + DanhMucDonVi; index `(CreatedBy, TrangThai)`
 - [x] **4. Application - DTOs** – `SearchDto` thêm `DuAnId`/`BuocId`; `Dto` thêm `CreatedAt`, bỏ `UserId`
 - [x] **5. Application - Mappings** – thêm `GetDanhSachTepHSBanGiao()` + `GetDanhSachBienBanBanGiao()`
-- [x] **6. Application - Commands** (4 files) – Insert bỏ `IUserProvider`/`entity.UserId`
+- [x] **6. Application - Commands** (4 files) – Insert inject `IUserProvider`, auto-set `entity.PhongBanChuTriId` từ phòng ban người tạo (⚠️ V8)
 - [x] **7. Application - Queries** – GetQuery bỏ Include User/PhongBanChuTri; GetDanhSachQuery dùng `LeftOuterJoin()` cho UserMaster + DanhMucDonVi, thêm `WhereIf` DuAnId/BuocId
 - [x] **8. WebApi - Models** – `BanGiaoHoSoModel` là pure response model (bỏ IHasKey, IMustHaveId...)
 - [x] **9. WebApi - MappingConfiguration** – chỉ giữ `ToModel()` + `GetDanhSachBienBanBanGiao()`; bỏ dead code
@@ -379,6 +385,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 | **Audit** | `CreatedAt`, `UpdatedAt` |
 | **Status Enum** | `ETrangThaiBanGiao` (0/1) |
 | **FK Relations** | DuAnId (Guid?), BuocId (int?) – `PhongBanChuTriId` và `CreatedBy` dùng LeftOuterJoin, không FK |
+| **PhongBanChuTriId** | ⚠️ V8: Không cho UI truyền; auto-set trong InsertCommandHandler = `_userProvider.Info.PhongBanID ?? _userProvider.Info.DonViID`; không thay đổi khi Update |
 | **NgayBanGiao** | Entity: `DateTimeOffset?` (DB lưu UTC). Input nhận `DateOnly?`, convert qua `ToStartOfDayUtc()`. Response (`BanGiaoHoSoDto`, `BanGiaoHoSoModel`) trả về `DateOnly?` |
 | **File Types** | 2 loại: BanGiaoHoSo, BienBanBanGiao |
 | **Delete Condition** | Chỉ TrangThai = 0 |
@@ -389,7 +396,7 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 
 ---
 
-**Version:** 7.0  
+**Version:** 8.0  
 **Last Updated:** 13/05/2026  
 **Prepared By:** Design Phase  
 **Status:** Implemented ✅
