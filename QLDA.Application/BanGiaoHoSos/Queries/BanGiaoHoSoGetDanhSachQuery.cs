@@ -34,7 +34,9 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .Where(e => !e.IsDeleted)
             .Where(e => e.UserId == _userProvider.Id)  // Luôn filter theo người dùng hiện tại (từ JWT token)
             .Include(e => e.User)
-            .Include(e => e.PhongBanChuTri);
+            .Include(e => e.PhongBanChuTri)
+            .Include(e => e.DuAn)
+            .Include(e => e.Buoc);
 
         // Filter theo TrangThai nếu được truyền (1 param duy nhất từ UI)
         if (request.SearchDto.TrangThai.HasValue) {
@@ -47,13 +49,18 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 Id = e.Id,
                 Ma = e.Ma,
                 TenHoSo = e.TenHoSo,
+                DuAnId = e.DuAnId,
+                TenDuAn = e.DuAn!.TenDuAn,
+                BuocId = e.BuocId,
+                TenBuoc = e.Buoc!.Ten,
                 PhongBanChuTriId = e.PhongBanChuTriId,
                 TenPhongBan = e.PhongBanChuTri!.TenDonVi,
+                UserId = e.UserId,
+                TenNguoiTao = e.User!.HoTen,
+                GhiChu = e.GhiChu,
                 TrangThai = (int)e.TrangThai,
                 TenTrangThai = GetTrangThaiText(e.TrangThai),
                 NgayBanGiao = e.NgayBanGiao,
-                UserId = e.UserId,
-                TenNguoiTao = e.User!.HoTen,
                 // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
                 DanhSachTepHSBanGiao = _tepDinhKemRepository.GetQueryableSet()
                     .Where(f => f.GroupId == e.Id.ToString() && f.GroupType == nameof(EGroupType.BanGiaoHoSo) && !f.IsDeleted)

@@ -18,6 +18,8 @@ internal class BanGiaoHoSoGetQueryHandler : IRequestHandler<BanGiaoHoSoGetQuery,
             .AsNoTracking()
             .Include(e => e.User)
             .Include(e => e.PhongBanChuTri)
+            .Include(e => e.DuAn)
+            .Include(e => e.Buoc)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
         return entity;

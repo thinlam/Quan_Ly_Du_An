@@ -1,8 +1,8 @@
 # 📋 Tóm Tắt Thực Hiện - Feature Bàn Giao Hồ Sơ (BanGiaoHoSo)
 
 **Status:** ✅ Thiết kế hoàn toàn, sẵn sàng code  
-**Date:** 12/05/2026  
-**Version:** 2.0
+**Date:** 13/05/2026  
+**Version:** 2.1
 
 ---
 
@@ -29,6 +29,9 @@
 | `Id` | `Guid` | PK - sequential GUID |
 | `Ma` | `string(100)` | Mã bản giao (unique) |
 | `TenHoSo` | `string(500)` | Tên hồ sơ |
+| `DuAnId` | `Guid?` | FK → DuAn |
+| `BuocId` | `int?` | FK → DanhMucBuoc |
+| `GhiChu` | `string(2000)?` | Ghi chú |
 | `PhongBanChuTriId` | `long?` | FK → DanhMucDonVi |
 | `TrangThai` | `ETrangThaiBanGiao` | 0: Khởi tạo, 1: Đã bàn giao |
 | `NgayBanGiao` | `DateTimeOffset?` | Ngày thực hiện bàn giao |
@@ -78,10 +81,12 @@ public enum ETrangThaiBanGiao {
 - `QLDA.Domain/Entities/BanGiaoHoSo.cs` (aggregate root)
 
 **Chi tiết:**
-- Entity kế thừa `Entity<Guid>, IAggregateRoot`
+- **Entity kế thừa** `Entity<Guid>, IAggregateRoot`
+- FK: `DuAnId` (Guid?) → `DuAn`
+- FK: `BuocId` (int?) → `DanhMucBuoc`
 - FK: `PhongBanChuTriId` (long?) → `DanhMucDonVi`
 - FK: `UserId` (long?) → `UserMaster`
-- Navigation properties: `User`, `PhongBanChuTri`
+- Navigation properties: `User`, `PhongBanChuTri`, `DuAn`, `Buoc`
 
 ---
 
@@ -116,7 +121,7 @@ public enum ETrangThaiBanGiao {
 |------|---------|
 | `BanGiaoHoSoInsertDto.cs` | Insert payload (inherit `IMayHaveTepDinhKemDto`) |
 | `BanGiaoHoSoUpdateModel.cs` | Update payload (+ `Id`) |
-| `BanGiaoHoSoDto.cs` | Response model (kèm cả 2 loại tệp) |
+| `BanGiaoHoSoDto.cs` | Response model (kèm cả 2 loại tệp + `CreatedAt`) |
 | `BanGiaoHoSoSearchDto.cs` | Filter query (chỉ `TrangThai?`) |
 
 #### Mappings (1 file)
@@ -128,9 +133,9 @@ public enum ETrangThaiBanGiao {
 | Command | Mô tả |
 |---------|-------|
 | `BanGiaoHoSoInsertCommand` | Thêm mới entity |
-| `BanGiaoHoSoUpdateCommand` | Cập nhật entity |
+| `BanGiaoHoSoUpdateCommand` | Cập nhật entity **(chỉ TrangThai=0)** |
 | `BanGiaoHoSoBanGiaoCommand` | **Ban-giao**: TrangThai 0→1, set NgayBanGiao |
-| `BanGiaoHoSoDeleteCommand` | Soft delete (chỉ TrangThai=0) |
+| `BanGiaoHoSoDeleteCommand` | Soft delete **(chỉ TrangThai=0)** |
 
 **Xử lý Transaction:**
 - Isolation Level: `ReadCommitted`
@@ -257,8 +262,10 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 ### Insert / Update
 
 ```
-✅ Cho phép: Tất cả authenticated user
-❌ Không cho phép: -
+✅ Cho phép: Chỉ khi TrangThai = 0 (Khởi tạo) - với Update
+✅ Cho phép Insert: Tất cả authenticated user
+❌ Không cho phép Update: TrangThai = 1 (đã bàn giao)
+❌ Exception Update: "Chỉ có thể cập nhật bản giao hồ sơ ở trạng thái 'Khởi tạo'"
 ✅ UserId: Auto set từ IUserProvider.Id (JWT token)
 ```
 
@@ -394,13 +401,14 @@ DanhSachBienBanBanGiao = TepDinhKem.GetQueryableSet()
 | **NgayBanGiao** | Entity: `DateTimeOffset?` (DB lưu UTC). Request/DTO nhận `DateOnly?`, server tự convert qua `DateOnlyExtensions.ToStartOfDayUtc()` |
 | **File Types** | 2 loại: BanGiaoHoSo, BienBanBanGiao |
 | **Delete Condition** | Chỉ TrangThai = 0 |
+| **Update Condition** | Chỉ TrangThai = 0 |
 | **Ban-Giao Logic** | 0→1, set NgayBanGiao, save biên bản |
 | **User Filter** | Luôn filter theo `IUserProvider.Id` từ JWT token |
 | **Transaction** | ReadCommitted isolation level |
 
 ---
 
-**Version:** 2.0  
-**Last Updated:** 12/05/2026  
+**Version:** 2.1  
+**Last Updated:** 13/05/2026  
 **Prepared By:** Design Phase  
 **Status:** Ready for Implementation ✅

@@ -1,5 +1,6 @@
 using QLDA.Domain.Enums;
 using QLDA.Domain.Entities.ViMaster;
+using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Domain.Entities;
 
@@ -18,9 +19,29 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     public string? TenHoSo { get; set; }
 
     /// <summary>
+    /// FK → DuAn
+    /// </summary>
+    public Guid? DuAnId { get; set; }
+
+    /// <summary>
+    /// FK → DanhMucBuoc
+    /// </summary>
+    public int? BuocId { get; set; }
+
+    /// <summary>
     /// FK → Phòng ban chủ trì (phòng HC-TH hoặc tương tự)
     /// </summary>
     public long? PhongBanChuTriId { get; set; }
+
+    /// <summary>
+    /// FK → UserMaster (người tạo hồ sơ - từ Auth)
+    /// </summary>
+    public long? UserId { get; set; }
+
+    /// <summary>
+    /// Ghi chú
+    /// </summary>
+    public string? GhiChu { get; set; }
 
     /// <summary>
     /// Trạng thái: 0 = Khởi tạo, 1 = Đã bàn giao
@@ -32,13 +53,10 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     /// </summary>
     public DateTimeOffset? NgayBanGiao { get; set; }
 
-    /// <summary>
-    /// FK → UserMaster (người tạo hồ sơ - từ Auth)
-    /// </summary>
-    public long? UserId { get; set; }
-
     #region Navigation Properties
     public UserMaster? User { get; set; }
     public DanhMucDonVi? PhongBanChuTri { get; set; }
+    public DuAn? DuAn { get; set; }
+    public DanhMucBuoc? Buoc { get; set; }
     #endregion
 }

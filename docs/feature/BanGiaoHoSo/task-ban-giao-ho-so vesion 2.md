@@ -13,6 +13,11 @@
 > - Endpoint `ban-giao` nhận thêm `DanhSachBienBan` (biên bản bàn giao)
 > - Bộ hồ sơ lưu trữ bàn giao gồm 2 loại tệp: **tệp HS bàn giao** (`EGroupType.BanGiaoHoSo`) và **biên bản bàn giao** (`EGroupType.BienBanBanGiao`)
 
+> **✅ Updated (13/05/2026)**
+> - Thêm 3 trường bị thiếu vào entity và tất cả các layer: `DuAnId` (Guid? – FK → DuAn), `BuocId` (int? – FK → DanhMucBuoc), `GhiChu` (string?)
+> - lúc trả danh sách trả thêm ngày create 
+> - valid 2 case này Cap-nhat,Xóa: chỉ ở trạng thái khởi tạo(chưa bàn giao) mới dc xóa
+
 ---
 
 ## 1. Phân tích yêu cầu
@@ -33,6 +38,9 @@
 | `Id` | `Guid` | Auto-generate sequential guid |
 | `Ma` | `string` | Mã bản giao hồ sơ (unique) |
 | `TenHoSo` | `string` | Tên hồ sơ |
+| `DuAnId` | `Guid?` | FK → DuAn |
+| `BuocId` | `int?` | FK → DanhMucBuoc |
+| `GhiChu` | `string?` | Ghi chú |
 | `PhongBanChuTriId` | `int?` | FK → Danh mục phòng ban (HC-TH) |
 | `TrangThai` | `bit` (0/1) | 0: Khởi tạo, 1: Đã bàn giao → Enum `ETrangThaiBanGiao` |
 | `NgayBanGiao` | `DateTimeOffset?` | Ngày bàn giao – set khi gọi endpoint `ban-giao` |
@@ -181,6 +189,21 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     public string? TenHoSo { get; set; }
 
     /// <summary>
+    /// FK → DuAn
+    /// </summary>
+    public Guid? DuAnId { get; set; }
+
+    /// <summary>
+    /// FK → DanhMucBuoc
+    /// </summary>
+    public int? BuocId { get; set; }
+
+    /// <summary>
+    /// Ghi chú
+    /// </summary>
+    public string? GhiChu { get; set; }
+
+    /// <summary>
     /// FK → Phòng ban chủ trì (phòng HC-TH hoặc tương tự)
     /// </summary>
     public int? PhongBanChuTriId { get; set; }
@@ -203,6 +226,8 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     #region Navigation Properties
     public UserMaster? User { get; set; }
     public DanhMucPhongBan? PhongBanChuTri { get; set; }
+    public DuAn? DuAn { get; set; }
+    public DanhMucBuoc? Buoc { get; set; }
     #endregion
 }
 ```
@@ -235,6 +260,10 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
             .HasMaxLength(500)
             .IsRequired();
 
+        builder.Property(e => e.GhiChu)
+            .HasMaxLength(2000)
+            .IsRequired(false);
+
         builder.Property(e => e.TrangThai)
             .HasConversion<int>();  // Lưu enum dưới dạng int
 
@@ -254,6 +283,18 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
         builder.HasOne(e => e.PhongBanChuTri)
             .WithMany()
             .HasForeignKey(e => e.PhongBanChuTriId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // FK → DuAn
+        builder.HasOne(e => e.DuAn)
+            .WithMany()
+            .HasForeignKey(e => e.DuAnId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // FK → DanhMucBuoc
+        builder.HasOne(e => e.Buoc)
+            .WithMany()
+            .HasForeignKey(e => e.BuocId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }
@@ -306,6 +347,9 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 public class BanGiaoHoSoInsertDto : IMayHaveTepDinhKemDto {
     public string? Ma { get; set; }
     public string? TenHoSo { get; set; }
+    public Guid? DuAnId { get; set; }
+    public int? BuocId { get; set; }
+    public string? GhiChu { get; set; }
     public int? PhongBanChuTriId { get; set; }
     // Tệp HS bàn giao (gắn khi insert/update)
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
@@ -351,6 +395,11 @@ public class BanGiaoHoSoDto {
     public Guid Id { get; set; }
     public string? Ma { get; set; }
     public string? TenHoSo { get; set; }
+    public Guid? DuAnId { get; set; }
+    public string? TenDuAn { get; set; }
+    public int? BuocId { get; set; }
+    public string? TenBuoc { get; set; }
+    public string? GhiChu { get; set; }
     public int? PhongBanChuTriId { get; set; }
     public string? TenPhongBan { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
@@ -358,6 +407,7 @@ public class BanGiaoHoSoDto {
     public DateTimeOffset? NgayBanGiao { get; set; }
     public long? UserId { get; set; }
     public string? TenNguoiTao { get; set; }
+    public DateTime? CreatedAt { get; set; }
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
     public List<TepDinhKemDto>? DanhSachTepHSBanGiao { get; set; }
     // Biên bản bàn giao (EGroupType.BienBanBanGiao)
@@ -389,6 +439,9 @@ public static class BanGiaoHoSoMappings {
         Id = GuidExtensions.GetSequentialGuidId(),
         Ma = dto.Ma,
         TenHoSo = dto.TenHoSo,
+        DuAnId = dto.DuAnId,
+        BuocId = dto.BuocId,
+        GhiChu = dto.GhiChu,
         PhongBanChuTriId = dto.PhongBanChuTriId,
         TrangThai = ETrangThaiBanGiao.KhoiTao,
     };
@@ -396,6 +449,9 @@ public static class BanGiaoHoSoMappings {
     public static void Update(this BanGiaoHoSo entity, BanGiaoHoSoUpdateModel dto) {
         entity.Ma = dto.Ma;
         entity.TenHoSo = dto.TenHoSo;
+        entity.DuAnId = dto.DuAnId;
+        entity.BuocId = dto.BuocId;
+        entity.GhiChu = dto.GhiChu;
         entity.PhongBanChuTriId = dto.PhongBanChuTriId;
     }
 
@@ -405,6 +461,11 @@ public static class BanGiaoHoSoMappings {
         Id = entity.Id,
         Ma = entity.Ma,
         TenHoSo = entity.TenHoSo,
+        DuAnId = entity.DuAnId,
+        TenDuAn = entity.DuAn?.Ten,
+        BuocId = entity.BuocId,
+        TenBuoc = entity.Buoc?.Ten,
+        GhiChu = entity.GhiChu,
         PhongBanChuTriId = entity.PhongBanChuTriId,
         TenPhongBan = entity.PhongBanChuTri?.Ten,
         TrangThai = (int)entity.TrangThai,
@@ -470,6 +531,7 @@ internal class BanGiaoHoSoInsertCommandHandler : IRequestHandler<BanGiaoHoSoInse
 ```csharp
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BanGiaoHoSos.Commands;
 
@@ -488,6 +550,11 @@ internal class BanGiaoHoSoUpdateCommandHandler : IRequestHandler<BanGiaoHoSoUpda
         var entity = await BanGiaoHoSo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
+
+        // Chỉ cho phép cập nhật khi TrangThai = 0 (Khởi tạo)
+        if (entity.TrangThai != ETrangThaiBanGiao.KhoiTao) {
+            throw new InvalidOperationException("Chỉ có thể cập nhật bản giao hồ sơ ở trạng thái 'Khởi tạo'");
+        }
 
         entity.Update(request.Model);
 
@@ -610,6 +677,8 @@ internal class BanGiaoHoSoGetQueryHandler : IRequestHandler<BanGiaoHoSoGetQuery,
             .AsNoTracking()
             .Include(e => e.User)
             .Include(e => e.PhongBanChuTri)
+            .Include(e => e.DuAn)
+            .Include(e => e.Buoc)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
         return entity;
@@ -653,7 +722,9 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .Where(e => !e.IsDeleted)
             .Where(e => e.UserId == _userProvider.Id)  // Luôn filter theo người dùng hiện tại (từ IUserProvider)
             .Include(e => e.User)
-            .Include(e => e.PhongBanChuTri);
+            .Include(e => e.PhongBanChuTri)
+            .Include(e => e.DuAn)
+            .Include(e => e.Buoc);
 
         // Filter theo TrangThai nếu được truyền (1 param duy nhất từ UI)
         if (request.SearchDto.TrangThai.HasValue) {
@@ -666,6 +737,11 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 Id = e.Id,
                 Ma = e.Ma,
                 TenHoSo = e.TenHoSo,
+                DuAnId = e.DuAnId,
+                TenDuAn = e.DuAn!.Ten,
+                BuocId = e.BuocId,
+                TenBuoc = e.Buoc!.Ten,
+                GhiChu = e.GhiChu,
                 PhongBanChuTriId = e.PhongBanChuTriId,
                 TenPhongBan = e.PhongBanChuTri!.Ten,
                 TrangThai = (int)e.TrangThai,
@@ -673,6 +749,7 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 NgayBanGiao = e.NgayBanGiao,
                 UserId = e.UserId,
                 TenNguoiTao = e.User!.HoTen,
+                CreatedAt = e.CreatedAt,
                 // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
                 DanhSachTepHSBanGiao = TepDinhKem.GetQueryableSet()
                     .Where(f => f.GroupId == e.Id.ToString() && f.EGroupType == EGroupType.BanGiaoHoSo && !f.IsDeleted)
@@ -717,6 +794,9 @@ public class BanGiaoHoSoModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDi
 
     public string? Ma { get; set; }
     public string? TenHoSo { get; set; }
+    public Guid? DuAnId { get; set; }
+    public int? BuocId { get; set; }
+    public string? GhiChu { get; set; }
     public int? PhongBanChuTriId { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao
     public DateTimeOffset? NgayBanGiao { get; set; }
@@ -760,6 +840,9 @@ public static class BanGiaoHoSoMappingConfiguration {
         Id = entity.Id,
         Ma = entity.Ma,
         TenHoSo = entity.TenHoSo,
+        DuAnId = entity.DuAnId,
+        BuocId = entity.BuocId,
+        GhiChu = entity.GhiChu,
         PhongBanChuTriId = entity.PhongBanChuTriId,
         TrangThai = (int)entity.TrangThai,
         NgayBanGiao = entity.NgayBanGiao,
@@ -771,6 +854,9 @@ public static class BanGiaoHoSoMappingConfiguration {
         Id = model.GetId(),
         Ma = model.Ma,
         TenHoSo = model.TenHoSo,
+        DuAnId = model.DuAnId,
+        BuocId = model.BuocId,
+        GhiChu = model.GhiChu,
         PhongBanChuTriId = model.PhongBanChuTriId,
         TrangThai = (ETrangThaiBanGiao)(model.TrangThai)
     };
@@ -778,6 +864,9 @@ public static class BanGiaoHoSoMappingConfiguration {
     public static void Update(this BanGiaoHoSo entity, BanGiaoHoSoModel model) {
         entity.Ma = model.Ma;
         entity.TenHoSo = model.TenHoSo;
+        entity.DuAnId = model.DuAnId;
+        entity.BuocId = model.BuocId;
+        entity.GhiChu = model.GhiChu;
         entity.PhongBanChuTriId = model.PhongBanChuTriId;
     }
 
@@ -877,6 +966,9 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
         var insertDto = new BanGiaoHoSoInsertDto {
             Ma = model.Ma,
             TenHoSo = model.TenHoSo,
+            DuAnId = model.DuAnId,
+            BuocId = model.BuocId,
+            GhiChu = model.GhiChu,
             PhongBanChuTriId = model.PhongBanChuTriId,
             DanhSachTepDinhKem = model.DanhSachTepDinhKem  // Tệp HS bàn giao
         };
@@ -904,6 +996,9 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
             Id = entity.Id,
             Ma = entity.Ma,
             TenHoSo = entity.TenHoSo,
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
+            GhiChu = entity.GhiChu,
             PhongBanChuTriId = entity.PhongBanChuTriId,
             DanhSachTepDinhKem = model.DanhSachTepDinhKem  // Tệp HS bàn giao
         }));
@@ -952,15 +1047,15 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 [x] 1. Tạo ETrangThaiBanGiao enum
 [x] 2. Tạo BanGiaoHoSo entity (+ NgayBanGiao)
 [x] 3. Tạo BanGiaoHoSoConfiguration (EF)
-[ ] 4. Chạy Migration (không drop database)
+[x] 4. Chạy Migration (không drop database)
 [x] 5. Tạo BanGiaoHoSo DTOs + Mappings
 [x] 6. Tạo BanGiaoHoSoInsertCommand / UpdateCommand / BanGiaoCommand / DeleteCommand
 [x] 7. Tạo BanGiaoHoSoGetQuery / GetDanhSachQuery
 [x] 8. IUserProvider đã đăng ký sẵn trong BuildingBlocks DI - inject trong handler
-[ ] 9. WebApplicationExtensions.cs - KHÔNG cần sửa (IUserProvider đã có sẵn)
+[x] 9. WebApplicationExtensions.cs - KHÔNG cần sửa (IUserProvider đã có sẵn)
 [x] 10. Tạo BanGiaoHoSo Model + BanGiaoHoSoBanGiaoModel + Mapping + Controller
 [x] 11. Thêm EGroupType.BanGiaoHoSo và EGroupType.BienBanBanGiao vào enum
-[ ] 12. Build + Test
+[x] 12. Build + Test
 ```
 
 ---
@@ -970,6 +1065,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 - **⚠️ KHÔNG chạy `drop-database`** – chỉ chạy `migrations add` và `database update`
 - **UserId từ Auth:** Lấy từ `IUserProvider.Id` (BuildingBlocks) inject trong handler – không cho user tự chỉ định
 - **Delete có điều kiện:** Chỉ xóa được khi `TrangThai = 0` (Khởi tạo), throw exception nếu vi phạm
+- **Update có điều kiện:** Chỉ cập nhật được khi `TrangThai = 0` (Khởi tạo), throw exception nếu vi phạm
 - **Ban-giao endpoint:** Đổi trạng thái 0→1, set `NgayBanGiao`, lưu biên bản bàn giao
 - **Filter:** Chỉ theo `TrangThai` (1 param duy nhất từ UI) - không có GlobalFilter
 - **Migration tên:** `AddBanGiaoHoSo` – chạy từ folder `QLDA.Migrator`

@@ -17,6 +17,10 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
             .HasMaxLength(500)
             .IsRequired();
 
+        builder.Property(e => e.GhiChu)
+            .HasMaxLength(2000)
+            .IsRequired(false);
+
         builder.Property(e => e.TrangThai)
             .HasConversion<int>();  // Lưu enum dưới dạng int
 
@@ -36,6 +40,18 @@ public class BanGiaoHoSoConfiguration : AggregateRootConfiguration<BanGiaoHoSo> 
         builder.HasOne(e => e.PhongBanChuTri)
             .WithMany()
             .HasForeignKey(e => e.PhongBanChuTriId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // FK → DuAn
+        builder.HasOne(e => e.DuAn)
+            .WithMany()
+            .HasForeignKey(e => e.DuAnId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // FK → DanhMucBuoc
+        builder.HasOne(e => e.Buoc)
+            .WithMany()
+            .HasForeignKey(e => e.BuocId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

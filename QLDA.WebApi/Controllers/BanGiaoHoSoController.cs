@@ -56,7 +56,10 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
         var insertDto = new BanGiaoHoSoInsertDto {
             Ma = model.Ma,
             TenHoSo = model.TenHoSo,
-            PhongBanChuTriId = model.PhongBanChuTriId
+            DuAnId = model.DuAnId,
+            BuocId = model.BuocId,
+            PhongBanChuTriId = model.PhongBanChuTriId,
+            GhiChu = model.GhiChu
         };
         
         var entity = await _mediator.Send(new BanGiaoHoSoInsertCommand(insertDto));
@@ -81,7 +84,10 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
             Id = entity.Id,
             Ma = entity.Ma,
             TenHoSo = entity.TenHoSo,
-            PhongBanChuTriId = entity.PhongBanChuTriId
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
+            PhongBanChuTriId = entity.PhongBanChuTriId,
+            GhiChu = entity.GhiChu
         }));
 
         // Update tệp HS bàn giao (EGroupType.BanGiaoHoSo)
