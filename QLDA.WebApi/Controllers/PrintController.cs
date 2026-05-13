@@ -2,13 +2,13 @@ using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuAnBuocs.Queries;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.HopDongs.DTOs;
-using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
-using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
-using QLDA.WebApi.Models.BaoCaoTienDos;
-using QLDA.WebApi.Models.KhoKhanVuongMacs;
-using QLDA.WebApi.Models.PhuLucHopDongs;
-using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 using QLDA.Application.DuAnBuocs.DTOs;
+using QLDA.WebApi.Models.BaoCaoTienDos;
+using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
+using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
+using QLDA.WebApi.Models.PhuLucHopDongs;
+using QLDA.WebApi.Models.KhoKhanVuongMacs;
+using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -16,6 +16,15 @@ namespace QLDA.WebApi.Controllers;
 public class PrintController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
     private readonly IUserProvider _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     private readonly IExporterHelper _excelExporter = serviceProvider.GetRequiredService<IExporterHelper>();
+
+    /// <summary>
+    /// Thêm timestamp vào tên file để tránh trùng khi tải nhiều lần
+    /// </summary>
+    private static string GetDownloadFileName(string templateFileName) {
+        var nameWithoutExt = Path.GetFileNameWithoutExtension(templateFileName);
+        var ext = Path.GetExtension(templateFileName);
+        return $"{nameWithoutExt}_{DateTime.Now:ddMMyyyy_HHmmss}{ext}";
+    }
 
     #region usp_In_QuyTrinhTrinhDuAn
 
@@ -53,7 +62,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         });
 
         return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
-            FileDownloadName = $"QuyTrinhTrinhDuAn_{DateTime.Now:ddMMyyyy_HHmmss}.xlsx"
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -68,7 +77,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [HttpGet("api/print/danh-sach-tra-cuu-du-an")]
     [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> InDuAnTraCuu([FromQuery] DuAnSearchDto searchDto) {
+    public async Task<IActionResult> InDuAnTraCuu([FromQuery] DuAnPrintSearchDto searchDto) {
         var fileNameTemplate = "DanhSachDuAnTraCuu.xlsx";
         var procedureName = "usp_In_DanhSach_DuAn_TraCuu";
         var templatePath = Path.Combine(
@@ -98,8 +107,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 searchDto.BuocId,
                 searchDto.NguonVonId,
                 searchDto.GlobalFilter,
-                searchDto.PageIndex,
-                searchDto.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
                 searchDto.QuyTrinhId,
                 searchDto.TrangThaiDuAnId,
             },
@@ -109,7 +118,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -123,7 +132,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchDto"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-du-an")]
-    public async Task<IActionResult> InDuAn([FromQuery] DuAnSearchDto searchDto) {
+    public async Task<IActionResult> InDuAn([FromQuery] DuAnPrintSearchDto searchDto) {
         var fileNameTemplate = "DanhSachDuAn.xlsx";
         var procedureName = "usp_In_DanhSach_DuAn";
         var templatePath = Path.Combine(
@@ -153,8 +162,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 searchDto.BuocId,
                 searchDto.NguonVonId,
                 searchDto.GlobalFilter,
-                searchDto.PageIndex,
-                searchDto.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
                 searchDto.QuyTrinhId,
                 searchDto.TrangThaiDuAnId,
                 TuNgay = searchDto.TuNgay?.ToStartOfDayUtc(),
@@ -170,7 +179,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -184,7 +193,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchDto"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-goi-thau")]
-    public async Task<IActionResult> InGoiThau([FromQuery] GoiThauSearchDto searchDto) {
+    public async Task<IActionResult> InGoiThau([FromQuery] GoiThauPrintSearchDto searchDto) {
         var fileNameTemplate = "DanhSachGoiThau.xlsx";
         var procedureName = "usp_In_DanhSach_GoiThau";
         var templatePath = Path.Combine(
@@ -217,7 +226,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -231,7 +240,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchDto"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-hop-dong")]
-    public async Task<IActionResult> InHopDong([FromQuery] HopDongSearchDto searchDto) {
+    public async Task<IActionResult> InHopDong([FromQuery] HopDongPrintSearchDto searchDto) {
         var fileNameTemplate = "DanhSachHopDong.xlsx";
         var procedureName = "usp_In_DanhSach_HopDong";
         var templatePath = Path.Combine(
@@ -255,8 +264,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 searchDto.DonViThucHienId,
                 searchDto.IsBienBan,
                 searchDto.GlobalFilter,
-                searchDto.PageIndex,
-                searchDto.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
             },
             HiddenColumns = searchDto.HiddenColumns
         };
@@ -264,7 +273,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -277,7 +286,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-phu-luc-hop-dong")]
-    public async Task<IActionResult> InPhuLucHopDong([FromQuery] PhuLucHopDongSearchModel searchModel) {
+    public async Task<IActionResult> InPhuLucHopDong([FromQuery] PhuLucHopDongPrintSearchModel searchModel) {
         var fileNameTemplate = "DanhSachPhuLucHopDong.xlsx";
         var procedureName = "usp_In_DanhSach_PhuLucHopDong";
         var templatePath = Path.Combine(
@@ -301,8 +310,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
-                searchModel.PageIndex,
-                searchModel.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
             },
             HiddenColumns = searchModel.HiddenColumns
         };
@@ -310,7 +319,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -324,7 +333,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-bao-cao-tien-do")]
-    public async Task<IActionResult> InBaoCaoTienDo([FromQuery] BaoCaoTienDoSearchModel searchModel) {
+    public async Task<IActionResult> InBaoCaoTienDo([FromQuery] BaoCaoTienDoPrintSearchModel searchModel) {
         var fileNameTemplate = "DanhSachBaoCaoTienDo.xlsx";
         var procedureName = "usp_In_DanhSach_BaoCaoTienDo";
         var templatePath = Path.Combine(
@@ -345,8 +354,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 searchModel.BuocId,
                 searchModel.NoiDung,
                 searchModel.GlobalFilter,
-                searchModel.PageIndex,
-                searchModel.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
             },
@@ -356,7 +365,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
     #endregion
@@ -369,7 +378,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-bao-cao-bao-hanh-san-pham")]
-    public async Task<IActionResult> InBaoCaoBaoHanhSanPham([FromQuery] BaoCaoBaoHanhSanPhamSearchModel searchModel) {
+    public async Task<IActionResult> InBaoCaoBaoHanhSanPham([FromQuery] BaoCaoBaoHanhSanPhamPrintSearchModel searchModel) {
         var fileNameTemplate = "DanhSachBaoCaoBaoHanhSanPham.xlsx";
         var procedureName = "usp_In_DanhSach_BaoCaoBaoHanhSanPham";
         var templatePath = Path.Combine(
@@ -392,8 +401,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
-                searchModel.PageIndex,
-                searchModel.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
             },
             HiddenColumns = searchModel.HiddenColumns
         };
@@ -401,7 +410,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -416,7 +425,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-bao-cao-ban-giao-san-pham")]
-    public async Task<IActionResult> InBaoCaoBanGiaoSanPham([FromQuery] BaoCaoBanGiaoSanPhamSearchModel searchModel) {
+    public async Task<IActionResult> InBaoCaoBanGiaoSanPham([FromQuery] BaoCaoBanGiaoSanPhamPrintSearchModel searchModel) {
         var fileNameTemplate = "DanhSachBaoCaoBanGiaoSanPham.xlsx";
         var procedureName = "usp_In_DanhSach_BaoCaoBanGiaoSanPham";
         var templatePath = Path.Combine(
@@ -439,8 +448,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
-                searchModel.PageIndex,
-                searchModel.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
             },
             HiddenColumns = searchModel.HiddenColumns
         };
@@ -448,7 +457,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -462,7 +471,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-kho-khan-vuong-mac")]
-    public async Task<IActionResult> InKhoKhanVuongMac([FromQuery] KhoKhanVuongMacSearchModel searchModel) {
+    public async Task<IActionResult> InKhoKhanVuongMac([FromQuery] KhoKhanVuongMacPrintSearchModel searchModel) {
         var fileNameTemplate = "DanhSachKhoKhanVuongMac.xlsx";
         var procedureName = "usp_In_DanhSach_KhoKhanVuongMac";
         var templatePath = Path.Combine(
@@ -488,8 +497,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
-                searchModel.PageIndex,
-                searchModel.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
             },
             HiddenColumns = searchModel.HiddenColumns
         };
@@ -497,7 +506,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -512,7 +521,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-tong-hop-van-ban-quyet-dinh")]
     public async Task<IActionResult>
-        InTongHopVanBanQuyetDinh([FromQuery] TongHopVanBanQuyetDinhSearchModel searchModel) {
+        InTongHopVanBanQuyetDinh([FromQuery] TongHopVanBanQuyetDinhPrintSearchModel searchModel) {
         var fileNameTemplate = "DanhSachTongHopVanBanQuyetDinh.xlsx";
         var procedureName = "usp_In_DanhSach_TongHopVanBanQuyetDinh";
         var templatePath = Path.Combine(
@@ -535,8 +544,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
-                searchModel.PageIndex,
-                searchModel.PageSize,
+                PageIndex = 0,
+                PageSize = 0,
             },
             HiddenColumns = searchModel.HiddenColumns
         };
@@ -544,7 +553,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -580,7 +589,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,
             exportResult.ContentType) {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
@@ -621,7 +630,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return new FileContentResult(exportResult.FileBytes,    exportResult.ContentType)
         {
-            FileDownloadName = fileNameTemplate
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
