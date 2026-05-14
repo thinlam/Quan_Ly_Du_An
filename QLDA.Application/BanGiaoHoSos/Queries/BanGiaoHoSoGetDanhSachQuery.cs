@@ -46,7 +46,8 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId!.Value)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId!.Value)
             .LeftOuterJoin(users, e => e.CreatedBy, u => u.Id.ToString(), (e, user) => new { e, user })
-            .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donVi) => new { x.e, x.user, donVi })
+            .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donViChuTri) => new { x.e, x.user, donViChuTri })
+            .LeftOuterJoin(donVis, x => x.e.PhongBanNhanId, d => (long?)d.Id, (x, donViNhan) => new { x.e, x.user, x.donViChuTri, donViNhan })
             .OrderByDescending(x => x.e.CreatedAt)
             .Select(x => new BanGiaoHoSoDto {
                 Id = x.e.Id,
@@ -58,7 +59,9 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 TenBuoc = x.e.Buoc!.TenBuoc,
                 GhiChu = x.e.GhiChu,
                 PhongBanChuTriId = x.e.PhongBanChuTriId,
-                TenPhongBan = x.donVi != null ? x.donVi.TenDonVi : null,
+                TenPhongBan = x.donViChuTri != null ? x.donViChuTri.TenDonVi : null,
+                PhongBanNhanId = x.e.PhongBanNhanId,
+                TenPhongBanNhan = x.donViNhan != null ? x.donViNhan.TenDonVi : null,
                 TrangThai = (int)x.e.TrangThai,
                 TenTrangThai = GetTrangThaiText(x.e.TrangThai),
                 NgayBanGiao = x.e.NgayBanGiao.HasValue ? DateOnly.FromDateTime(x.e.NgayBanGiao.Value.LocalDateTime) : null,

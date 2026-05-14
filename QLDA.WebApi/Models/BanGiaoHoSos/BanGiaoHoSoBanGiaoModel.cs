@@ -8,6 +8,8 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 public class BanGiaoHoSoBanGiaoModel {
     /// <summary>Ngày bàn giao (DateOnly), nếu null sẽ dùng ngày hiện tại. Server tự quy đổi sang UTC.</summary>
     public DateOnly? NgayBanGiao { get; set; }
+    /// <summary>Phòng ban nhận hồ sơ – UI truyền vào khi thực hiện bàn giao.</summary>
+    public long? PhongBanNhanId { get; set; }
     // Biên bản bàn giao (đính kèm khi thực hiện bàn giao)
     public List<TepDinhKemModel>? DanhSachBienBan { get; set; }
 }

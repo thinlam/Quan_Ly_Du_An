@@ -7,13 +7,16 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 public static class BanGiaoHoSoMappingConfiguration {
     public static BanGiaoHoSoModel ToModel(this BanGiaoHoSo entity,
         List<TepDinhKem>? tepHSBanGiao = null,
-        List<TepDinhKem>? bienBanBanGiao = null) => new() {
+        List<TepDinhKem>? bienBanBanGiao = null,
+        string? tenPhongBanNhan = null) => new() {
         Id = entity.Id,
         Ma = entity.Ma,
         TenHoSo = entity.TenHoSo,
         DuAnId = entity.DuAnId,
         BuocId = entity.BuocId,
         PhongBanChuTriId = entity.PhongBanChuTriId,
+        PhongBanNhanId = entity.PhongBanNhanId,
+        TenPhongBanNhan = tenPhongBanNhan,
         TrangThai = (int)entity.TrangThai,
         NgayBanGiao = entity.NgayBanGiao.HasValue ? DateOnly.FromDateTime(entity.NgayBanGiao.Value.LocalDateTime) : null,
         GhiChu = entity.GhiChu,

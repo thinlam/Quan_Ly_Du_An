@@ -36,6 +36,7 @@ public static class BanGiaoHoSoMappings {
         BuocId = entity.BuocId,
         TenBuoc = entity.Buoc?.TenBuoc,
         PhongBanChuTriId = entity.PhongBanChuTriId,
+        PhongBanNhanId = entity.PhongBanNhanId,
         // TenPhongBan: lấy từ LeftOuterJoin trong GetDanhSachQuery (không có nav property)
         // TenNguoiTao: lấy từ LeftOuterJoin trong GetDanhSachQuery (không có nav property)
         GhiChu = entity.GhiChu,

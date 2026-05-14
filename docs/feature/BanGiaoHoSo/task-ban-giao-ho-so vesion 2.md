@@ -63,6 +63,16 @@
 > - `ETrangThaiBanGiao`: Đổi giá trị enum từ `0/1` thành `1/2` – `KhoiTao = 1`, `DaBanGiao = 2`
 > - Tất cả comment, điều kiện và mô tả liên quan đã được cập nhật
 
+> **✅ Updated (14/05/2026) – Version 10**
+> - Endpoint `ban-giao`: Thêm trường `PhongBanNhanId` (`long?`) – phòng ban **nhận** hồ sơ (do UI truyền vào); lưu vào entity khi thực hiện bàn giao
+> - Entity: Thêm `PhongBanNhanId (long?)` – **không FK, không navigation** (cùng pattern `DM_DONVI` như `PhongBanChuTriId`)
+> - `BanGiaoHoSoBanGiaoDto` / `BanGiaoHoSoBanGiaoModel`: Thêm `public long? PhongBanNhanId { get; set; }`
+> - `BanGiaoHoSoBanGiaoCommand`: Nhận thêm `PhongBanNhanId`, set `entity.PhongBanNhanId` sau khi lấy entity
+> - `BanGiaoHoSoDto`: Thêm `PhongBanNhanId (long?)` và `TenPhongBanNhan (string?)` – luôn trả ra, có giá trị khi `TrangThai = DaBanGiao`
+> - `BanGiaoHoSoModel` (WebApi): Thêm `PhongBanNhanId (long?)` và `TenPhongBanNhan (string?)`
+> - `GetDanhSachQuery`: Thêm `LeftOuterJoin` thứ 3 với `DanhMucDonVi` trên `PhongBanNhanId` để lấy `TenPhongBanNhan`
+> - `BanGiaoHoSoMappingConfiguration.ToModel()`: Map thêm `PhongBanNhanId` và `TenPhongBanNhan`
+
 ---
 
 ## 1. Phân tích yêu cầu
@@ -87,6 +97,7 @@
 | `BuocId` | `int?` | FK → DuAnBuoc |
 | `GhiChu` | `string?` | Ghi chú |
 | `PhongBanChuTriId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) – **tự động set từ `_userProvider.Info?.PhongBanId ?? _userProvider.Info?.DonViId`; UI không truyền** |
+| `PhongBanNhanId` | `long?` | Ref → DanhMucDonVi (⚠️ không FK) – **phòng ban nhận hồ sơ; UI truyền khi gọi endpoint `ban-giao`; set khi TrangThai → DaBanGiao** |
 | `TrangThai` | `int` (1/2) | 1: Khởi tạo, 2: Đã bàn giao → Enum `ETrangThaiBanGiao` |
 | `NgayBanGiao` | `DateTimeOffset?` | Ngày bàn giao – set khi gọi endpoint `ban-giao` (Entity lưu UTC; DTO/Model trả về `DateOnly?`) |
 | `IsDeleted` | `bit` | Soft delete flag |
@@ -263,6 +274,11 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     /// </summary>
     public DateTimeOffset? NgayBanGiao { get; set; }
 
+    /// <summary>
+    /// Phòng ban nhận hồ sơ – set khi gọi endpoint ban-giao (UI truyền vào)
+    /// </summary>
+    public long? PhongBanNhanId { get; set; }
+
     // ⚠️ KHÔNG khai báo UserId – dùng CreatedBy từ base class Entity<Guid>
     // ⚠️ KHÔNG navigation đến UserMaster (bảng đặc biệt, không tạo FK)
     // ⚠️ KHÔNG navigation đến DanhMucDonVi/PhongBanChuTri (bảng DM_DONVI, không tạo FK)
@@ -403,6 +419,8 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 public class BanGiaoHoSoBanGiaoDto {
     /// <summary>Ngày bàn giao (DateOnly). Server tự convert sang DateTimeOffset UTC via DateOnlyExtensions.</summary>
     public DateOnly? NgayBanGiao { get; set; }
+    /// <summary>Phòng ban nhận hồ sơ (long?) – UI truyền vào khi thực hiện bàn giao.</summary>
+    public long? PhongBanNhanId { get; set; }
     // Biên bản bàn giao (gắn khi thực hiện bàn giao)
     public List<TepDinhKemDto>? DanhSachBienBan { get; set; }
 }
@@ -436,6 +454,8 @@ public class BanGiaoHoSoDto {
     public string? GhiChu { get; set; }
     public long? PhongBanChuTriId { get; set; }
     public string? TenPhongBan { get; set; }
+    public long? PhongBanNhanId { get; set; }   // Phòng ban nhận hồ sơ – luôn trả ra, có giá trị khi TrangThai = DaBanGiao
+    public string? TenPhongBanNhan { get; set; }
     public int TrangThai { get; set; }  // 1: Khởi tạo, 2: Đã bàn giao
     public string? TenTrangThai { get; set; }
     public DateOnly? NgayBanGiao { get; set; }  // DateOnly – entity lưu DateTimeOffset, convert khi map
@@ -502,6 +522,8 @@ public static class BanGiaoHoSoMappings {
         TenBuoc = entity.Buoc?.TenBuoc,
         GhiChu = entity.GhiChu,
         PhongBanChuTriId = entity.PhongBanChuTriId,
+        PhongBanNhanId = entity.PhongBanNhanId,   // ← THÊM MỚI
+    // TenPhongBan, TenPhongBanNhan, TenNguoiTao: lấy qua LeftOuterJoin trong GetDanhSachQuery
         TenPhongBan = entity.PhongBanChuTri?.Ten,
         TrangThai = (int)entity.TrangThai,
         TenTrangThai = GetTrangThaiText(entity.TrangThai),
@@ -650,7 +672,7 @@ namespace QLDA.Application.BanGiaoHoSos.Commands;
 /// <summary>
 /// Thực hiện bàn giao hồ sơ: đổi trạng thái 0→1, set NgayBanGiao, lưu biên bản
 /// </summary>
-public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateOnly? NgayBanGiao) : IRequest<BanGiaoHoSo>;
+public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateOnly? NgayBanGiao, long? PhongBanNhanId) : IRequest<BanGiaoHoSo>;
 
 internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> BanGiaoHoSo;
@@ -668,6 +690,7 @@ internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBan
 
         entity.TrangThai = ETrangThaiBanGiao.DaBanGiao;
         entity.NgayBanGiao = request.NgayBanGiao?.ToStartOfDayUtc() ?? DateTimeOffset.UtcNow;
+        entity.PhongBanNhanId = request.PhongBanNhanId;  // phòng ban nhận – do UI truyền vào
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await BanGiaoHoSo.UpdateAsync(entity, cancellationToken);
@@ -776,14 +799,14 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository;
     private readonly IRepository<UserMaster, long> _userMasterRepository;
-    private readonly IRepository<DanhMucDonVi, int> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
+    private readonly IRepository<DanhMucDonVi, long> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
     private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _userMasterRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
-        _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DanhMucDonVi, int>>();
+        _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
@@ -803,7 +826,8 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId!.Value)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId!.Value)
             .LeftOuterJoin(users, e => e.CreatedBy, u => u.Id.ToString(), (e, user) => new { e, user })  // cả 2 key là string
-            .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donVi) => new { x.e, x.user, donVi })
+            .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donVi) => new { x.e, x.user, donViChuTri = donVi })
+            .LeftOuterJoin(donVis, x => x.e.PhongBanNhanId, d => (long?)d.Id, (x, donViNhan) => new { x.e, x.user, x.donViChuTri, donViNhan })
             .OrderByDescending(x => x.e.CreatedAt)
             .Select(x => new BanGiaoHoSoDto {
                 Id = x.e.Id,
@@ -815,7 +839,9 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 TenBuoc = x.e.Buoc!.Ten,
                 GhiChu = x.e.GhiChu,
                 PhongBanChuTriId = x.e.PhongBanChuTriId,
-                TenPhongBan = x.donVi != null ? x.donVi.TenDonVi : null,
+                TenPhongBan = x.donViChuTri != null ? x.donViChuTri.TenDonVi : null,
+                PhongBanNhanId = x.e.PhongBanNhanId,
+                TenPhongBanNhan = x.donViNhan != null ? x.donViNhan.TenDonVi : null,
                 TrangThai = (int)x.e.TrangThai,
                 TenTrangThai = GetTrangThaiText(x.e.TrangThai),
                 NgayBanGiao = x.e.NgayBanGiao.HasValue ? DateOnly.FromDateTime(x.e.NgayBanGiao.Value.LocalDateTime) : null,
@@ -864,6 +890,8 @@ public class BanGiaoHoSoModel {
     public int? BuocId { get; set; }
     public string? GhiChu { get; set; }
     public long? PhongBanChuTriId { get; set; }
+    public long? PhongBanNhanId { get; set; }
+    public string? TenPhongBanNhan { get; set; }
     public int TrangThai { get; set; }  // 1: Khởi tạo, 2: Đã bàn giao
     public DateOnly? NgayBanGiao { get; set; }  // DateOnly – entity lưu DateTimeOffset, convert khi map
     // Tệp HS bàn giao (EGroupType.BanGiaoHoSo)
@@ -879,11 +907,13 @@ public class BanGiaoHoSoModel {
 namespace QLDA.WebApi.Models.BanGiaoHoSos;
 
 /// <summary>
-/// Model cho endpoint PUT /ban-giao: nhận ngày bàn giao + biên bản bàn giao
+/// Model cho endpoint PUT /ban-giao: nhận ngày bàn giao + phòng ban nhận + biên bản bàn giao
 /// </summary>
 public class BanGiaoHoSoBanGiaoModel {
     /// <summary>Ngày bàn giao (DateOnly), nếu null sẽ dùng ngày hiện tại. Server tự quy đổi sang UTC.</summary>
     public DateOnly? NgayBanGiao { get; set; }
+    /// <summary>Phòng ban nhận hồ sơ (long?) – UI truyền vào khi thực hiện bàn giao.</summary>
+    public long? PhongBanNhanId { get; set; }
     // Biên bản bàn giao (đính kèm khi thực hiện bàn giao)
     public List<TepDinhKemModel>? DanhSachBienBan { get; set; }
 }
@@ -902,7 +932,8 @@ namespace QLDA.WebApi.Models.BanGiaoHoSos;
 public static class BanGiaoHoSoMappingConfiguration {
     public static BanGiaoHoSoModel ToModel(this BanGiaoHoSo entity,
         List<TepDinhKem>? tepHSBanGiao = null,
-        List<TepDinhKem>? bienBanBanGiao = null) => new() {
+        List<TepDinhKem>? bienBanBanGiao = null,
+        string? tenPhongBanNhan = null) => new() {
         Id = entity.Id,
         Ma = entity.Ma,
         TenHoSo = entity.TenHoSo,
@@ -910,6 +941,8 @@ public static class BanGiaoHoSoMappingConfiguration {
         BuocId = entity.BuocId,
         GhiChu = entity.GhiChu,
         PhongBanChuTriId = entity.PhongBanChuTriId,
+        PhongBanNhanId = entity.PhongBanNhanId,
+        TenPhongBanNhan = tenPhongBanNhan,
         TrangThai = (int)entity.TrangThai,
         NgayBanGiao = entity.NgayBanGiao.HasValue ? DateOnly.FromDateTime(entity.NgayBanGiao.Value.LocalDateTime) : null,
         DanhSachTepDinhKem = tepHSBanGiao?.Select(f => f.ToModel()).ToList(),
@@ -1021,7 +1054,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> BanGiao(Guid id, [FromBody] BanGiaoHoSoBanGiaoModel model) {
-        var entity = await Mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao));
+        var entity = await Mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao, model.PhongBanNhanId));
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
@@ -1066,7 +1099,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 - **⚠️ KHÔNG chạy `drop-database`** – chỉ chạy `migrations add` và `database update`
 - **CreatedBy từ base class:** Không khai báo `UserId` thủ công – `Entity<T>` đã có `CreatedBy` (long?) tự động set bởi EF interceptor từ JWT
 - **⚠️ Không FK đến UserMaster:** Bảng bị force-replace bởi DB khác → dùng **LeftOuterJoin** để lấy `TenNguoiTao`
-- **⚠️ Không FK đến DanhMucDonVi (`DM_DONVI`):** Bảng bị force-replace tương tự UserMaster → dùng **LeftOuterJoin** để lấy `TenPhongBan`; không khai báo navigation property trong entity
+- **⚠️ Không FK đến DanhMucDonVi (`DM_DONVI`):** Bảng bị force-replace tương tự UserMaster → dùng **LeftOuterJoin** để lấy `TenPhongBan` và `TenPhongBanNhan` (join 2 lần với alias khác nhau); không khai báo navigation property trong entity
 - **LeftOuterJoin:** Dùng `LinqExtensions.LeftOuterJoin()` đã implement sẵn, KHÔNG dùng `GroupJoin + SelectMany` thủ công
 - **Delete có điều kiện:** Chỉ xóa được khi `TrangThai = 1` (Khởi tạo), throw exception nếu vi phạm
 - **Update có điều kiện:** Chỉ cập nhật được khi `TrangThai = 1` (Khởi tạo), throw exception nếu vi phạm
