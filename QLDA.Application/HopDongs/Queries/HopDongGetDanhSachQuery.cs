@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
@@ -69,8 +70,9 @@ internal class
                 NoiDung = e.NoiDung,
                 NgayKy = e.NgayKy,
                 GiaTri = e.GiaTri,
-                NgayHieuLuc = e.NgayHieuLuc,
-                NgayDuKienKetThuc = e.NgayDuKienKetThuc,
+                NgayHieuLuc = e.NgayHieuLuc.ToDateOnlyVn(),
+                NgayDuKienKetThucHopDong = e.NgayDuKienKetThucHopDong.ToDateOnlyVn(),
+                NgayDuKienKetThucGoiThau = e.NgayDuKienKetThucGoiThau.ToDateOnlyVn(),
                 LoaiHopDongId = e.LoaiHopDongId,
                 DonViThucHienId = e.DonViThucHienId,
                 IsBienBan = e.IsBienBan,

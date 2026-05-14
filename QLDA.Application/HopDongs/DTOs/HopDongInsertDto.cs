@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Interfaces;
@@ -14,8 +15,24 @@ public class HopDongInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo {
     public Guid? DonViThucHienId { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public long? GiaTri { get; set; }
-    public DateTimeOffset? NgayHieuLuc { get; set; }
-    public DateTimeOffset? NgayDuKienKetThuc { get; set; }
+
+    /// <summary>
+    /// Ngày hiệu lực (DateOnly). Entity lưu DateTimeOffset.
+    /// </summary>
+    public DateOnly? NgayHieuLuc { get; set; }
+
+    /// <summary>
+    /// Ngày dự kiến kết thúc hợp đồng (DateOnly). Entity lưu DateTimeOffset.
+    /// Tự động tính từ Ngày hiệu lực + Thời gian thực hiện hợp đồng, cho phép chỉnh sửa.
+    /// </summary>
+    public DateOnly? NgayDuKienKetThucHopDong { get; set; }
+
+    /// <summary>
+    /// Ngày dự kiến kết thúc gói thầu (DateOnly). Entity lưu DateTimeOffset.
+    /// Tự động tính từ Ngày hiệu lực + Thời gian thực hiện gói thầu, cho phép chỉnh sửa.
+    /// </summary>
+    public DateOnly? NgayDuKienKetThucGoiThau { get; set; }
+
     public int? LoaiHopDongId { get; set; }
 
     /// <summary>

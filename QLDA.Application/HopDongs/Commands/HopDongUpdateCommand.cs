@@ -11,6 +11,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<GoiThau, Guid> GoiThau;
     private readonly IRepository<DanhMucLoaiHopDong, int> DanhMucLoaiHopDong;
+    private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<HopDongUpdateCommandHandler> _logger;
 
@@ -19,6 +20,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
         DanhMucLoaiHopDong = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
+        KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         _logger = logger;
         _unitOfWork = HopDong.UnitOfWork;
     }
@@ -32,6 +34,9 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
 
         entity.Update(request.Dto);
 
+        // Calculate expected end dates from KetQuaTrungThau if not provided
+        await CalculateExpectedEndDatesAsync(entity, cancellationToken);
+
         if (_unitOfWork.HasTransaction) {
             await UpdateAsync(entity, cancellationToken);
         } else {
@@ -44,6 +49,23 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
         return entity;
     }
     #region Private helper methods
+
+    private async Task CalculateExpectedEndDatesAsync(HopDong entity, CancellationToken cancellationToken) {
+        if (entity.NgayHieuLuc == null) return;
+
+        var kqtv = await KetQuaTrungThau.GetQueryableSet()
+            .FirstOrDefaultAsync(x => x.GoiThauId == entity.GoiThauId, cancellationToken);
+
+        if (kqtv == null) return;
+
+        if (!entity.NgayDuKienKetThucHopDong.HasValue && kqtv.SoNgayThucHienHopDong.HasValue) {
+            entity.NgayDuKienKetThucHopDong = entity.NgayHieuLuc.Value.AddDays(kqtv.SoNgayThucHienHopDong.Value);
+        }
+
+        if (!entity.NgayDuKienKetThucGoiThau.HasValue && kqtv.SoNgayTrienKhai.HasValue) {
+            entity.NgayDuKienKetThucGoiThau = entity.NgayHieuLuc.Value.AddDays(kqtv.SoNgayTrienKhai.Value);
+        }
+    }
 
     private async Task ValidateAsync(HopDongUpdateCommand request, CancellationToken cancellationToken = default) {
         ManagedException.ThrowIf(

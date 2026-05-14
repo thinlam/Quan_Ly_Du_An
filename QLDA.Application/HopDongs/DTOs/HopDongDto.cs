@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Interfaces;
@@ -34,8 +35,22 @@ public class HopDongDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKemD
     public string? NoiDung { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public long? GiaTri { get; set; }
-    public DateTimeOffset? NgayHieuLuc { get; set; }
-    public DateTimeOffset? NgayDuKienKetThuc { get; set; }
+
+    /// <summary>
+    /// Ngày hiệu lực hợp đồng (DateOnly). Entity lưu DateTimeOffset.
+    /// </summary>
+    public DateOnly? NgayHieuLuc { get; set; }
+
+    /// <summary>
+    /// Ngày dự kiến kết thúc hợp đồng (DateOnly). Entity lưu DateTimeOffset.
+    /// </summary>
+    public DateOnly? NgayDuKienKetThucHopDong { get; set; }
+
+    /// <summary>
+    /// Ngày dự kiến kết thúc gói thầu (DateOnly). Entity lưu DateTimeOffset.
+    /// </summary>
+    public DateOnly? NgayDuKienKetThucGoiThau { get; set; }
+
     public int? LoaiHopDongId { get; set; }
     public bool IsBienBan { get; set; }
 

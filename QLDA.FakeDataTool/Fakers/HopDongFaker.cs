@@ -17,7 +17,8 @@ public class HopDongFaker : EntityFakerBase<HopDong>
         RuleFor(e => e.NgayKy, f => f.Date.PastOffset(1));
         RuleFor(e => e.GiaTri, f => f.Random.Long(100_000_000, 50_000_000_000));
         RuleFor(e => e.NgayHieuLuc, (f, e) => e.NgayKy?.AddDays(f.Random.Int(1, 30)));
-        RuleFor(e => e.NgayDuKienKetThuc, (f, e) => e.NgayHieuLuc?.AddMonths(f.Random.Int(6, 24)));
+        RuleFor(e => e.NgayDuKienKetThucHopDong, (f, e) => e.NgayHieuLuc?.AddMonths(f.Random.Int(6, 24)));
+        RuleFor(e => e.NgayDuKienKetThucGoiThau, (f, e) => e.NgayHieuLuc?.AddMonths(f.Random.Int(6, 24)));
         RuleFor(e => e.IsBienBan, false);
 
         // Base entity fields
