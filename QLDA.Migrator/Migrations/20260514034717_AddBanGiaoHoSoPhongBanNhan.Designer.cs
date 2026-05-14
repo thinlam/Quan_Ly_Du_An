@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514034717_AddBanGiaoHoSoPhongBanNhan")]
+    partial class AddBanGiaoHoSoPhongBanNhan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -929,7 +932,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 1,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -941,7 +944,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 7,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -953,7 +956,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 12,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -965,7 +968,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 17,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -977,7 +980,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 23,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -989,7 +992,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 25,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -1001,7 +1004,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 26,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -1013,7 +1016,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 27,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -1025,7 +1028,7 @@ namespace QLDA.Migrator.Migrations
                             KichHoat = true,
                             QuyenId = 29,
                             UpdatedBy = "",
-                            VaiTro = "QLDA_LDDV"
+                            VaiTro = "QLDA_LD"
                         },
                         new
                         {
@@ -4426,8 +4429,8 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("ThoiGianLuaNhaThau")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ThoiGianThucHienGoiThau")
-                        .HasColumnType("int");
+                    b.Property<string>("ThoiGianThucHienGoiThau")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TomTatCongViecChinhGoiThau")
                         .HasColumnType("nvarchar(max)");
@@ -6463,9 +6466,9 @@ namespace QLDA.Migrator.Migrations
             modelBuilder.Entity("QLDA.Domain.Entities.CauHinhVaiTroQuyen", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucQuyen", "Quyen")
-                        .WithMany()
+                        .WithMany("CauHinhVaiTroQuyens")
                         .HasForeignKey("QuyenId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Quyen");
@@ -7496,6 +7499,11 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("Buocs");
 
                     b.Navigation("DuAns");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucQuyen", b =>
+                {
+                    b.Navigation("CauHinhVaiTroQuyens");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucTinhTrangKhoKhan", b =>

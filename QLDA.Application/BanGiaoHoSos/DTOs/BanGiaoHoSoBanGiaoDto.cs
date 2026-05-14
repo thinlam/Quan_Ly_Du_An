@@ -8,6 +8,8 @@ namespace QLDA.Application.BanGiaoHoSos.DTOs;
 public class BanGiaoHoSoBanGiaoDto {
     /// <summary>Ngày bàn giao (DateOnly). Server tự convert sang DateTimeOffset UTC via DateOnlyExtensions.</summary>
     public DateOnly? NgayBanGiao { get; set; }
+    /// <summary>Phòng ban nhận hồ sơ – UI truyền vào khi thực hiện bàn giao.</summary>
+    public long? PhongBanNhanId { get; set; }
     // Biên bản bàn giao (gắn khi thực hiện bàn giao)
     public List<TepDinhKemDto>? DanhSachBienBan { get; set; }
 }

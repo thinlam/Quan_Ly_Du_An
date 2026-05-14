@@ -12,6 +12,8 @@ public class BanGiaoHoSoDto {
     public string? TenBuoc { get; set; }
     public long? PhongBanChuTriId { get; set; }
     public string? TenPhongBan { get; set; }
+    public long? PhongBanNhanId { get; set; }
+    public string? TenPhongBanNhan { get; set; }
     public string? TenNguoiTao { get; set; }
     public string? GhiChu { get; set; }
     public int TrangThai { get; set; }  // 0: Khởi tạo, 1: Đã bàn giao

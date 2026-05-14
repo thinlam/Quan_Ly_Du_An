@@ -46,6 +46,12 @@ public class BanGiaoHoSo : Entity<Guid>, IAggregateRoot {
     /// </summary>
     public DateTimeOffset? NgayBanGiao { get; set; }
 
+    /// <summary>
+    /// Phòng ban nhận hồ sơ – set khi gọi endpoint ban-giao (UI truyền vào)
+    /// ⚠️ Ref → DM_DONVI, không tạo FK
+    /// </summary>
+    public long? PhongBanNhanId { get; set; }
+
     // ⚠️ KHÔNG navigation đến UserMaster (bảng đặc biệt, không tạo FK)
     // ⚠️ KHÔNG navigation đến DanhMucDonVi/PhongBanChuTri (bảng DM_DONVI, không tạo FK)
 

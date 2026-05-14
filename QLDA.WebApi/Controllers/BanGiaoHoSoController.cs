@@ -83,7 +83,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     public async Task<ResultApi> BanGiao(Guid id, [FromBody] BanGiaoHoSoBanGiaoModel model) {
         var bienBanEntities = model.GetDanhSachBienBanBanGiao(id);
 
-        var entity = await _mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao));
+        var entity = await _mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao, model.PhongBanNhanId));
 
         // Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
