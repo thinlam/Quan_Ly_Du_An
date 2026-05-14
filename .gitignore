@@ -48,3 +48,4 @@ publish/
 *plans/
 repomix-output.xml
 *.db*
+.env
