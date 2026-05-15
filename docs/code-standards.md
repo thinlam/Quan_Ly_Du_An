@@ -107,5 +107,59 @@ The application extensively uses the CQRS pattern with MediatR.
 -   **Unit of Work Pattern:** Implement `IUnitOfWork` interface through `AppDbContext` to coordinate changes across multiple repositories.
 -   **EF Core Configuration:** Follow the `AggregateRootConfiguration<TEntity>` pattern for consistent entity configuration.
 
+## 13. Constants and Hardcoded Strings
+
+**Nguyên tắc:** Không dùng string literal trực tiếp trong code — phải tạo constant rồi đối chiếu qua constant.
+
+### Tại sao
+- Tránh inconsistency: nếu có lỗi chính tả, IDE không warning
+- Khi cần thay đổi giá trị, chỉ sửa 1 chỗ duy nhất
+- Code dễ tìm kiếm (grep) theo constant name
+
+### Các loại constant bắt buộc dùng
+
+| Loại | File constant | Ví dụ |
+|------|-------------|-------|
+| Mã trạng thái phê duyệt | `TrangThaiPheDuyetCodes.cs` | `TrangThaiPheDuyetCodes.MyEntity.DuThao` |
+| Tên entity phê duyệt | `PheDuyetEntityNames.cs` | `PheDuyetEntityNames.MyEntity` |
+| Role constants | `RoleConstants.cs` | `RoleConstants.QLDA_LDDV` |
+| Các giá trị cố định khác | Tạo trong `Domain/Constants/` | |
+
+### Ví dụ đúng
+```csharp
+// ✅ ĐÚNG — dùng constant
+.FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DuThao
+    && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh)
+
+// ✅ ĐÚNG — kiểm tra null-safe
+if (entity.TrangThaiId != trangThaiDuThao?.Id)
+
+// ✅ ĐÚNG — string.IsNullOrWhiteSpace cho NoiDung
+if (string.IsNullOrWhiteSpace(request.NoiDung))
+```
+
+### Ví dụ sai
+```csharp
+// ❌ SAI — hardcode string "DDC", "CTD", "CPD", "DPD"
+.FirstOrDefaultAsync(s => s.Ma == "DDC" && s.Loai == "QuyetDinhDieuChinh")
+
+// ❌ SAI — dùng ManagedException.ThrowIfNull cho string
+ManagedException.ThrowIfNull(request.NoiDung, "Phải nhập lý do")
+
+// ❌ SAI — so sánh nullable không đúng cách
+if (entity.TrangThaiId != trangThaiDDC.Id)  // NPE nếu null
+```
+
+### Quy tắc kiểm tra NoiDung (reason)
+- **Luôn dùng:** `string.IsNullOrWhiteSpace(request.NoiDung)` — vì `NoiDung` là `string?`
+- **Không dùng:** `ManagedException.ThrowIfNull(request.NoiDung, ...)` — sai vì string nullable không bao giờ là `null` theo nghĩa object reference
+
+### Đặt tên status code constants
+- `DuThao` = "DT" — khởi tạo
+- `DaTrinh` = "ĐTr" — đã trình
+- `DaDuyet` = "ĐD" — đã duyệt
+- `TraLai` = "TL" — trả lại
+- `TuChoi` = "TC" — từ chối
+
 ---
 *This document is a living guide and will be updated as needed.*

@@ -9,6 +9,10 @@ public static class TrangThaiPheDuyetCodes
     {
         public const string DuThao = "DT";
         public const string TenDuThao = "Dự thảo";
+        public const string TenDaTrinh = "Đã trình";
+        public const string TenDaDuyet = "Đã duyệt";
+        public const string TenTraLai = "Trả lại";
+        public const string TenTuChoi = "Từ chối";
     }
 
     public static class DuToan
@@ -43,5 +47,13 @@ public static class TrangThaiPheDuyetCodes
         public const string DaTrinh = "ĐTr";
         public const string DaDuyet = "ĐD";
         public const string TraLai = "TL";
+    }
+
+    public static class QuyetDinhDieuChinh {
+        public const string DuThao = "DT";
+        public const string DaTrinh = "ĐTr";
+        public const string DaDuyet = "ĐD";
+        public const string TraLai = "TL";
+        public const string TuChoi = "TC";
     }
 }

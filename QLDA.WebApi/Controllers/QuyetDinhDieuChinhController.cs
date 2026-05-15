@@ -1,9 +1,6 @@
 using System.Net.Mime;
-using QLDA.Application.QuanLyPheDuyet.DTOs;
-using QLDA.Application.QuanLyPheDuyet.Queries;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
 using QLDA.Application.QuyetDinhDieuChinhs.Queries;
-using QLDA.Domain.Constants;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -46,19 +43,6 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> GetChiTiet(Guid id) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhGetChiTietQuery(id));
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Lịch sử xử lý quyết định điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<PaginatedList<PheDuyetHistoryDto>>), StatusCodes.Status200OK)]
-    [HttpGet("{id}/lich-su")]
-    public async Task<ResultApi> GetLichSu(Guid id) {
-        var result = await Mediator.Send(new PheDuyetGetLichSuQuery {
-            Type = PheDuyetEntityNames.QuyetDinhDieuChinh,
-            EntityId = id
-        });
         return ResultApi.Ok(result);
     }
 
@@ -123,83 +107,6 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
         var result = await Mediator.Send(new QuyetDinhDieuChinhUpdateCommand(dto), cancellationToken);
         return ResultApi.Ok(result);
     }
-
-    /// <summary>
-    /// Xóa quyết định điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpDelete("{id}/xoa")]
-    public async Task<ResultApi> Delete(Guid id, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhDeleteCommand(id), cancellationToken);
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Trình điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpPost("{id}/trinh")]
-    public async Task<ResultApi> Trinh(Guid id, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhTrinhCommand(id), cancellationToken);
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Thẩm định điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpPost("{id}/tham-dinh")]
-    public async Task<ResultApi> ThamDinh(Guid id, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhThamDinhCommand(id), cancellationToken);
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Trình phê duyệt điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpPost("{id}/trinh-phe-duyet")]
-    public async Task<ResultApi> TrinhPheDuyet(Guid id, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhTrinhPheDuyetCommand(id), cancellationToken);
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Duyệt điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpPost("{id}/duyet")]
-    public async Task<ResultApi> Duyet(Guid id, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhDuyetCommand(id), cancellationToken);
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Trả lại điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpPost("{id}/tra-lai")]
-    public async Task<ResultApi> TraLai(Guid id, [FromBody] LyDoModel model, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhTraLaiCommand(id, model.NoiDung ?? ""), cancellationToken);
-        return ResultApi.Ok(result);
-    }
-
-    /// <summary>
-    /// Từ chối điều chỉnh
-    /// </summary>
-    [ProducesResponseType(typeof(ResultApi<int>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
-    [HttpPost("{id}/tu-choi")]
-    public async Task<ResultApi> TuChoi(Guid id, [FromBody] LyDoModel model, CancellationToken cancellationToken) {
-        var result = await Mediator.Send(new QuyetDinhDieuChinhTuChoiCommand(id, model.NoiDung ?? ""), cancellationToken);
-        return ResultApi.Ok(result);
-    }
 }
 
 public class QuyetDinhDieuChinhModel {
@@ -221,8 +128,4 @@ public class ThongTinDieuChinhChiPhiModel {
     public decimal? ChiPhiThietBi { get; set; }
     public decimal? ChiPhiKhac { get; set; }
     public decimal? ChiPhiDuPhong { get; set; }
-}
-
-public class LyDoModel {
-    public string? NoiDung { get; set; }
 }

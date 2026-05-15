@@ -51,11 +51,11 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
     public async Task<int> Handle(QuyetDinhDieuChinhInsertCommand request, CancellationToken cancellationToken) {
         var dto = request.Dto;
 
-        // Get status Nháp điều chỉnh (DDC)
-        var trangThaiDDC = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DDC" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        // Get status DT (Dự thảo) - default initial status
+        var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DuThao && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
 
-        ManagedException.ThrowIfNull(trangThaiDDC, "Không tìm thấy trạng thái 'Nháp điều chỉnh'");
+        ManagedException.ThrowIfNull(trangThaiDuThao, "Không tìm thấy trạng thái 'Dự thảo'");
 
         // Auto-calculate Lan = COUNT + 1
         var lan = await _repository.GetQueryableSet()
@@ -74,7 +74,7 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
             LoaiDieuChinhId = dto.LoaiDieuChinhId,
             LyDo = dto.LyDo,
             TepDinhKem = dto.TepDinhKem,
-            TrangThaiId = trangThaiDDC.Id,
+            TrangThaiId = trangThaiDuThao.Id,
             Lan = lan
         };
 

@@ -30,19 +30,19 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
     public async Task<int> Handle(QuyetDinhDieuChinhUpdateCommand request, CancellationToken cancellationToken) {
         var dto = request.Dto;
 
-        var trangThaiDDC = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DDC" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
-        var trangThaiTL = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "TL" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DuThao && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        var trangThaiTraLai = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TraLai && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == dto.PheDuyetEntityId, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
-        // Validate: only allow update when status is DDC or TL
-        if (entity.TrangThaiId != trangThaiDDC?.Id && entity.TrangThaiId != trangThaiTL?.Id) {
-            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Nháp điều chỉnh hoặc Trả lại");
+        // Validate: only allow update when status is DT (Dự thảo) or TL (Trả lại)
+        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
+            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
         }
 
         // Update fields

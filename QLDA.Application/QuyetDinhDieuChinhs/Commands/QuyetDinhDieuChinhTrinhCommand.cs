@@ -8,7 +8,7 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 
 /// <summary>
-/// Trình điều chỉnh - CB.PCT gửi thẩm định
+/// Trình quyết định điều chỉnh - chỉ phòng KH-TC (PhongBanId = 219)
 /// </summary>
 public record QuyetDinhDieuChinhTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -34,26 +34,26 @@ internal class QuyetDinhDieuChinhTrinhCommandHandler : IRequestHandler<QuyetDinh
             throw new ManagedException("Chỉ phòng KH-TC có quyền trình điều chỉnh");
         }
 
-        var trangThaiDDC = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DDC" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
-        var trangThaiTL = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "TL" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
-        var trangThaiCTD = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "CTD" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DuThao && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        var trangThaiTraLai = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TraLai && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DaTrinh && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
 
-        ManagedException.ThrowIfNull(trangThaiCTD, "Không tìm thấy trạng thái 'Chờ thẩm định'");
+        ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
-        // Validate: must be DDC or TL
-        if (entity.TrangThaiId != trangThaiDDC?.Id && entity.TrangThaiId != trangThaiTL?.Id) {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Nháp điều chỉnh hoặc Trả lại");
+        // Validate: must be DT (Dự thảo) or TL (Trả lại) to transition to ĐTr (Đã trình)
+        if ( entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
-        entity.TrangThaiId = trangThaiCTD.Id;
+        entity.TrangThaiId = trangThaiDaTrinh.Id;
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
@@ -61,7 +61,7 @@ internal class QuyetDinhDieuChinhTrinhCommandHandler : IRequestHandler<QuyetDinh
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiCTD.Id,
+            TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

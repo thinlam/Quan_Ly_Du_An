@@ -24,17 +24,17 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
     }
 
     public async Task<int> Handle(QuyetDinhDieuChinhDeleteCommand request, CancellationToken cancellationToken) {
-        var trangThaiDDC = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DDC" && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DuThao && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
-        // Validate: only allow delete when status is DDC
-        if (entity.TrangThaiId != trangThaiDDC?.Id) {
-            throw new ManagedException("Chỉ có thể xóa khi trạng thái là Nháp điều chỉnh");
+        // Validate: only allow delete when status is DT (Dự thảo)
+        if (entity.TrangThaiId != trangThaiDuThao?.Id) {
+            throw new ManagedException("Chỉ có thể xóa khi trạng thái là Dự thảo");
         }
 
         entity.IsDeleted = true;

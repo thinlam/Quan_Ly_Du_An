@@ -12,6 +12,7 @@ QuanLyPheDuyet (Approval Management) is a **polymorphic workflow system** used b
 | PhanKhaiKinhPhi | `PhanKhaiKinhPhi` | Phân khai kinh phí |
 | HoSoDeXuatCapDoCntt | `HoSoDeXuatCapDoCntt` | Hồ sơ đề xuất cấp độ ATTT |
 | HoSoMoiThauDienTu | `HoSoMoiThauDienTu` | Hồ sơ mời thầu điện tử |
+| QuyetDinhDieuChinh | `QuyetDinhDieuChinh` | Quyết định điều chỉnh |
 
 ## State Machine
 
@@ -102,3 +103,80 @@ Trạng thái "Dự thảo" trong hệ thống được biểu diễn bởi **3 
 | Unit Leader | `QLDA_LDDV` | Lãnh đạo đơn vị |
 | Admin Dept | `QLDA_HC_TH` | Phòng Hành chính - Tổng hợp |
 | Planning | `QLDA_KH_TC` | Kế hoạch - Tổng hợp |
+
+## Implementation Guide — Adding a New Entity
+
+### Step 1: Add Entity Name Constant
+File: `QLDA.Domain/Constants/PheDuyetEntityNames.cs`
+```csharp
+public const string MyEntity = "MyEntity";
+```
+
+### Step 2: Add Status Codes
+File: `QLDA.Domain/Constants/TrangThaiPheDuyetCodes.cs`
+```csharp
+public static class MyEntity {
+    public const string DuThao = "DT";
+    public const string DaTrinh = "ĐTr";
+    public const string DaDuyet = "ĐD";
+    public const string TraLai = "TL";
+    public const string TuChoi = "TC";
+}
+```
+
+### Step 3: Create Commands
+Location: `QLDA.Application/MyEntity/Commands/`
+
+| Command | Purpose | Permission |
+|---------|---------|------------|
+| `MyEntityInsertCommand` | Create new record, set initial `TrangThaiId` to `DuThao` | None |
+| `MyEntityUpdateCommand` | Update record, validate status is `DuThao` or `TraLai` | Owner/staff |
+| `MyEntityDeleteCommand` | Soft delete, validate status is `DuThao` only | Owner/staff |
+| `MyEntityTrinhCommand` | Submit for approval | `PhongBanID == 219` (KH-TC) |
+| `MyEntityDuyetCommand` | Approve | `HasRole(QLDA_LDDV)` |
+| `MyEntityTraLaiCommand` | Return with reason | `HasRole(QLDA_LDDV)`, requires `NoiDung` |
+| `MyEntityTuChoiCommand` | Reject with reason | `QLDA_LDDV` OR `QLDA_QuanTri`, requires `NoiDung` |
+
+### Step 4: Wire into Dispatch Handlers
+File: `QLDA.Application/QuanLyPheDuyet/Commands/PheDuyetDispatch*Command.cs` (4 files)
+
+Add case to switch expression in each handler:
+```csharp
+PheDuyetEntityNames.MyEntity => new MyEntityXxxCommand(request.Id, request.NoiDung),
+```
+Add `using QLDA.Application.MyEntity.Commands;` to each file.
+
+### Step 5: Add to Query Handlers (Optional)
+- `PheDuyetGetDanhSachQueryHandler` — add `GetMyEntityItems()` method
+- `PheDuyetGetLichSuQueryHandler` — already polymorphic via `EntityName`, no changes needed
+
+### Status Validation Pattern
+
+Each workflow command must validate current status before transitioning:
+
+| Command | Valid From States | Target Status |
+|---------|-------------------|---------------|
+| `TrinhCommand` | `DT` (or `null`/`LEG` for legacy) | `ĐTr` |
+| `DuyetCommand` | `ĐTr` | `ĐD` |
+| `TraLaiCommand` | `ĐTr` | `TL` |
+| `TuChoiCommand` | `ĐTr` | `TC` |
+
+```csharp
+// Example: TrinhCommand validate
+var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(...)
+    .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.MyEntity.DaTrinh && s.Loai == PheDuyetEntityNames.MyEntity);
+ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
+
+if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
+    throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
+}
+```
+
+### Validation Rules
+
+1. **NoiDung (reason) validation:** Use `string.IsNullOrWhiteSpace()` not `== null` or `ManagedException.ThrowIfNull`
+2. **Status code lookup:** Always use `TrangThaiPheDuyetCodes.{Entity}.{Code}` constant, never hardcode strings like `"DDC"`, `"CTD"`, `"CPD"`, `"DPD"`
+3. **Null-safe status comparison:** Use `trangThaiXxx?.Id` and handle nullable properly
+4. **Insert:** New records auto-assign `TrangThaiId = trangThaiDuThao.Id`
+5. **Update/Delete:** Validate against `DuThao` (default initial status)
+6. **Workflow:** Validate current status before transition (never assume current status is non-null)
