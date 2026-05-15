@@ -187,9 +187,33 @@ else
         # Use smbclient for file copy
         echo "Using smbclient for file transfer..."
         echo "Server: $SMB_SERVER, Share: $SMB_SHARE, Target: $SMB_TARGET"
-        # Use --directory flag to set target path, then upload all files with mput
+
+        # === ASP.NET Core: Use app_offline.htm to take down site ===
+        echo "Checking for app_offline.htm on remote..."
+        if smbclient "//$SMB_SERVER/$SMB_SHARE" --directory="$SMB_TARGET" -U "$SMB_USER%$SMB_PASS" -c "ls app_offline.htm" 2>/dev/null | grep -q "app_offline.htm"; then
+            echo "app_offline.htm already exists, site should be down."
+        else
+            echo "Creating app_offline.htm to take site offline..."
+            # Create a simple app_offline.htm file
+            echo "<html><body><h1>Deploying...</h1></body></html>" > /tmp/app_offline.htm
+            smbclient "//$SMB_SERVER/$SMB_SHARE" --directory="$SMB_TARGET" -U "$SMB_USER%$SMB_PASS" -c "put /tmp/app_offline.htm app_offline.htm" 2>/dev/null || true
+            echo "Waiting for site to go down..."
+            sleep 3
+        fi
+
+        # Delete locked files first, then upload
+        echo "Removing old files from destination..."
+        smbclient "//$SMB_SERVER/$SMB_SHARE" --directory="$SMB_TARGET" -U "$SMB_USER%$SMB_PASS" -c "prompt OFF; recurse ON; del QLDA.WebApi*; del *.dll; del *.pdb; del *.xml" 2>/dev/null || true
+        sleep 1
+
+        # Upload all files
+        echo "Uploading new files..."
         smbclient "//$SMB_SERVER/$SMB_SHARE" --directory="$SMB_TARGET" -U "$SMB_USER%$SMB_PASS" -c "prompt OFF; recurse ON; lcd \"$PUBLISH_PATH\"; mput *" 2>/dev/null
         COPY_SUCCESS=$?
+
+        # === Bring site back online ===
+        echo "Renaming app_offline.htm to app_offline_.htm to bring site back online..."
+        smbclient "//$SMB_SERVER/$SMB_SHARE" --directory="$SMB_TARGET" -U "$SMB_USER%$SMB_PASS" -c "rename app_offline.htm app_offline_.htm" 2>/dev/null || true
     else
         # Fallback: try rsync if smb is mounted, or note the limitation
         if [[ -d "$DESTINATION_PATH" ]] || mountpoint -q "$(dirname "$DESTINATION_PATH")" 2>/dev/null; then

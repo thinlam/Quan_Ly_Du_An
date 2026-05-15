@@ -80,6 +80,7 @@ The application extensively uses the CQRS pattern with MediatR.
     -   Use in-memory databases or test databases for persistence tests.
 -   **Test-Driven Development (TDD):** Encourage TDD approach where applicable, writing tests before implementation.
 -   **Naming:** Test methods should clearly indicate what is being tested and the expected outcome (e.g., `Should_ReturnDuAn_When_IdIsValid`).
+-   **Mandatory Regression Run:** Sau khi triển khai bất kỳ endpoint nào (thêm mới, sửa đổi, hoặc refactor), phải chạy lại toàn bộ test suite (`test.bat` hoặc `dotnet test`) để đảm bảo không gây lỗi regression cho các tính năng hiện có. Không được commit code khi có test failing.
 
 ## 9. Security Protocols
 
