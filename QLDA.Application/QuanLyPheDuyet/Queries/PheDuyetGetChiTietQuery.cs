@@ -73,8 +73,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
             .Select(e => new {
                 e.Id, e.DuAnId, e.BuocId, SoVanBan = e.So, e.NgayKy, e.NguoiKy,
                 e.ChucVuId, e.GiaTriDuThau, e.TrichYeu, e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 e.NguoiXuLyId,
                 TenChucVu = e.ChucVu != null ? e.ChucVu.Ten : null
             })
@@ -90,8 +90,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.Id, e.DuAnId, e.BuocId, e.TrangThaiId, e.CapDoId,
                 e.NgayTrinh, e.DonViChuTriId,
                 e.NoiDungDeNghi, e.NoiDungBaoCao, e.NoiDungDuThao,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenCapDo = e.CapDo != null ? e.CapDo.Ten : null
             })
             .FirstOrDefaultAsync(cancellationToken);
@@ -106,8 +106,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.Id, e.DuAnId, e.BuocId, e.TrangThaiId,
                 e.HinhThucLuaChonNhaThauId, e.GoiThauId,
                 e.GiaTri, e.ThoiGianThucHien, e.TrangThaiDangTai,
-                MaTrangThai = e.TrangThaiPheDuyet != null ? e.TrangThaiPheDuyet.Ma : null,
-                TenTrangThai = e.TrangThaiPheDuyet != null ? e.TrangThaiPheDuyet.Ten : null,
+                MaTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenHinhThuc = e.HinhThucLuaChonNhaThau != null ? e.HinhThucLuaChonNhaThau.Ten : null
             })
             .FirstOrDefaultAsync(cancellationToken);

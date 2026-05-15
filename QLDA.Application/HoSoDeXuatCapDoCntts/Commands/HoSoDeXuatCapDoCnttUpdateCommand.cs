@@ -1,25 +1,36 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
+using QLDA.Domain.Constants;
 
 namespace QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 
-public record HoSoDeXuatCapDoCnttUpdateCommand(HoSoDeXuatCapDoCnttUpdateModel Model) 
+public record HoSoDeXuatCapDoCnttUpdateCommand(HoSoDeXuatCapDoCnttUpdateModel Model)
     : IRequest<HoSoDeXuatCapDoCntt>;
 
 internal class HoSoDeXuatCapDoCnttUpdateCommandHandler : IRequestHandler<HoSoDeXuatCapDoCnttUpdateCommand, HoSoDeXuatCapDoCntt> {
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> HoSoDeXuatCapDoCntt;
+    private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     public HoSoDeXuatCapDoCnttUpdateCommandHandler(IServiceProvider serviceProvider) {
         HoSoDeXuatCapDoCntt = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
+        _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _unitOfWork = HoSoDeXuatCapDoCntt.UnitOfWork;
     }
 
     public async Task<HoSoDeXuatCapDoCntt> Handle(HoSoDeXuatCapDoCnttUpdateCommand request, CancellationToken cancellationToken = default) {
+        var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DuThao && s.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt, cancellationToken);
+
         var entity = await HoSoDeXuatCapDoCntt.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
-        ManagedException.ThrowIfNull(entity);
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ đề xuất cấp độ CNTT");
+
+        // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
+        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThai?.Ma != "LEG") {
+            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
+        }
 
         entity.Update(request.Model);
 

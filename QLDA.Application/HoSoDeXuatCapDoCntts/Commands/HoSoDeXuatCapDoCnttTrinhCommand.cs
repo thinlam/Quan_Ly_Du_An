@@ -46,8 +46,8 @@ internal class HoSoDeXuatCapDoCnttTrinhCommandHandler : IRequestHandler<HoSoDeXu
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ đề xuất cấp độ CNTT");
 
-        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc Trả lại");
+        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;
