@@ -49,7 +49,15 @@ public class DanhMucTrangThaiPheDuyetConfiguration : AggregateRootConfiguration<
             new DanhMucTrangThaiPheDuyet { Id = 17, Ma = "DT", Ten = "Dự thảo", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 18, Ma = "ĐTr", Ten = "Đã trình", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 19, Ma = "ĐD", Ten = "Đã duyệt", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 20, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 4, Used = true, CreatedAt = SeedCreatedAt }
+            new DanhMucTrangThaiPheDuyet { Id = 20, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.PhanKhaiKinhPhi, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
+            // QuyetDinhDieuChinh statuses (UC64 - #9483)
+            new DanhMucTrangThaiPheDuyet { Id = 21, Ma = "DDC", Ten = "Nháp điều chỉnh", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 22, Ma = "CTD", Ten = "Chờ thẩm định", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 23, Ma = "DTD", Ten = "Đã thẩm định", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 24, Ma = "CPD", Ten = "Chờ duyệt", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 25, Ma = "DPD", Ten = "Đã duyệt", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 5, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 26, Ma = "TL", Ten = "Trả lại", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 6, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 27, Ma = "TC", Ten = "Từ chối", Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 7, Used = true, CreatedAt = SeedCreatedAt }
         );
     }
 }

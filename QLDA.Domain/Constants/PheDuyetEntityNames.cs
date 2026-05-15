@@ -21,4 +21,8 @@ public static class PheDuyetEntityNames {
     /// 9467 - Phân khai kinh phí
     /// </summary>
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
+    /// <summary>
+    /// Quyết định điều chỉnh phê duyệt
+    /// </summary>
+    public const string QuyetDinhDieuChinh = "QuyetDinhDieuChinh";
 }
