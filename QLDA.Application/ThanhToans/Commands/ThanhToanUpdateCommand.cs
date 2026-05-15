@@ -48,10 +48,6 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
     #region  Private helper methods
 
     private async Task ValidateAsync(ThanhToanUpdateCommand request, CancellationToken cancellationToken) {
-        ManagedException.ThrowIf(
-            when: await ThanhToan.GetQueryableSet().AnyAsync(e => e.Id != request.Dto.Id && e.SoHoaDon!.ToLower() == request.Dto.SoHoaDon!.ToLower(), cancellationToken: cancellationToken),
-            message: "Số hóa đơn đã tồn tại"
-        );
     }
     private async Task UpdateAsync(ThanhToan entity, CancellationToken cancellationToken) {
         await ThanhToan.UpdateAsync(entity, cancellationToken);
