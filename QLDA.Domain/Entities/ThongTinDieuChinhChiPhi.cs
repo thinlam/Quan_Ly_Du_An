@@ -1,7 +1,7 @@
 namespace QLDA.Domain.Entities;
 
 /// <summary>
-/// Chi phí điều chỉnh — bảng riêng 1:N với QuyetDinhDieuChinh
+/// Chi phí điều chỉnh — 1-1 với QuyetDinhDieuChinh (cơ cấu chi phí)
 /// </summary>
 public class ThongTinDieuChinhChiPhi : Entity<Guid>, IAggregateRoot {
     public Guid QuyetDinhDieuChinhId { get; set; }

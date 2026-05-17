@@ -64,13 +64,13 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
             LoaiDieuChinhId = model.LoaiDieuChinhId,
             LyDo = model.LyDo,
             TepDinhKem = model.TepDinhKem,
-            ChiPhis = model.ChiPhis?.Select(c => new ThongTinDieuChinhChiPhiDto {
-                TongMucDauTu = c.TongMucDauTu,
-                ChiPhiXayLap = c.ChiPhiXayLap,
-                ChiPhiThietBi = c.ChiPhiThietBi,
-                ChiPhiKhac = c.ChiPhiKhac,
-                ChiPhiDuPhong = c.ChiPhiDuPhong
-            }).ToList()
+            ChiPhi = model.ChiPhi == null ? null : new ThongTinDieuChinhChiPhiDto {
+                TongMucDauTu = model.ChiPhi.TongMucDauTu,
+                ChiPhiXayLap = model.ChiPhi.ChiPhiXayLap,
+                ChiPhiThietBi = model.ChiPhi.ChiPhiThietBi,
+                ChiPhiKhac = model.ChiPhi.ChiPhiKhac,
+                ChiPhiDuPhong = model.ChiPhi.ChiPhiDuPhong
+            }
         };
 
         var result = await Mediator.Send(new QuyetDinhDieuChinhInsertCommand(dto), cancellationToken);
@@ -95,13 +95,13 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
             LoaiDieuChinhId = model.LoaiDieuChinhId,
             LyDo = model.LyDo,
             TepDinhKem = model.TepDinhKem,
-            ChiPhis = model.ChiPhis?.Select(c => new ThongTinDieuChinhChiPhiDto {
-                TongMucDauTu = c.TongMucDauTu,
-                ChiPhiXayLap = c.ChiPhiXayLap,
-                ChiPhiThietBi = c.ChiPhiThietBi,
-                ChiPhiKhac = c.ChiPhiKhac,
-                ChiPhiDuPhong = c.ChiPhiDuPhong
-            }).ToList()
+            ChiPhi = model.ChiPhi == null ? null : new ThongTinDieuChinhChiPhiDto {
+                TongMucDauTu = model.ChiPhi.TongMucDauTu,
+                ChiPhiXayLap = model.ChiPhi.ChiPhiXayLap,
+                ChiPhiThietBi = model.ChiPhi.ChiPhiThietBi,
+                ChiPhiKhac = model.ChiPhi.ChiPhiKhac,
+                ChiPhiDuPhong = model.ChiPhi.ChiPhiDuPhong
+            }
         };
 
         var result = await Mediator.Send(new QuyetDinhDieuChinhUpdateCommand(dto), cancellationToken);
@@ -119,7 +119,7 @@ public class QuyetDinhDieuChinhModel {
     public int LoaiDieuChinhId { get; set; }
     public string? LyDo { get; set; }
     public string? TepDinhKem { get; set; }
-    public List<ThongTinDieuChinhChiPhiModel>? ChiPhis { get; set; }
+    public ThongTinDieuChinhChiPhiModel? ChiPhi { get; set; }
 }
 
 public class ThongTinDieuChinhChiPhiModel {

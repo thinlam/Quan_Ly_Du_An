@@ -52,7 +52,7 @@ public class QuyetDinhDieuChinh : Entity<Guid>, IAggregateRoot {
     public DuAn? DuAn { get; set; }
     public DanhMucLoaiDieuChinh? LoaiDieuChinh { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
-    public ICollection<ThongTinDieuChinhChiPhi> ThongTinDieuChinhChiPhis { get; set; } = [];
+    public ThongTinDieuChinhChiPhi? ThongTinDieuChinhChiPhi { get; set; }
 
     #endregion
 }

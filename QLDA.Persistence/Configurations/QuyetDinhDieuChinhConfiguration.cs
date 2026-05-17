@@ -27,9 +27,9 @@ public class QuyetDinhDieuChinhConfiguration : AggregateRootConfiguration<QuyetD
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(e => e.ThongTinDieuChinhChiPhis)
+        builder.HasOne(e => e.ThongTinDieuChinhChiPhi)
             .WithOne(e => e.QuyetDinhDieuChinh)
-            .HasForeignKey(e => e.QuyetDinhDieuChinhId)
+            .HasForeignKey<ThongTinDieuChinhChiPhi>(e => e.QuyetDinhDieuChinhId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

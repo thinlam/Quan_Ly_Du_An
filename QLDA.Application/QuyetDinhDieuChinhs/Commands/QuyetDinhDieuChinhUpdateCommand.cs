@@ -53,28 +53,33 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
         entity.LyDo = dto.LyDo;
         entity.TepDinhKem = dto.TepDinhKem;
 
-        // Update chi phí - remove old and add new
-        var existingChiPhis = await _chiPhiRepository.GetQueryableSet()
-            .Where(c => c.QuyetDinhDieuChinhId == entity.Id)
-            .ToListAsync(cancellationToken);
+        // Update chi phí (1-1 relationship) - upsert pattern
+        var existingChiPhi = await _chiPhiRepository.GetQueryableSet()
+            .FirstOrDefaultAsync(c => c.QuyetDinhDieuChinhId == entity.Id, cancellationToken);
 
-        foreach (var cp in existingChiPhis) {
-            cp.IsDeleted = true;
-        }
-
-        if (dto.ChiPhis?.Count > 0) {
-            foreach (var chiPhiDto in dto.ChiPhis) {
+        if (dto.ChiPhi != null) {
+            if (existingChiPhi != null) {
+                existingChiPhi.TongMucDauTu = dto.ChiPhi.TongMucDauTu;
+                existingChiPhi.ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap;
+                existingChiPhi.ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi;
+                existingChiPhi.ChiPhiKhac = dto.ChiPhi.ChiPhiKhac;
+                existingChiPhi.ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong;
+            }
+            else {
                 var chiPhi = new ThongTinDieuChinhChiPhi {
                     Id = Guid.NewGuid(),
                     QuyetDinhDieuChinhId = entity.Id,
-                    TongMucDauTu = chiPhiDto.TongMucDauTu,
-                    ChiPhiXayLap = chiPhiDto.ChiPhiXayLap,
-                    ChiPhiThietBi = chiPhiDto.ChiPhiThietBi,
-                    ChiPhiKhac = chiPhiDto.ChiPhiKhac,
-                    ChiPhiDuPhong = chiPhiDto.ChiPhiDuPhong
+                    TongMucDauTu = dto.ChiPhi.TongMucDauTu,
+                    ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap,
+                    ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi,
+                    ChiPhiKhac = dto.ChiPhi.ChiPhiKhac,
+                    ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong
                 };
                 await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
             }
+        }
+        else if (existingChiPhi != null) {
+            existingChiPhi.IsDeleted = true;
         }
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);

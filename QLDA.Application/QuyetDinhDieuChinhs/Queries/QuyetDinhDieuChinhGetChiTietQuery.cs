@@ -48,7 +48,7 @@ internal class QuyetDinhDieuChinhGetChiTietQueryHandler : IRequestHandler<QuyetD
         var entity = await _repository.GetQueryableSet()
             .Include(e => e.LoaiDieuChinh)
             .Include(e => e.TrangThai)
-            .Include(e => e.ThongTinDieuChinhChiPhis.Where(c => !c.IsDeleted))
+            .Include(e => e.ThongTinDieuChinhChiPhi)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
@@ -71,14 +71,14 @@ internal class QuyetDinhDieuChinhGetChiTietQueryHandler : IRequestHandler<QuyetD
             Lan = entity.Lan,
             CreatedAt = entity.CreatedAt,
             CreatedBy = entity.CreatedBy,
-            ChiPhis = entity.ThongTinDieuChinhChiPhis.Select(c => new ThongTinDieuChinhChiPhiItemDto {
-                Id = c.Id,
-                TongMucDauTu = c.TongMucDauTu,
-                ChiPhiXayLap = c.ChiPhiXayLap,
-                ChiPhiThietBi = c.ChiPhiThietBi,
-                ChiPhiKhac = c.ChiPhiKhac,
-                ChiPhiDuPhong = c.ChiPhiDuPhong
-            }).ToList()
+            ChiPhis = entity.ThongTinDieuChinhChiPhi == null ? [] : [new ThongTinDieuChinhChiPhiItemDto {
+                Id = entity.ThongTinDieuChinhChiPhi.Id,
+                TongMucDauTu = entity.ThongTinDieuChinhChiPhi.TongMucDauTu,
+                ChiPhiXayLap = entity.ThongTinDieuChinhChiPhi.ChiPhiXayLap,
+                ChiPhiThietBi = entity.ThongTinDieuChinhChiPhi.ChiPhiThietBi,
+                ChiPhiKhac = entity.ThongTinDieuChinhChiPhi.ChiPhiKhac,
+                ChiPhiDuPhong = entity.ThongTinDieuChinhChiPhi.ChiPhiDuPhong
+            }]
         };
     }
 }

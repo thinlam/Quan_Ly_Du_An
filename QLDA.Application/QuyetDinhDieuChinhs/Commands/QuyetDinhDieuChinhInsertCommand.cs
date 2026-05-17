@@ -22,7 +22,7 @@ public record QuyetDinhDieuChinhDto {
     public int LoaiDieuChinhId { get; set; }
     public string? LyDo { get; set; }
     public string? TepDinhKem { get; set; }
-    public List<ThongTinDieuChinhChiPhiDto>? ChiPhis { get; set; }
+    public ThongTinDieuChinhChiPhiDto? ChiPhi { get; set; }
 }
 
 public record ThongTinDieuChinhChiPhiDto {
@@ -80,20 +80,18 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
 
         await _repository.AddAsync(entity, cancellationToken);
 
-        // Add chi phí if provided
-        if (dto.ChiPhis?.Count > 0) {
-            foreach (var chiPhiDto in dto.ChiPhis) {
-                var chiPhi = new ThongTinDieuChinhChiPhi {
-                    Id = Guid.NewGuid(),
-                    QuyetDinhDieuChinhId = entity.Id,
-                    TongMucDauTu = chiPhiDto.TongMucDauTu,
-                    ChiPhiXayLap = chiPhiDto.ChiPhiXayLap,
-                    ChiPhiThietBi = chiPhiDto.ChiPhiThietBi,
-                    ChiPhiKhac = chiPhiDto.ChiPhiKhac,
-                    ChiPhiDuPhong = chiPhiDto.ChiPhiDuPhong
-                };
-                await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
-            }
+        // Add chi phí if provided (1-1 relationship)
+        if (dto.ChiPhi != null) {
+            var chiPhi = new ThongTinDieuChinhChiPhi {
+                Id = Guid.NewGuid(),
+                QuyetDinhDieuChinhId = entity.Id,
+                TongMucDauTu = dto.ChiPhi.TongMucDauTu,
+                ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap,
+                ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi,
+                ChiPhiKhac = dto.ChiPhi.ChiPhiKhac,
+                ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong
+            };
+            await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
         }
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
