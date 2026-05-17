@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -10,6 +11,21 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
 
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+
+    private readonly IRepository<DanhMucLoaiHopDong, int> LoaiHopDong =
+        serviceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
+
+    private readonly IRepository<DanhMucHinhThucLuaChonNhaThau, int> HinhThucLuaChonNhaThau =
+        serviceProvider.GetRequiredService<IRepository<DanhMucHinhThucLuaChonNhaThau, int>>();
+
+    private readonly IRepository<DanhMucPhuongThucLuaChonNhaThau, int> PhuongThucLuaChonNhaThau =
+        serviceProvider.GetRequiredService<IRepository<DanhMucPhuongThucLuaChonNhaThau, int>>();
+
+    private readonly IRepository<DanhMucNguonVon, int> NguonVon =
+        serviceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
+
+    private readonly IRepository<KeHoachLuaChonNhaThau, Guid> KeHoachLuaChonNhaThau =
+        serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
 
     [HttpGet("import-bao-cao-tien-do")]
 
@@ -38,6 +54,64 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
         List<List<ComboData>> comboData = [
             danhSachTenDuAn,
             danhSachTenBuoc
+        ];
+
+        var importResult = _excelImporter.GetTemplate(templatePath, comboData);
+
+        return new FileContentResult(importResult.FileBytes,
+            importResult.ContentType) {
+            FileDownloadName = fileNameTemplate
+        };
+    }
+
+    [HttpGet("import-goi-thau")]
+
+    [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<FileContentResult> GetImportGoiThau() {
+        var fileNameTemplate = "Import_GoiThau.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        var danhSachLoaiHopDong = await LoaiHopDong.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.Ten ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync();
+
+        var danhSachHinhThuc = await HinhThucLuaChonNhaThau.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.Ten ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync();
+
+        var danhSachPhuongThuc = await PhuongThucLuaChonNhaThau.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.Ten ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync();
+
+        var danhSachNguonVon = await NguonVon.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.Ten ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync();
+
+        var danhSachKeHoach = await KeHoachLuaChonNhaThau.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.Ten ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync();
+
+        List<List<ComboData>> comboData = [
+            danhSachKeHoach,
+            danhSachNguonVon,
+            danhSachHinhThuc,
+            danhSachPhuongThuc,
+            danhSachLoaiHopDong,
         ];
 
         var importResult = _excelImporter.GetTemplate(templatePath, comboData);
