@@ -68,7 +68,7 @@ internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<Quyet
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(e => new QuyetDinhDieuChinhListItemDto {

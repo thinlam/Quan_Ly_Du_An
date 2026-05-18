@@ -13,6 +13,7 @@ namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 public record QuyetDinhDieuChinhInsertCommand(QuyetDinhDieuChinhDto Dto) : IRequest<int>;
 
 public record QuyetDinhDieuChinhDto {
+    public Guid? Id { get; set; }
     public Guid PheDuyetEntityId { get; set; }
     public string PheDuyetEntityName { get; set; } = default!;
     public Guid DuAnId { get; set; }

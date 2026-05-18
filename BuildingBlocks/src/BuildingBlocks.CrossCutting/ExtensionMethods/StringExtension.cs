@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 
 namespace BuildingBlocks.CrossCutting.ExtensionMethods;
 
@@ -16,6 +18,21 @@ public static class StringExtension
     /// <returns>Chuỗi description, hoặc null nếu không tìm thấy.</returns>
     public static string GetDescriptionFromName<TEnum>(this string enumName) where TEnum : struct, Enum
         => !Enum.TryParse<TEnum>(enumName, out var enumValue) ? string.Empty : enumValue.GetDescription();
+
+    /// <summary>
+    /// Lấy DescriptionAttribute từ một trường const string trong static class.
+    /// Ví dụ: "PheDuyetDuToan" → "Phê duyệt dự toán"
+    /// </summary>
+    /// <param name="constantName">Tên trường constant, ví dụ: "PheDuyetDuToan"</param>
+    /// <param name="constantsType">Type của class chứa constants, ví dụ: typeof(PheDuyetEntityNames)</param>
+    /// <returns>Chuỗi description, hoặc originalValue nếu không tìm thấy.</returns>
+    public static string GetDescriptionFromConstant(this string constantName, Type constantsType)
+    {
+        var field = constantsType.GetField(constantName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        if (field == null) return constantName;
+        var desc = field.GetCustomAttribute<DescriptionAttribute>(false);
+        return desc?.Description ?? constantName;
+    }
 
     public static string GetContentType(this string filePath)
     {

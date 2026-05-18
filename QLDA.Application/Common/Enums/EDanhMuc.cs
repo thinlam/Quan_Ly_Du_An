@@ -23,6 +23,7 @@ public enum EDanhMuc {
     [Description("Màn hình")] DanhMucManHinh,
     [Description("Loại văn bản")] DanhMucLoaiVanBan,
     [Description("Chức vụ")] DanhMucChucVu,
+    [Description("Loại điều chỉnh")] DanhMucLoaiDieuChinh,
     [Description("Loại hợp đồng")] DanhMucLoaiHopDong,
     [Description("Loại gói thầu")] DanhMucLoaiGoiThau,
     [Description("Phương thức chọn gói thầu")] DanhMucPhuongThucLuaChonNhaThau,

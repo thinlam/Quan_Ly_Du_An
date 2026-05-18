@@ -23,10 +23,27 @@ public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateComma
     public async Task<DuAnBuoc> Handle(DuAnBuocUpdateCommand request, CancellationToken cancellationToken) {
         var entity = await DuAnBuoc.GetQueryableSet()
                     .Include(e => e.DuAnBuocManHinhs)
+                    .Include(e => e.DuAnBuocPhongBanPhoiHops)
                     .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
         entity.Update(request.Dto);
+
+        // Update PhongPhuTrachChinhId
+        entity.PhongPhuTrachChinhId = request.Dto.PhongPhuTrachChinhId;
+
+        // Update DuAnBuocPhongBanPhoiHops
+        if (request.Dto.DanhSachPhongBanPhoiHopIds != null) {
+            // Remove existing
+            entity.DuAnBuocPhongBanPhoiHops?.Clear();
+            // Add new
+            foreach (var phongBanId in request.Dto.DanhSachPhongBanPhoiHopIds) {
+                entity.DuAnBuocPhongBanPhoiHops!.Add(new DuAnBuocPhongBanPhoiHop {
+                    LeftId = entity.Id,
+                    RightId = phongBanId
+                });
+            }
+        }
 
         if (request.Dto.DanhSachManHinh?.Count > 0) {
             var danhSachManHinh = await DanhMucManHinh.GetQueryableSet().AsNoTracking()

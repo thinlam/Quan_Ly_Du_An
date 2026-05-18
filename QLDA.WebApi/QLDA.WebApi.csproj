@@ -20,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.CrossCutting\BuildingBlocks.CrossCutting.csproj" />
         <ProjectReference Include="..\QLDA.Application\QLDA.Application.csproj" />
         <ProjectReference Include="..\QLDA.Domain\QLDA.Domain.csproj" />
         <ProjectReference Include="..\QLDA.Infrastructure\QLDA.Infrastructure.csproj" />

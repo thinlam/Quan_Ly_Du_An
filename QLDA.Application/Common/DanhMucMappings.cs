@@ -76,6 +76,13 @@ public static class DanhMucMappings {
                 Stt = dto.Stt,
                 Used = dto.Used
             },
+            EDanhMuc.DanhMucLoaiDieuChinh => new DanhMucLoaiDieuChinh {
+                Ma = dto.Ma,
+                Ten = dto.Ten,
+                MoTa = dto.MoTa,
+                Stt = dto.Stt,
+                Used = dto.Used
+            },
             EDanhMuc.DanhMucLoaiGoiThau => new DanhMucLoaiGoiThau {
                 Ma = dto.Ma,
                 Ten = dto.Ten,
@@ -273,6 +280,14 @@ public static class DanhMucMappings {
                 Used = dto.Used
             },
             EDanhMuc.DanhMucLoaiHopDong => new DanhMucLoaiHopDong {
+                Id = dto.Id,
+                Ma = dto.Ma,
+                Ten = dto.Ten,
+                MoTa = dto.MoTa,
+                Stt = dto.Stt,
+                Used = dto.Used
+            },
+            EDanhMuc.DanhMucLoaiDieuChinh => new DanhMucLoaiDieuChinh {
                 Id = dto.Id,
                 Ma = dto.Ma,
                 Ten = dto.Ten,

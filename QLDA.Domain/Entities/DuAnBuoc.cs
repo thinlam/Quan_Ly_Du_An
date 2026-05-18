@@ -23,6 +23,11 @@ public class DuAnBuoc : Entity<int>, IAggregateRoot, IHasUsed {
     /// </remarks>
     public bool IsKetThuc { get; set; }
 
+    /// <summary>
+    /// Phòng phụ trách chính - FK to DmDonVi (legacy table, no navigation property)
+    /// </summary>
+    public long? PhongPhuTrachChinhId { get; set; }
+
     #region Navigation Properties
 
     public DuAn? DuAn { get; set; }
@@ -37,6 +42,7 @@ public class DuAnBuoc : Entity<int>, IAggregateRoot, IHasUsed {
     public ICollection<PhuLucHopDong>? PhuLucHopDongs { get; set; } = [];
     public ICollection<TamUng>? TamUngs { get; set; } = [];
     public ICollection<ThanhToan>? ThanhToans { get; set; } = [];
+    public ICollection<DuAnBuocPhongBanPhoiHop>? DuAnBuocPhongBanPhoiHops { get; set; }
 
     #endregion
 }

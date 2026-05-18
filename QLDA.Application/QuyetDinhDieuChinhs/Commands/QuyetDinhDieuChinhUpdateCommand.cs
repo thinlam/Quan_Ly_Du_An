@@ -36,7 +36,7 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TraLai && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
 
         var entity = await _repository.GetQueryableSet()
-            .FirstOrDefaultAsync(e => e.Id == dto.PheDuyetEntityId, cancellationToken);
+            .FirstOrDefaultAsync(e => e.Id == dto.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 

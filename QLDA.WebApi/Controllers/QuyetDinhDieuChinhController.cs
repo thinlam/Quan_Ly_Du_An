@@ -86,6 +86,7 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Update([FromBody] QuyetDinhDieuChinhModel model, CancellationToken cancellationToken) {
         var dto = new QuyetDinhDieuChinhDto {
+            Id = model.Id,
             PheDuyetEntityId = model.PheDuyetEntityId,
             PheDuyetEntityName = model.PheDuyetEntityName,
             DuAnId = model.DuAnId,
@@ -110,6 +111,7 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
 }
 
 public class QuyetDinhDieuChinhModel {
+    public Guid Id { get; set; }
     public Guid PheDuyetEntityId { get; set; }
     public string PheDuyetEntityName { get; set; } = default!;
     public Guid DuAnId { get; set; }

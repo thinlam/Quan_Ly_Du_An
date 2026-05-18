@@ -299,6 +299,51 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     public SqliteConnection GetSqliteConnection() => _connection;
+
+    /// <summary>
+    /// Creates a fresh QuyetDinhDieuChinh in Dự thảo status for test isolation.
+    /// </summary>
+    public async Task<Guid> CreateQuyetDinhDieuChinhAsync(bool withChiPhi = false) {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(_connection)
+            .Options;
+        using var db = new SqliteAppDbContext(options);
+
+        var entity = new QuyetDinhDieuChinh {
+            PheDuyetEntityId = SeededPheDuyetDuToanId,
+            PheDuyetEntityName = "PheDuyetDuToan",
+            DuAnId = SeededDuAnId,
+            SoQuyetDinh = $"QDDC_{Guid.NewGuid():N}",
+            NgayQuyetDinh = DateTimeOffset.UtcNow,
+            TrichYeu = "Test quyết định điều chỉnh",
+            LoaiDieuChinhId = 1,
+            LyDo = "Test lý do",
+            TrangThaiId = 21, // DuThao (matches DmTrangThaiPheDuyet ID for QuyetDinhDieuChinh)
+            Lan = 1,
+            CreatedAt = DateTimeOffset.UtcNow,
+            IsDeleted = false,
+        };
+        db.Set<QuyetDinhDieuChinh>().Add(entity);
+        await db.SaveChangesAsync();
+
+        if (withChiPhi) {
+            var chiPhi = new ThongTinDieuChinhChiPhi {
+                Id = Guid.NewGuid(),
+                QuyetDinhDieuChinhId = entity.Id,
+                TongMucDauTu = 5000000m,
+                ChiPhiXayLap = 3000000m,
+                ChiPhiThietBi = 1500000m,
+                ChiPhiKhac = 300000m,
+                ChiPhiDuPhong = 200000m,
+                CreatedAt = DateTimeOffset.UtcNow,
+                IsDeleted = false,
+            };
+            db.Set<ThongTinDieuChinhChiPhi>().Add(chiPhi);
+            await db.SaveChangesAsync();
+        }
+
+        return entity.Id;
+    }
 }
 
 [CollectionDefinition("WebApi")]

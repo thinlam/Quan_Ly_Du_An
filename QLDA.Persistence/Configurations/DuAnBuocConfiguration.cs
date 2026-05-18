@@ -79,6 +79,8 @@ public class DuAnBuocConfiguration : AggregateRootConfiguration<DuAnBuoc> {
             .WithOne(e => e.DuAnBuoc)
             .HasForeignKey(e => e.BuocId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
+        builder.Property(e => e.PhongPhuTrachChinhId)
+            .HasColumnName("PhongPhuTrachChinhId");
     }
 }

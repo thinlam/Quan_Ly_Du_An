@@ -7,19 +7,25 @@ using QLDA.Domain.Entities;
 using QLDA.Domain.Interfaces;
 using QLDA.Persistence.Factories;
 using QLDA.Persistence.Repositories;
+using Microsoft.Extensions.Configuration;
 
 namespace QLDA.Persistence;
 
-public static class DependencyInjection {
+public static class DependencyInjection
+{
     public static IServiceCollection AddPersistence(this IServiceCollection services,
         ConnectionStrings connectionStrings,
-        string? migrationsAssembly = "") {
-        services.AddDbContext<AppDbContext>((provider, options) => {
+        string? migrationsAssembly = "")
+    {
+        services.AddDbContext<AppDbContext>((provider, options) =>
+        {
             // cấu hình SQL Server
             options.UseSqlServer(
                     connectionStrings.DefaultConnection,
-                    sql => {
-                        if (!string.IsNullOrEmpty(migrationsAssembly)) {
+                    sql =>
+                    {
+                        if (!string.IsNullOrEmpty(migrationsAssembly))
+                        {
                             sql.MigrationsAssembly(migrationsAssembly);
                         }
 
@@ -29,7 +35,8 @@ public static class DependencyInjection {
 
             // Lấy interceptor nếu đã đăng ký; nếu không có thì bỏ quam
             var saveInterceptor = provider.GetService<ISaveChangesInterceptor>();
-            if (saveInterceptor != null) {
+            if (saveInterceptor != null)
+            {
                 options.AddInterceptors(saveInterceptor);
             }
         })
@@ -42,7 +49,8 @@ public static class DependencyInjection {
     }
 
 
-    private static IServiceCollection AddRepositories(this IServiceCollection services) {
+    private static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
         // Register DbContext so Repository<,> can resolve it
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
@@ -59,15 +67,19 @@ public static class DependencyInjection {
         return services;
     }
 
-    public static void MigrateAppDb(this IApplicationBuilder app) {
-        using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()!.CreateScope()) {
+    public static void MigrateAppDb(this IApplicationBuilder app)
+    {
+        using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()!.CreateScope())
+        {
             serviceScope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
         }
     }
 
     public static IServiceCollection AddPersistenceSqlite(this IServiceCollection services,
-        string connectionString) {
-        services.AddDbContext<AppDbContext>((provider, options) => {
+        string connectionString)
+    {
+        services.AddDbContext<AppDbContext>((provider, options) =>
+        {
             options.UseSqlite(connectionString);
             var saveInterceptor = provider.GetService<ISaveChangesInterceptor>();
             if (saveInterceptor != null)
@@ -76,9 +88,10 @@ public static class DependencyInjection {
             .AddDbContextFactory<AppDbContext>((Action<DbContextOptionsBuilder>)null!, ServiceLifetime.Scoped);
 
         // Override AppDbContext resolution to create SqliteAppDbContext (clears SQL Server defaults)
-        services.AddScoped<AppDbContext>(sp => {
+        services.AddScoped<AppDbContext>(sp =>
+        {
             var options = sp.GetRequiredService<DbContextOptions<AppDbContext>>();
-            return new SqliteAppDbContext(options);
+            return new SqliteAppDbContext(sp.GetRequiredService<IConfiguration>(), options);
         });
 
         services.AddRepositories();
@@ -86,7 +99,8 @@ public static class DependencyInjection {
         return services;
     }
 
-    public static void EnsureCreatedAppDb(this IApplicationBuilder app) {
+    public static void EnsureCreatedAppDb(this IApplicationBuilder app)
+    {
         using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
         scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
     }
