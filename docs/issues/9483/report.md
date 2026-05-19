@@ -171,9 +171,36 @@ interface QuyetDinhDieuChinhChiTietDto {
 | `KeHoachLuaChonNhaThau` | PheDuyetEntityName = "KeHoachLuaChonNhaThau" |
 | `LoaiDieuChinh` | Lookup loại điều chỉnh |
 
+## DanhMucLoaiDieuChinh Controller
+
+Dùng chung `DanhMucController` pattern với `EDanhMuc.DanhMucLoaiDieuChinh`:
+
+| Method | Endpoint                                    | Purpose            |
+| ------ | ----------------------------------------- | ------------------ |
+| GET    | `/api/danh-muc-loai-dieu-chinh/danh-sach`  | Danh sách            |
+| GET    | `/api/danh-muc-loai-dieu-chinh/danh-sach-day-du` | Danh sách đầy đủ |
+| GET    | `/api/danh-muc-loai-dieu-chinh/{id}`       | Chi tiết             |
+| POST   | `/api/danh-muc-loai-dieu-chinh/them-moi`    | Thêm mới             |
+| PUT    | `/api/danh-muc-loai-dieu-chinh/cap-nhat`    | Cập nhật             |
+| DELETE | `/api/danh-muc-loai-dieu-chinh/xoa-tam`     | Xóa mềm              |
+
+### Request/Response Models
+```typescript
+interface DanhMucLoaiDieuChinhModel {
+  Id?: number;
+  Ma: string;
+  Ten: string;
+  MoTa?: string;
+  Stt?: number;
+  Used?: boolean;
+}
+```
+
 ## Implementation Files
 | File | Status |
 | ---- | -------|
 | `QLDA.Application/QuyetDinhDieuChinhs/*` | ✅ Existed |
 | `QLDA.Domain/QuyetDinhDieuChinhs/*` | ✅ Existed |
 | `QLDA.Persistence/Configurations/QuyetDinhDieuChinhConfiguration.cs` | ✅ Existed |
+| `QLDA.WebApi/Controllers/DanhMucLoaiDieuChinhController.cs` | ✅ New |
+| `QLDA.WebApi/Models/DmLoaiDieuChinhs/*` | ✅ New |

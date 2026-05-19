@@ -6,3 +6,9 @@
 
 ## Commit Order
 - When splitting commits, **Domain + Persistence.Configuration + Migrator** must be in the same commit group. These three layers change together — domain code, EF configuration, and migration files must never be split across separate commits.
+
+## Data Transfer Objects (DTO)
+- **DTO <-> Entity mapping must be in Application layer** (e.g., `QLDA.Application/ToTrinhKeHoach/ToTrinhKeHoachMappings.cs`)
+- **DO NOT create Models in WebApi layer** for entity/dto mapping — use existing DTOs from Application layer
+- Search DTOs use `CommonSearchDto` as base class in Application layer
+- For controller request/response with search params, use DTO from Application layer (e.g., `ToTrinhKeHoachSearchDto`)

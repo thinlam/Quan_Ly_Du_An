@@ -1,6 +1,8 @@
 using System.Net.Mime;
+using QLDA.Application.DanhMucLoaiDieuChinhs.Commands;
+using QLDA.Application.DanhMucLoaiDieuChinhs.DTOs;
+using QLDA.Application.DanhMucLoaiDieuChinhs.Queries;
 using QLDA.Domain.Constants;
-using QLDA.WebApi.Models.DmLoaiDieuChinhs;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -11,93 +13,60 @@ public class DanhMucLoaiDieuChinhController : AggregateRootController {
     public DanhMucLoaiDieuChinhController(IServiceProvider serviceProvider) : base(serviceProvider) {
     }
 
-    [ProducesResponseType<ResultApi<DanhMucLoaiDieuChinhModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DanhMucLoaiDieuChinhDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}")]
     public async Task<ResultApi> Get(int id) {
-        var entity = await Mediator.Send(new DanhMucGetQuery {
-            Id = id.ToString(),
-            DanhMuc = EDanhMuc.DanhMucLoaiDieuChinh,
-            ThrowIfNull = true,
-        }) as DanhMucLoaiDieuChinh;
-        var model = entity!.ToModel();
-        return ResultApi.Ok(model);
+        var dto = await Mediator.Send(new DanhMucLoaiDieuChinhGetByIdQuery(id));
+        if (dto == null) {
+            return ResultApi.Fail("Không tìm thấy dữ liệu");
+        }
+        return ResultApi.Ok(dto);
     }
 
-    /// <summary>
-    /// Tạm ẩn
-    /// </summary>
-    [ProducesResponseType<ResultApi<DanhMucLoaiDieuChinh>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    [HttpDelete("xoa-tam")]
+    [HttpDelete("xoa-tam/{id}")]
     public async Task<ResultApi> SoftDelete(int id) {
-        var entity = await Mediator.Send(new DanhMucGetQuery {
-            Id = id.ToString(),
-            DanhMuc = EDanhMuc.DanhMucLoaiDieuChinh,
-            ThrowIfNull = true,
-        }) as DanhMucLoaiDieuChinh;
-        entity!.IsDeleted = true;
-        await Mediator.Send(new DanhMucInsertOrUpdateCommand(entity, EDanhMuc.DanhMucLoaiDieuChinh));
-        return ResultApi.Ok(entity);
+        await Mediator.Send(new DanhMucLoaiDieuChinhDeleteCommand(id));
+        return ResultApi.Ok(true);
     }
 
-    [ProducesResponseType<ResultApi<PaginatedList<DanhMucDto<int>>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<DanhMucLoaiDieuChinhDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach-day-du")]
     public async Task<ResultApi> GetAll([FromQuery] AggregateRootPagination req, string? globalFilter) {
-        var res = await Mediator.Send(new DanhMucGetDanhSachQuery {
-            DanhMuc = EDanhMuc.DanhMucLoaiDieuChinh,
-            PageIndex = req.PageIndex,
-            GlobalFilter = globalFilter,
-            PageSize = req.PageSize,
+        var res = await Mediator.Send(new DanhMucLoaiDieuChinhGetDanhSachQuery {
             GetAll = true
         });
         return ResultApi.Ok(res);
     }
 
-    [ProducesResponseType<ResultApi<List<DanhMucDto<int>>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<List<DanhMucLoaiDieuChinhDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach")]
     public async Task<ResultApi> Get([FromQuery] List<long>? ids = null, bool getAll = false) {
-        var res = await Mediator.Send(new DanhMucGetDanhSachQuery {
-            DanhMuc = EDanhMuc.DanhMucLoaiDieuChinh,
-            PageIndex = 0,
-            PageSize = 0,
-            Ids = ids,
+        var res = await Mediator.Send(new DanhMucLoaiDieuChinhGetDanhSachQuery {
             GetAll = getAll,
-        }) as PaginatedList<DanhMucDto<int>>;
-        return ResultApi.Ok(res == null ? [] : res.Data);
+        });
+        return ResultApi.Ok(res.Data);
     }
 
-    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DanhMucLoaiDieuChinhDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create([FromBody] DanhMucLoaiDieuChinhModel model) {
-        var entity = model.ToEntity();
-        await Mediator.Send(new DanhMucInsertOrUpdateCommand(entity, EDanhMuc.DanhMucLoaiDieuChinh));
-        return ResultApi.Ok(1);
+    public async Task<ResultApi> Create([FromBody] DanhMucLoaiDieuChinhInsertDto dto) {
+        var result = await Mediator.Send(new DanhMucLoaiDieuChinhInsertCommand(dto));
+        return ResultApi.Ok(result);
     }
 
-    [ProducesResponseType<ResultApi<DanhMucLoaiDieuChinhModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DanhMucLoaiDieuChinhDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Update([FromBody] DanhMucLoaiDieuChinhModel model) {
-        var entity = await Mediator.Send(new DanhMucGetQuery {
-            Id = model.GetId().ToString(),
-            DanhMuc = EDanhMuc.DanhMucLoaiDieuChinh,
-            ThrowIfNull = true,
-        }) as DanhMucLoaiDieuChinh;
-
-        entity!.Ma = model.Ma;
-        entity.Ten = model.Ten;
-        entity.MoTa = model.MoTa;
-        entity.Stt = model.Stt;
-        entity.Used = model.Used;
-
-        await Mediator.Send(new DanhMucInsertOrUpdateCommand(entity, EDanhMuc.DanhMucLoaiDieuChinh));
-
-        return ResultApi.Ok(model);
+    public async Task<ResultApi> Update([FromBody] DanhMucLoaiDieuChinhUpdateDto dto) {
+        var result = await Mediator.Send(new DanhMucLoaiDieuChinhUpdateCommand(dto));
+        return ResultApi.Ok(result);
     }
 }

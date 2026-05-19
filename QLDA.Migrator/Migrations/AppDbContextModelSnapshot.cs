@@ -2345,6 +2345,9 @@ namespace QLDA.Migrator.Migrations
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
+                    b.Property<int?>("Stt")
+                        .HasColumnType("int");
+
                     b.Property<string>("Ten")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -2380,6 +2383,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "MDQ",
+                            Stt = 1,
                             Ten = "Điều chỉnh mục tiêu, quy mô đầu tư",
                             UpdatedBy = "",
                             Used = true
@@ -2392,6 +2396,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "TMDT",
+                            Stt = 2,
                             Ten = "Điều chỉnh tổng mức đầu tư",
                             UpdatedBy = "",
                             Used = true
@@ -2404,6 +2409,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "TDO",
+                            Stt = 3,
                             Ten = "Điều chỉnh tiến độ đầu tư",
                             UpdatedBy = "",
                             Used = true
@@ -2416,6 +2422,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "CDT",
+                            Stt = 4,
                             Ten = "Chuyển đổi chủ đầu tư",
                             UpdatedBy = "",
                             Used = true
@@ -2428,6 +2435,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "TDD",
+                            Stt = 5,
                             Ten = "Tạm dừng dự án",
                             UpdatedBy = "",
                             Used = true
@@ -2440,6 +2448,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "NVU",
+                            Stt = 6,
                             Ten = "Điều chỉnh nguồn vốn dự án",
                             UpdatedBy = "",
                             Used = true
@@ -2452,6 +2461,7 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Ma = "CTMDT",
+                            Stt = 7,
                             Ten = "Điều chỉnh cơ cấu tổng mức đầu tư",
                             UpdatedBy = "",
                             Used = true
@@ -6474,6 +6484,70 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("ThongTinDieuChinhChiPhi", (string)null);
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.ToTrinhKeHoach", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<int?>("BuocId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("DuAnId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("NgayToTrinh")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("So")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("TrangThaiId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrichYeu")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DuAnId");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("TrangThaiId");
+
+                    b.ToTable("ToTrinhKeHoach", (string)null);
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.VanBanQuyetDinh", b =>
                 {
                     b.Property<Guid>("Id")
@@ -7933,6 +8007,24 @@ namespace QLDA.Migrator.Migrations
                         .IsRequired();
 
                     b.Navigation("QuyetDinhDieuChinh");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.ToTrinhKeHoach", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
+                        .WithMany()
+                        .HasForeignKey("DuAnId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiPheDuyet", "TrangThai")
+                        .WithMany()
+                        .HasForeignKey("TrangThaiId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DuAn");
+
+                    b.Navigation("TrangThai");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.VanBanQuyetDinh", b =>
