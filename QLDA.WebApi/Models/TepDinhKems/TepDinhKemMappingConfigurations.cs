@@ -14,6 +14,7 @@ using QLDA.WebApi.Models.QuyetDinhDuyetKHLCNTs;
 using QLDA.WebApi.Models.QuyetDinhDuyetQuyetToans;
 using QLDA.WebApi.Models.VanBanChuTruongs;
 using QLDA.WebApi.Models.VanBanPhapLys;
+using QLDA.WebApi.Models.ToTrinhKeHoachs;
 
 namespace QLDA.WebApi.Models.TepDinhKems;
 
@@ -119,4 +120,6 @@ public static class TepDinhKemMappingConfigurations {
 
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this PhanKhaiKinhPhiModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.PhanKhaiKinhPhi).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTepDinhKem(this ToTrinhKeHoachModel model, Guid groupId)
+       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ToTrinhKeHoach).ToList() ?? [];
 }

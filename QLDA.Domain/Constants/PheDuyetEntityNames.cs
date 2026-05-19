@@ -34,4 +34,8 @@ public static class PheDuyetEntityNames
     /// </summary>
     [Description("Quyết định điều chỉnh")]
     public const string QuyetDinhDieuChinh = "QuyetDinhDieuChinh";
+
+    [Description("Tờ trình kế hoạch")]
+    public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    
 }
