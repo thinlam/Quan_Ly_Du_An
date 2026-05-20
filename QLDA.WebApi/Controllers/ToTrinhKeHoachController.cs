@@ -102,7 +102,7 @@ public class ToTrinhKeHoachController(IServiceProvider serviceProvider) : Aggreg
     [HttpGet("danh-sach-tien-do")]
     public async Task<ResultApi> Get([FromQuery] ToTrinhKeHoachSearchDto dto)
     {
-        var res = await Mediator.Send(new ToTrinhKeHoachQuery()
+        var res = await Mediator.Send(new ToTrinhKeHoachGetPaginatedQuery()
         {
             IsNoTracking = true,
             DuAnId = dto.DuAnId,

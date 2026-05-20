@@ -7,7 +7,7 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhKeHoachs.Queries;
 
-public record ToTrinhKeHoachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhKeHoachDto>> {
+public record ToTrinhKeHoachGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhKeHoachDto>> {
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
@@ -20,8 +20,8 @@ public record ToTrinhKeHoachQuery : AggregateRootPagination, IMayHaveGlobalFilte
 }
 
 internal class
-    ToTrinhKeHoachQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<ToTrinhKeHoachQuery,
+    ToTrinhKeHoachGetPaginatedQueryHandler(IServiceProvider ServiceProvider)
+    : IRequestHandler<ToTrinhKeHoachGetPaginatedQuery,
         PaginatedList<ToTrinhKeHoachDto>> {
     private readonly IRepository<ToTrinhKeHoach, Guid> ToTrinhKeHoach =
         ServiceProvider.GetRequiredService<IRepository<ToTrinhKeHoach, Guid>>();
@@ -31,7 +31,7 @@ internal class
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
-    public async Task<PaginatedList<ToTrinhKeHoachDto>> Handle(ToTrinhKeHoachQuery request,
+    public async Task<PaginatedList<ToTrinhKeHoachDto>> Handle(ToTrinhKeHoachGetPaginatedQuery request,
         CancellationToken cancellationToken = default) {
         bool dieuKienThayTatCa = false;
 
@@ -55,7 +55,7 @@ internal class
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                So = e.So,
+                So = e.So ?? string.Empty,
                 TrichYeu = e.TrichYeu,
                 NgayToTrinh = e.NgayToTrinh,
                 TrangThaiId = e.TrangThaiId,
