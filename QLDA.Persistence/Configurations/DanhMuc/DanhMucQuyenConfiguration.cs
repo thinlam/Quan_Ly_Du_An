@@ -25,10 +25,6 @@ public class DanhMucQuyenConfiguration : AggregateRootConfiguration<DanhMucQuyen
             .IsUnique()
             .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
 
-        builder.HasMany(e => e.CauHinhVaiTroQuyens)
-            .WithOne(e => e.Quyen)
-            .HasForeignKey(e => e.QuyenId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         SeedPermissions(builder);
     }

@@ -23,7 +23,7 @@ public class GoiThau : Entity<Guid>, IAggregateRoot, ITienDo {
     public int? NguonVonId { get; set; }
     public string? TomTatCongViecChinhGoiThau { get; set; }
     public string? ThoiGianBatDauToChucLuaChonNhaThau { get; set; }
-    public string? ThoiGianThucHienGoiThau { get; set; }
+    public int? ThoiGianThucHienGoiThau { get; set; }
     public string? TuyChonMuaThem { get; set; }
     public string? GiamSatHoatDongDauThau { get; set; }
 

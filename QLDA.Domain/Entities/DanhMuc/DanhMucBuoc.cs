@@ -7,7 +7,8 @@ namespace QLDA.Domain.Entities.DanhMuc;
 /// <remarks>
 /// Quy trình - bước - tình trạng dự án
 /// </remarks>
-public class DanhMucBuoc : MaterializedPathDanhMuc<int>, IAggregateRoot, IMayHaveStt {
+public class DanhMucBuoc : MaterializedPathDanhMuc<int>, IAggregateRoot, IMayHaveStt
+{
     public int QuyTrinhId { get; set; }
     public int? GiaiDoanId { get; set; }
     public new int? ParentId { get; set; }
@@ -30,11 +31,11 @@ public class DanhMucBuoc : MaterializedPathDanhMuc<int>, IAggregateRoot, IMayHav
      * ==================================================================
      * Ví dụ dự án có ngày bắt đầu: 20/11
      * duAnBuoc thứ 1 (sau khi sắp xếp treelist):
-     * - duAnBuoc.ngayBatDauDuKien = duAn.ngayBatDau
-     * - duAnBuoc.ngayKetThucDuKien = duAn.ngayBatDau.AddDays(dmBuoc.SoNgayThucHien)
+     * - duAnBuoc.NgayDuKienBatDau = duAn.ngayBatDau
+     * - duAnBuoc.NgayDuKienKetThuc = duAn.ngayBatDau.AddDays(dmBuoc.SoNgayThucHien)
      * duAnBuoc thứ n
-     * - duAnBuoc.ngayBatDauDuKien = duAnBuoc[n-1].ngayKetThucDuKien.AddDays(1)
-     * - duAnBuoc.ngayKetThucDuKien = duAn.ngayBatDau.AddDays(dmBuoc.SoNgayThucHien)
+     * - duAnBuoc.NgayDuKienBatDau = duAnBuoc[n-1].NgayDuKienKetThuc.AddDays(1)
+     * - duAnBuoc.NgayDuKienKetThuc = duAn.ngayBatDau.AddDays(dmBuoc.SoNgayThucHien)
      */
     /// <summary>
     /// go to declaration để xem comment nhé 

@@ -7,6 +7,7 @@
 *.suo
 *.userosscache
 *.sln.docstates
+*.csproj.lscache
 
 # Build results - Ignore all bin and obj directories recursively
 **/bin/
@@ -48,3 +49,4 @@ publish/
 *plans/
 repomix-output.xml
 *.db*
+.env

@@ -16,7 +16,17 @@ public class HopDong : Entity<Guid>, IAggregateRoot, ITienDo {
     public DateTimeOffset? NgayKy { get; set; }
     public long? GiaTri { get; set; }
     public DateTimeOffset? NgayHieuLuc { get; set; }
-    public DateTimeOffset? NgayDuKienKetThuc { get; set; }
+
+    /// <summary>
+    /// Ngày dự kiến kết thúc hợp đồng = Ngày hiệu lực + Thời gian thực hiện hợp đồng (từ Kết quả trúng thầu)
+    /// </summary>
+    public DateTimeOffset? NgayDuKienKetThucHopDong { get; set; }
+
+    /// <summary>
+    /// Ngày dự kiến kết thúc gói thầu = Ngày hiệu lực + Thời gian thực hiện gói thầu (từ Kết quả trúng thầu)
+    /// </summary>
+    public DateTimeOffset? NgayDuKienKetThucGoiThau { get; set; }
+
     public int? LoaiHopDongId { get; set; }
 
     /// <summary>

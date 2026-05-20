@@ -26,4 +26,11 @@ public class DuAnBuocStateDto {
     public string? GhiChu { get; set; }
     public string? TrachNhiemThucHien { get; set; }
     public bool IsKetThuc { get; set; }
+
+    // Phòng phụ trách chính - lấy từ LeftOuterJoin với DanhMucDonVi (legacy table)
+    public long? PhongPhuTrachChinhId { get; set; }
+    public string? PhongBanPhuTrachChinh { get; set; }
+
+    // Danh sách phòng ban phối hợp - lấy từ LeftOuterJoin với DuAnBuocPhongBanPhoiHop + DanhMucDonVi
+    public List<string> DanhSachPhongBanPhoiHops { get; set; } = [];
 }

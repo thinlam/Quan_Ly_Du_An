@@ -26,7 +26,13 @@ public class HopDongConfiguration : AggregateRootConfiguration<HopDong> {
                 fromDb => fromDb
             );
 
-        builder.Property(e => e.NgayDuKienKetThuc)
+        builder.Property(e => e.NgayDuKienKetThucHopDong)
+            .HasConversion(
+                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
+                fromDb => fromDb
+            );
+
+        builder.Property(e => e.NgayDuKienKetThucGoiThau)
             .HasConversion(
                 toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
                 fromDb => fromDb

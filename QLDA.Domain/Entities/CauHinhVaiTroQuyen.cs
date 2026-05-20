@@ -1,4 +1,5 @@
 using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Domain.Entities;
 

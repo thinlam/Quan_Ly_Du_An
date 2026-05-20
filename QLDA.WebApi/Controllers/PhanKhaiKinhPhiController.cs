@@ -65,8 +65,6 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         [FromBody] PhanKhaiKinhPhiModel model,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default) {
-        using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-
         var entity = await Mediator.Send(new PhanKhaiKinhPhiInsertCommand(
             new() {
                 DuAnId = model.DuAnId,
@@ -85,7 +83,6 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        await unitOfWork.CommitTransactionAsync(cancellationToken);
         return ResultApi.Ok(new { entity.Id });
     }
 
@@ -100,8 +97,6 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         [FromBody] PhanKhaiKinhPhiModel model,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default) {
-        using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-
         var entity = await Mediator.Send(new PhanKhaiKinhPhiUpdateCommand(
             new() {
                 Id = model.GetId(),
@@ -121,7 +116,6 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        await unitOfWork.CommitTransactionAsync(cancellationToken);
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
             GroupId = [entity.Id.ToString()]

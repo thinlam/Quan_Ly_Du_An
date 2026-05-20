@@ -13,7 +13,7 @@ public class GoiThauFaker : EntityFakerBase<GoiThau>
         RuleFor(e => e.Ten, f => $"Gói thầu {f.Commerce.ProductName()}");
         RuleFor(e => e.GiaTri, f => f.Random.Long(100_000_000, 50_000_000_000));
         RuleFor(e => e.DaDuyet, false);
-        RuleFor(e => e.ThoiGianThucHienGoiThau, f => $"{f.Random.Int(6, 36)} tháng");
+        RuleFor(e => e.ThoiGianThucHienGoiThau, f => f.Random.Int(6, 36));
         RuleFor(e => e.TomTatCongViecChinhGoiThau, f => f.Lorem.Sentence());
 
         // Base entity fields

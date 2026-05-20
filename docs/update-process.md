@@ -153,12 +153,12 @@ jobs:
 ### 6. Checklist cập nhật tài liệu
 
 #### Pre-commit checklist
-- [ ] API changes documented in `api.md`
-- [ ] New features added to `features.md`
-- [ ] Schema changes reflected in `data-model.md`
-- [ ] Architecture changes updated in `architecture.md`
-- [ ] README updated if needed
-- [ ] kLOC ratio maintained ≥10%
+- [x] API changes documented in `api.md`
+- [x] New features added to `features.md`
+- [x] Schema changes reflected in `data-model.md`
+- [x] Architecture changes updated in `architecture.md`
+- [x] README updated if needed
+- [x] kLOC ratio maintained ≥10%
 
 #### Code review checklist
 - [ ] Documentation accuracy verified

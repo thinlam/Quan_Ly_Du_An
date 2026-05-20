@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace QLDA.Persistence;
 
@@ -6,8 +7,18 @@ namespace QLDA.Persistence;
 /// SQLite-compatible AppDbContext that replaces SQL Server-specific defaults
 /// with SQLite equivalents. Shared by Migrator, FakeDataTool, and Tests.
 /// </summary>
-public class SqliteAppDbContext(DbContextOptions<AppDbContext> options) : AppDbContext(options)
+public class SqliteAppDbContext : AppDbContext
 {
+    public SqliteAppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+
+    public SqliteAppDbContext(IConfiguration configuration, DbContextOptions<AppDbContext> options)
+        : base(configuration, options)
+    {
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

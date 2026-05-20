@@ -27,6 +27,11 @@ public class CauHinhVaiTroQuyenConfiguration : AggregateRootConfiguration<CauHin
         builder.HasIndex(e => new { e.VaiTro, e.QuyenId })
             .IsUnique();
 
+        builder.HasOne(e => e.Quyen)
+            .WithMany()
+            .HasForeignKey(e => e.QuyenId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         SeedRolePermissions(builder);
     }
 
@@ -45,11 +50,8 @@ public class CauHinhVaiTroQuyenConfiguration : AggregateRootConfiguration<CauHin
         }
 
         // QLDA_LD → XemTatCa + PheDuyetActions (LDDV - Lãnh đạo đơn vị)
-        foreach (var perm in PermissionConstants.AllXemTatCa) {
-            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LD, perm));
-        }
-        foreach (var perm in new[] { PermissionConstants.PheDuyet_Duyet, PermissionConstants.PheDuyet_KySo, PermissionConstants.PheDuyet_ChuyenQLVB, PermissionConstants.PheDuyet_TuChoi }) {
-            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LD, perm));
+        foreach (var perm in PermissionConstants.AllXemTatCa.Concat(PermissionConstants.PheDuyetActions)) {
+            data.Add(MakeEntry(ref id, RoleConstants.QLDA_LDDV, perm));
         }
 
         // QLDA_ChuyenVien → XemTheoPhong + Tao/Sua for own department

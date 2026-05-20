@@ -5,7 +5,8 @@ namespace QLDA.Application.DanhMucBuocs.Commands;
 
 public record DanhMucBuocDeleteCommand(int Id) : IRequest<int>;
 
-internal class DanhMucBuocDeleteCommandHandler : IRequestHandler<DanhMucBuocDeleteCommand, int> {
+internal class DanhMucBuocDeleteCommandHandler : IRequestHandler<DanhMucBuocDeleteCommand, int>
+{
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc;
     private readonly IRepository<VanBanQuyetDinh, Guid> VanBanQuyetDinh;
@@ -23,7 +24,8 @@ internal class DanhMucBuocDeleteCommandHandler : IRequestHandler<DanhMucBuocDele
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IUnitOfWork UnitOfWork;
 
-    public DanhMucBuocDeleteCommandHandler(IServiceProvider serviceProvider) {
+    public DanhMucBuocDeleteCommandHandler(IServiceProvider serviceProvider)
+    {
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
         DuAnBuoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         VanBanQuyetDinh = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
@@ -42,9 +44,11 @@ internal class DanhMucBuocDeleteCommandHandler : IRequestHandler<DanhMucBuocDele
         UnitOfWork = DanhMucBuoc.UnitOfWork;
     }
 
-    public async Task<int> Handle(DanhMucBuocDeleteCommand request, CancellationToken cancellationToken) {
-        using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
-            var entity = await DanhMucBuoc.GetOrderedSet()
+    public async Task<int> Handle(DanhMucBuocDeleteCommand request, CancellationToken cancellationToken)
+    {
+        using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken))
+        {
+            var entity = await DanhMucBuoc.GetOriginalSet()
                 .Include(e => e.DuAnBuocs)
                 .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
             ManagedException.ThrowIfNull(entity);

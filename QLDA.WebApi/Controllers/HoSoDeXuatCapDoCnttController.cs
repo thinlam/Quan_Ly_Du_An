@@ -12,7 +12,7 @@ namespace QLDA.WebApi.Controllers;
 
 [Tags("Hồ sơ đề xuất cấp độ CNTT")]
 [Route("api/ho-so-de-xuat-cap-do-cntt")]
-[Authorize]
+[Authorize] 
 public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootController(sp) {
 
     [HttpGet("{id}")]

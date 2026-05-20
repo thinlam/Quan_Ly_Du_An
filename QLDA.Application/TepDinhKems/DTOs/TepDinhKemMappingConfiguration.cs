@@ -90,4 +90,50 @@ public static class TepDinhKemMappingConfiguration {
        string groupType = "None"
    )
    => dtos.Select(m => ToEntity(m, groupId, groupType));
+
+    public static IEnumerable<TepDinhKem> ToEntities(
+        this List<TepDinhKemDto> dtos,
+        Guid groupId,
+        EGroupType groupType = EGroupType.None
+    )
+    {
+        foreach (var dto in dtos)
+        {
+            yield return new TepDinhKem
+            {
+                Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
+                ParentId = dto.ParentId,
+                GroupId = groupId.ToString(),
+                GroupType = groupType.ToString(),
+                Type = dto.Type,
+                FileName = dto.FileName,
+                OriginalName = dto.OriginalName,
+                Path = dto.Path,
+                Size = dto.Size,
+            };
+        }
+    }
+
+    public static IEnumerable<TepDinhKem> ToEntities(
+        this List<TepDinhKemDto> dtos,
+        Guid groupId,
+        string groupType = "None"
+    )
+    {
+        foreach (var dto in dtos)
+        {
+            yield return new TepDinhKem
+            {
+                Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
+                ParentId = dto.ParentId,
+                GroupId = groupId.ToString(),
+                GroupType = groupType,
+                Type = dto.Type,
+                FileName = dto.FileName,
+                OriginalName = dto.OriginalName,
+                Path = dto.Path,
+                Size = dto.Size,
+            };
+        }
+    }
 }

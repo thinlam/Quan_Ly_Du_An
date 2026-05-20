@@ -9,4 +9,12 @@ public class DuAnBuocCreateDto {
     public string? GhiChu { get; init; }
     public string? TrachNhiemThucHien { get; init; }
     public List<int>? DanhSachManHinh { get; init; } = [];
+    /// <summary>
+    /// Phòng ban phụ trách chính - FK to DanhMucDonVi (legacy table)
+    /// </summary>
+    public long? PhongPhuTrachChinhId { get; init; }
+    /// <summary>
+    /// Danh sách phòng ban phối hợp - FK to DanhMucDonVi (legacy table)
+    /// </summary>
+    public List<long>? DanhSachPhongBanPhoiHopIds { get; init; } = [];
 }

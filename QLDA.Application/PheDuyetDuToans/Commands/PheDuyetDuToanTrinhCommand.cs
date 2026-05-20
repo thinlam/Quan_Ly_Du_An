@@ -48,9 +48,9 @@ internal class PheDuyetDuToanTrinhCommandHandler : IRequestHandler<PheDuyetDuToa
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
 
-        // Validate current status must be Dự thảo or Trả lại
-        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc Trả lại");
+        // Validate current status must be null (legacy), Dự thảo, or Trả lại
+        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
         // Update status to Đã trình

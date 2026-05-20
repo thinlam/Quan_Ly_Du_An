@@ -59,11 +59,15 @@ public class DuAnBuocCreateCommandHandler(
             GhiChu = dto.GhiChu,
             TrachNhiemThucHien = dto.TrachNhiemThucHien,
             Used = true,
+            PhongPhuTrachChinhId = dto.PhongPhuTrachChinhId,
             DuAnBuocManHinhs = dto.DanhSachManHinh != null && dto.DanhSachManHinh.Count != 0
                 ? [.. dto.DanhSachManHinh.Select((manHinhId, index) => new DuAnBuocManHinh { RightId = manHinhId, Stt = index + 1 })]
                 : danhMucBuoc.BuocManHinhs?
                 .Select(m => new DuAnBuocManHinh { RightId = m.RightId, Stt = m.Stt })
-                .ToList() ?? []
+                .ToList() ?? [],
+            DuAnBuocPhongBanPhoiHops = dto.DanhSachPhongBanPhoiHopIds != null && dto.DanhSachPhongBanPhoiHopIds.Count != 0
+                ? [.. dto.DanhSachPhongBanPhoiHopIds.Select(id => new DuAnBuocPhongBanPhoiHop { LeftId = 0, RightId = id })]
+                : []
         };
     }
 

@@ -14,4 +14,5 @@ public static class GroupTypeConstants
     public const string ThanhToan = "ThanhToan";
     public const string KySo = "KySo";
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
+    public const string ToTrinhKeHoach = "ToTrinhKeHoach";
 }

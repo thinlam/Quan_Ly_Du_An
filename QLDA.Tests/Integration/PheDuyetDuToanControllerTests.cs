@@ -38,12 +38,14 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         result!.Result.Should().BeFalse();
     }
 
+    private const string Type = "PheDuyetDuToan";
+
     [Fact]
     public async Task Trinh_AsKhTcUser_ReturnsOk()
     {
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
-        var response = await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        var response = await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -57,7 +59,7 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Default client has PhongBanId=1 (not 219)
-        var response = await AuthedClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        var response = await AuthedClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -71,10 +73,10 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Submit first (KH-TC)
-        await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         // Approve (BGĐ)
-        var response = await BgdClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/duyet", null);
+        var response = await BgdClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/duyet", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -88,7 +90,7 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Try to approve without submitting first
-        var response = await BgdClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/duyet", null);
+        var response = await BgdClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/duyet", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -102,10 +104,10 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Submit first
-        await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         // Try to approve with non-BGĐ user
-        var response = await AuthedClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/duyet", null);
+        var response = await AuthedClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/duyet", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -119,11 +121,11 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Submit first (KH-TC)
-        await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         // Return with reason (BGĐ)
         var traLaiModel = new { NoiDung = "Test lý do trả lại" };
-        var response = await BgdClient.PostAsJsonAsync($"/api/phe-duyet-du-toan/{pddtId}/tra-lai", traLaiModel);
+        var response = await BgdClient.PostAsJsonAsync($"/api/phe-duyet/{Type}/{pddtId}/tra-lai", traLaiModel);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -137,11 +139,11 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Submit first
-        await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         // Try to return without reason
         var traLaiModel = new { NoiDung = "" };
-        var response = await BgdClient.PostAsJsonAsync($"/api/phe-duyet-du-toan/{pddtId}/tra-lai", traLaiModel);
+        var response = await BgdClient.PostAsJsonAsync($"/api/phe-duyet/{Type}/{pddtId}/tra-lai", traLaiModel);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
@@ -155,12 +157,12 @@ public class PheDuyetDuToanControllerTests(WebApiFixture fixture)
         var pddtId = await fixture.CreatePheDuyetDuToanAsync();
 
         // Submit (KH-TC)
-        await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
         // Return (BGĐ)
-        await BgdClient.PostAsJsonAsync($"/api/phe-duyet-du-toan/{pddtId}/tra-lai", new { NoiDung = "Cần sửa lại" });
+        await BgdClient.PostAsJsonAsync($"/api/phe-duyet/{Type}/{pddtId}/tra-lai", new { NoiDung = "Cần sửa lại" });
 
         // Resubmit after fix (KH-TC)
-        var response = await KhTcClient.PostAsync($"/api/phe-duyet-du-toan/{pddtId}/trinh", null);
+        var response = await KhTcClient.PostAsync($"/api/phe-duyet/{Type}/{pddtId}/trinh", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();

@@ -84,7 +84,7 @@ public static class PermissionConstants {
     /// <summary>
     /// PheDuyet action permissions (Duyet, KySo, ChuyenQLVB, TuChoi)
     /// </summary>
-    private static readonly string[] PheDuyetActions =
+    public static readonly string[] PheDuyetActions =
         [PheDuyet_Duyet, PheDuyet_KySo, PheDuyet_ChuyenQLVB, PheDuyet_TuChoi];
 
     /// <summary>
@@ -98,7 +98,7 @@ public static class PermissionConstants {
 
 
         // Lãnh đạo → xem tất cả mọi module + PheDuyet actions
-        [RoleConstants.QLDA_LD] = [.. AllXemTatCa, .. PheDuyetActions],
+        [RoleConstants.QLDA_LDDV] = [.. AllXemTatCa, .. PheDuyetActions],
 
         // Chuyên viên → xem theo phòng + tạo/sửa
         [RoleConstants.QLDA_ChuyenVien] =

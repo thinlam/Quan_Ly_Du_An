@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 
@@ -16,8 +17,9 @@ public static class HopDongMappings {
             DonViThucHienId = dto.DonViThucHienId,
             NgayKy = dto.NgayKy,
             GiaTri = dto.GiaTri,
-            NgayHieuLuc = dto.NgayHieuLuc,
-            NgayDuKienKetThuc = dto.NgayDuKienKetThuc,
+            NgayHieuLuc = dto.NgayHieuLuc.ToStartOfDayUtc(),
+            NgayDuKienKetThucHopDong = dto.NgayDuKienKetThucHopDong.ToStartOfDayUtc(),
+            NgayDuKienKetThucGoiThau = dto.NgayDuKienKetThucGoiThau.ToStartOfDayUtc(),
             LoaiHopDongId = dto.LoaiHopDongId,
             IsBienBan = dto.IsBienBan
         };
@@ -33,8 +35,9 @@ public static class HopDongMappings {
             DonViThucHienId = dto.DonViThucHienId,
             NgayKy = dto.NgayKy,
             GiaTri = dto.GiaTri,
-            NgayHieuLuc = dto.NgayHieuLuc,
-            NgayDuKienKetThuc = dto.NgayDuKienKetThuc,
+            NgayHieuLuc = dto.NgayHieuLuc.ToStartOfDayUtc(),
+            NgayDuKienKetThucHopDong = dto.NgayDuKienKetThucHopDong.ToStartOfDayUtc(),
+            NgayDuKienKetThucGoiThau = dto.NgayDuKienKetThucGoiThau.ToStartOfDayUtc(),
             LoaiHopDongId = dto.LoaiHopDongId,
             IsBienBan = dto.IsBienBan
         };
@@ -52,8 +55,9 @@ public static class HopDongMappings {
             DonViThucHienId = entity.DonViThucHienId,
             NgayKy = entity.NgayKy,
             GiaTri = entity.GiaTri,
-            NgayHieuLuc = entity.NgayHieuLuc,
-            NgayDuKienKetThuc = entity.NgayDuKienKetThuc,
+            NgayHieuLuc = entity.NgayHieuLuc.ToDateOnlyVn(),
+            NgayDuKienKetThucHopDong = entity.NgayDuKienKetThucHopDong.ToDateOnlyVn(),
+            NgayDuKienKetThucGoiThau = entity.NgayDuKienKetThucGoiThau.ToDateOnlyVn(),
             LoaiHopDongId = entity.LoaiHopDongId,
             IsBienBan = entity.IsBienBan,
             DanhSachTepDinhKem = [.. files?.ToDtos() ?? []]
@@ -67,8 +71,9 @@ public static class HopDongMappings {
         entity.DonViThucHienId = model.DonViThucHienId;
         entity.NgayKy = model.NgayKy;
         entity.GiaTri = model.GiaTri;
-        entity.NgayHieuLuc = model.NgayHieuLuc;
-        entity.NgayDuKienKetThuc = model.NgayDuKienKetThuc;
+        entity.NgayHieuLuc = model.NgayHieuLuc.ToStartOfDayUtc();
+        entity.NgayDuKienKetThucHopDong = model.NgayDuKienKetThucHopDong.ToStartOfDayUtc();
+        entity.NgayDuKienKetThucGoiThau = model.NgayDuKienKetThucGoiThau.ToStartOfDayUtc();
         entity.LoaiHopDongId = model.LoaiHopDongId;
         entity.IsBienBan = model.IsBienBan;
     }

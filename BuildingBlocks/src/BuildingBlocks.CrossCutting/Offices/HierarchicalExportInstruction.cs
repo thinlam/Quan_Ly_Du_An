@@ -35,6 +35,16 @@ public class HierarchicalExportInstruction<TGroup, TItem> {
     /// Function to get count for sub-group
     /// </summary>
     public Func<object, int>? GetSubGroupCount { get; set; }
+
+    /// <summary>
+    /// Enable Excel row outline grouping (expand/collapse feature)
+    /// </summary>
+    public bool EnableOutline { get; set; } = false;
+
+    /// <summary>
+    /// Collapse groups by default (only applies when EnableOutline = true)
+    /// </summary>
+    public bool CollapseGroups { get; set; } = false;
 }
 
 /// <summary>

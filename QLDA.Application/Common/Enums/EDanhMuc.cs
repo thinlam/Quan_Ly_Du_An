@@ -22,6 +22,7 @@ public enum EDanhMuc {
     [Description("Trạng thái dự án")] DanhMucTrangThaiDuAn,
     [Description("Màn hình")] DanhMucManHinh,
     [Description("Loại văn bản")] DanhMucLoaiVanBan,
+    [Description("Loại điều chỉnh")] DanhMucLoaiDieuChinh,
     [Description("Chức vụ")] DanhMucChucVu,
     [Description("Loại hợp đồng")] DanhMucLoaiHopDong,
     [Description("Loại gói thầu")] DanhMucLoaiGoiThau,

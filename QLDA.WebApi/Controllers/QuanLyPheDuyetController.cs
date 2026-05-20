@@ -6,6 +6,7 @@ using QLDA.Application.QuanLyPheDuyet.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.PheDuyetDuToans;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -28,18 +29,10 @@ public class QuanLyPheDuyetController : AggregateRootController {
             .Where(f => f.IsLiteral && f.Name != nameof(PheDuyetEntityNames.Default))
             .Select(f => (string?)f.GetRawConstantValue())
             .Where(v => v != null)
-            .Select(v => new PheDuyetTypeItemDto { Key = v!, Label = GetLabelForType(v!) })
+            .Select(v => new PheDuyetTypeItemDto { Key = v!, Label = v!.GetDescriptionFromConstant(typeof(PheDuyetEntityNames)) })
             .ToList()!;
         return ResultApi.Ok(types);
     }
-
-    private static string GetLabelForType(string type) => type switch {
-        PheDuyetEntityNames.PheDuyetDuToan => "Phê duyệt dự toán",
-        PheDuyetEntityNames.HoSoDeXuatCapDoCntt => "Hồ sơ đề xuất cấp CNTT",
-        PheDuyetEntityNames.HoSoMoiThauDienTu => "Hồ sơ mua thầu điện tử",
-        PheDuyetEntityNames.PhanKhaiKinhPhi => "Phân khai kinh phí",
-        _ => type
-    };
 
     /// <summary>
     /// Danh sach tat ca ban ghi pheduyet voi trang thai moi nhat

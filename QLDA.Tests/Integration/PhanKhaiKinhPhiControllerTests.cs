@@ -352,11 +352,14 @@ public class PhanKhaiKinhPhiControllerTests(WebApiFixture fixture) {
         var response = await AuthedClient.PostAsJsonAsync("/api/phan-khai-kinh-phi/them-moi", model);
         var result = await response.Content.ReadFromJsonAsync<ResultApi>();
         result.Should().NotBeNull();
-        return result!.DataResult switch {
-            System.Text.Json.JsonElement el when el.ValueKind == System.Text.Json.JsonValueKind.String => el.GetGuid(),
-            System.Text.Json.JsonElement el when el.ValueKind == System.Text.Json.JsonValueKind.Object => el.GetProperty("id").GetGuid(),
-            Guid g => g,
-            _ => throw new InvalidOperationException($"Unexpected DataResult type: {result.DataResult?.GetType()}"),
-        };
+        if (result!.DataResult is System.Text.Json.JsonElement el) {
+            if (el.ValueKind == System.Text.Json.JsonValueKind.Object && el.TryGetProperty("id", out var idProp)) {
+                return idProp.GetGuid();
+            }
+            if (el.ValueKind == System.Text.Json.JsonValueKind.String) {
+                return el.GetGuid();
+            }
+        }
+        throw new InvalidOperationException($"Unexpected DataResult: {result.DataResult}");
     }
 }
