@@ -252,6 +252,19 @@ namespace QLDA.WebApi.Controllers {
             return ResultApi.Ok(await GetDuAnWithFiles(entity.Id, cancellationToken));
         }
 
+        /// <summary>
+        /// Lấy toàn bộ tệp đính kèm của dự án (bao gồm tất cả bảng liên kết)
+        /// </summary>
+        /// <param name="id">Id dự án</param>
+        /// <returns>Danh sách tệp đính kèm</returns>
+        [HttpGet("{id}/tat-ca-tep-dinh-kem")]
+        [ProducesResponseType<ResultApi<List<TepDinhKemDto>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetTatCaTepDinhKem(Guid id) {
+            var result = await Mediator.Send(new DuAnGetDanhSachTepDinhKemQuery { DuAnId = id });
+            return ResultApi.Ok(result);
+        }
+
         private async Task<DuAnDto> GetDuAnWithFiles(Guid duAnId, CancellationToken cancellationToken) {
             var entity = await Mediator.Send(new DuAnGetQuery() {
                 Id = duAnId,
