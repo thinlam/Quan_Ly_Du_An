@@ -30,6 +30,7 @@ internal class ToTrinhKeHoachInsertCommandHandler : IRequestHandler<ToTrinhKeHoa
         var entity = new ToTrinhKeHoach
         {
             DuAnId = request.Dto.DuAnId,
+            BuocId = request.Dto.BuocId,
             So = request.Dto.So,
             NgayToTrinh = request.Dto.NgayToTrinh,
             TrichYeu = request.Dto.TrichYeu,
