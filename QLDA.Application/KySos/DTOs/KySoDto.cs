@@ -21,9 +21,9 @@ public class KySoDto {
 
     public string? ToChucCap { get; set; }
 
-    public DateTime? HieuLucTu { get; set; }
+    public DateOnly? HieuLucTu { get; set; }
 
-    public DateTime? HieuLucDen { get; set; }
+    public DateOnly? HieuLucDen { get; set; }
 
     public int? PhuongThucKySoId { get; set; }
 

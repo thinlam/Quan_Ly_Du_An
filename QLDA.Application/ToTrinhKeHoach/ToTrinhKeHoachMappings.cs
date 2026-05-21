@@ -16,10 +16,9 @@ public static class ToTrinhKeHoachMappings {
     }
 
     public static ToTrinhKeHoach ToEntity(this ToTrinhKeHoachUpdateDto dto) {
-     
         return new ToTrinhKeHoach {
             Id = dto.Id,
-            NgayToTrinh = dto.NgayToTrinh,
+            NgayToTrinh = dto.NgayToTrinh.ToStartOfDayUtc(),
             TrichYeu = dto.TrichYeu,
             So = dto.So
         };

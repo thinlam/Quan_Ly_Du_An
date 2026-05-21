@@ -22,8 +22,8 @@
 | `PhongBanId` | `int` | FK → cần xác nhận bảng nào |
 | `SerialChungThu` | `string` | |
 | `ToChucCap` | `string` | |
-| `HieuLucTu` | `DateTime?` | |
-| `HieuLucDen` | `DateTime?` | |
+| `HieuLucTu` | `DateOnly?` (API) / `DateTimeOffset?` (DB) | |
+| `HieuLucDen` | `DateOnly?` (API) / `DateTimeOffset?` (DB) | |
 | `PhuongThucKySoId` | `int` | FK → `DanhMucPhuongThucKySo` |
 | `TrangThaiId` | `int?` | **Không làm** (theo yêu cầu) |
 

@@ -1,4 +1,5 @@
 using System.Data;
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.ToTrinhKeHoachs.DTOs;
 using QLDA.Domain.Constants;
@@ -36,7 +37,7 @@ internal class ToTrinhKeHoachUpdateCommandHandler : IRequestHandler<ToTrinhKeHoa
         }
 
         entity.So = request.Dto.So;
-        entity.NgayToTrinh = request.Dto.NgayToTrinh;
+        entity.NgayToTrinh = request.Dto.NgayToTrinh.ToStartOfDayUtc();
         entity.TrichYeu = request.Dto.TrichYeu;
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;

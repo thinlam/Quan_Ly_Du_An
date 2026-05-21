@@ -1,5 +1,6 @@
-using QLDA.Application.Common.DTOs;
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 
@@ -12,7 +13,7 @@ public static class HoSoDeXuatCapDoCnttMappings
         BuocId = dto.BuocId,
         TrangThaiId = dto.TrangThaiId,
         CapDoId = dto.CapDoId,
-        NgayTrinh = dto.NgayTrinh,
+        NgayTrinh = dto.NgayTrinh.ToStartOfDayUtc(),
         DonViChuTriId = dto.DonViChuTriId,
         NoiDungDeNghi = dto.NoiDungDeNghi,
         NoiDungBaoCao = dto.NoiDungBaoCao,
@@ -23,7 +24,9 @@ public static class HoSoDeXuatCapDoCnttMappings
     {
         entity.TrangThaiId = model.TrangThaiId;
         entity.CapDoId = model.CapDoId;
-        entity.NgayTrinh = model.NgayTrinh.HasValue ? model.NgayTrinh.Value : (DateTime.UtcNow);
+        entity.NgayTrinh = model.NgayTrinh.HasValue
+            ? model.NgayTrinh.ToStartOfDayUtc()
+            : DateOnly.FromDateTime(DateTime.UtcNow).ToStartOfDayUtc();
         entity.DonViChuTriId = model.DonViChuTriId;
         entity.NoiDungDeNghi = model.NoiDungDeNghi;
         entity.NoiDungBaoCao = model.NoiDungBaoCao;
@@ -38,7 +41,7 @@ public static class HoSoDeXuatCapDoCnttMappings
         TrangThaiId = entity.TrangThaiId,
         CapDoId = entity.CapDoId,
         TenCapDo = entity.CapDo?.Ten,
-        NgayTrinh = entity.NgayTrinh,
+        NgayTrinh = entity.NgayTrinh.ToDateOnlyVn(),
         DonViChuTriId = entity.DonViChuTriId,
         NoiDungDeNghi = entity.NoiDungDeNghi,
         NoiDungBaoCao = entity.NoiDungBaoCao,

@@ -1,4 +1,5 @@
 using System.Data;
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
 
@@ -36,7 +37,7 @@ internal class HoSoDeXuatCapDoCnttThayDoiTrangThaiCommandHandler
         // For phòng ban 219 (duyệt/từ chối), implement additional authorization policy in WebApi layer
 
         entity.TrangThaiId = request.Dto.TrangThaiId;
-        entity.NgayTrinh = DateTime.UtcNow;
+        entity.NgayTrinh = DateOnly.FromDateTime(DateTime.UtcNow).ToStartOfDayUtc();
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await HoSoDeXuatCapDoCntt.UpdateAsync(entity, cancellationToken);

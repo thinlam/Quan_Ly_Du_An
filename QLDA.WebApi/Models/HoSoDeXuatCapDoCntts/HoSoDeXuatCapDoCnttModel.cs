@@ -17,7 +17,7 @@ public class HoSoDeXuatCapDoCnttModel : IHasKey<Guid?>, IMustHaveId<Guid>,
     public int? BuocId { get; set; }
     public int? TrangThaiId { get; set; }
     public int? CapDoId { get; set; }
-    public DateTimeOffset? NgayTrinh { get; set; }
+    public DateOnly? NgayTrinh { get; set; }
     public int? DonViChuTriId { get; set; }
     public string? NoiDungDeNghi { get; set; }
     public string? NoiDungBaoCao { get; set; }

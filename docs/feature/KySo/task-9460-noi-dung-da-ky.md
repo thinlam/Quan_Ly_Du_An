@@ -361,5 +361,5 @@ File gốc (GoiThau)     id=1
 
 ## 9. Pending (task khác)
 
-- [ ] API/query list “nội dung đã ký” filter `GroupType IN ('KySo','NoiDungDaKySo')`
-- [ ] **DateTime → DateTimeOffset** (DB) và **DateOnly** (request) — theo task schema chung
+- [x] API/query list “nội dung đã ký” filter `GroupType IN ('KySo','NoiDungDaKySo')`
+- [x] **DateTime → DateTimeOffset** (DB) và **DateOnly** (request) — code xong; còn chạy migration: [task-fix-datetime-datetimeoffset-dateonly.md](./task-fix-datetime-datetimeoffset-dateonly.md)
