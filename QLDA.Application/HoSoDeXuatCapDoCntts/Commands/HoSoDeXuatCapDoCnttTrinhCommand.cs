@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
@@ -48,7 +49,7 @@ internal class HoSoDeXuatCapDoCnttTrinhCommandHandler : IRequestHandler<HoSoDeXu
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;
-        entity.NgayTrinh = DateTime.UtcNow;
+        entity.NgayTrinh = DateOnly.FromDateTime(DateTime.UtcNow).ToStartOfDayUtc();
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),

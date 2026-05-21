@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
@@ -13,8 +14,8 @@ public static class KySoMappings {
         PhongBanId = dto.PhongBanId,
         SerialChungThu = dto.SerialChungThu,
         ToChucCap = dto.ToChucCap,
-        HieuLucTu = dto.HieuLucTu.HasValue ? dto.HieuLucTu.Value.ToDateTime(TimeOnly.MinValue) : null,
-        HieuLucDen = dto.HieuLucDen.HasValue ? dto.HieuLucDen.Value.ToDateTime(TimeOnly.MinValue) : null,
+        HieuLucTu = dto.HieuLucTu.ToStartOfDayUtc(),
+        HieuLucDen = dto.HieuLucDen.ToStartOfDayUtc(),
         PhuongThucKySoId = dto.PhuongThucKySoId
     };
 
@@ -26,8 +27,8 @@ public static class KySoMappings {
         entity.PhongBanId = dto.PhongBanId;
         entity.SerialChungThu = dto.SerialChungThu;
         entity.ToChucCap = dto.ToChucCap;
-        entity.HieuLucTu = dto.HieuLucTu.HasValue ? dto.HieuLucTu.Value.ToDateTime(TimeOnly.MinValue) : null;
-        entity.HieuLucDen = dto.HieuLucDen.HasValue ? dto.HieuLucDen.Value.ToDateTime(TimeOnly.MinValue) : null;
+        entity.HieuLucTu = dto.HieuLucTu.ToStartOfDayUtc();
+        entity.HieuLucDen = dto.HieuLucDen.ToStartOfDayUtc();
         entity.PhuongThucKySoId = dto.PhuongThucKySoId;
     }
 
@@ -41,8 +42,8 @@ public static class KySoMappings {
         PhongBanId = entity.PhongBanId,
         SerialChungThu = entity.SerialChungThu,
         ToChucCap = entity.ToChucCap,
-        HieuLucTu = entity.HieuLucTu,
-        HieuLucDen = entity.HieuLucDen,
+        HieuLucTu = entity.HieuLucTu.ToDateOnlyVn(),
+        HieuLucDen = entity.HieuLucDen.ToDateOnlyVn(),
         PhuongThucKySoId = entity.PhuongThucKySoId,
         TenPhuongThucKySo = entity.PhuongThucKySo?.Ten
     };

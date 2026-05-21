@@ -1,5 +1,5 @@
 using System.Net.Mime;
-using QLDA.Application.TepDinhKems.Commands;
+using QLDA.Application.KySos.Commands;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KySos;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -26,14 +26,17 @@ public class KySoController(IServiceProvider serviceProvider) : AggregateRootCon
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create([FromBody] KySoModel model) {
         ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
-        ManagedException.ThrowIfNull(model.DanhSachTepDinhKem.Any(e => e.ParentId == null));
         model.DanhSachTepDinhKem ??= [];
-        
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            KySo = true,
-            GroupId = model.GroupId.ToString(),
-            Entities = [.. model.DanhSachTepDinhKem.ToEntities(model.GroupId, GroupTypeConstants.KySo)]
+
+        var entities = model.DanhSachTepDinhKem
+            .ToEntities(model.GroupId, GroupTypeConstants.KySo)
+            .ToList();
+
+        var count = await Mediator.Send(new NoiDungDaKyCommand {
+            GroupId  = model.GroupId.ToString(),
+            Entities = entities,
         });
-        return ResultApi.Ok(1);
+
+        return ResultApi.Ok(count);
     }
 }

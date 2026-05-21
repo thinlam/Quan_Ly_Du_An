@@ -13,6 +13,11 @@ public static class GroupTypeConstants
     public const string TamUng = "TamUng";
     public const string ThanhToan = "ThanhToan";
     public const string KySo = "KySo";
+
+    /// <summary>
+    /// Lịch sử phiên bản ký số trên bảng TepDinhKem (ký lại sau lần đầu).
+    /// </summary>
+    public const string NoiDungDaKySo = "NoiDungDaKySo";
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";
     public const string ChuTruongMoi = "DeXuatChuTruongMoi";

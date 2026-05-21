@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Enums;
@@ -16,7 +17,7 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
         BuocId = entity.BuocId,
         TrangThaiId = entity.TrangThaiId,
         CapDoId = entity.CapDoId,
-        NgayTrinh = entity.NgayTrinh.HasValue ? new DateTimeOffset(entity.NgayTrinh.Value) : null,
+        NgayTrinh = entity.NgayTrinh.ToDateOnlyVn(),
         DonViChuTriId = entity.DonViChuTriId,
         NoiDungDeNghi = entity.NoiDungDeNghi,
         NoiDungBaoCao = entity.NoiDungBaoCao,
@@ -39,7 +40,7 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
         BuocId = model.BuocId,
         TrangThaiId = model.TrangThaiId,
         CapDoId = model.CapDoId,
-        NgayTrinh = model.NgayTrinh?.DateTime,
+        NgayTrinh = model.NgayTrinh,
         DonViChuTriId = model.DonViChuTriId,
         NoiDungDeNghi = model.NoiDungDeNghi,
         NoiDungBaoCao = model.NoiDungBaoCao,
@@ -63,7 +64,7 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
         BuocId = model.BuocId,
         TrangThaiId = model.TrangThaiId,
         CapDoId = model.CapDoId,
-        NgayTrinh = model.NgayTrinh?.DateTime,
+        NgayTrinh = model.NgayTrinh,
         DonViChuTriId = model.DonViChuTriId,
         NoiDungDeNghi = model.NoiDungDeNghi,
         NoiDungBaoCao = model.NoiDungBaoCao,

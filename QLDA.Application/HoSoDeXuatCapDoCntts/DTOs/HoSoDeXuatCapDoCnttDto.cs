@@ -11,7 +11,7 @@ public class HoSoDeXuatCapDoCnttDto {
     public string? TenTrangThai { get; set; }
     public int? CapDoId { get; set; }
     public string? TenCapDo { get; set; }
-    public DateTime? NgayTrinh { get; set; }
+    public DateOnly? NgayTrinh { get; set; }
     public int? DonViChuTriId { get; set; }
     public string? NoiDungDeNghi { get; set; }
     public string? NoiDungBaoCao { get; set; }

@@ -11,7 +11,7 @@ public class HoSoDeXuatCapDoCntt : Entity<Guid>, IAggregateRoot
     public int?  BuocId { get; set; }
     public int? TrangThaiId { get; set; }
     public int? CapDoId { get; set; }
-    public DateTime? NgayTrinh { get; set; }
+    public DateTimeOffset? NgayTrinh { get; set; }
 
     public int? DonViChuTriId { get; set; }
 

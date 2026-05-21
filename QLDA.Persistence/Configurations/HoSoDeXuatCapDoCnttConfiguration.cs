@@ -15,6 +15,11 @@ public class HoSoDeXuatCapDoCnttConfiguration : AggregateRootConfiguration<HoSoD
         builder.Property(e => e.NoiDungBaoCao).HasMaxLength(2000);
         builder.Property(e => e.NoiDungDuThao).HasMaxLength(2000);
 
+        builder.Property(e => e.NgayTrinh)
+            .HasConversion(
+                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
+                fromDb => fromDb);
+
         builder.HasOne(e => e.CapDo)
             .WithMany(e => e.HoSoDeXuatCapDoCntts)
             .HasForeignKey(e => e.CapDoId)
