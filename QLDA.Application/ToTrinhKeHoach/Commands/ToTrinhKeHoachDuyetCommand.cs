@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -17,6 +18,7 @@ internal class ToTrinhKeHoachDuyetCommandHandler : IRequestHandler<ToTrinhKeHoac
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
 
     public ToTrinhKeHoachDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhKeHoach, Guid>>();
@@ -27,9 +29,10 @@ internal class ToTrinhKeHoachDuyetCommandHandler : IRequestHandler<ToTrinhKeHoac
     }
 
     public async Task<int> Handle(ToTrinhKeHoachDuyetCommand request, CancellationToken cancellationToken) {
-        // Permission check: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt phân khai kinh phí");
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
+        {
+            throw new ManagedException("Tài khoản không có quyền.");
         }
 
         // Get status IDs from DB by code

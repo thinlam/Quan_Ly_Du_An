@@ -14,6 +14,7 @@ public static class DeXuatChuTruongMoiMappings {
             DonViPhuTrachChinhId = dto.DonViPhuTrachChinhId,
             HinhThucDauTuId = dto.HinhThucDauTuId,
             LanhDaoPhuTrachId = dto.LanhDaoPhuTrachId,
+            NguoiXuLyChinhId = dto.NguoiXuLyChinhId,
             TongMucDauTu = dto.TongMucDauTu
         };
     }
@@ -24,8 +25,10 @@ public static class DeXuatChuTruongMoiMappings {
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NgayBatDauDuKien = entity.NgayBatDauDuKien,
+            TongMucDauTu = entity.TongMucDauTu,
             TomTatNoiDung = entity.TomTatNoiDung,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
+            NguoiXuLyChinhId = entity.NguoiXuLyChinhId,
             HinhThucDauTuId = entity.HinhThucDauTuId,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),

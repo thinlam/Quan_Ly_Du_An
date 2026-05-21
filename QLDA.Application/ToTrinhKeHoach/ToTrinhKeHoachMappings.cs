@@ -26,7 +26,8 @@ public static class ToTrinhKeHoachMappings {
     }
 
     public static ToTrinhKeHoachDto ToDto(this ToTrinhKeHoach entity, List<TepDinhKem>? files = null) {
-        return new ToTrinhKeHoachDto {
+        return new ToTrinhKeHoachDto
+        {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
