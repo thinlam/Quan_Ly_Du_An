@@ -1,6 +1,6 @@
+using System.Data;
+
 namespace QLDA.Application.KySos.Commands;
-
-
 
 public record NoiDungDaKyInsertCommand : IRequest {
     public required Guid TepDinhKemId { get; set; }
@@ -28,7 +28,9 @@ internal class NoiDungDaKyInsertCommandHandler : IRequestHandler<NoiDungDaKyInse
             GroupName    = request.GroupName,
         };
 
+        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repository.AddAsync(entity, cancellationToken);
-        // SaveChanges sẽ do caller (controller transaction) thực hiện
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
     }
 }

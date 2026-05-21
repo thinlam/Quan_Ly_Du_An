@@ -29,24 +29,24 @@ public class KySoController(IServiceProvider serviceProvider) : AggregateRootCon
         ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
         model.DanhSachTepDinhKem ??= [];
 
+        var entities = model.DanhSachTepDinhKem
+            .ToEntities(model.GroupId, GroupTypeConstants.KySo)
+            .ToList();
+
         // ── Bước 1: Insert tệp đã ký vào TepDinhKem ──────────────────────────
-        // DanhSachTepDinhKem chứa các tệp đã ký (ParentId != null)
-        // Sau lệnh này: TepDinhKem mới với Id vừa được sinh
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            KySo      = true,
-            GroupId   = model.GroupId.ToString(),
-            Entities  = [.. model.DanhSachTepDinhKem.ToEntities(model.GroupId, GroupTypeConstants.KySo)]
+            KySo     = true,
+            GroupId  = model.GroupId.ToString(),
+            Entities = entities,
         });
 
-        // ── Bước 2: Insert NoiDungDaKySo từ tệp đã ký mới ──────────────────────
-        // Lấy TepDinhKem mới vừa được insert ở Bước 1 (ParentId != null)
-        // Sau đó insert ID của tệp mới này vào NoiDungDaKySo
-        var tepDaKyMoi = model.DanhSachTepDinhKem.FirstOrDefault(e => e.ParentId != null);
-        if (tepDaKyMoi is not null) {
+        // ── Bước 2: Insert NoiDungDaKySo (dùng entities[].Id, không GetId() lần 2) ─
+        var tepDaKy = entities.FirstOrDefault(e => e.ParentId != null);
+        if (tepDaKy is not null) {
             await Mediator.Send(new NoiDungDaKyInsertCommand {
-                TepDinhKemId = tepDaKyMoi.GetId(),     // ← ID tệp đã ký mới từ Bước 1
-                FileName     = tepDaKyMoi.FileName,    // ← Tên tệp đã ký
-                FileOrginal  = tepDaKyMoi.OriginalName, // ← Tên tệp gốc
+                TepDinhKemId = tepDaKy.Id,
+                FileName     = tepDaKy.FileName,
+                FileOrginal  = tepDaKy.OriginalName,
                 GroupId      = model.GroupId.ToString(),
                 GroupName    = GroupTypeConstants.KySo,
             });
