@@ -53,5 +53,5 @@ public enum EGroupType {
     HoSoMoiThauDienTu,
     PhanKhaiKinhPhi,
     ToTrinhKeHoach,
-
+    DeXuatChuTruongMoi
 }

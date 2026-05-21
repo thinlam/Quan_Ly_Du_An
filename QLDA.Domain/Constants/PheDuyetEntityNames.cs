@@ -37,5 +37,11 @@ public static class PheDuyetEntityNames
 
     [Description("Tờ trình kế hoạch")]
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";
-    
+   
+    [Description("Đề xuất chủ trương mới")]
+    public const string DeXuatChuTruongMoi = "DeXuatChuTruongMoi";
+   
+    [Description("Đề xuất chủ trương chuyển tiếp")]
+    public const string DeXuatChuTruongChuyenTiep = "DeXuatChuTruongChuyenTiep";
+
 }
