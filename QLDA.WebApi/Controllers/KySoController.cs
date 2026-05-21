@@ -1,6 +1,5 @@
 using System.Net.Mime;
 using QLDA.Application.KySos.Commands;
-using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KySos;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -33,25 +32,11 @@ public class KySoController(IServiceProvider serviceProvider) : AggregateRootCon
             .ToEntities(model.GroupId, GroupTypeConstants.KySo)
             .ToList();
 
-        // ── Bước 1: Insert tệp đã ký vào TepDinhKem ──────────────────────────
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            KySo     = true,
+        var count = await Mediator.Send(new NoiDungDaKyCommand {
             GroupId  = model.GroupId.ToString(),
             Entities = entities,
         });
 
-        // ── Bước 2: Insert NoiDungDaKySo (dùng entities[].Id, không GetId() lần 2) ─
-        var tepDaKy = entities.FirstOrDefault(e => e.ParentId != null);
-        if (tepDaKy is not null) {
-            await Mediator.Send(new NoiDungDaKyInsertCommand {
-                TepDinhKemId = tepDaKy.Id,
-                FileName     = tepDaKy.FileName,
-                FileOrginal  = tepDaKy.OriginalName,
-                GroupId      = model.GroupId.ToString(),
-                GroupName    = GroupTypeConstants.KySo,
-            });
-        }
-
-        return ResultApi.Ok(1);
+        return ResultApi.Ok(count);
     }
 }

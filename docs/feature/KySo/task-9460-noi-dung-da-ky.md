@@ -1,103 +1,80 @@
-# Task #9460 – Bổ sung bảng `NoiDungDaKySo` (Nội dung đã ký)
+# Task #9460 – Nội dung đã ký (lịch sử ký số trên `TepDinhKem`)
+
+> Liên quan UC ký số: [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md) (CRUD bảng `KySo` + danh mục).  
+> Task này chỉ xử lý **`POST /api/ky-so/them-moi`** — lưu file đã ký + lịch sử khi ký lại.  
+> **Logic mẫu:** [tepdinhkem-logic-goi-thau (1).md](./tepdinhkem-logic-goi-thau%20(1).md)
+
+---
 
 ## 1. Phân tích yêu cầu
 
-### 1.1 Bối cảnh
+### 1.1 Việc cần làm
 
-API `POST /api/ky-so/them-moi` hiện làm **1 việc**: insert vào bảng `TepDinhKem` (đã hoàn thành).
+| # | Mục | Ghi chú |
+|---|-----|---------|
+| 1 | Lưu file đã ký vào `TepDinhKem` | Endpoint `POST /api/ky-so/them-moi` (đã có từ trước) |
+| 2 | Lưu **lịch sử** khi user **ký lại** (re-sign) | Không tạo bảng mới — dùng `GroupType` + `ParentId` + `IsDeleted` |
+| 3 | Tránh xóa nhầm file gốc cùng `GroupId` | Không dùng `TepDinhKemBulkInsertOrUpdateCommand` (sync toàn group) |
 
-Task này bổ sung **việc thứ 2**: sau khi insert `TepDinhKem`, tiếp tục insert vào bảng lịch sử `NoiDungDaKySo`.
+### 1.2 `GroupType` trên `TepDinhKem`
 
-### 1.2 Schema bảng `NoiDungDaKySo`
+| Giá trị | Ý nghĩa |
+|---------|---------|
+| `KySo` | Lần ký đầu (parent = file gốc `GoiThau`, `HopDong`, …) |
+| `NoiDungDaKySo` | Phiên bản sau khi ký lại (parent = bản `KySo` / `NoiDungDaKySo` đang active) |
 
-| Trường | Kiểu | Nguồn dữ liệu | Ghi chú |
-|--------|------|---------------|---------|
-| `Id` | `Guid` | Auto-generate | PK của bảng `NoiDungDaKySo` |
-| `TepDinhKemId` | `Guid` | `TepDinhKem.Id` | **Tệp đã ký mới vừa insert ở Bước 1** (ParentId ≠ null) |
-| `FileName` | `string?` | `TepDinhKem.FileName` | Tên file đã ký |
-| `FileOrginal` | `string?` | `TepDinhKem.OriginalName` | Tên file gốc trước khi upload |
-| `GroupId` | `string?` | `TepDinhKem.GroupId` | Guid (dạng string) của đối tượng chủ (HopDong, GoiThau, …) |
-| `GroupName` | `string?` | `TepDinhKem.GroupType` | Loại đối tượng chủ (e.g. `"KySo"`) |
-| `CreateUserId` | `string` | `Entity<Guid>.CreatedBy` | Auto-set bởi `AuditInterceptor` |
-| `CreateDate` | `DateTimeOffset` | Shadow property `CreatedAt` | Auto-set bởi `ConfigureForBase` |
+> `NoiDungDaKySo` là **hằng `GroupTypeConstants`**, không phải tên bảng DB.
 
-> **Cách lấy TepDinhKemId:**
-> 
-> 1. **Tệp gốc (id=1):** Đã tồn tại trong DB trước đó, **KHÔNG nằm trong request** này
-> 2. **Request này:** Chỉ chứa `DanhSachTepDinhKem` = các tệp **đã ký mới** (ParentId ≠ null)
-> 3. **Bước 1:** Insert tệp đã ký mới (ParentId=1 trỏ về tệp gốc) → sinh id=2
-> 4. **Bước 2:** Lấy tệp id=2 vừa insert → Insert vào NoiDungDaKySo
->
-> **Ví dụ:**
-> - Chị có tệp A gốc (id=1) đã tồn tại 
-> - Chị gọi API ký số, gửi lên tệp đã ký (ParentId=1)
-> - Bước 1: Insert → sinh id=2
-> - Bước 2: Insert NoiDungDaKySo { TepDinhKemId: 2 }
+### 1.3 Ký lần đầu vs ký lại
+
+| | Ký lần đầu | Ký lại |
+|---|------------|--------|
+| Parent `GroupType` | Không thuộc `(KySo, NoiDungDaKySo)` | `KySo` hoặc `NoiDungDaKySo` |
+| Bản mới `GroupType` | `KySo` | `NoiDungDaKySo` |
+| Bản mới `ParentId` | Id file gốc | Id bản cha (đã ký) |
+| Bản cha | — | `IsDeleted = true` |
 
 ---
 
 ## 2. Phân tích hiện trạng
 
-### 2.1 Luồng hiện tại của `KySoController.Create`
+### 2.1 `KySoController` trước khi sửa (V1 – đã bỏ)
 
 ```
 POST /api/ky-so/them-moi
-  └─ TepDinhKemBulkInsertOrUpdateCommand
-       └─ Insert/Update tất cả TepDinhKem trong DanhSachTepDinhKem
+  ├─ Bước 1: TepDinhKemBulkInsertOrUpdateCommand (KySo=true)
+  └─ Bước 2: NoiDungDaKyInsertCommand → bảng NoiDungDaKySo
 ```
 
-### 2.2 Luồng sau khi bổ sung
+**Vấn đề V1:**
+
+| # | Lỗi | Hậu quả |
+|---|-----|---------|
+| 1 | `BulkInsertOrUpdate` sync theo `GroupId` | File gốc cùng group có thể bị soft-delete |
+| 2 | `GetId()` gọi 2 lần (`ToEntities` vs Bước 2) | `TepDinhKemId` FK sai khi `id: null` |
+| 3 | `NoiDungDaKyInsertCommand` không `SaveChanges` | API `200`, bảng `NoiDungDaKySo` trống |
+
+### 2.2 Sau khi sửa (V2 – hiện tại)
 
 ```
 POST /api/ky-so/them-moi
-  ├─ Bước 1: TepDinhKemBulkInsertOrUpdateCommand          (đã có)
-  │    └─ Insert các tệp đã ký vào TepDinhKem (đúng)
-  └─ Bước 2: NoiDungDaKyInsertCommand                     (cần thêm)
-       └─ Lấy TepDinhKem đầu tiên (ParentId != null) vừa insert ở Bước 1 (mới sửa)
-          Insert 1 bản ghi NoiDungDaKySo với Id của tệp đó
+  └─ ToEntities → KySoThemMoiCommand
+       ├─ Ký lần 1: GroupType = KySo
+       └─ Ký lại: parent.IsDeleted=true, GroupType = NoiDungDaKySo
 ```
 
-### 2.3 Trạng thái triển khai (đã code, cần sửa)
-
-| Hạng mục | Trạng thái |
-|----------|------------|
-| Domain `NoiDungDaKySo` | ✅ Đã có |
-| Configuration + Migration `AddNoiDungDaKySo` | ✅ Đã có — cần **chạy migration** trên DB môi trường test/prod |
-| `NoiDungDaKyInsertCommand` | ⚠️ Đã có — **thiếu `SaveChangesAsync`** |
-| `KySoController.Create` Bước 2 | ⚠️ Đã có — **sai `TepDinhKemId`** khi request `id: null` |
-
-### 2.4 Review code — lỗi khiến bảng `NoiDungDaKySo` trống dù API `200 OK`
-
-API trả `{"result":true,"dataResult":1}` chỉ phản ánh **Bước 1** (`TepDinhKem` đã commit). Bảng lịch sử vẫn trống vì:
-
-| # | Lỗi | Mô tả |
-|---|-----|--------|
-| 1 | **Không persist Bước 2** | `NoiDungDaKyInsertCommandHandler` chỉ `AddAsync`, không `SaveChangesAsync`. Controller cũng không gọi save sau Bước 2. |
-| 2 | **`GetId()` gọi 2 lần** | Request `id: null` → `ToEntities()` gọi `GetId()` lần 1 (Id **A** insert DB). Bước 2 `tepDaKyMoi.GetId()` lần 2 → Id **B** ≠ A → FK sai khi đã save. |
-| 3 | **Sync soft-delete file gốc** (cần xác nhận) | Bước 1 dùng `SyncHelper` soft-delete: mọi `TepDinhKem` cùng `GroupId` **không có trong request** có thể bị `IsDeleted = true` (kể cả file gốc). Cờ `KySo` chỉ được xử lý ở `InsertOrUpdateCascadeAsync` — luồng hiện tại **không** dùng method đó. |
-
-**Cách verify trên DB:**
-
-```sql
--- Bước 1 – thường có dòng
-SELECT Id, ParentId, FileName, IsDeleted
-FROM TepDinhKem
-WHERE GroupId = '<groupId-trong-request>';
-
--- Bước 2 – hiện thường trống nếu chưa sửa
-SELECT * FROM NoiDungDaKySo
-WHERE GroupId = '<groupId-trong-request>';
-```
+Tham khảo [task-9460-ky-so-crud.md §2.1](./task-9460-ky-so-crud.md): `KySoController` còn các endpoint CRUD bảng `KySo`; endpoint `them-moi` là upload file, **không** ghi bảng `KySo`.
 
 ---
 
 ## 3. Thứ tự thực hiện
 
 ```
-[Đã xong] Bước 1–3: Domain, Configuration, Migration AddNoiDungDaKySo
-[Sửa]     Bước 4:   NoiDungDaKyInsertCommand — thêm SaveChangesAsync
-[Sửa]     Bước 5:   KySoController.Create — dùng entity.Id sau ToEntities (không GetId() lần 2)
-[Tùy chọn] Bước 6: TepDinhKemBulkInsertOrUpdateCommand — khi KySo=true không soft-delete file gốc
+Bước 1: Domain - GroupTypeConstants.NoiDungDaKySo
+Bước 2: Application - KySoThemMoiCommand + Handler
+Bước 3: WebApi - KySoController.Create → KySoThemMoiCommand
+Bước 4: Xóa V1 - Entity/Config/Command NoiDungDaKySo (bảng riêng)
+Bước 5: Migration - DropNoiDungDaKySoTable (sau khi đã add AddNoiDungDaKySo)
 ```
 
 ---
@@ -106,241 +83,283 @@ WHERE GroupId = '<groupId-trong-request>';
 
 ---
 
-### Bước 1 – Domain: Entity `NoiDungDaKySo`
+### Bước 1 – Domain: `GroupTypeConstants`
 
-**File mới:** `QLDA.Domain/Entities/NoiDungDaKySo.cs`
+**File sửa:** `QLDA.Domain/Constants/GroupTypeConstants.cs`
 
 ```csharp
-namespace QLDA.Domain.Entities;
-
 /// <summary>
-/// Lịch sử nội dung đã ký số
+/// Lịch sử phiên bản ký số trên bảng TepDinhKem (ký lại sau lần đầu).
 /// </summary>
-public class NoiDungDaKySo : Entity<Guid>, IAggregateRoot {
-    /// <summary>
-    /// FK → TepDinhKem – tệp đã ký (ParentId != null) vừa được insert ở Bước 1
-    /// </summary>
-    public Guid TepDinhKemId { get; set; } 
-
-    /// <summary>
-    /// Tên tệp đã lưu (từ TepDinhKem.FileName)
-    /// </summary>
-    public string? FileName { get; set; }
-
-    /// <summary>
-    /// Tên tệp gốc (từ TepDinhKem.OriginalName)
-    /// </summary>
-    public string? FileOrginal { get; set; }
-
-    /// <summary>
-    /// Id đối tượng chủ (từ TepDinhKem.GroupId)
-    /// </summary>
-    public string? GroupId { get; set; }
-
-    /// <summary>
-    /// Tên loại đối tượng chủ (từ TepDinhKem.GroupType)
-    /// </summary>
-    public string? GroupName { get; set; }
-
-    // CreateUserId → CreatedBy (kế thừa từ Entity<Guid>, auto-set bởi AuditInterceptor)
-    // CreateDate   → CreatedAt shadow property (auto-set bởi ConfigureForBase)
-
-    #region Navigation Properties
-    public TepDinhKem? TepDinhKem { get; set; }
-    #endregion
-}
+public const string NoiDungDaKySo = "NoiDungDaKySo";
 ```
 
 ---
 
-### Bước 2 – Persistence: Configuration `NoiDungDaKySo`
+### Bước 2 – Application: `KySoThemMoiCommand`
 
-**File mới:** `QLDA.Persistence/Configurations/NoiDungDaKySoConfiguration.cs`
+**File mới:** `QLDA.Application/KySos/Commands/KySoThemMoiCommand.cs`
 
 ```csharp
+using System.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QLDA.Domain.Entities;
+using QLDA.Domain.Constants;
 
-namespace QLDA.Persistence.Configurations;
-
-public class NoiDungDaKySoConfiguration : AggregateRootConfiguration<NoiDungDaKySo> {
-    public override void Configure(EntityTypeBuilder<NoiDungDaKySo> builder) {
-        builder.ToTable("NoiDungDaKySo");
-        builder.ConfigureForBase();
-
-        builder.Property(e => e.FileName).HasMaxLength(500);
-        builder.Property(e => e.FileOrginal).HasMaxLength(500);
-        builder.Property(e => e.GroupId).HasMaxLength(100);
-        builder.Property(e => e.GroupName).HasMaxLength(200);
-
-        builder.HasOne(e => e.TepDinhKem)
-            .WithMany()
-            .HasForeignKey(e => e.TepDinhKemId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-```
-
----
-
-### Bước 3 – Migration
-
-> Chạy lệnh trong thư mục `e:\SER\QLDA.Migrator`
-
-```bash
-ef.bat QLDA add AddNoiDungDaKySo
-```
-
-Kiểm tra migration được tạo ra có đúng bảng `NoiDungDaKySo` với đủ cột không.
-
----
-
-### Bước 4 – Application: `NoiDungDaKyInsertCommand`
-
-**File mới:** `QLDA.Application/KySos/Commands/NoiDungDaKyInsertCommand.cs`
-
-```csharp
 namespace QLDA.Application.KySos.Commands;
 
-public record NoiDungDaKyInsertCommand : IRequest {
-    public required Guid TepDinhKemId { get; set; }
-    public string? FileName { get; set; }
-    public string? FileOrginal { get; set; }
-    public string? GroupId { get; set; }
-    public string? GroupName { get; set; }
+public record KySoThemMoiCommand : IRequest<int> {
+    public required string GroupId { get; set; }
+    public required List<TepDinhKem> Entities { get; set; }
 }
 
-internal class NoiDungDaKyInsertCommandHandler : IRequestHandler<NoiDungDaKyInsertCommand> {
-    private readonly IRepository<NoiDungDaKySo, Guid> _repository;
+internal class KySoThemMoiCommandHandler : IRequestHandler<KySoThemMoiCommand, int> {
+    private readonly IRepository<TepDinhKem, Guid> _repository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public NoiDungDaKyInsertCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<NoiDungDaKySo, Guid>>();
+    public KySoThemMoiCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task Handle(NoiDungDaKyInsertCommand request, CancellationToken cancellationToken = default) {
-        var entity = new NoiDungDaKySo {
-            TepDinhKemId = request.TepDinhKemId,
-            FileName     = request.FileName,
-            FileOrginal  = request.FileOrginal,
-            GroupId      = request.GroupId,
-            GroupName    = request.GroupName,
-        };
+    public async Task<int> Handle(KySoThemMoiCommand request, CancellationToken cancellationToken = default) {
+        var toInsert = new List<TepDinhKem>();
+
+        foreach (var entity in request.Entities.Where(e => e.ParentId != null)) {
+            entity.GroupId = request.GroupId;
+
+            var parent = await _repository.GetQueryableSet()
+                .FirstOrDefaultAsync(e => e.Id == entity.ParentId, cancellationToken);
+            ManagedException.ThrowIfNull(parent, "Không tìm thấy tệp cha (ParentId)");
+
+            if (IsSignedVersion(parent.GroupType)) {
+                parent.IsDeleted = true;
+                entity.GroupType = GroupTypeConstants.NoiDungDaKySo;
+                entity.ParentId = parent.Id;
+            } else {
+                entity.GroupType = GroupTypeConstants.KySo;
+            }
+
+            toInsert.Add(entity);
+        }
+
+        if (toInsert.Count == 0)
+            return 0;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        await _repository.AddAsync(entity, cancellationToken);
+        await _repository.AddRangeAsync(toInsert, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+        return toInsert.Count;
     }
+
+    private static bool IsSignedVersion(string? groupType) =>
+        groupType is GroupTypeConstants.KySo or GroupTypeConstants.NoiDungDaKySo;
 }
 ```
 
-> **Lưu ý:** Pattern giống `KySoInsertCommand` — handler tự transaction + `SaveChangesAsync`. **Không** để comment “caller save” vì `KySoController` không gọi `SaveChanges` sau Mediator.
 
-> **Using cần thêm:** `using System.Data;`
 
 ---
 
-### Bước 5 – WebApi: Cập nhật `KySoController.Create`
+### Bước 3 – WebApi: `KySoController.Create`
 
 **File sửa:** `QLDA.WebApi/Controllers/KySoController.cs`
 
+**Trước (V1):**
+
 ```csharp
-[HttpPost("them-moi")]
-[Consumes(MediaTypeNames.Application.Json)]
-public async Task<ResultApi> Create([FromBody] KySoModel model) {
-    ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
-    model.DanhSachTepDinhKem ??= [];
-
-    // Materialize 1 lần — Id sinh từ GetId() chỉ gọi 1 lần / item (khi request id: null)
-    var entities = model.DanhSachTepDinhKem
-        .ToEntities(model.GroupId, GroupTypeConstants.KySo)
-        .ToList();
-
-    // ── Bước 1: Insert tệp đã ký vào TepDinhKem ──────────────────────────
-    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-        KySo    = true,
-        GroupId = model.GroupId.ToString(),
-        Entities = entities,
-    });
-
-    // ── Bước 2: Insert NoiDungDaKySo từ entity vừa insert (ParentId != null) ─
-    // Dùng entities[].Id — KHÔNG gọi model.GetId() lần 2
-    var tepDaKy = entities.FirstOrDefault(e => e.ParentId != null);
-    if (tepDaKy is not null) {
-        await Mediator.Send(new NoiDungDaKyInsertCommand {
-            TepDinhKemId = tepDaKy.Id,
-            FileName     = tepDaKy.FileName,
-            FileOrginal  = tepDaKy.OriginalName,
-            GroupId      = model.GroupId.ToString(),
-            GroupName    = GroupTypeConstants.KySo,
-        });
-    }
-
-    return ResultApi.Ok(1);
-}
+// Bước 1
+await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand { KySo = true, ... });
+// Bước 2
+await Mediator.Send(new NoiDungDaKyInsertCommand { TepDinhKemId = tepDaKyMoi.GetId(), ... }); // ❌ GetId() lần 2
+return ResultApi.Ok(1);
 ```
 
-> **Quan trọng — `TepDinhKemId`:**
-> - ❌ `tepDaKyMoi.GetId()` trên `TepDinhKemModel` khi `Id == null` → Guid **khác** Id đã insert ở Bước 1.
-> - ✅ `tepDaKy.Id` từ list `entities` đã truyền vào `TepDinhKemBulkInsertOrUpdateCommand`.
+**Sau (V2):**
 
-> **Lưu ý về transaction:** `TepDinhKemBulkInsertOrUpdateCommand` và `NoiDungDaKyInsertCommand` mỗi cái tự commit transaction. Hai bước **độc lập** (Bước 1 xong rồi mới Bước 2). Nếu cần atomic, mở `IUnitOfWork` transaction ở controller trước cả hai lệnh Mediator.
+```csharp
+var entities = model.DanhSachTepDinhKem
+    .ToEntities(model.GroupId, GroupTypeConstants.KySo)
+    .ToList();
 
-> **Request mẫu (Postman):** `parentId` bắt buộc có để Bước 2 chạy; `id: null` là hợp lệ nếu dùng `entities[].Id` như trên.
+var count = await Mediator.Send(new KySoThemMoiCommand {
+    GroupId  = model.GroupId.ToString(),
+    Entities = entities,
+});
+
+return ResultApi.Ok(count);
+```
+
+> Materialize `ToEntities().ToList()` **một lần** — `Id` ổn định khi request `id: null`.
 
 ---
 
-### Bước 6 (tùy chọn) – `TepDinhKemBulkInsertOrUpdateCommand` khi `KySo = true`
+### Bước 4 – Gỡ code V1 (bảng `NoiDungDaKySo`)
 
-**Vấn đề:** `InsertOrUpdateAsync` sync theo `GroupId` — request ký số chỉ gửi file child → file gốc cùng group có thể bị soft-delete.
+| File | Hành động |
+|------|-----------|
+| `QLDA.Domain/Entities/NoiDungDaKySo.cs` | **Xóa** |
+| `QLDA.Persistence/Configurations/NoiDungDaKySoConfiguration.cs` | **Xóa** |
+| `QLDA.Application/KySos/Commands/NoiDungDaKyInsertCommand.cs` | **Xóa** |
 
-**Hướng xử lý (chọn một):**
-
-1. Khi `request.KySo == true`, trong `InsertOrUpdateAsync` **không** soft-delete các bản ghi có `ParentId == null` (file gốc); chỉ add/update file trong request.
-2. Hoặc chuyển luồng ký số sang `InsertOrUpdateCascadeAsync` (đã có `!request.KySo` khi xóa) — cần review kỹ trước khi đổi.
-
-**Phụ:** Dòng 32–33 trong handler đang gọi `InsertOrUpdateAsync` **hai lần** liên tiếp — nên xóa bớt một lần khi sửa file này.
+Migration `AddNoiDungDaKySo` (**immutable** — không sửa file cũ).
 
 ---
 
-## 5. Mapping dữ liệu tóm tắt
+### Bước 5 – Migration drop bảng V1
+
+```bash
+# Thư mục QLDA.Migrator
+ef.bat QLDA add DropNoiDungDaKySoTable
+ef.bat QLDA update
+```
+
+Chỉ `DropTable("NoiDungDaKySo")`; snapshot bỏ entity `NoiDungDaKySo`.
+
+---
+
+## 5. Query & ví dụ dữ liệu
+
+```sql
+-- Bản ký đang dùng
+SELECT * FROM TepDinhKem
+WHERE GroupId = @GroupId
+  AND GroupType IN ('KySo', 'NoiDungDaKySo')
+  AND IsDeleted = 0;
+
+-- Lịch sử (đã thay thế)
+SELECT * FROM TepDinhKem
+WHERE GroupId = @GroupId
+  AND GroupType IN ('KySo', 'NoiDungDaKySo')
+  AND IsDeleted = 1
+  AND ParentId IS NOT NULL;
+```
 
 ```
-【BƯỚC 1】Insert tệp đã ký (ParentId != null) vào TepDinhKem
-  → sinh Id mới (e.g. Id = 2)
-
-【BƯỚC 2】Lấy entity vừa map ở Bước 1 (cùng list `entities`), mapping vào NoiDungDaKySo:
-
-entities.FirstOrDefault(e => e.ParentId != null)  ← tệp ĐÃ KÝ MỚI (domain entity)
-  │
-  ├─ .Id             → NoiDungDaKySo.TepDinhKemId      (cùng Id đã insert Bước 1)
-  ├─ .FileName       → NoiDungDaKySo.FileName
-  ├─ .OriginalName   → NoiDungDaKySo.FileOrginal
-  ├─ model.GroupId   → NoiDungDaKySo.GroupId
-  └─ GroupTypeConstants.KySo → NoiDungDaKySo.GroupName
-
-  Handler: AddAsync + SaveChangesAsync + CommitTransaction
-
-  CreatedBy (auto AuditInterceptor)  → CreateUserId
-  CreatedAt (auto ConfigureForBase)  → CreateDate
-
-【EXAMPLE】
-  - Tệp A gốc (id=1) đã tồn tại trong DB
-  - Gọi API ký số, gửi tệp đã ký (ParentId=1, id=null trong JSON)
-    - ToEntities → sinh Id=2 (một lần)
-    - Bước 1: Insert TepDinhKem id=2
-    - Bước 2: Insert NoiDungDaKySo { TepDinhKemId: 2 } + SaveChanges
+File gốc (GoiThau)     id=1
+  → ký lần 1           id=2, GroupType=KySo,           ParentId=1
+  → ký lại             id=3, GroupType=NoiDungDaKySo, ParentId=2, id=2 IsDeleted=1
 ```
 
 ---
 
-## 6. Checklist sau khi sửa code
+## 6. Checklist hoàn thành
 
-- [ ] Gọi lại `POST /api/ky-so/them-moi` — `SELECT * FROM NoiDungDaKySo` có 1 dòng mới
-- [ ] `TepDinhKemId` trong `NoiDungDaKySo` = `Id` của dòng `TepDinhKem` vừa insert (cùng `ParentId IS NOT NULL`)
-- [ ] Migration `AddNoiDungDaKySo` đã apply trên DB server test
-- [ ] (Tùy chọn) File gốc cùng `GroupId` vẫn `IsDeleted = 0` sau ký số
-- [ ] UI/API danh sách “nội dung đã ký”: hiện **chưa có** query endpoint — cần task riêng nếu màn hình cần load bảng
+```
+[x] 1. Thêm GroupTypeConstants.NoiDungDaKySo
+[x] 2. Tạo KySoThemMoiCommand + Handler
+[x] 3. KySoController.Create → KySoThemMoiCommand (bỏ BulkInsert + NoiDungDaKyInsert)
+[x] 4. Xóa NoiDungDaKySo entity + Configuration + NoiDungDaKyInsertCommand
+[x] 5. Migration DropNoiDungDaKySoTable + ef update trên DB test
+[x] 6. Verify Postman: ký lần 1 + ký lại + file gốc không bị soft-delete
+[x] 7. API list “nội dung đã ký” (task riêng — chưa có endpoint)
+```
+
+---
+
+## 7. Lưu ý kỹ thuật
+
+- Request `DanhSachTepDinhKem`: chỉ file **đã ký** (`parentId` bắt buộc); `id: null` OK nếu dùng `entities[].Id` sau `ToEntities`.
+- `KySoThemMoiCommand` cập nhật `parent.IsDeleted` trong cùng transaction với `AddRange` — cần `SaveChanges` một lần (đã có).
+- Không đụng `TepDinhKemBulkInsertOrUpdateCommand` — các controller khác (`GoiThau`, `HopDong`, …) vẫn dùng bulk như cũ.
+- Phân biệt với [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md): bảng **`KySo`** = chứng thư / cấu hình ký số; **`TepDinhKem`** = file đính kèm đã ký trên đối tượng nghiệp vụ.
+
+---
+
+## 7.1 Những sửa chữa trong quá trình triển khai (21/05/2026)
+
+### Thiết kế (V1 → V2)
+
+| V1 (bỏ) | V2 (áp dụng) |
+|---------|----------------|
+| Bảng `NoiDungDaKySo` + `NoiDungDaKyInsertCommand` | Chỉ `TepDinhKem`, `GroupType` phân nhánh |
+| 2 bước Mediator trong controller | 1 command `KySoThemMoiCommand` |
+| `TepDinhKemBulkInsertOrUpdateCommand` + `KySo=true` | Command riêng, không sync soft-delete cả `GroupId` |
+
+### Application Layer
+
+| Lỗi / vấn đề V1 | Sửa V2 |
+|-----------------|--------|
+| `NoiDungDaKyInsertCommand` chỉ `AddAsync`, không `SaveChanges` | Bỏ command; logic gộp `KySoThemMoiCommand` có `SaveChangesAsync` |
+| — | Handler set `GroupType` theo `parent.GroupType` (`IsSignedVersion`) |
+| — | Ký lại: `parent.IsDeleted = true`, `entity.ParentId = parent.Id` |
+
+### WebApi Layer
+
+| Lỗi / vấn đề V1 | Sửa V2 |
+|-----------------|--------|
+| `tepDaKyMoi.GetId()` lần 2 khi `id: null` | Chỉ dùng `entities` từ `ToEntities().ToList()` |
+| `TepDinhKemBulkInsertOrUpdateCommand` xóa nhầm file gốc | Đổi sang `KySoThemMoiCommand` |
+| `return ResultApi.Ok(1)` cố định | `return ResultApi.Ok(count)` — số bản ghi insert |
+
+### Domain / Persistence
+
+| Thay đổi | Ghi chú |
+|----------|---------|
+| ➕ `GroupTypeConstants.NoiDungDaKySo` | Constant cho lịch sử trên `TepDinhKem` |
+| ➖ `NoiDungDaKySo` entity + `NoiDungDaKySoConfiguration` | Rollback thiết kế bảng riêng |
+| Migration `AddNoiDungDaKySo` | Giữ nguyên (immutable); chờ `DropNoiDungDaKySoTable` |
+
+---
+
+## 8. TÓM TẮT CÔNG VIỆC – HOÀN THÀNH CODE (21/05/2026)
+
+### Tổng quan
+
+**Task #9460 (phần nội dung đã ký)** — refactor V1 → V2:
+
+- ✅ **1 file mới** (`KySoThemMoiCommand.cs`)
+- ✅ **2 file sửa** (`GroupTypeConstants.cs`, `KySoController.cs`)
+- ✅ **3 file xóa** (entity, config, insert command V1)
+- ⏭️ **1 migration** còn lại: `DropNoiDungDaKySoTable`
+
+---
+
+### Các file **mới tạo** (1 file)
+
+| File | Mô tả |
+|------|-------|
+| `QLDA.Application/KySos/Commands/KySoThemMoiCommand.cs` | Insert file ký + xử lý ký lại; trả `int` số bản ghi |
+
+---
+
+### Các file **chỉnh sửa** (2 files)
+
+| # | File | Thay đổi |
+|---|------|----------|
+| 1 | `QLDA.Domain/Constants/GroupTypeConstants.cs` | ➕ `NoiDungDaKySo` |
+| 2 | `QLDA.WebApi/Controllers/KySoController.cs` | ➖ `TepDinhKemBulkInsertOrUpdateCommand` + `NoiDungDaKyInsertCommand` → ➕ `KySoThemMoiCommand`; response `count` |
+
+---
+
+### Các file **đã xóa** (3 files – V1)
+
+| File | Lý do |
+|------|-------|
+| `QLDA.Domain/Entities/NoiDungDaKySo.cs` | Không dùng bảng riêng |
+| `QLDA.Persistence/Configurations/NoiDungDaKySoConfiguration.cs` | Không dùng bảng riêng |
+| `QLDA.Application/KySos/Commands/NoiDungDaKyInsertCommand.cs` | Thay bằng `KySoThemMoiCommand` |
+
+---
+
+### API Endpoint (không đổi route)
+
+| Method | Route | Thay đổi hành vi |
+|--------|-------|------------------|
+| `POST` | `/api/ky-so/them-moi` | V2: lịch sử trên `TepDinhKem`; `dataResult` = số file insert |
+
+---
+
+### Trạng thái
+
+- ✅ **Code V2** xong — build được sau khi apply migration drop (nếu snapshot còn entity cũ thì cần migration trước)
+- ⏭️ **`ef.bat QLDA add DropNoiDungDaKySoTable`** + `update` trên DB test
+- ⏭️ **API list** nội dung đã ký — task khác
+
+---
+
+## 9. Pending (task khác)
+
+- [ ] API/query list “nội dung đã ký” filter `GroupType IN ('KySo','NoiDungDaKySo')`
+- [ ] **DateTime → DateTimeOffset** (DB) và **DateOnly** (request) — theo task schema chung
