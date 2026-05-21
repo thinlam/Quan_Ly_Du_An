@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using QLDA.Application.KySos.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KySos;
@@ -26,14 +27,31 @@ public class KySoController(IServiceProvider serviceProvider) : AggregateRootCon
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create([FromBody] KySoModel model) {
         ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
-        ManagedException.ThrowIfNull(model.DanhSachTepDinhKem.Any(e => e.ParentId == null));
         model.DanhSachTepDinhKem ??= [];
-        
+
+        // ── Bước 1: Insert tệp đã ký vào TepDinhKem ──────────────────────────
+        // DanhSachTepDinhKem chứa các tệp đã ký (ParentId != null)
+        // Sau lệnh này: TepDinhKem mới với Id vừa được sinh
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            KySo = true,
-            GroupId = model.GroupId.ToString(),
-            Entities = [.. model.DanhSachTepDinhKem.ToEntities(model.GroupId, GroupTypeConstants.KySo)]
+            KySo      = true,
+            GroupId   = model.GroupId.ToString(),
+            Entities  = [.. model.DanhSachTepDinhKem.ToEntities(model.GroupId, GroupTypeConstants.KySo)]
         });
+
+        // ── Bước 2: Insert NoiDungDaKySo từ tệp đã ký mới ──────────────────────
+        // Lấy TepDinhKem mới vừa được insert ở Bước 1 (ParentId != null)
+        // Sau đó insert ID của tệp mới này vào NoiDungDaKySo
+        var tepDaKyMoi = model.DanhSachTepDinhKem.FirstOrDefault(e => e.ParentId != null);
+        if (tepDaKyMoi is not null) {
+            await Mediator.Send(new NoiDungDaKyInsertCommand {
+                TepDinhKemId = tepDaKyMoi.GetId(),     // ← ID tệp đã ký mới từ Bước 1
+                FileName     = tepDaKyMoi.FileName,    // ← Tên tệp đã ký
+                FileOrginal  = tepDaKyMoi.OriginalName, // ← Tên tệp gốc
+                GroupId      = model.GroupId.ToString(),
+                GroupName    = GroupTypeConstants.KySo,
+            });
+        }
+
         return ResultApi.Ok(1);
     }
 }
