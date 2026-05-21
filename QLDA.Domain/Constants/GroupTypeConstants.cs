@@ -19,6 +19,12 @@ public static class GroupTypeConstants
     /// </summary>
     public const string NoiDungDaKySo = "NoiDungDaKySo";
 
+    /// Lịch sử phiên bản ký số trên bảng TepDinhKem (ký lại sau lần đầu).
+    /// </summary>
+    public const string NoiDungDaKySo = "NoiDungDaKySo";
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    public const string ChuTruongMoi = "DeXuatChuTruongMoi";
+    public const string ChuTruongChuyenTiep = "DeXuatChuyenTiep";
+    public const string NhuCauKinhPhi = "DeXuatNhuCauKinhPhi";
 }

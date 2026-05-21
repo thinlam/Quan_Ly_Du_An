@@ -13,6 +13,17 @@ public class KySoConfiguration : AggregateRootConfiguration<KySo> {
         builder.Property(e => e.SerialChungThu).HasMaxLength(200);
         builder.Property(e => e.ToChucCap).HasMaxLength(500);
         builder.Property(e => e.PhamVi).HasConversion<int>();
+
+        builder.Property(e => e.HieuLucTu)
+            .HasConversion(
+                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
+                fromDb => fromDb);
+
+        builder.Property(e => e.HieuLucDen)
+            .HasConversion(
+                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
+                fromDb => fromDb);
+
         builder.HasOne(e => e.PhuongThucKySo)
             .WithMany(e => e.KySos)
             .HasForeignKey(e => e.PhuongThucKySoId)

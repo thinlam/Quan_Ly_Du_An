@@ -19,6 +19,7 @@ public class DeXuatChuTruongMoi : Entity<Guid>, IAggregateRoot
     public int? HinhThucDauTuId { get; set; }
 
     public long? LanhDaoPhuTrachId { get; set; }
+    public long? NguoiXuLyChinhId { get; set; }
 
     public long? DonViPhuTrachChinhId { get; set; }
     public int? TrangThaiId { get; set; }

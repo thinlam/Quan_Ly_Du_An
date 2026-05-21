@@ -17,6 +17,8 @@ internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiTh
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
+
 
     public HoSoMoiThauDienTuTraLaiCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
@@ -27,8 +29,10 @@ internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiTh
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuTraLaiCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại hồ sơ mời thầu điện tử");
+         var phongBanId = _userProvider.Info.PhongBanID;
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHID)
+        {
+            throw new ManagedException("Tài khoản không có quyền.");
         }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {

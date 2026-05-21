@@ -16,17 +16,17 @@ public static class ToTrinhKeHoachMappings {
     }
 
     public static ToTrinhKeHoach ToEntity(this ToTrinhKeHoachUpdateDto dto) {
-     
         return new ToTrinhKeHoach {
             Id = dto.Id,
-            NgayToTrinh = dto.NgayToTrinh,
+            NgayToTrinh = dto.NgayToTrinh.ToStartOfDayUtc(),
             TrichYeu = dto.TrichYeu,
             So = dto.So
         };
     }
 
     public static ToTrinhKeHoachDto ToDto(this ToTrinhKeHoach entity, List<TepDinhKem>? files = null) {
-        return new ToTrinhKeHoachDto {
+        return new ToTrinhKeHoachDto
+        {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,

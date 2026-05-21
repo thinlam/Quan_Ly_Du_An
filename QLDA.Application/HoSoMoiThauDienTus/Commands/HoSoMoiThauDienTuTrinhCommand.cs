@@ -27,10 +27,7 @@ internal class HoSoMoiThauDienTuTrinhCommandHandler : IRequestHandler<HoSoMoiTha
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuTrinhCommand request, CancellationToken cancellationToken) {
-        var phongBanId = _userProvider.Info.PhongBanID;
-        if (phongBanId != 219) {
-            throw new ManagedException("Chỉ phòng KH-TC có quyền trình hồ sơ mời thầu điện tử");
-        }
+        
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DuThao && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);

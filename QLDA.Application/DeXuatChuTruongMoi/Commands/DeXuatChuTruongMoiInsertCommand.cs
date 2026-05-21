@@ -35,6 +35,7 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
             TomTatNoiDung = request.Dto.TomTatNoiDung,
             NgayBatDauDuKien = request.Dto.NgayBatDauDuKien,
             HinhThucDauTuId = request.Dto.HinhThucDauTuId,
+            NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId,
             LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId,
             TrangThaiId = trangThaiDuThao?.Id,

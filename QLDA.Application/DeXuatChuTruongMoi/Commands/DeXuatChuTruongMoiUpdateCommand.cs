@@ -23,7 +23,7 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
     public async Task<DeXuatChuTruongMoi> Handle(DeXuatChuTruongMoiUpdateCommand request, CancellationToken cancellationToken = default)
     {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatChuTruongMoi.DuThao && s.Loai == PheDuyetEntityNames.DeXuatChuTruongMoi, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatChuTruongMoi, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
@@ -36,10 +36,12 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
         }
 
         entity.TongMucDauTu = request.Dto.TongMucDauTu;
-        entity.HinhThucDauTuId = request.Dto.HinhThucDauTuId;
         entity.TomTatNoiDung = request.Dto.TomTatNoiDung;
+        entity.HinhThucDauTuId = request.Dto.HinhThucDauTuId;
+        entity.NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId;
+        entity.NgayBatDauDuKien = request.Dto.NgayBatDauDuKien;
         entity.DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId;
-        entity.DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId;
+
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
 

@@ -30,9 +30,9 @@ public class KySo : Entity<Guid>, IAggregateRoot {
 
     public string? ToChucCap { get; set; }
 
-    public DateTime? HieuLucTu { get; set; }
+    public DateTimeOffset? HieuLucTu { get; set; }
 
-    public DateTime? HieuLucDen { get; set; }
+    public DateTimeOffset? HieuLucDen { get; set; }
 
     /// <summary>
     /// FK → DanhMucPhuongThucKySo

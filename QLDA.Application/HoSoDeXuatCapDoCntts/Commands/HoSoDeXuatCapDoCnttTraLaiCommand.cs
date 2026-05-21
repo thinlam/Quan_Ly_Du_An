@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -17,6 +18,7 @@ internal class HoSoDeXuatCapDoCnttTraLaiCommandHandler : IRequestHandler<HoSoDeX
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
 
     public HoSoDeXuatCapDoCnttTraLaiCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
@@ -27,9 +29,12 @@ internal class HoSoDeXuatCapDoCnttTraLaiCommandHandler : IRequestHandler<HoSoDeX
     }
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttTraLaiCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại hồ sơ đề xuất cấp độ CNTT");
+        var phongBanId = _userProvider.Info.PhongBanID;
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHID)
+        {
+            throw new ManagedException("Tài khoản không có quyền.");
         }
+        
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");

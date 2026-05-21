@@ -1,3 +1,4 @@
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
@@ -27,10 +28,7 @@ internal class HoSoDeXuatCapDoCnttTrinhCommandHandler : IRequestHandler<HoSoDeXu
     }
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttTrinhCommand request, CancellationToken cancellationToken) {
-        var phongBanId = _userProvider.Info.PhongBanID;
-        if (phongBanId != 219) {
-            throw new ManagedException("Chỉ phòng KH-TC có quyền trình hồ sơ đề xuất cấp độ CNTT");
-        }
+       
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DuThao && s.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt, cancellationToken);
@@ -51,7 +49,7 @@ internal class HoSoDeXuatCapDoCnttTrinhCommandHandler : IRequestHandler<HoSoDeXu
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;
-        entity.NgayTrinh = DateTime.UtcNow;
+        entity.NgayTrinh = DateOnly.FromDateTime(DateTime.UtcNow).ToStartOfDayUtc();
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),

@@ -33,9 +33,8 @@ internal class HoSoDeXuatCapDoCnttTuChoiCommandHandler : IRequestHandler<HoSoDeX
         // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
         var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) ?? false;
-        var isQuanTri = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_QuanTri) ?? false;
-        if (!isLanhDao && !isHcth && !isQuanTri) {
-            throw new ManagedException("Chỉ quản lý có quyền từ chối hồ sơ đề xuất cấp độ CNTT");
+        if (!isLanhDao && !isHcth) {
+            throw new ManagedException("Tài khoản không có quyền");
         }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
