@@ -14,7 +14,7 @@
 | 1 | **1 API GET** danh sách file đã ký | Phân trang |
 | 2 | Nguồn: **`TepDinhKem`** | Chỉ bản **đã ký** |
 | 3 | Điều kiện cố định | `ParentId IS NOT NULL` |
-| 4 | Filter 4 tham số + join `UserMaster` | Giống spec UC |
+| 4 | Filter 3 tham số (FE) + join `UserMaster` | `GroupType` cố định BE |
 
 ### 1.2 Định nghĩa “file đã ký”
 
@@ -30,14 +30,15 @@ File gốc (GoiThau, …)     ParentId = null     → KHÔNG có trong list API 
   └─ ký lại (NoiDungDaKySo) ParentId = id bản ký trước → CÓ trong list
 ```
 
-### 1.3 Đầu vào (4 tham số)
+### 1.3 Đầu vào (3 tham số — FE)
 
 | Tham số (spec) | Query param | Kiểu | Map `TepDinhKem` |
 |----------------|-------------|------|------------------|
 | Người ký | `createUserId` | `long?` | `CreatedBy == createUserId.ToString()` |
 | Từ ngày | `tuNgay` | `DateOnly?` | `CreatedAt >= tuNgay.ToStartOfDayUtc()` |
 | Đến ngày | `denNgay` | `DateOnly?` | `CreatedAt <= denNgay.ToEndOfDayUtc()` |
-| Loại | `groupType` | `string?` | `GroupType == groupType` (nếu null → không lọc thêm, vẫn giữ `IN (KySo, NoiDungDaKySo)`) |
+
+**`GroupType`:** BE cố định `IN ('KySo', 'NoiDungDaKySo')` — **FE không truyền**.
 
 **Điều kiện ngày (spec):** `tuNgay <= CreateDate <= denNgay` → cột audit **`CreatedAt`**.
 
@@ -84,7 +85,7 @@ GET /api/ky-so/noi-dung-da-ky/danh-sach
 ## 3. Thứ tự thực hiện
 
 ```
-Bước 1: Application – NoiDungDaKySearchDto + NoiDungDaKyDto (tên giữ theo UC, nguồn TepDinhKem)
+Bước 1: Application – NoiDungDaKySearchDto + `TepDinhKemDto` (response)
 Bước 2: Application – NoiDungDaKyGetDanhSachQuery (filter ParentId + GroupType)
 Bước 3: WebApi – KySoController GET
 Bước 4: Build + Postman
@@ -103,26 +104,10 @@ Bước 4: Build + Postman
 ```csharp
 public class NoiDungDaKySearchDto : CommonSearchDto {
     public long? CreateUserId { get; set; }
-    /// <summary>Loại — map TepDinhKem.GroupType. Null = mọi loại ký số (KySo + NoiDungDaKySo).</summary>
-    public string? GroupType { get; set; }
 }
 ```
 
-**`NoiDungDaKyDto.cs`:**
-
-```csharp
-public class NoiDungDaKyDto {
-    public Guid Id { get; set; }
-    public Guid? ParentId { get; set; }
-    public string? FileName { get; set; }
-    public string? FileOrginal { get; set; }
-    public string? GroupId { get; set; }
-    public string? GroupName { get; set; }
-    public long? CreateUserId { get; set; }
-    public string? CreateUserName { get; set; }
-    public DateOnly? CreateDate { get; set; }
-}
-```
+**Response:** dùng `TepDinhKemDto` (`GroupType`, `OriginalName`, …) — không tạo DTO riêng.
 
 ---
 
@@ -147,12 +132,10 @@ var query = _tepDinhKemRepository.GetQueryableSet()
     .WhereIf(search.TuNgay.HasValue,
         e => e.CreatedAt >= search.TuNgay!.Value.ToStartOfDayUtc())
     .WhereIf(search.DenNgay.HasValue,
-        e => e.CreatedAt <= search.DenNgay!.Value.ToEndOfDayUtc())
-    .WhereIf(!string.IsNullOrWhiteSpace(search.GroupType),
-        e => e.GroupType == search.GroupType);
+        e => e.CreatedAt <= search.DenNgay!.Value.ToEndOfDayUtc());
 ```
 
-Join `UserMaster` + `Select` → `NoiDungDaKyDto` (pattern `BanGiaoHoSoGetDanhSachQuery`).
+`Select` → `TepDinhKemDto`.
 
 ---
 
@@ -206,7 +189,7 @@ ORDER BY CreatedAt DESC;
 ## 7. Checklist
 
 ```
-[ ] 1. NoiDungDaKySearchDto + NoiDungDaKyDto
+[ ] 1. NoiDungDaKySearchDto + TepDinhKemDto (response)
 [ ] 2. NoiDungDaKyGetDanhSachQuery — ParentId != null + GroupType ký số
 [ ] 3. KySoController GET noi-dung-da-ky/danh-sach
 [ ] 4. GroupTypeConstants.NoiDungDaKySo (nếu V2 upload đã merge)

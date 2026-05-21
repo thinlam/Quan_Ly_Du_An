@@ -1,16 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KySos.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Application.KySos.Queries;
 
 public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto)
-    : AggregateRootPagination, IRequest<PaginatedList<NoiDungDaKyDto>>;
+    : AggregateRootPagination, IRequest<PaginatedList<TepDinhKemDto>>;
 
 internal class NoiDungDaKyGetDanhSachQueryHandler
-    : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<NoiDungDaKyDto>> {
+    : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>> {
     private static readonly string[] SignedGroupTypes = [
         GroupTypeConstants.KySo,
         GroupTypeConstants.NoiDungDaKySo
@@ -24,7 +25,7 @@ internal class NoiDungDaKyGetDanhSachQueryHandler
         _userRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     }
 
-    public async Task<PaginatedList<NoiDungDaKyDto>> Handle(
+    public async Task<PaginatedList<TepDinhKemDto>> Handle(
         NoiDungDaKyGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var search = request.SearchDto;
@@ -40,20 +41,23 @@ internal class NoiDungDaKyGetDanhSachQueryHandler
                 e => e.CreatedAt >= search.TuNgay!.Value.ToStartOfDayUtc())
             .WhereIf(search.DenNgay.HasValue,
                 e => e.CreatedAt <= search.DenNgay!.Value.ToEndOfDayUtc())
-            .WhereIf(!string.IsNullOrWhiteSpace(search.GroupType),
-                e => e.GroupType == search.GroupType)
-            .LeftOuterJoin(users, e => e.CreatedBy, u => u.Id.ToString(), (e, user) => new { e, user })
+            .LeftOuterJoin(users, e => e.CreatedBy, u => u.UserPortalId.ToString(), (e, user) => new { e, user })
             .OrderByDescending(x => x.e.CreatedAt)
-            .Select(x => new NoiDungDaKyDto {
+            .Select(x => new TepDinhKemDto {
                 Id = x.e.Id,
                 ParentId = x.e.ParentId,
-                FileName = x.e.FileName,
-                FileOrginal = x.e.OriginalName,
                 GroupId = x.e.GroupId,
-                GroupName = x.e.GroupType,
-                CreateUserId = x.user != null ? x.user.Id : null,
-                CreateUserName = x.user != null ? x.user.HoTen : null,
-                CreateDate = x.e.CreatedAt.ToDateOnlyVn(),
+                GroupType = x.e.GroupType,
+                Type = x.e.Type,
+                FileName = x.e.FileName,
+                OriginalName = x.e.OriginalName,
+                Path = x.e.Path,
+                Size = x.e.Size,
+                TenNguoiTao = x.user != null ? x.user.HoTen : null,
+                CreatedBy = x.e.CreatedBy,
+                CreatedAt = x.e.CreatedAt,
+                UpdatedBy = x.e.UpdatedBy,
+                UpdatedAt = x.e.UpdatedAt,
             });
 
         return await query.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);

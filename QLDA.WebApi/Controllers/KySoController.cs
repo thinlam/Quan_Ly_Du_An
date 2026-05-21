@@ -3,6 +3,7 @@ using QLDA.Application.KySos.Commands;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Application.KySos.Queries;
 using QLDA.Application.TepDinhKems.Commands;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KySos;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -18,7 +19,7 @@ namespace QLDA.WebApi.Controllers;
 public class KySoController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
     /// <summary>Danh sách file đã ký (TepDinhKem có ParentId).</summary>
     [HttpGet("noi-dung-da-ky/danh-sach")]
-    [ProducesResponseType<ResultApi<PaginatedList<NoiDungDaKyDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<TepDinhKemDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetNoiDungDaKyList(
         [FromQuery] NoiDungDaKySearchDto searchDto,
