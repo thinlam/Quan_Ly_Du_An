@@ -1,5 +1,7 @@
 using System.Net.Mime;
 using QLDA.Application.KySos.Commands;
+using QLDA.Application.KySos.DTOs;
+using QLDA.Application.KySos.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KySos;
@@ -14,8 +16,22 @@ namespace QLDA.WebApi.Controllers;
 [Tags("Ký số")]
 [Route("api/ky-so")]
 public class KySoController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
+    /// <summary>Danh sách file đã ký (TepDinhKem có ParentId).</summary>
+    [HttpGet("noi-dung-da-ky/danh-sach")]
+    [ProducesResponseType<ResultApi<PaginatedList<NoiDungDaKyDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<ResultApi> GetNoiDungDaKyList(
+        [FromQuery] NoiDungDaKySearchDto searchDto,
+        [FromQuery] AggregateRootPagination pagination) {
+        var res = await Mediator.Send(new NoiDungDaKyGetDanhSachQuery(searchDto) {
+            PageIndex = pagination.PageIndex,
+            PageSize = pagination.PageSize,
+        });
+        return ResultApi.Ok(res);
+    }
+
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// GroupId là id của dối tượng chính có file ký số - guid
