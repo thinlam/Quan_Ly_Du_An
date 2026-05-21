@@ -2,19 +2,21 @@ using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.DangTaiKeHoachLcntLenMangs;
+using QLDA.WebApi.Models.DeXuatChuTruongMois;
+using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
-using QLDA.WebApi.Models.PheDuyetDuToans;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
+using QLDA.WebApi.Models.PheDuyetDuToans;
+using QLDA.WebApi.Models.PheDuyetEntityNames.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.PhuLucHopDongs;
-using QLDA.WebApi.Models.QuyetDinhLapBanQLDAs;
-using QLDA.WebApi.Models.QuyetDinhLapBenMoiThaus;
-using QLDA.WebApi.Models.QuyetDinhLapHoiDongThamDinhs;
 using QLDA.WebApi.Models.QuyetDinhDuyetDuAns;
 using QLDA.WebApi.Models.QuyetDinhDuyetKHLCNTs;
 using QLDA.WebApi.Models.QuyetDinhDuyetQuyetToans;
+using QLDA.WebApi.Models.QuyetDinhLapBanQLDAs;
+using QLDA.WebApi.Models.QuyetDinhLapBenMoiThaus;
+using QLDA.WebApi.Models.QuyetDinhLapHoiDongThamDinhs;
 using QLDA.WebApi.Models.VanBanChuTruongs;
 using QLDA.WebApi.Models.VanBanPhapLys;
-using QLDA.WebApi.Models.DeXuatChuTruongMois;
 
 namespace QLDA.WebApi.Models.TepDinhKems;
 
@@ -123,4 +125,8 @@ public static class TepDinhKemMappingConfigurations {
 
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatChuTruongMoiModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatChuTruongMoi).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatChuyenTiepModel model, Guid groupId)
+        => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatChuyenTiep).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiModel model, Guid groupId)
+        => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatNhuCauKinhPhi).ToList() ?? [];
 }

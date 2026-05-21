@@ -23,6 +23,8 @@ public class DeXuatChuTruongMoiConfiguration : AggregateRootConfiguration<DeXuat
 
         builder.Property(e => e.LanhDaoPhuTrachId);
 
+        builder.Property(e => e.NguoiXuLyChinhId);
+
         builder.Property(e => e.DonViPhuTrachChinhId);
       
         builder.Property(e => e.TrangThaiId);

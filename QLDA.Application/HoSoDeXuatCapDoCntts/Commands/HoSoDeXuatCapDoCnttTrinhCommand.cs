@@ -28,10 +28,7 @@ internal class HoSoDeXuatCapDoCnttTrinhCommandHandler : IRequestHandler<HoSoDeXu
     }
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttTrinhCommand request, CancellationToken cancellationToken) {
-        var phongBanId = _userProvider.Info.PhongBanID;
-        if (phongBanId != 219) {
-            throw new ManagedException("Chỉ phòng KH-TC có quyền trình hồ sơ đề xuất cấp độ CNTT");
-        }
+       
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DuThao && s.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt, cancellationToken);

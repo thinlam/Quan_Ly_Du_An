@@ -26,6 +26,7 @@ public class DeXuatChuTruongMoiDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo,
     public long? LanhDaoPhuTrachId { get; set; }
 
     public long? DonViPhuTrachChinhId { get; set; }
+    public long? NguoiXuLyChinhId { get; set; }
 
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }

@@ -20,4 +20,7 @@ public static class GroupTypeConstants
     public const string NoiDungDaKySo = "NoiDungDaKySo";
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    public const string ChuTruongMoi = "DeXuatChuTruongMoi";
+    public const string ChuTruongChuyenTiep = "DeXuatChuyenTiep";
+    public const string NhuCauKinhPhi = "DeXuatNhuCauKinhPhi";
 }

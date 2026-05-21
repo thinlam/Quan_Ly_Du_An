@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -17,6 +18,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
 
     public HoSoMoiThauDienTuDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
@@ -27,9 +29,13 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuDuyetCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt hồ sơ mời thầu điện tử");
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
+        {
+            throw new ManagedException("Tài khoản không có quyền.");
         }
+
+       
 
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaTrinh && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
