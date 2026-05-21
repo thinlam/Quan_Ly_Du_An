@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -17,6 +18,7 @@ internal class DeXuatChuTruongMoiDuyetCommandHandler : IRequestHandler<DeXuatChu
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
 
     public DeXuatChuTruongMoiDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuTruongMoi, Guid>>();
@@ -28,15 +30,17 @@ internal class DeXuatChuTruongMoiDuyetCommandHandler : IRequestHandler<DeXuatChu
 
     public async Task<int> Handle(DeXuatChuTruongMoiDuyetCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
+        {
             throw new ManagedException("Tài khoản không có quyền.");
         }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatChuTruongMoi.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatChuTruongMoi, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatChuTruongMoi, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatChuTruongMoi.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatChuTruongMoi, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatChuTruongMoi, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
