@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Persistence.Configurations.ViMaster;
@@ -14,13 +15,5 @@ public class CanBoDonViConfiguration : MasterRootConfiguration<CanBoDonVi> {
         builder.Property(e => e.ChucVuId).HasColumnName("ChucVuID");
         builder.Property(e => e.DonViId).HasColumnName("DonViID");
 
-        builder.HasOne(d => d.CanBo).WithMany(p => p.CanBoDonVis)
-            .HasForeignKey(d => d.CanBoId);
-
-        // builder.HasOne(d => d.ChucVu).WithMany(p => p.CanBoDonVis)
-        //     .HasForeignKey(d => d.ChucVuId);
-
-        builder.HasOne(d => d.DonVi).WithMany(p => p.CanBoDonVis)
-            .HasForeignKey(d => d.DonViId);
     }
 }

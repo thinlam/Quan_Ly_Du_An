@@ -1,4 +1,6 @@
-﻿namespace QLDA.Domain.Entities.ViMaster;
+﻿using BuildingBlocks.Domain.Entities;
+
+namespace QLDA.Domain.Entities.ViMaster;
 
 public class CanBoDonVi : IHasKey<long>, IAggregateRoot {
     public long Id { get; set; }
@@ -11,9 +13,4 @@ public class CanBoDonVi : IHasKey<long>, IAggregateRoot {
 
     public bool? LaChucVuChinh { get; set; }
 
-    public virtual CanBo? CanBo { get; set; }
-
-    // public virtual DanhMucChucVu? ChucVu { get; set; }
-
-    public virtual DanhMucDonVi? DonVi { get; set; }
 }

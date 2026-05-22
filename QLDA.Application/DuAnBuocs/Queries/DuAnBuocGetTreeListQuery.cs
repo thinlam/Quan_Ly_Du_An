@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Interfaces;
+using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Constants;
@@ -20,8 +21,8 @@ internal class DuAnBuocGetTreeListQueryHandler(IServiceProvider serviceProvider)
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IRepository<DanhMucManHinh, int> DanhMucManHinh =
         serviceProvider.GetRequiredService<IRepository<DanhMucManHinh, int>>();
-    private readonly IRepository<DanhMucDonVi, long> DanhMucDonVi =
-        serviceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>();
+    private readonly IRepository<DmDonVi, long> DanhMucDonVi =
+        serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IUnitOfWork UnitOfWork =
         serviceProvider.GetRequiredService<IUnitOfWork>();
 

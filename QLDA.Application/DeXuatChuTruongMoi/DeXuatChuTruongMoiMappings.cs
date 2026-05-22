@@ -57,7 +57,7 @@ public static class DeXuatChuTruongMoiMappings {
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
             DanhSachDonViPhoiHop = [..entity.DeXuatDonViXuLys?
-                                                                .Select(xuLy => new DanhMucDonViCbo
+                                                                .Select(xuLy => new DTOs.DanhMucDonViCbo
                                                                 {
                                                                     Id = xuLy.RightId,
                                                                     TenDonVi =string.Empty // Works if .ThenInclude(x => x.DonVi) was used

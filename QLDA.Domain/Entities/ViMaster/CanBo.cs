@@ -15,9 +15,4 @@ public class CanBo : IHasKey<long>, IAggregateRoot {
 
     public long? ChucDanhId { get; set; }
 
-    public virtual ICollection<CanBoDonVi> CanBoDonVis { get; set; } = new List<CanBoDonVi>();
-
-    // public virtual DmChucdanh? ChucDanh { get; set; }
-
-    // public virtual Connguoi? ConNguoi { get; set; }
 }

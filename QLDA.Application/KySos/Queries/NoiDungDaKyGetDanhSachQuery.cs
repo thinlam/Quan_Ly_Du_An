@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Application.KySos.Queries;
 
@@ -17,11 +17,11 @@ internal class NoiDungDaKyGetDanhSachQueryHandler
         GroupTypeConstants.NoiDungDaKySo
     ];
 
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository;
+    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
     private readonly IRepository<UserMaster, long> _userRepository;
 
     public NoiDungDaKyGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
-        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
         _userRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     }
 

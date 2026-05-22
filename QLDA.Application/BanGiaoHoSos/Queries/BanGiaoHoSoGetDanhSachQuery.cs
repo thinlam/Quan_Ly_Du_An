@@ -1,6 +1,8 @@
 using BuildingBlocks.Domain.Providers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Domain.Entities;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 using QLDA.Application.Common.Mapping;
@@ -17,16 +19,16 @@ public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<Pa
 
 internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>> {
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository;
-    private readonly IRepository<UserMaster, long> _userMasterRepository;
-    private readonly IRepository<DanhMucDonVi, long> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
+    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
+    private readonly IRepository<BuildingBlocks.Domain.Entities.UserMaster, long> _userMasterRepository;
+    private readonly IRepository<DmDonVi, long> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
     private readonly IUserProvider _userProvider;
 
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
-        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _userMasterRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
-        _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>();
+        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
+        _userMasterRepository = serviceProvider.GetRequiredService<IRepository<BuildingBlocks.Domain.Entities.UserMaster, long>>();
+        _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 

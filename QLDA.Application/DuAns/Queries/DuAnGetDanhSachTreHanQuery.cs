@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
@@ -13,8 +14,8 @@ public record DuAnGetDanhSachTreHanQueryHandler(IServiceProvider serviceProvider
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
 
-    private readonly IRepository<DanhMucDonVi, long> DanhMucDonVi =
-        serviceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>();
+    private readonly IRepository<DmDonVi, long> DanhMucDonVi =
+        serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
 
     private readonly IDateTimeProvider _dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
 

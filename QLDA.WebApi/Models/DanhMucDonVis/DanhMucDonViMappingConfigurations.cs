@@ -1,9 +1,11 @@
 using QLDA.Domain.Entities.ViMaster;
 
+using BuildingBlocks.Domain.Entities;
+
 namespace QLDA.WebApi.Models.DanhMucDonVis;
 
 public static class DanhMucDonViMappingConfigurations {
-    public static DanhMucDonViModel ToModel(this DanhMucDonVi entity)
+    public static DanhMucDonViModel ToModel(this DmDonVi entity)
         => new() {
             Id = entity.Id,
             Ma = entity.MaDonVi,

@@ -1,9 +1,10 @@
+using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 
 namespace QLDA.Application.DanhMucDonVis.Queries;
 
-public record DanhMucDonViGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<DanhMucDonVi>> {
+public record DanhMucDonViGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<DmDonVi>> {
     /// <summary>
     /// Cấp ???
     /// </summary>
@@ -18,11 +19,11 @@ public record DanhMucDonViGetDanhSachQuery : AggregateRootPagination, IRequest<P
 }
 
 public record DanhMucDonViGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<DanhMucDonViGetDanhSachQuery, PaginatedList<DanhMucDonVi>> {
-    private readonly IRepository<DanhMucDonVi, long> DanhMucDonVi =
-        ServiceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>();
+    : IRequestHandler<DanhMucDonViGetDanhSachQuery, PaginatedList<DmDonVi>> {
+    private readonly IRepository<DmDonVi, long> DanhMucDonVi =
+        ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
 
-    public async Task<PaginatedList<DanhMucDonVi>> Handle(DanhMucDonViGetDanhSachQuery request,
+    public async Task<PaginatedList<DmDonVi>> Handle(DanhMucDonViGetDanhSachQuery request,
         CancellationToken cancellationToken) {
         var query = DanhMucDonVi.GetQueryableSet().AsNoTracking()
             .Where(e => e.Used == true)

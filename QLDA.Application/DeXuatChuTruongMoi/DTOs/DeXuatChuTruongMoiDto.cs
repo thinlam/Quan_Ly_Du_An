@@ -5,6 +5,11 @@ using SequentialGuid;
 
 namespace QLDA.Application.DeXuatChuTruongMois.DTOs;
 
+public class DanhMucDonViCbo {
+    public string? TenDonVi { get; set; }
+    public long Id { get; set; }
+}
+
 public class DeXuatChuTruongMoiDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo, IMayHaveTepDinhKemDto {
     [DefaultValue(null)] public Guid? Id { get; set; }
 

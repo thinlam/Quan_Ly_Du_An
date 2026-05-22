@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
@@ -7,6 +8,11 @@ using QLDA.Domain.Constants;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DeXuatChuTruongMois.Queries;
+
+public class DanhMucDonViCbo {
+    public string? TenDonVi { get; set; }
+    public long Id { get; set; }
+}
 
 public record DeXuatChuTruongMoiQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<DeXuatChuTruongMoiDto>> {
     public int? BuocId { get; set; }
@@ -24,8 +30,8 @@ public record DeXuatChuTruongMoiQuery : AggregateRootPagination, IMayHaveGlobalF
 internal class
     DeXuatChuTruongMoiQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<DeXuatChuTruongMoiQuery, PaginatedList<DeXuatChuTruongMoiDto>> {
     private readonly IRepository<DeXuatChuTruongMoi, Guid> DeXuatChuTruongMoi =  ServiceProvider.GetRequiredService<IRepository<DeXuatChuTruongMoi, Guid>>();
-    private readonly IRepository<DanhMucDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>()   ;  
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<DmDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>()   ;
+    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
     public async Task<PaginatedList<DeXuatChuTruongMoiDto>> Handle(DeXuatChuTruongMoiQuery request,  CancellationToken cancellationToken = default) {
@@ -42,62 +48,32 @@ internal class
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereIf(request.TuNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
             .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
-        
 
-        return await queryable.Select(e => new DeXuatChuTruongMoiDto
-        {
-            Id = e.Id,
-            DuAnId = e.DuAnId,
-            BuocId = e.BuocId,
-            TomTatNoiDung = e.TomTatNoiDung,
-            HinhThucDauTuId = e.HinhThucDauTuId,
-            NgayBatDauDuKien = e.NgayBatDauDuKien,
-            LanhDaoPhuTrachId = e.LanhDaoPhuTrachId,
-            DonViPhuTrachChinhId = e.DonViPhuTrachChinhId,
-            TongMucDauTu = e.TongMucDauTu,
-            NguoiXuLyChinhId = e.NguoiXuLyChinhId,
-            DanhSachDonViPhoiHop = e.DeXuatDonViXuLys!
-            .Select(x => new DanhMucDonViCbo
-            {
-                Id = x.RightId,
-                // TenDonVi = x.RightId.ten
-            })
-            .ToList(),
+        return await queryable
+            .Select(e => new DeXuatChuTruongMoiDto() {
+                Id = e.Id,
+                DuAnId = e.DuAnId,
+                BuocId = e.BuocId,
+                TomTatNoiDung = e.TomTatNoiDung,
+                HinhThucDauTuId = e.HinhThucDauTuId,
+                NgayBatDauDuKien = e.NgayBatDauDuKien,
+                LanhDaoPhuTrachId = e.LanhDaoPhuTrachId,
+                DonViPhuTrachChinhId = e.DonViPhuTrachChinhId,
+                TongMucDauTu= e.TongMucDauTu,
+                NguoiXuLyChinhId = e.NguoiXuLyChinhId,
 
-            //DanhSachDonViPhoiHop = DmDonVi.GetQueryableSet()
-            //.Join(
-            //    e.DeXuatDonViXuLys!,
-            //    dm => dm.Id,
-            //    dx => dx.RightId,
-            //    (dm, dx) => new DanhMucDonViCbo
-            //    {
-            //        Id = dm.Id,
-            //        TenDonVi = dm.TenDonVi
-            //    })
-            //.ToList(),
-            DanhSachTepDinhKem =   TepDinhKem.GetQueryableSet()
+                TrangThaiId = e.TrangThaiId,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                DanhSachDonViPhoiHop = DmDonVi.GetQueryableSet().Join( e.DeXuatDonViXuLys!,   dm => dm.Id,  dx => dx.RightId,
+                    (dm, dx) => new DTOs.DanhMucDonViCbo {
+                        Id = dm.Id,
+                        TenDonVi = dm.TenDonVi
+                    }) .ToList(),
+                DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
-                    .Select(i => i.ToDto()).ToList()
-        })
-         .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
-        //
-        //   public List<DanhMucDonViCbo>? DanhSachDonViPhoiHop { get; set; }
-        //    public ICollection<DeXuatDonViXuLy>? DeXuatDonViXuLys { get; set; } = [];
-        /*
-
-public class DeXuatDonViXuLy : IJunctionEntity<Guid, long>, IAggregateRoot {
-public Guid LeftId { get; set; }
-public long RightId { get; set; }
-
-
-public DeXuatChuTruongMoi? DeXuat { get; set; } //e.DeXuatDonViXuLys!
-
-public class DanhMucDonViCbo{
-public string? TenDonVi { get; set; }
-public long Id { get; set; }
-
-}
-
-}*/
+                    .Select(i => i.ToDto()).ToList(),
+            })
+            .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
     }
 }
