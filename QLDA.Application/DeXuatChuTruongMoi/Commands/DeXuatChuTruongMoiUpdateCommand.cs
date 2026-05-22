@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.DeXuatChuTruongMois;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Domain.Constants;
 
@@ -24,8 +25,10 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
     {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-
+    
         var entity = await _repo.GetQueryableSet()
+            .Include(e => e.DeXuatDonViXuLys)
+            .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
@@ -41,9 +44,12 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
         entity.NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId;
         entity.NgayBatDauDuKien = request.Dto.NgayBatDauDuKien;
         entity.DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId;
+        entity.LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId;
 
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
+
+        entity.SyncDonViPhoiHopIds(request.Dto.DonViPhoiHopIds);
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);

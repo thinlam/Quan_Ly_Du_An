@@ -1,6 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.DeXuatChuTruongMois.DTOs;
+using QLDA.Application.DeXuatChuTruongMois;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -29,6 +29,7 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
 
         var entity = new DeXuatChuTruongMoi
         {
+            Id = request.Dto.Id,
             DuAnId = request.Dto.DuAnId,
             BuocId = request.Dto.BuocId,
             TongMucDauTu = request.Dto.TongMucDauTu,
@@ -40,6 +41,8 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
             DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId,
             TrangThaiId = trangThaiDuThao?.Id,
         };
+        entity.SyncDonViPhoiHopIds(
+            request.Dto.DeXuatDonViXuLys?.Select(x => x.RightId).ToList() ?? []);
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
