@@ -22,6 +22,7 @@ public class DeXuatNhuCauKinhPhiConfiguration : AggregateRootConfiguration<DeXua
         builder.Property(x => x.TrichYeu).HasMaxLength(2000);
 
         builder.Property(e => e.TrangThaiId);
+        builder.Property(e => e.KinhPhiDeXuat).HasPrecision(18, 2);
         builder.Property(e => e.DonViDeXuatId);
 
         builder.HasOne(e => e.DuAn)
