@@ -15,6 +15,8 @@
 | 2   | **PUT** `cap-nhat` đồng bộ junction      | Clear + re-add theo `donViPhoiHopIds` (pattern `DuAnBuocPhongBanPhoiHop`) |
 | 3   | **GET** `chi-tiet` trả `donViPhoiHopIds` | Include navigation + map `ToModel`                                        |
 | 4   | Sửa bug map **PUT** controller           | `DonViPhuTrachChinhId` / `LanhDaoPhuTrachId` bị gán nhầm `buocId`         |
+| 5   | **Review:** POST không gán `Id` client   | Để DB/EF sinh `NEWSEQUENTIALID`; junction sync **sau** `SaveChanges` đầu |
+| 6   | **Review:** `SyncDonViPhoiHopIds(null)`  | Gán `entity.DeXuatDonViXuLys = []` — EF junction tracking xóa liên kết   |
 
 
 ### 1.2 Field API liên quan
@@ -75,7 +77,7 @@
 | Field | Kiểu (Model / InsertDto) | Bắt buộc API? | Ghi chú |
 |-------|--------------------------|---------------|---------|
 | `duAnId` | `Guid` | **Có** | `ITienDo`; FK `DuAn` Restrict |
-| `id` | `Guid?` | Không (POST) | `GetId()` sinh GUID nếu null |
+| `id` | `Guid?` | **Không gửi khi POST** | Thêm mới: **không** map `Id` từ client; response trả `savedEntity.Id` sau insert |
 | `buocId` | `int?` | Không (attribute) | Remark controller “Quy trình id bắt buộc” → gọi `DuAnUpdateStepCommand`, không phải `[Required]` |
 | **`donViPhoiHopIds`** | `List<long>?` | **Không** | `null` / `[]` / `[219]` đều pass validation |
 | `tomTatNoiDung`, `tongMucDauTu`, `ngayBatDauDuKien` | nullable | Không | |
@@ -167,7 +169,7 @@ if (request.Dto.DanhSachPhongBanPhoiHopIds != null) {
 
 ```
 Bước 1: Application – DeXuatChuTruongMoiMappings.SyncDonViPhoiHopIds
-Bước 2: Application – DeXuatChuTruongMoiInsertCommand (Id + junction)
+Bước 2: Application – DeXuatChuTruongMoiInsertCommand (không Id client; junction sau SaveChanges)
 Bước 3: Application – DeXuatChuTruongMoiUpdateCommand (Include + sync)
 Bước 4: Application – DeXuatChuTruongMoiGetQuery (Include junction)
 Bước 5: WebApi – DeXuatChuTruongMoiMappingConfiguration (ToEntity, ToModel, ToInsertDto)
@@ -191,6 +193,7 @@ Bước 6: WebApi – DeXuatChuTruongMoiController.Update (ToInsertDto)
 ```csharp
 public static void SyncDonViPhoiHopIds(this DeXuatChuTruongMoi entity, List<long>? donViPhoiHopIds) {
     if (donViPhoiHopIds is null) {
+        entity.DeXuatDonViXuLys = [];
         return;
     }
 
@@ -205,12 +208,13 @@ public static void SyncDonViPhoiHopIds(this DeXuatChuTruongMoi entity, List<long
 }
 ```
 
+> **Review (junction nhiều key):** Gán `DeXuatDonViXuLys = []` khi `null` để EF hiểu đang **xóa hết** liên kết (tracking collection), không `return` sớm bỏ qua.
 
-| `donViPhoiHopIds` | Hành vi                     |
-| ----------------- | --------------------------- |
-| `null`            | Không đổi junction (update) |
-| `[]`              | Xóa hết đơn vị phối hợp     |
-| `[219, 220]`      | Thay thế toàn bộ            |
+| `donViPhoiHopIds` | Hành vi |
+| ----------------- | ------- |
+| `null`            | `entity.DeXuatDonViXuLys = []` — xóa hết liên kết (PUT; insert sau khi có `Id`) |
+| `[]`              | Clear rồi không add — junction trống |
+| `[219, 220]`      | Thay thế toàn bộ (`LeftId` = `entity.Id`) |
 
 
 ---
@@ -221,30 +225,33 @@ public static void SyncDonViPhoiHopIds(this DeXuatChuTruongMoi entity, List<long
 
 **Trước:** Entity mới không có `Id` từ client, không có `DeXuatDonViXuLys`.
 
-**Sau:**
+**Sau (theo review — không `Id = request.Dto.Id`):**
 
 ```csharp
+var donViPhoiHopIds = request.Dto.DeXuatDonViXuLys?
+    .Select(x => x.RightId).ToList();
+
 var entity = new DeXuatChuTruongMoi
 {
-    Id = request.Dto.Id,
+    // Không gán Id — DB default NEWSEQUENTIALID
     DuAnId = request.Dto.DuAnId,
     BuocId = request.Dto.BuocId,
-    TongMucDauTu = request.Dto.TongMucDauTu,
-    TomTatNoiDung = request.Dto.TomTatNoiDung,
-    NgayBatDauDuKien = request.Dto.NgayBatDauDuKien,
-    HinhThucDauTuId = request.Dto.HinhThucDauTuId,
-    NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId,
-    LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId,
-    DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId,
+    // ... scalar fields ...
     TrangThaiId = trangThaiDuThao?.Id,
 };
-entity.SyncDonViPhoiHopIds(
-    request.Dto.DeXuatDonViXuLys?.Select(x => x.RightId).ToList() ?? []);
 
+using var tx = await _unitOfWork.BeginTransactionAsync(...);
 await _repo.AddAsync(entity, cancellationToken);
+await _unitOfWork.SaveChangesAsync(cancellationToken); // entity.Id có giá trị
+
+entity.SyncDonViPhoiHopIds(donViPhoiHopIds); // null → DeXuatDonViXuLys = []
+await _unitOfWork.SaveChangesAsync(cancellationToken);
+await _unitOfWork.CommitTransactionAsync(cancellationToken);
 ```
 
-> `request.Dto` là `DeXuatChuTruongMoi` từ `model.ToEntity()` — `DeXuatDonViXuLys` đã map từ `donViPhoiHopIds` ở WebApi.
+> POST **không** truyền `id` từ FE. `TepDinhKem` dùng `savedEntity.Id` **sau** insert — khớp Id DB.
+>
+> WebApi `ToEntity()` **không** gọi `GetId()` / không set `Id`; chỉ gửi `RightId` tạm trong `DeXuatDonViXuLys` (hoặc list ids) để handler sync sau `SaveChanges`.
 
 ---
 
@@ -293,28 +300,22 @@ var queryable = DeXuatChuTruongMoi.GetOrderedSet()
 
 **File:** `QLDA.WebApi/Models/DeXuatChuTruongMois/DeXuatChuTruongMoiMappingConfiguration.cs`
 
-#### `ToEntity` (POST)
+#### `ToEntity` (POST) — không set `Id`
 
 ```csharp
-public static DeXuatChuTruongMoi ToEntity(this DeXuatChuTruongMoiModel model) {
-    var id = model.GetId();
-    return new() {
-        Id = id,
+public static DeXuatChuTruongMoi ToEntity(this DeXuatChuTruongMoiModel model) =>
+    new() {
+        // Không Id, không GetId() — thêm mới để DB sinh Id
         BuocId = model.BuocId,
         DuAnId = model.DuAnId,
-        TongMucDauTu = model.TongMucDauTu,
-        TomTatNoiDung = model.TomTatNoiDung,
-        NgayBatDauDuKien = model.NgayBatDauDuKien,
-        LanhDaoPhuTrachId = model.LanhDaoPhuTrachId,
-        NguoiXuLyChinhId = model.NguoiXuLyChinhId,
-        HinhThucDauTuId = model.HinhThucDauTuId,
-        DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
-        DeXuatDonViXuLys = model.DonViPhoiHopIds != null && model.DonViPhoiHopIds.Count != 0
-            ? [.. model.DonViPhoiHopIds.Select(donViId => new DeXuatDonViXuLy { LeftId = id, RightId = donViId })]
-            : [],
+        // ... scalar ...
+        DeXuatDonViXuLys = model.DonViPhoiHopIds?
+            .Select(donViId => new DeXuatDonViXuLy { RightId = donViId })
+            .ToList() ?? [],
     };
-}
 ```
+
+`LeftId` gán trong `SyncDonViPhoiHopIds` **sau** `SaveChanges` khi `entity.Id` đã có.
 
 #### `ToModel` (GET chi tiết)
 
@@ -376,7 +377,10 @@ await Mediator.Send(new DeXuatChuTruongMoiUpdateCommand(model.ToInsertDto()), ca
 
 ```
 [x] 1. Thêm SyncDonViPhoiHopIds vào DeXuatChuTruongMoiMappings
-[x] 2. Sửa DeXuatChuTruongMoiInsertCommand (Id + junction trước AddAsync)
+[x] 2. Sửa DeXuatChuTruongMoiInsertCommand (lần 1)
+[x] 2b. Review: bỏ `Id = request.Dto.Id`; junction sau SaveChanges
+[x] 1b. Review: `SyncDonViPhoiHopIds(null)` → `DeXuatDonViXuLys = []`
+[x] 5b. Review: `ToEntity` POST không `GetId()`
 [x] 3. Sửa DeXuatChuTruongMoiUpdateCommand (Include + LanhDaoPhuTrachId + sync)
 [x] 4. Sửa DeXuatChuTruongMoiGetQuery (Include DeXuatDonViXuLys)
 [x] 5. Sửa ToEntity / ToModel / thêm ToInsertDto (WebApi mapping)
@@ -390,8 +394,9 @@ await Mediator.Send(new DeXuatChuTruongMoiUpdateCommand(model.ToInsertDto()), ca
 ## 6. Lưu ý kỹ thuật
 
 - **Không migration** — bảng `DeXuatDonViXuLy` đã có trong `Init`.
-- **Insert:** `Id` phải khớp `model.GetId()` để `TepDinhKem` (`GroupId = savedEntity.Id`) và junction `LeftId` cùng một GUID.
-- **Update:** `SyncDonViPhoiHopIds(null)` giữ junction cũ; PUT qua `ToInsertDto` truyền list từ model (có thể `null` nếu FE không gửi field).
+- **Insert:** **không** gán `Id` từ client; `SaveChanges` → `savedEntity.Id` cho `TepDinhKem` và `LeftId` junction.
+- **Junction `null`:** `SyncDonViPhoiHopIds(null)` → `DeXuatDonViXuLys = []` (EF xóa liên kết khi update/tracking).
+- **PUT:** `ToInsertDto` vẫn cần `Id` (`GetId()`) — chỉ **POST them-moi** không truyền Id.
 - **List tiến độ** (`danh-sach-tien-do`): không đổi — vẫn join `DanhMucDonVi` → `DanhSachDonViPhoiHop`.
 - **GET chi tiết:** chỉ trả `donViPhoiHopIds` (ids), chưa trả tên đơn vị; tên có ở list query.
 - **`[Required]`:** xem **§1.5** — chỉ `duAnId` bắt buộc qua `Guid` non-nullable; `donViPhoiHopIds` không required.
@@ -423,7 +428,8 @@ dotnet build "e:\SER\QLDA.WebApi\QLDA.WebApi.csproj"
 | Lỗi                                      | Sửa                                                  |
 | ---------------------------------------- | ---------------------------------------------------- |
 | Insert handler bỏ qua `DeXuatDonViXuLys` | `SyncDonViPhoiHopIds` + `AddAsync` với collection    |
-| Insert không set `Id` từ request         | `Id = request.Dto.Id`                                |
+| Insert gán `Id = request.Dto.Id` (sai review) | Bỏ; DB sinh Id; sync junction sau `SaveChanges` |
+| `SyncDonViPhoiHopIds(null)` return sớm   | `entity.DeXuatDonViXuLys = []`                       |
 | Update không sync junction               | `.Include(DeXuatDonViXuLys)` + `SyncDonViPhoiHopIds` |
 | Update thiếu `LanhDaoPhuTrachId`         | Gán từ `request.Dto`                                 |
 | Get không load junction                  | `.Include(e => e.DeXuatDonViXuLys)`                  |
@@ -434,7 +440,8 @@ dotnet build "e:\SER\QLDA.WebApi\QLDA.WebApi.csproj"
 
 | Lỗi                                               | Sửa                                           |
 | ------------------------------------------------- | --------------------------------------------- |
-| `ToEntity` không map `donViPhoiHopIds`            | Gán `DeXuatDonViXuLys` với `LeftId = GetId()` |
+| `ToEntity` không map `donViPhoiHopIds`            | Chỉ `RightId` tạm; `LeftId` sau SaveChanges      |
+| `ToEntity` dùng `GetId()` trên POST               | Bỏ `Id` / `GetId()` trên them-moi                |
 | `ToModel`: `NguoiXuLyChinhId = LanhDaoPhuTrachId` | `NguoiXuLyChinhId = entity.NguoiXuLyChinhId`  |
 | `ToModel` thiếu `DonViPhoiHopIds`                 | Select `RightId` từ navigation                |
 | PUT build DTO thiếu field, map `BuocId` sai       | `model.ToInsertDto()`                         |
@@ -486,6 +493,16 @@ GET:  DB → Include DeXuatDonViXuLys → ToModel.DonViPhoiHopIds
 
 ### Trạng thái
 
-- **Code:** đã implement (bước 1–6)
-- **Tiếp theo:** build + test API + tick checklist mục 7
+- **Code:** đã implement (bước 1–6); **đang chỉnh theo code review** (§1.1 mục 5–6, §4 bước 1–2, 5)
+- **Tiếp theo:** apply 2b/1b/5b → build + test API + tick checklist mục 7
+
+---
+
+## 8. Code review — chỉnh sau PR (bổ sung)
+
+| # | Feedback | Hành động |
+|---|----------|-----------|
+| 1 | Thêm mới **không** truyền `Id` (`Id = request.Dto.Id` sai) | Insert handler + `ToEntity` POST bỏ `GetId()` |
+| 2 | Junction: `donViPhoiHopIds == null` → `DeXuatDonViXuLys = []` | Sửa `SyncDonViPhoiHopIds` — EF tracking xóa liên kết |
+| 3 | Insert: sync junction **sau** khi parent đã có `Id` (SaveChanges) | Hai lần `SaveChanges` trong cùng transaction |
 

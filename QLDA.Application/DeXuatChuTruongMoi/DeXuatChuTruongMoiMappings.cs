@@ -28,6 +28,7 @@ public static class DeXuatChuTruongMoiMappings {
 
     public static void SyncDonViPhoiHopIds(this DeXuatChuTruongMoi entity, List<long>? donViPhoiHopIds) {
         if (donViPhoiHopIds is null) {
+            entity.DeXuatDonViXuLys = [];
             return;
         }
 

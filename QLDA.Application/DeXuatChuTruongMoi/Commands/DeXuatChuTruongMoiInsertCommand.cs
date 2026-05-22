@@ -27,9 +27,12 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
+        var donViPhoiHopIds = request.Dto.DeXuatDonViXuLys?
+            .Select(x => x.RightId)
+            .ToList();
+
         var entity = new DeXuatChuTruongMoi
         {
-            Id = request.Dto.Id,
             DuAnId = request.Dto.DuAnId,
             BuocId = request.Dto.BuocId,
             TongMucDauTu = request.Dto.TongMucDauTu,
@@ -41,11 +44,12 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
             DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId,
             TrangThaiId = trangThaiDuThao?.Id,
         };
-        entity.SyncDonViPhoiHopIds(
-            request.Dto.DeXuatDonViXuLys?.Select(x => x.RightId).ToList() ?? []);
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        entity.SyncDonViPhoiHopIds(donViPhoiHopIds);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

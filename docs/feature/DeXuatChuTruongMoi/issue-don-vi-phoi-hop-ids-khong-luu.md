@@ -244,3 +244,5 @@ Module **DuAnBuoc** + `DuAnBuocPhongBanPhoiHop` — cùng pattern junction many-
 ## Kết luận một dòng
 
 **Đây là bug thiếu persist navigation collection `DeXuatDonViXuLys` khi save `DeXuatChuTruongMoi`**, không phải lỗi DB/migration. API đã nhận `donViPhoiHopIds` nhưng insert/update handler và WebApi mapping chưa đẩy dữ liệu xuống bảng junction; cần bổ sung logic sync giống `DuAnBuocPhongBanPhoiHop`.
+
+> **Cập nhật sau code review:** chi tiết implement + chỉnh POST không `Id` client, `SyncDonViPhoiHopIds(null)` → `[]` — xem [`task-fix-don-vi-phoi-hop-ids.md`](./task-fix-don-vi-phoi-hop-ids.md) §8.

@@ -24,10 +24,8 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
         };
 
 
-    public static DeXuatChuTruongMoi ToEntity(this DeXuatChuTruongMoiModel model) {
-        var id = model.GetId();
-        return new() {
-            Id = id,
+    public static DeXuatChuTruongMoi ToEntity(this DeXuatChuTruongMoiModel model) =>
+        new() {
             BuocId = model.BuocId,
             DuAnId = model.DuAnId,
             TongMucDauTu = model.TongMucDauTu,
@@ -37,11 +35,10 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             NguoiXuLyChinhId = model.NguoiXuLyChinhId,
             HinhThucDauTuId = model.HinhThucDauTuId,
             DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
-            DeXuatDonViXuLys = model.DonViPhoiHopIds != null && model.DonViPhoiHopIds.Count != 0
-                ? [.. model.DonViPhoiHopIds.Select(donViId => new DeXuatDonViXuLy { LeftId = id, RightId = donViId })]
-                : [],
+            DeXuatDonViXuLys = model.DonViPhoiHopIds?
+                .Select(donViId => new DeXuatDonViXuLy { RightId = donViId })
+                .ToList() ?? [],
         };
-    }
 
     public static DeXuatChuTruongMoiInsertDto ToInsertDto(this DeXuatChuTruongMoiModel model) =>
         new() {
