@@ -31,7 +31,7 @@ internal class NoiDungDaKyGetDanhSachQueryHandler
         var search = request.SearchDto;
         var users = _userRepository.GetQueryableSet().AsNoTracking();
 
-        var query = _tepDinhKemRepository.GetQueryableSet()
+        var query = _tepDinhKemRepository.GetQueryableSet(OnlyNotDeleted: false)
             .AsNoTracking()
             .Where(e => e.ParentId != null)
             .Where(e => SignedGroupTypes.Contains(e.GroupType))

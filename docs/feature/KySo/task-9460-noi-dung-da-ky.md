@@ -1,8 +1,8 @@
 # Task #9460 – Nội dung đã ký (lịch sử ký số trên `TepDinhKem`)
 
-> Liên quan UC ký số: [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md) (CRUD bảng `KySo` + danh mục).  
-> Task này chỉ xử lý **`POST /api/ky-so/them-moi`** — lưu file đã ký + lịch sử khi ký lại.  
-> **Logic mẫu:** [tepdinhkem-logic-goi-thau (1).md](./tepdinhkem-logic-goi-thau%20(1).md)
+> **V2 (áp dụng)** — `GroupType` = **hiện hành** (`KySo`) vs **lịch sử** (`NoiDungDaKySo`), không phải “lần ký đầu / cuối”.  
+> **V1 (giữ §2, §7.1, §8)** — bảng `NoiDungDaKySo` riêng + handler sai (đảo type, auto `IsDeleted`).  
+> Liên quan: [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md), API list [task-9460-danh-sach-noi-dung-da-ky.md](./task-9460-danh-sach-noi-dung-da-ky.md).
 
 ---
 
@@ -16,23 +16,48 @@
 | 2 | Lưu **lịch sử** khi user **ký lại** (re-sign) | Không tạo bảng mới — dùng `GroupType` + `ParentId` + `IsDeleted` |
 | 3 | Tránh xóa nhầm file gốc cùng `GroupId` | Không dùng `TepDinhKemBulkInsertOrUpdateCommand` (sync toàn group) |
 
-### 1.2 `GroupType` trên `TepDinhKem`
+### 1.2 `GroupType` trên `TepDinhKem` — hiện hành vs lịch sử
 
 | Giá trị | Ý nghĩa |
 |---------|---------|
-| `KySo` | Lần ký đầu (parent = file gốc `GoiThau`, `HopDong`, …) |
-| `NoiDungDaKySo` | Phiên bản sau khi ký lại (parent = bản `KySo` / `NoiDungDaKySo` đang active) |
+| **`KySo`** | Bản **hiện hành** (đang hiển thị) |
+| **`NoiDungDaKySo`** | Bản **lịch sử** (đã bị thay thế) |
 
-> `NoiDungDaKySo` là **hằng `GroupTypeConstants`**, không phải tên bảng DB.
+> `NoiDungDaKySo` là **hằng `GroupTypeConstants`**, không phải tên bảng DB.  
+> **Không** hiểu là “lần ký đầu / lần ký cuối”.
 
-### 1.3 Ký lần đầu vs ký lại
+### 1.3 Upload — ký trên file gốc vs ký lại (thay bản)
 
-| | Ký lần đầu | Ký lại |
-|---|------------|--------|
-| Parent `GroupType` | Không thuộc `(KySo, NoiDungDaKySo)` | `KySo` hoặc `NoiDungDaKySo` |
-| Bản mới `GroupType` | `KySo` | `NoiDungDaKySo` |
+> Không gọi là “lần đầu / lần cuối”: mỗi lần ký lại chỉ **demote** bản đang `KySo` → `NoiDungDaKySo` và insert bản mới `KySo`.
+
+| | Ký trên **file gốc** (`ParentId` → bản chưa ký) | **Ký lại** (parent đã là bản ký) |
+|---|--------------------------------------------------|----------------------------------|
+| Parent `GroupType` | VD `GoiThau`, … (không thuộc cặp ký) | `KySo` (hiện hành) |
+| Bản **mới** `GroupType` | `KySo` | `KySo` |
+| Bản **cũ** (parent) | — | `GroupType` → `NoiDungDaKySo` |
 | Bản mới `ParentId` | Id file gốc | Id bản cha (đã ký) |
-| Bản cha | — | `IsDeleted = true` |
+| `IsDeleted` bản cũ | — | **Không** tự set khi ký lại |
+
+**Ví dụ (N bản ký):** file ký sai (`KySo`) → upload bản đúng → DB: bản sai `NoiDungDaKySo`, bản mới `KySo`. Chuỗi dài: mọi bản thay thế đều `NoiDungDaKySo`, đúng một bản `KySo` hiện hành.
+
+### 1.4 `IsDeleted` (tách khỏi ký lại)
+
+| Trường hợp | `IsDeleted` |
+|------------|-------------|
+| Ký lại / thay bản | **Không** đổi — chỉ đổi `GroupType` |
+| User “ký đời”, không xóa hẳn nhưng ẩn khỏi hiện hành | `true` thủ công — vẫn có trong API **lịch sử** ([task danh sách](./task-9460-danh-sach-noi-dung-da-ky.md)) |
+
+### 1.5 V1 handler (sai — giữ tham khảo, không implement lại)
+
+Phiên bản code/doc trước 22/05/2026 (đã sửa):
+
+```csharp
+// ❌ V1 — hiểu nhầm “bản mới = lịch sử”
+parent.IsDeleted = true;
+entity.GroupType = GroupTypeConstants.NoiDungDaKySo;
+```
+
+**V2 đúng:** `parent.GroupType = NoiDungDaKySo`, `entity.GroupType = KySo`, không `IsDeleted` khi ký lại.
 
 ---
 
@@ -58,9 +83,9 @@ POST /api/ky-so/them-moi
 
 ```
 POST /api/ky-so/them-moi
-  └─ ToEntities → KySoThemMoiCommand
-       ├─ Ký lần 1: GroupType = KySo
-       └─ Ký lại: parent.IsDeleted=true, GroupType = NoiDungDaKySo
+  └─ ToEntities → NoiDungDaKyCommand
+       ├─ Ký trên file gốc: bản mới GroupType = KySo
+       └─ Ký lại: parent → NoiDungDaKySo, bản mới → KySo (không auto IsDeleted)
 ```
 
 Tham khảo [task-9460-ky-so-crud.md §2.1](./task-9460-ky-so-crud.md): `KySoController` còn các endpoint CRUD bảng `KySo`; endpoint `them-moi` là upload file, **không** ghi bảng `KySo`.
@@ -71,8 +96,8 @@ Tham khảo [task-9460-ky-so-crud.md §2.1](./task-9460-ky-so-crud.md): `KySoCon
 
 ```
 Bước 1: Domain - GroupTypeConstants.NoiDungDaKySo
-Bước 2: Application - KySoThemMoiCommand + Handler
-Bước 3: WebApi - KySoController.Create → KySoThemMoiCommand
+Bước 2: Application - NoiDungDaKyCommand + Handler (V2 logic GroupType)
+Bước 3: WebApi - KySoController.Create → NoiDungDaKyCommand
 Bước 4: Xóa V1 - Entity/Config/Command NoiDungDaKySo (bảng riêng)
 Bước 5: Migration - DropNoiDungDaKySoTable (sau khi đã add AddNoiDungDaKySo)
 ```
@@ -89,16 +114,16 @@ Bước 5: Migration - DropNoiDungDaKySoTable (sau khi đã add AddNoiDungDaKySo
 
 ```csharp
 /// <summary>
-/// Lịch sử phiên bản ký số trên bảng TepDinhKem (ký lại sau lần đầu).
+/// Bản lịch sử ký số trên TepDinhKem (đã bị thay thế; hiện hành = KySo).
 /// </summary>
 public const string NoiDungDaKySo = "NoiDungDaKySo";
 ```
 
 ---
 
-### Bước 2 – Application: `KySoThemMoiCommand`
+### Bước 2 – Application: `NoiDungDaKyCommand` (V2)
 
-**File mới:** `QLDA.Application/KySos/Commands/KySoThemMoiCommand.cs`
+**File:** `QLDA.Application/KySos/Commands/NoiDungDaKyCommand.cs`
 
 ```csharp
 using System.Data;
@@ -107,12 +132,12 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.KySos.Commands;
 
-public record KySoThemMoiCommand : IRequest<int> {
+public record NoiDungDaKyCommand : IRequest<int> {
     public required string GroupId { get; set; }
     public required List<TepDinhKem> Entities { get; set; }
 }
 
-internal class KySoThemMoiCommandHandler : IRequestHandler<KySoThemMoiCommand, int> {
+internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, int> {
     private readonly IRepository<TepDinhKem, Guid> _repository;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -121,7 +146,7 @@ internal class KySoThemMoiCommandHandler : IRequestHandler<KySoThemMoiCommand, i
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(KySoThemMoiCommand request, CancellationToken cancellationToken = default) {
+    public async Task<int> Handle(NoiDungDaKyCommand request, CancellationToken cancellationToken = default) {
         var toInsert = new List<TepDinhKem>();
 
         foreach (var entity in request.Entities.Where(e => e.ParentId != null)) {
@@ -132,11 +157,12 @@ internal class KySoThemMoiCommandHandler : IRequestHandler<KySoThemMoiCommand, i
             ManagedException.ThrowIfNull(parent, "Không tìm thấy tệp cha (ParentId)");
 
             if (IsSignedVersion(parent.GroupType)) {
-                parent.IsDeleted = true;
-                entity.GroupType = GroupTypeConstants.NoiDungDaKySo;
+                parent.GroupType = GroupTypeConstants.NoiDungDaKySo; // bản cũ → lịch sử
+                entity.GroupType = GroupTypeConstants.KySo;         // bản mới → hiện hành
                 entity.ParentId = parent.Id;
+                // await UpdateAsync(parent) — cùng transaction với insert
             } else {
-                entity.GroupType = GroupTypeConstants.KySo;
+                entity.GroupType = GroupTypeConstants.KySo; // ký trên file gốc
             }
 
             toInsert.Add(entity);
@@ -183,7 +209,7 @@ var entities = model.DanhSachTepDinhKem
     .ToEntities(model.GroupId, GroupTypeConstants.KySo)
     .ToList();
 
-var count = await Mediator.Send(new KySoThemMoiCommand {
+var count = await Mediator.Send(new NoiDungDaKyCommand {
     GroupId  = model.GroupId.ToString(),
     Entities = entities,
 });
@@ -222,24 +248,25 @@ Chỉ `DropTable("NoiDungDaKySo")`; snapshot bỏ entity `NoiDungDaKySo`.
 ## 5. Query & ví dụ dữ liệu
 
 ```sql
--- Bản ký đang dùng
+-- Hiện hành (màn đối tượng)
 SELECT * FROM TepDinhKem
 WHERE GroupId = @GroupId
-  AND GroupType IN ('KySo', 'NoiDungDaKySo')
-  AND IsDeleted = 0;
+  AND GroupType = 'KySo'
+  AND IsDeleted = 0
+  AND ParentId IS NOT NULL;
 
--- Lịch sử (đã thay thế)
+-- Lịch sử (API danh sách — cả 2 type, kể cả IsDeleted)
 SELECT * FROM TepDinhKem
 WHERE GroupId = @GroupId
   AND GroupType IN ('KySo', 'NoiDungDaKySo')
-  AND IsDeleted = 1
   AND ParentId IS NOT NULL;
 ```
 
 ```
 File gốc (GoiThau)     id=1
-  → ký lần 1           id=2, GroupType=KySo,           ParentId=1
-  → ký lại             id=3, GroupType=NoiDungDaKySo, ParentId=2, id=2 IsDeleted=1
+  → ký lần 1           id=2, GroupType=KySo,             ParentId=1
+  → ký lại             id=2 → NoiDungDaKySo (lịch sử)
+                       id=3, GroupType=KySo,             ParentId=2 (hiện hành)
 ```
 
 ---
@@ -248,8 +275,8 @@ File gốc (GoiThau)     id=1
 
 ```
 [x] 1. Thêm GroupTypeConstants.NoiDungDaKySo
-[x] 2. Tạo KySoThemMoiCommand + Handler
-[x] 3. KySoController.Create → KySoThemMoiCommand (bỏ BulkInsert + NoiDungDaKyInsert)
+[x] 2. NoiDungDaKyCommand + Handler (V2 GroupType)
+[x] 3. KySoController.Create → NoiDungDaKyCommand (bỏ BulkInsert + NoiDungDaKyInsert)
 [x] 4. Xóa NoiDungDaKySo entity + Configuration + NoiDungDaKyInsertCommand
 [x] 5. Migration DropNoiDungDaKySoTable + ef update trên DB test
 [x] 6. Verify Postman: ký lần 1 + ký lại + file gốc không bị soft-delete
@@ -261,7 +288,7 @@ File gốc (GoiThau)     id=1
 ## 7. Lưu ý kỹ thuật
 
 - Request `DanhSachTepDinhKem`: chỉ file **đã ký** (`parentId` bắt buộc); `id: null` OK nếu dùng `entities[].Id` sau `ToEntities`.
-- `KySoThemMoiCommand` cập nhật `parent.IsDeleted` trong cùng transaction với `AddRange` — cần `SaveChanges` một lần (đã có).
+- `NoiDungDaKyCommand`: ký lại cập nhật `parent.GroupType` (tracked) + insert bản mới trong một transaction / `SaveChanges` (đã có).
 - Không đụng `TepDinhKemBulkInsertOrUpdateCommand` — các controller khác (`GoiThau`, `HopDong`, …) vẫn dùng bulk như cũ.
 - Phân biệt với [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md): bảng **`KySo`** = chứng thư / cấu hình ký số; **`TepDinhKem`** = file đính kèm đã ký trên đối tượng nghiệp vụ.
 
@@ -274,23 +301,22 @@ File gốc (GoiThau)     id=1
 | V1 (bỏ) | V2 (áp dụng) |
 |---------|----------------|
 | Bảng `NoiDungDaKySo` + `NoiDungDaKyInsertCommand` | Chỉ `TepDinhKem`, `GroupType` phân nhánh |
-| 2 bước Mediator trong controller | 1 command `KySoThemMoiCommand` |
+| 2 bước Mediator trong controller | 1 command `NoiDungDaKyCommand` |
 | `TepDinhKemBulkInsertOrUpdateCommand` + `KySo=true` | Command riêng, không sync soft-delete cả `GroupId` |
 
 ### Application Layer
 
 | Lỗi / vấn đề V1 | Sửa V2 |
 |-----------------|--------|
-| `NoiDungDaKyInsertCommand` chỉ `AddAsync`, không `SaveChanges` | Bỏ command; logic gộp `KySoThemMoiCommand` có `SaveChangesAsync` |
-| — | Handler set `GroupType` theo `parent.GroupType` (`IsSignedVersion`) |
-| — | Ký lại: `parent.IsDeleted = true`, `entity.ParentId = parent.Id` |
+| `NoiDungDaKyInsertCommand` chỉ `AddAsync`, không `SaveChanges` | Bỏ command; logic gộp `NoiDungDaKyCommand` có `SaveChangesAsync` |
+| Handler V1: `IsDeleted` + bản mới `NoiDungDaKySo` | V2: `parent` → `NoiDungDaKySo`, bản mới → `KySo`, không auto `IsDeleted` (§1.5) |
 
 ### WebApi Layer
 
 | Lỗi / vấn đề V1 | Sửa V2 |
 |-----------------|--------|
 | `tepDaKyMoi.GetId()` lần 2 khi `id: null` | Chỉ dùng `entities` từ `ToEntities().ToList()` |
-| `TepDinhKemBulkInsertOrUpdateCommand` xóa nhầm file gốc | Đổi sang `KySoThemMoiCommand` |
+| `TepDinhKemBulkInsertOrUpdateCommand` xóa nhầm file gốc | Đổi sang `NoiDungDaKyCommand` |
 | `return ResultApi.Ok(1)` cố định | `return ResultApi.Ok(count)` — số bản ghi insert |
 
 ### Domain / Persistence
@@ -309,7 +335,7 @@ File gốc (GoiThau)     id=1
 
 **Task #9460 (phần nội dung đã ký)** — refactor V1 → V2:
 
-- ✅ **1 file mới** (`KySoThemMoiCommand.cs`)
+- ✅ **Handler** `NoiDungDaKyCommand.cs` (V2 GroupType)
 - ✅ **2 file sửa** (`GroupTypeConstants.cs`, `KySoController.cs`)
 - ✅ **3 file xóa** (entity, config, insert command V1)
 - ⏭️ **1 migration** còn lại: `DropNoiDungDaKySoTable`
@@ -320,7 +346,7 @@ File gốc (GoiThau)     id=1
 
 | File | Mô tả |
 |------|-------|
-| `QLDA.Application/KySos/Commands/KySoThemMoiCommand.cs` | Insert file ký + xử lý ký lại; trả `int` số bản ghi |
+| `QLDA.Application/KySos/Commands/NoiDungDaKyCommand.cs` | Insert file ký + ký lại (hiện hành / lịch sử); trả `int` |
 
 ---
 
@@ -329,7 +355,7 @@ File gốc (GoiThau)     id=1
 | # | File | Thay đổi |
 |---|------|----------|
 | 1 | `QLDA.Domain/Constants/GroupTypeConstants.cs` | ➕ `NoiDungDaKySo` |
-| 2 | `QLDA.WebApi/Controllers/KySoController.cs` | ➖ `TepDinhKemBulkInsertOrUpdateCommand` + `NoiDungDaKyInsertCommand` → ➕ `KySoThemMoiCommand`; response `count` |
+| 2 | `QLDA.WebApi/Controllers/KySoController.cs` | ➖ Bulk + Insert V1 → ➕ `NoiDungDaKyCommand`; response `count` |
 
 ---
 
@@ -339,7 +365,7 @@ File gốc (GoiThau)     id=1
 |------|-------|
 | `QLDA.Domain/Entities/NoiDungDaKySo.cs` | Không dùng bảng riêng |
 | `QLDA.Persistence/Configurations/NoiDungDaKySoConfiguration.cs` | Không dùng bảng riêng |
-| `QLDA.Application/KySos/Commands/NoiDungDaKyInsertCommand.cs` | Thay bằng `KySoThemMoiCommand` |
+| `QLDA.Application/KySos/Commands/NoiDungDaKyInsertCommand.cs` | Thay bằng `NoiDungDaKyCommand` |
 
 ---
 
@@ -361,5 +387,5 @@ File gốc (GoiThau)     id=1
 
 ## 9. Pending (task khác)
 
-- [x] API/query list “nội dung đã ký” filter `GroupType IN ('KySo','NoiDungDaKySo')`
+- [x] API list — [task-9460-danh-sach-noi-dung-da-ky.md](./task-9460-danh-sach-noi-dung-da-ky.md): `IN ('KySo','NoiDungDaKySo')`, `OnlyNotDeleted: false`
 - [x] **DateTime → DateTimeOffset** (DB) và **DateOnly** (request) — code xong; còn chạy migration: [task-fix-datetime-datetimeoffset-dateonly.md](./task-fix-datetime-datetimeoffset-dateonly.md)

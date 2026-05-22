@@ -1,7 +1,8 @@
 # Task #9460 – API danh sách file đã ký (`TepDinhKem`)
 
-> **Thiết kế V2** — **không** query bảng `NoiDungDaKySo` (bảng này sẽ bỏ / đã bỏ khi refactor [task-9460-noi-dung-da-ky.md](./task-9460-noi-dung-da-ky.md) V2).  
-> Liên quan: [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md), [task-fix-datetime-datetimeoffset-dateonly.md](./task-fix-datetime-datetimeoffset-dateonly.md).
+> **V2 (áp dụng)** — nguồn `TepDinhKem`; phân loại theo **`GroupType` = hiện hành / lịch sử**, không theo “lần ký đầu / lần ký cuối”.  
+> **V1 (tham khảo, §6)** — query bảng `NoiDungDaKySo` riêng (đã bỏ).  
+> Liên quan: [task-9460-noi-dung-da-ky.md](./task-9460-noi-dung-da-ky.md) (upload/ký lại), [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md).
 
 ---
 
@@ -16,21 +17,46 @@
 | 3 | Điều kiện cố định | `ParentId IS NOT NULL` |
 | 4 | Filter 3 tham số (FE) + join `UserMaster` | `GroupType` cố định BE |
 
-### 1.2 Định nghĩa “file đã ký”
+### 1.2 `GroupType` — hiện hành vs lịch sử (không phải “lần đầu / lần cuối”)
+
+| `GroupType` | Vai trò |
+|-------------|---------|
+| **`KySo`** | Bản **đang hiển thị** / hiện hành (luôn tối đa **một** bản active trên một chuỗi ký) |
+| **`NoiDungDaKySo`** | Bản **lịch sử** (các phiên bản đã thay thế) |
+
+**Ví dụ:** File ký số sai → upload bản ký mới:
+
+| Bản | `GroupType` | Ghi chú |
+|-----|-------------|---------|
+| File ký ban đầu (sai) | `NoiDungDaKySo` | Chuyển sang lịch sử khi có bản mới |
+| File ký mới nhất | `KySo` | Hiện hành |
+
+**N file ký:** FE/màn chi tiết lấy **`KySo`** + `IsDeleted = false` cho file đang dùng; tab lịch sử lấy **cả hai** `GroupType`.
+
+### 1.3 Định nghĩa API danh sách (lịch sử ký số)
 
 | Điều kiện | Ý nghĩa |
 |-----------|---------|
-| `ParentId != null` | Bản tệp con — trỏ tới file gốc trước khi ký; **không** lấy file gốc (`ParentId == null`) |
-| `GroupType IN ('KySo', 'NoiDungDaKySo')` | Ký lần đầu hoặc ký lại (V2 trên `TepDinhKem`) |
-| `IsDeleted = false` | Mặc định qua `GetQueryableSet()` |
+| `ParentId != null` | Chỉ bản tệp đã ký (con); **không** lấy file gốc (`ParentId == null`) |
+| `GroupType IN ('KySo', 'NoiDungDaKySo')` | **Cả** hiện hành và lịch sử — bắt buộc lấy 2 type |
+| `GetQueryableSet(OnlyNotDeleted: false)` | **Bao gồm** `IsDeleted = true` — xem §1.4 |
 
 ```
-File gốc (GoiThau, …)     ParentId = null     → KHÔNG có trong list API này
-  └─ ký lần 1 (KySo)      ParentId = id gốc   → CÓ trong list
-  └─ ký lại (NoiDungDaKySo) ParentId = id bản ký trước → CÓ trong list
+File gốc (GoiThau, …)              ParentId = null        → KHÔNG có trong API lịch sử
+  └─ ký lần 1                      GroupType = KySo       → CÓ (hiện hành)
+  └─ ký lại: bản cũ → lịch sử      GroupType = NoiDungDaKySo
+       bản mới → hiện hành         GroupType = KySo
 ```
 
-### 1.3 Đầu vào (3 tham số — FE)
+### 1.4 `IsDeleted`
+
+| Trường hợp | Hành vi |
+|------------|---------|
+| Ký lại / thay bản | **Không** tự `IsDeleted` bản cũ — chỉ đổi `GroupType` bản cũ → `NoiDungDaKySo`, bản mới → `KySo` |
+| User “ký đời” / ẩn khỏi hiện hành | `IsDeleted = true` thủ công — **vẫn** hiện trong API **lịch sử** (`OnlyNotDeleted: false`) |
+| Lấy file **hiện hành** (màn đối tượng) | `GroupType = 'KySo'` AND `IsDeleted = false` (query riêng, không phải API này) |
+
+### 1.5 Đầu vào (3 tham số — FE)
 
 | Tham số (spec) | Query param | Kiểu | Map `TepDinhKem` |
 |----------------|-------------|------|------------------|
@@ -42,7 +68,7 @@ File gốc (GoiThau, …)     ParentId = null     → KHÔNG có trong list API 
 
 **Điều kiện ngày (spec):** `tuNgay <= CreateDate <= denNgay` → cột audit **`CreatedAt`**.
 
-### 1.4 Đầu ra (map spec → `TepDinhKem`)
+### 1.6 Đầu ra (map spec → `TepDinhKem`)
 
 | Output (spec) | DTO | Cột `TepDinhKem` |
 |---------------|-----|------------------|
@@ -61,7 +87,7 @@ File gốc (GoiThau, …)     ParentId = null     → KHÔNG có trong list API 
 | `CreateUserId` | `CreatedBy` → `long?` |
 | `CreateDate` | `CreatedAt.ToDateOnlyVn()` |
 
-### 1.5 API
+### 1.7 API
 
 ```
 GET /api/ky-so/noi-dung-da-ky/danh-sach
@@ -123,7 +149,8 @@ var signedGroupTypes = new[] {
     GroupTypeConstants.NoiDungDaKySo  // hoặc "NoiDungDaKySo" nếu constant chưa thêm
 };
 
-var query = _tepDinhKemRepository.GetQueryableSet()
+// Lịch sử: cả KySo + NoiDungDaKySo, kể cả IsDeleted (user ẩn nhưng vẫn xem lịch sử)
+var query = _tepDinhKemRepository.GetQueryableSet(OnlyNotDeleted: false)
     .AsNoTracking()
     .Where(e => e.ParentId != null)
     .Where(e => signedGroupTypes.Contains(e.GroupType))
@@ -159,10 +186,10 @@ public async Task<ResultApi> GetNoiDungDaKyList(
 ## 5. SQL tham khảo
 
 ```sql
-SELECT Id, ParentId, FileName, CreatedAt, CreatedBy
+-- API lịch sử: không lọc IsDeleted; cả 2 GroupType
+SELECT Id, ParentId, FileName, GroupType, IsDeleted, CreatedAt, CreatedBy
 FROM TepDinhKem
-WHERE IsDeleted = 0
-  AND ParentId IS NOT NULL
+WHERE ParentId IS NOT NULL
   AND GroupType IN ('KySo', 'NoiDungDaKySo')
   -- 2026-05-21 00:00 VN  →  2026-05-20 17:00:00 UTC
   AND CreatedAt >= '2026-05-20T17:00:00.0000000+00:00'
@@ -174,15 +201,18 @@ ORDER BY CreatedAt DESC;
 
 ---
 
-## 6. So sánh V1 (bỏ) vs V2 (áp dụng)
+## 6. So sánh V1 (giữ tham khảo) vs V2 (áp dụng)
 
-| | V1 (cũ — doc sai) | V2 (đúng) |
-|---|-------------------|-----------|
+| | V1 (cũ) | V2 (đúng) |
+|---|---------|-----------|
 | Bảng | `NoiDungDaKySo` | `TepDinhKem` |
 | Nhận diện file đã ký | Có row trong bảng riêng | `ParentId IS NOT NULL` |
+| Ý nghĩa `GroupType` | Hay hiểu nhầm **lần đầu = KySo, ký lại = NoiDungDaKySo** (bản **mới** gán `NoiDungDaKySo`) | **Hiện hành = `KySo`**, **lịch sử = `NoiDungDaKySo`** (bản **cũ** demote khi ký lại) |
+| Ký lại | Tự `IsDeleted` bản cũ | Chỉ đổi `GroupType` bản cũ; `IsDeleted` chỉ khi user ẩn thủ công |
+| API lịch sử | Chỉ bảng `NoiDungDaKySo` | `GroupType IN ('KySo','NoiDungDaKySo')`, `OnlyNotDeleted: false` |
 | `GroupName` output | Cột `GroupName` | `GroupType` |
 | `FileOrginal` | Cột `FileOrginal` | `OriginalName` |
-| Đồng bộ upload | Insert 2 nơi | Chỉ `TepDinhKem` / `KySoThemMoiCommand` |
+| Đồng bộ upload | Insert 2 nơi | Chỉ `TepDinhKem` / `NoiDungDaKyCommand` |
 
 ---
 
@@ -200,12 +230,16 @@ ORDER BY CreatedAt DESC;
 
 ## 8. Lưu ý
 
+- API này = **lịch sử ký số** (cả `KySo` + `NoiDungDaKySo`, kể cả `IsDeleted`). Không dùng để lấy **một** file hiện hành — màn đối tượng filter `GroupType = 'KySo'` AND `IsDeleted = false`.
 - API này **không** thay thế list file gốc (`ParentId == null`) trên màn hình đối tượng (Gói thầu, Hợp đồng, …).
-- Khi drop bảng `NoiDungDaKySo`, **không** sửa task list — chỉ đảm bảo `POST them-moi` không còn `NoiDungDaKyInsertCommand`.
-- `CreateUserName`: xác nhận `CreatedBy` lưu `UserMaster.Id` hay `UserPortalId` trước khi join.
+- **Handler upload** (`NoiDungDaKyCommand`): ký lại → `parent.GroupType = NoiDungDaKySo`, bản mới `KySo`; **không** tự `IsDeleted` khi ký lại (xem [task-9460-noi-dung-da-ky.md](./task-9460-noi-dung-da-ky.md) §1.3).
+- **Query list:** `GetQueryableSet(OnlyNotDeleted: false)` — user “ký đời” (`IsDeleted = true`) vẫn thấy trong lịch sử.
+- Khi drop bảng `NoiDungDaKySo` (V1), **không** đổi contract API list V2.
+- `CreateUserName`: join `UserMaster` qua `CreatedBy` ↔ `UserPortalId` (đã dùng trong handler).
 
 ---
 
 ## 9. Trạng thái
 
-- ⏳ Doc V2 (TepDinhKem) — cập nhật theo yêu cầu drop `NoiDungDaKySo`
+- ✅ Doc V2 — hiện hành / lịch sử theo `GroupType`; API list lấy cả 2 type + `IsDeleted`
+- ⏳ Checklist §7 — build + Postman

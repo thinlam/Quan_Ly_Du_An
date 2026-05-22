@@ -29,8 +29,8 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
             ManagedException.ThrowIfNull(parent, "Không tìm thấy tệp cha (ParentId)");
 
             if (IsSignedVersion(parent.GroupType)) {
-                parent.IsDeleted = true;
-                entity.GroupType = GroupTypeConstants.NoiDungDaKySo;
+                parent.GroupType = GroupTypeConstants.NoiDungDaKySo;
+                entity.GroupType = GroupTypeConstants.KySo;
                 entity.ParentId = parent.Id;
             } else {
                 entity.GroupType = GroupTypeConstants.KySo;

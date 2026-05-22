@@ -15,7 +15,7 @@ public static class GroupTypeConstants
     public const string KySo = "KySo";
 
     /// <summary>
-    /// Phiên bản file đã ký lại / lịch sử ký số trên TepDinhKem (ký lại sau lần đầu).
+    /// Bản lịch sử ký số trên TepDinhKem (đã bị thay thế; bản hiện hành dùng <see cref="KySo"/>).
     /// </summary>
     public const string NoiDungDaKySo = "NoiDungDaKySo";
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
