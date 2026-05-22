@@ -1,4 +1,3 @@
-using QLDA.Domain.Entities.ViMaster;
 using QLDA.Domain.Enums;
 using QLDA.Domain.Interfaces;
 
@@ -14,7 +13,6 @@ public class DeXuatDonViXuLy : IJunctionEntity<Guid, long>, IAggregateRoot {
 
     #region Navigation Properties
 
-    public virtual DanhMucDonViCbo? DonVi { get; set; }
     public DeXuatChuTruongMoi? DeXuat { get; set; }
 
     #endregion
