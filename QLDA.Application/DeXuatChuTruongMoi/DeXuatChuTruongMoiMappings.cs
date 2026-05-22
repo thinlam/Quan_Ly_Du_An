@@ -26,6 +26,22 @@ public static class DeXuatChuTruongMoiMappings {
         };
     }
 
+    public static void SyncDonViPhoiHopIds(this DeXuatChuTruongMoi entity, List<long>? donViPhoiHopIds) {
+        if (donViPhoiHopIds is null) {
+            entity.DeXuatDonViXuLys = [];
+            return;
+        }
+
+        entity.DeXuatDonViXuLys ??= [];
+        entity.DeXuatDonViXuLys.Clear();
+        foreach (var donViId in donViPhoiHopIds) {
+            entity.DeXuatDonViXuLys.Add(new DeXuatDonViXuLy {
+                LeftId = entity.Id,
+                RightId = donViId,
+            });
+        }
+    }
+
     public static DeXuatChuTruongMoiDto ToDto(this DeXuatChuTruongMoi entity, List<TepDinhKem>? files = null) {
         return new DeXuatChuTruongMoiDto
         {

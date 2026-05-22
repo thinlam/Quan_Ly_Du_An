@@ -1,6 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.DeXuatChuTruongMois.DTOs;
+using QLDA.Application.DeXuatChuTruongMois;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -27,6 +27,10 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
+        var donViPhoiHopIds = request.Dto.DeXuatDonViXuLys?
+            .Select(x => x.RightId)
+            .ToList();
+
         var entity = new DeXuatChuTruongMoi
         {
             DuAnId = request.Dto.DuAnId,
@@ -43,6 +47,9 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        entity.SyncDonViPhoiHopIds(donViPhoiHopIds);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

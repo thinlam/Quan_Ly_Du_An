@@ -90,20 +90,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new DeXuatChuTruongMoiUpdateCommand(
-            new()
-            {
-                Id = model.GetId(),
-                DuAnId = model.DuAnId,
-                BuocId = model.BuocId,  
-                DonViPhuTrachChinhId = model.BuocId,
-                LanhDaoPhuTrachId = model.BuocId,
-                HinhThucDauTuId = model.HinhThucDauTuId,
-                TomTatNoiDung = model.TomTatNoiDung,
-                NgayBatDauDuKien = model.NgayBatDauDuKien,
-                TongMucDauTu= model.TongMucDauTu,
-            }
-        ), cancellationToken);
+        var entity = await Mediator.Send(new DeXuatChuTruongMoiUpdateCommand(model.ToInsertDto()), cancellationToken);
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,
             GroupTypeConstants.ChuTruongMoi) ?? []];

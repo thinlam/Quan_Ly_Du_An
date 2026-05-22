@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Entities.Abstractions;
+using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -14,17 +15,17 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             TomTatNoiDung = entity.TomTatNoiDung,
             NgayBatDauDuKien = entity.NgayBatDauDuKien,
             LanhDaoPhuTrachId = entity.LanhDaoPhuTrachId,
-            NguoiXuLyChinhId = entity.LanhDaoPhuTrachId,
+            NguoiXuLyChinhId = entity.NguoiXuLyChinhId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
             HinhThucDauTuId = entity.HinhThucDauTuId,
             TrangThaiId = entity.TrangThaiId,
+            DonViPhoiHopIds = entity.DeXuatDonViXuLys?.Select(x => x.RightId).ToList(),
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList()
         };
 
 
-    public static DeXuatChuTruongMoi ToEntity(this DeXuatChuTruongMoiModel model)
-        => new() {
-            Id = model.GetId(),
+    public static DeXuatChuTruongMoi ToEntity(this DeXuatChuTruongMoiModel model) =>
+        new() {
             BuocId = model.BuocId,
             DuAnId = model.DuAnId,
             TongMucDauTu = model.TongMucDauTu,
@@ -33,8 +34,26 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             LanhDaoPhuTrachId = model.LanhDaoPhuTrachId,
             NguoiXuLyChinhId = model.NguoiXuLyChinhId,
             HinhThucDauTuId = model.HinhThucDauTuId,
-            DonViPhuTrachChinhId = model.DonViPhuTrachChinhId
+            DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
+            DeXuatDonViXuLys = model.DonViPhoiHopIds?
+                .Select(donViId => new DeXuatDonViXuLy { RightId = donViId })
+                .ToList() ?? [],
+        };
 
+    public static DeXuatChuTruongMoiInsertDto ToInsertDto(this DeXuatChuTruongMoiModel model) =>
+        new() {
+            Id = model.GetId(),
+            DuAnId = model.DuAnId,
+            BuocId = model.BuocId,
+            TomTatNoiDung = model.TomTatNoiDung,
+            TongMucDauTu = model.TongMucDauTu,
+            NgayBatDauDuKien = model.NgayBatDauDuKien,
+            HinhThucDauTuId = model.HinhThucDauTuId,
+            LanhDaoPhuTrachId = model.LanhDaoPhuTrachId,
+            NguoiXuLyChinhId = model.NguoiXuLyChinhId,
+            DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
+            TrangThaiId = model.TrangThaiId,
+            DonViPhoiHopIds = model.DonViPhoiHopIds,
         };
 
     public static void Update(this DeXuatChuTruongMoi entity, DeXuatChuTruongMoiModel model) {

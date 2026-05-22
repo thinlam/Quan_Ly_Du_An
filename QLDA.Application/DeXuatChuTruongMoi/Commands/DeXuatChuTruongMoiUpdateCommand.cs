@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.DeXuatChuTruongMois;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Domain.Constants;
 
@@ -26,7 +27,9 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
-            .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+            .Include(e => e.DeXuatDonViXuLys)
+            .Include(e => e.TrangThai)
+            .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);// Không tìm thấy dữ liệu
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
@@ -41,9 +44,12 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
         entity.NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId;
         entity.NgayBatDauDuKien = request.Dto.NgayBatDauDuKien;
         entity.DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId;
+        entity.LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId;// Không được phép cập nhật
 
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
+
+        entity.SyncDonViPhoiHopIds(request.Dto.DonViPhoiHopIds);
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);
