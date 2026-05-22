@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using QLDA.Domain.Entities.ViMaster;
+using QLDA.Persistence.Configurations.ViMaster;
 
 namespace QLDA.Persistence.Configurations;
 
-public class DanhMucDonViConfiguration : AggregateRootConfiguration<DanhMucDonVi> {
+public class DanhMucDonViConfiguration : MasterRootConfiguration<DanhMucDonVi> {
     public override void Configure(EntityTypeBuilder<DanhMucDonVi> builder) {
 
         builder.HasKey(e => e.Id)

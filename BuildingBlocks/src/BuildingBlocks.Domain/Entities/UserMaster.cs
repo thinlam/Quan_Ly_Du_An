@@ -22,6 +22,4 @@ public class UserMaster : IHasKey<long>, IAggregateRoot
 
     public bool? Used { get; set; }
 
-    public DmDonVi? DonVi { get; set; }
-    public DmDonVi? PhongBan { get; set; }
 }

@@ -4,7 +4,7 @@ using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Persistence.Configurations.ViMaster;
 
-public class DanhMucDuongConfiguration : AggregateRootConfiguration<DmDuong> {
+public class DanhMucDuongConfiguration : MasterRootConfiguration<DmDuong> {
     public override void Configure(EntityTypeBuilder<DmDuong> builder) {
         builder
             .HasNoKey()

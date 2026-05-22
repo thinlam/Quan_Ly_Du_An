@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using QLDA.Domain.Entities;
 using QLDA.Persistence.Repositories;
+using QLDA.Persistence.Configurations.ViMaster;
 
 namespace QLDA.Persistence;
 
@@ -86,7 +87,8 @@ public class AppDbContext : DbContext, IUnitOfWork
                     i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)) &&
                      (t.BaseType == null ||
                       !t.BaseType.IsGenericType ||
-                      t.BaseType.GetGenericTypeDefinition() != typeof(AggregateRootConfiguration<>))
+                      (t.BaseType.GetGenericTypeDefinition() != typeof(AggregateRootConfiguration<>) &&
+                       t.BaseType.GetGenericTypeDefinition() != typeof(MasterRootConfiguration<>)))
             );
         }
 
@@ -94,10 +96,27 @@ public class AppDbContext : DbContext, IUnitOfWork
         {
             e.ToTable(t => t.ExcludeFromMigrations());
         });
+
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
         {
             e.ToTable(t => t.ExcludeFromMigrations());
         });
+
+        modelBuilder.Entity<BuildingBlocks.Domain.Entities.DmDonVi>(e =>
+        {
+            e.ToTable(t => t.ExcludeFromMigrations());
+        });
+
+        // Exclude all ViMaster entities by scanning IAggregateRoot types in ViMaster namespace
+        var viMasterEntityTypes = typeof(AppDbContext).Assembly.GetTypes()
+            .Where(t => t.Namespace?.StartsWith("QLDA.Domain.Entities.ViMaster") == true &&
+                        t.IsClass &&
+                        t.GetInterfaces().Contains(typeof(IAggregateRoot)));
+
+        foreach (var entityType in viMasterEntityTypes)
+        {
+            modelBuilder.Entity(entityType, e => e.ToTable(t => t.ExcludeFromMigrations()));
+        }
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

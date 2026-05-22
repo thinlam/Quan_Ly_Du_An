@@ -1,16 +1,15 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.QuyetDinhDieuChinhs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 
 /// <summary>
 /// Cập nhật quyết định điều chỉnh - chỉ khi ở trạng thái Nháp hoặc Trả lại
 /// </summary>
-public record QuyetDinhDieuChinhUpdateCommand(QuyetDinhDieuChinhDto Dto) : IRequest<int>;
+public record QuyetDinhDieuChinhUpdateCommand(QuyetDinhDieuChinhUpdateDto Dto) : IRequest<int>;
 
 internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDinhDieuChinhUpdateCommand, int> {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
@@ -40,47 +39,27 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
-        // Validate: only allow update when status is DT (Dự thảo) or TL (Trả lại)
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
             throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
         }
 
-        // Update fields
-        entity.SoQuyetDinh = dto.SoQuyetDinh;
-        entity.NgayQuyetDinh = dto.NgayQuyetDinh;
-        entity.TrichYeu = dto.TrichYeu;
-        entity.LoaiDieuChinhId = dto.LoaiDieuChinhId;
-        entity.LyDo = dto.LyDo;
-        entity.TepDinhKem = dto.TepDinhKem;
+        // entity.Update(dto);
 
-        // Update chi phí (1-1 relationship) - upsert pattern
-        var existingChiPhi = await _chiPhiRepository.GetQueryableSet()
-            .FirstOrDefaultAsync(c => c.QuyetDinhDieuChinhId == entity.Id, cancellationToken);
+        // var existingChiPhi = await _chiPhiRepository.GetQueryableSet()
+        //     .FirstOrDefaultAsync(c => c.QuyetDinhDieuChinhId == entity.Id, cancellationToken);
 
-        if (dto.ChiPhi != null) {
-            if (existingChiPhi != null) {
-                existingChiPhi.TongMucDauTu = dto.ChiPhi.TongMucDauTu;
-                existingChiPhi.ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap;
-                existingChiPhi.ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi;
-                existingChiPhi.ChiPhiKhac = dto.ChiPhi.ChiPhiKhac;
-                existingChiPhi.ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong;
-            }
-            else {
-                var chiPhi = new ThongTinDieuChinhChiPhi {
-                    Id = Guid.NewGuid(),
-                    QuyetDinhDieuChinhId = entity.Id,
-                    TongMucDauTu = dto.ChiPhi.TongMucDauTu,
-                    ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap,
-                    ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi,
-                    ChiPhiKhac = dto.ChiPhi.ChiPhiKhac,
-                    ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong
-                };
-                await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
-            }
-        }
-        else if (existingChiPhi != null) {
-            existingChiPhi.IsDeleted = true;
-        }
+        // if (dto.ChiPhi != null) {
+        //     if (existingChiPhi != null) {
+        //         existingChiPhi.Update(dto.ChiPhi);
+        //     }
+        //     else {
+        //         var chiPhi = dto.ChiPhi.ToEntity(entity.Id);
+        //         await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
+        //     }
+        // }
+        // else if (existingChiPhi != null) {
+        //     existingChiPhi.IsDeleted = true;
+        // }
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

@@ -4,7 +4,7 @@ using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Persistence.Configurations.ViMaster;
 
-public class CanBoConfiguration : AggregateRootConfiguration<CanBo> {
+public class CanBoConfiguration : MasterRootConfiguration<CanBo> {
     public override void Configure(EntityTypeBuilder<CanBo> builder) {
         builder.HasKey(e => e.Id);
 

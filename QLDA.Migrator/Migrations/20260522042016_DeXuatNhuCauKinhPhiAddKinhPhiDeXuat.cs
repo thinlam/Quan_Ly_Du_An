@@ -5,15 +5,17 @@
 namespace QLDA.Migrator.Migrations
 {
     /// <inheritdoc />
-    public partial class AddBanGiaoHoSoPhongBanNhan : Migration
+    public partial class DeXuatNhuCauKinhPhiAddKinhPhiDeXuat : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<long>(
-                name: "PhongBanNhanId",
-                table: "BanGiaoHoSo",
+                name: "KinhPhiDeXuat",
+                table: "DeXuatNhuCauKinhPhi",
                 type: "bigint",
+                precision: 18,
+                scale: 2,
                 nullable: true);
         }
 
@@ -21,8 +23,8 @@ namespace QLDA.Migrator.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "PhongBanNhanId",
-                table: "BanGiaoHoSo");
+                name: "KinhPhiDeXuat",
+                table: "DeXuatNhuCauKinhPhi");
         }
     }
 }

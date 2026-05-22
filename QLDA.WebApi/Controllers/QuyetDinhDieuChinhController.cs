@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
+using QLDA.Application.QuyetDinhDieuChinhs.DTOs;
 using QLDA.Application.QuyetDinhDieuChinhs.Queries;
 
 namespace QLDA.WebApi.Controllers;
@@ -53,26 +54,7 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
     [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create([FromBody] QuyetDinhDieuChinhModel model, CancellationToken cancellationToken) {
-        var dto = new QuyetDinhDieuChinhDto {
-            PheDuyetEntityId = model.PheDuyetEntityId,
-            PheDuyetEntityName = model.PheDuyetEntityName,
-            DuAnId = model.DuAnId,
-            SoQuyetDinh = model.SoQuyetDinh,
-            NgayQuyetDinh = model.NgayQuyetDinh,
-            TrichYeu = model.TrichYeu,
-            LoaiDieuChinhId = model.LoaiDieuChinhId,
-            LyDo = model.LyDo,
-            TepDinhKem = model.TepDinhKem,
-            ChiPhi = model.ChiPhi == null ? null : new ThongTinDieuChinhChiPhiDto {
-                TongMucDauTu = model.ChiPhi.TongMucDauTu,
-                ChiPhiXayLap = model.ChiPhi.ChiPhiXayLap,
-                ChiPhiThietBi = model.ChiPhi.ChiPhiThietBi,
-                ChiPhiKhac = model.ChiPhi.ChiPhiKhac,
-                ChiPhiDuPhong = model.ChiPhi.ChiPhiDuPhong
-            }
-        };
-
+    public async Task<ResultApi> Create([FromBody] QuyetDinhDieuChinhInsertDto dto, CancellationToken cancellationToken) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhInsertCommand(dto), cancellationToken);
         return ResultApi.Ok(result);
     }
@@ -84,50 +66,19 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
     [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Update([FromBody] QuyetDinhDieuChinhModel model, CancellationToken cancellationToken) {
-        var dto = new QuyetDinhDieuChinhDto {
-            Id = model.Id,
-            PheDuyetEntityId = model.PheDuyetEntityId,
-            PheDuyetEntityName = model.PheDuyetEntityName,
-            DuAnId = model.DuAnId,
-            SoQuyetDinh = model.SoQuyetDinh,
-            NgayQuyetDinh = model.NgayQuyetDinh,
-            TrichYeu = model.TrichYeu,
-            LoaiDieuChinhId = model.LoaiDieuChinhId,
-            LyDo = model.LyDo,
-            TepDinhKem = model.TepDinhKem,
-            ChiPhi = model.ChiPhi == null ? null : new ThongTinDieuChinhChiPhiDto {
-                TongMucDauTu = model.ChiPhi.TongMucDauTu,
-                ChiPhiXayLap = model.ChiPhi.ChiPhiXayLap,
-                ChiPhiThietBi = model.ChiPhi.ChiPhiThietBi,
-                ChiPhiKhac = model.ChiPhi.ChiPhiKhac,
-                ChiPhiDuPhong = model.ChiPhi.ChiPhiDuPhong
-            }
-        };
-
+    public async Task<ResultApi> Update([FromBody] QuyetDinhDieuChinhUpdateDto dto, CancellationToken cancellationToken) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhUpdateCommand(dto), cancellationToken);
         return ResultApi.Ok(result);
     }
-}
 
-public class QuyetDinhDieuChinhModel {
-    public Guid Id { get; set; }
-    public Guid PheDuyetEntityId { get; set; }
-    public string PheDuyetEntityName { get; set; } = default!;
-    public Guid DuAnId { get; set; }
-    public string? SoQuyetDinh { get; set; }
-    public DateTimeOffset? NgayQuyetDinh { get; set; }
-    public string? TrichYeu { get; set; }
-    public int LoaiDieuChinhId { get; set; }
-    public string? LyDo { get; set; }
-    public string? TepDinhKem { get; set; }
-    public ThongTinDieuChinhChiPhiModel? ChiPhi { get; set; }
-}
-
-public class ThongTinDieuChinhChiPhiModel {
-    public decimal? TongMucDauTu { get; set; }
-    public decimal? ChiPhiXayLap { get; set; }
-    public decimal? ChiPhiThietBi { get; set; }
-    public decimal? ChiPhiKhac { get; set; }
-    public decimal? ChiPhiDuPhong { get; set; }
+    /// <summary>
+    /// Xóa quyết định điều chỉnh
+    /// </summary>
+    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
+    [HttpDelete("{id}")]
+    public async Task<ResultApi> Delete(Guid id, CancellationToken cancellationToken) {
+        await Mediator.Send(new QuyetDinhDieuChinhDeleteCommand(id), cancellationToken);
+        return ResultApi.Ok();
+    }
 }

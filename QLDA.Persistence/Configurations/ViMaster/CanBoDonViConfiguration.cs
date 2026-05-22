@@ -4,7 +4,7 @@ using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Persistence.Configurations.ViMaster;
 
-public class CanBoDonViConfiguration : AggregateRootConfiguration<CanBoDonVi> {
+public class CanBoDonViConfiguration : MasterRootConfiguration<CanBoDonVi> {
     public override void Configure(EntityTypeBuilder<CanBoDonVi> builder) {
         builder.HasKey(e => e.Id);
         builder.ToTable("CANBO_DONVI");
