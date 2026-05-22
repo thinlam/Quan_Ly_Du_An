@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522074044_AddDeXuatKinhPhiNamVaDeXuatTrinhNhuCau")]
+    partial class AddDeXuatKinhPhiNamVaDeXuatTrinhNhuCau
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4714,18 +4717,9 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("DonViId");
 
-                    b.Property<long?>("DonViId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("LeftId", "RightId");
 
-                    b.HasIndex("DonViId");
-
-                    b.ToTable("DeXuatDonViXuLy", null, t =>
-                        {
-                            t.Property("DonViId")
-                                .HasColumnName("DonViId1");
-                        });
+                    b.ToTable("DeXuatDonViXuLy", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DeXuatNhuCauKinhPhi", b =>
@@ -4872,7 +4866,7 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.Property<Guid>("LeftId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeXuatKinhPhiNamId");
+                        .HasColumnName("DuAnId");
 
                     b.Property<Guid>("RightId")
                         .HasColumnType("uniqueidentifier")
@@ -6869,22 +6863,6 @@ namespace QLDA.Migrator.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.DanhMucDonViCbo", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("TenDonVi")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DanhMucDonViCbo");
-                });
-
             modelBuilder.Entity("QLDA.Domain.Entities.ViMaster.UserMaster", b =>
                 {
                     b.Property<long>("Id")
@@ -7311,10 +7289,6 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.DeXuatDonViXuLy", b =>
                 {
-                    b.HasOne("QLDA.Domain.Entities.ViMaster.DanhMucDonViCbo", "DonVi")
-                        .WithMany()
-                        .HasForeignKey("DonViId");
-
                     b.HasOne("QLDA.Domain.Entities.DeXuatChuTruongMoi", "DeXuat")
                         .WithMany("DeXuatDonViXuLys")
                         .HasForeignKey("LeftId")
@@ -7322,8 +7296,6 @@ namespace QLDA.Migrator.Migrations
                         .IsRequired();
 
                     b.Navigation("DeXuat");
-
-                    b.Navigation("DonVi");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DeXuatNhuCauKinhPhi", b =>

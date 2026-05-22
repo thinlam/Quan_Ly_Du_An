@@ -12,7 +12,7 @@ public record DeXuatNhuCauKinhPhiQuery : AggregateRootPagination, IMayHaveGlobal
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-
+    public int? TrangThaiId { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public long? DonViDeXuatId { get; set; }
     public DateOnly? TuNgay { get; set; } 
@@ -54,6 +54,7 @@ internal class
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
+            .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId )
             .WhereIf(tuNgayDto != null, e => e.NgayPhieuChuyen >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayPhieuChuyen < denNgayExclusiveDto);
         return await queryable

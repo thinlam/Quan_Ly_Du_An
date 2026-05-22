@@ -130,8 +130,8 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
     [ProducesResponseType<ResultApi<PaginatedList<DeXuatChuyenTiepDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Get([FromQuery] CommonSearchDto req) {
-        var res = await Mediator.Send(new DeXuatChuyenTiepGetQuery() {
-            DuAnId = req.DuAnId??Guid.Empty,
+        var res = await Mediator.Send(new DeXuatChuyenTiepGetDanhSachQuery() {
+            DuAnId = req.DuAnId,
             BuocId = req.BuocId,
             GlobalFilter = req.GlobalFilter,
             PageIndex = req.PageIndex,

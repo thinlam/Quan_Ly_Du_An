@@ -1,24 +1,24 @@
 using Azure.Core;
-using QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
-using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
-using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
+using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
+using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
+using QLDA.Application.DeXuatNhuCauKinhPhiNams.Queries;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
-using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
+using QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
 
-[Tags("Đề xuất nhu cầu kinh phí")]
-[Route("api/de-xuat-nhu-cau-kinh-phi")]
-public class DeXuatNhuCauKinhPhiController : AggregateRootController {
+[Tags("Đề xuất kế hoạch kinh phí năm")]
+[Route("api/de-xuat-nhu-cau-kinh-phi-nam")]
+public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
     // GET
-    public DeXuatNhuCauKinhPhiController(IServiceProvider serviceProvider) : base(serviceProvider) {
+    public DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) : base(serviceProvider) {
     }
 
     /// <summary>
@@ -26,11 +26,11 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiNamModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id) {
-        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiGetQuery() {
+        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamGetQuery() {
             Id = id,
             ThrowIfNull = true,
             IsNoTracking = true,
@@ -45,7 +45,7 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
 
     [HttpDelete("{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id) {
-        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiDeleteCommand(id));
+        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiNamDeleteCommand(id));
         return ResultApi.Ok(res);
     }
 
@@ -53,14 +53,12 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiModel model) {
+    public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiNamModel model) {
         //Cập nhật bước hiện tại của dự án
         
-        var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
-        await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
-
+      
         var entity = model.ToEntity();
-        var savedEntity = await Mediator.Send(new DeXuatNhuCauKinhPhiInsertCommand(entity));
+        var savedEntity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamInsertCommand(entity));
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, GroupTypeConstants.NhuCauKinhPhi) ?? []];
 
@@ -75,23 +73,22 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
    
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhi>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiNam>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Update(
-        [FromBody] DeXuatNhuCauKinhPhiModel model,
+        [FromBody] DeXuatNhuCauKinhPhiNamModel model,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiUpdateCommand(
+        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamUpdateCommand(
             new()
             {
                 Id = model.GetId(),
-                DuAnId = model.DuAnId,
-                BuocId = model.BuocId,  
-                DonViDeXuatId = model.DonViDeXuatId,
-                SoPhieuChuyen = model.SoPhieuChuyen,
-                NgayPhieuChuyen = model.NgayPhieuChuyen,
-                TrichYeu = model.TrichYeu
+                So = model.So,
+                NgayKeHoach = model.NgayKeHoach,
+                TrichYeu = model.TrichYeu,
+                GhiChu = model.GhiChu,
+                TongKinhPhiDeXuat = model.TongKinhPhiDeXuat
             }
         ), cancellationToken);
 
@@ -114,16 +111,18 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
 
 
     [HttpGet("danh-sach-tien-do")]
-    [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiNamDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get([FromQuery] DeXuatNhuCauKinhPhiSearchDto req) {
-        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiQuery() {
-            DuAnId = req.DuAnId,
-            BuocId = req.BuocId,
-            TrangThaiId = req.TrangThaiId,
+    public async Task<ResultApi> Get([FromQuery] DeXuatNhuCauKinhPhiNamSearchDto req) {
+        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiNamQuery() {
+            So = req.So,
+            DenNgay = req.DenNgay,
+            TuNgay = req.TuNgay,
+            NguoiDeXuatId = req.NguoiDeXuatId,
+            PhongBanDeXuatId = req.PhongBanDeXuatId,
             GlobalFilter = req.GlobalFilter,
-            PageIndex = req.PageIndex,
-            PageSize = req.PageSize,
+            PageIndex = req.PageIndex??1,
+            PageSize = req.PageSize??1000000,
             IsNoTracking = true,
             
         });

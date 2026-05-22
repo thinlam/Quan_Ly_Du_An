@@ -7,7 +7,7 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.DeXuatChuyenTieps.Queries;
 
-public record DeXuatChuyenTiepQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<DeXuatChuyenTiepDto>> {
+public record DeXuatChuyenTiepGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<DeXuatChuyenTiepDto>> {
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
@@ -16,9 +16,7 @@ public record DeXuatChuyenTiepQuery : AggregateRootPagination, IMayHaveGlobalFil
     public DateOnly? DenNgay { get; set; }
 }
 
-internal class
-    DeXuatChuyenTiepQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<DeXuatChuyenTiepQuery, PaginatedList<DeXuatChuyenTiepDto>> {
+internal class    DeXuatChuyenTiepGetDanhSachQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<DeXuatChuyenTiepGetDanhSachQuery, PaginatedList<DeXuatChuyenTiepDto>> {
     private readonly IRepository<DeXuatChuyenTiep, Guid> DeXuatChuyenTiep =
         ServiceProvider.GetRequiredService<IRepository<DeXuatChuyenTiep, Guid>>();
 
@@ -27,7 +25,7 @@ internal class
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
-    public async Task<PaginatedList<DeXuatChuyenTiepDto>> Handle(DeXuatChuyenTiepQuery request,
+    public async Task<PaginatedList<DeXuatChuyenTiepDto>> Handle(DeXuatChuyenTiepGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         bool dieuKienThayTatCa = false;
 

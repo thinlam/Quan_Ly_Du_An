@@ -7,4 +7,5 @@ public record DeXuatNhuCauKinhPhiSearchDto : CommonSearchDto
     public long? DonViDeXuatId { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public string? TrichYeu { get; set; }
+    public int? TrangThaiId { get; set; }
 }
