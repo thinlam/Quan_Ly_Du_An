@@ -23,7 +23,7 @@ internal class DeXuatChuyenTiepUpdateCommandHandler : IRequestHandler<DeXuatChuy
     public async Task<DeXuatChuyenTiep> Handle(DeXuatChuyenTiepUpdateCommand request, CancellationToken cancellationToken = default)
     {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatChuTruongChuyenTiep, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);

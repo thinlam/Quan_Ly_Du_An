@@ -6486,12 +6486,6 @@ namespace QLDA.Migrator.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("DeXuatChuTruongMoiId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("DeXuatChuyenTiepId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
 
@@ -6535,9 +6529,7 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeXuatChuTruongMoiId");
-
-                    b.HasIndex("DeXuatChuyenTiepId");
+                    
 
                     b.HasIndex("Index");
 
@@ -8277,16 +8269,7 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("HopDong");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.TepDinhKem", b =>
-                {
-                    b.HasOne("QLDA.Domain.Entities.DeXuatChuTruongMoi", null)
-                        .WithMany("DanhSachTepDinhKem")
-                        .HasForeignKey("DeXuatChuTruongMoiId");
-
-                    b.HasOne("QLDA.Domain.Entities.DeXuatChuyenTiep", null)
-                        .WithMany("DanhSachTepDinhKem")
-                        .HasForeignKey("DeXuatChuyenTiepId");
-                });
+        
 
             modelBuilder.Entity("QLDA.Domain.Entities.ThanhToan", b =>
                 {

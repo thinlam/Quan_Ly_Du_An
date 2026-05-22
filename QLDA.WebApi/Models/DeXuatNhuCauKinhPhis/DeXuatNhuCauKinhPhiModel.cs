@@ -21,9 +21,6 @@ public class DeXuatNhuCauKinhPhiModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayH
         
         return SequentialGuidGenerator.Instance.NewGuid();
     }
-    /// <summary>
-    /// Tên dự án
-    /// </summary>
     public int? BuocId { get; set; }
     public Guid DuAnId { get; set; }
     

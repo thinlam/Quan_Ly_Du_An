@@ -1,9 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DeXuatChuTruongMois.Queries;
 
@@ -21,18 +22,13 @@ public record DeXuatChuTruongMoiQuery : AggregateRootPagination, IMayHaveGlobalF
 }
 
 internal class
-    DeXuatChuTruongMoiQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<DeXuatChuTruongMoiQuery, PaginatedList<DeXuatChuTruongMoiDto>> {
-    private readonly IRepository<DeXuatChuTruongMoi, Guid> DeXuatChuTruongMoi =
-        ServiceProvider.GetRequiredService<IRepository<DeXuatChuTruongMoi, Guid>>();
-
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    DeXuatChuTruongMoiQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<DeXuatChuTruongMoiQuery, PaginatedList<DeXuatChuTruongMoiDto>> {
+    private readonly IRepository<DeXuatChuTruongMoi, Guid> DeXuatChuTruongMoi =  ServiceProvider.GetRequiredService<IRepository<DeXuatChuTruongMoi, Guid>>();
+    private readonly IRepository<DanhMucDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DanhMucDonVi, long>>()   ;  
+    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
-
-    public async Task<PaginatedList<DeXuatChuTruongMoiDto>> Handle(DeXuatChuTruongMoiQuery request,
-        CancellationToken cancellationToken = default) {
+    public async Task<PaginatedList<DeXuatChuTruongMoiDto>> Handle(DeXuatChuTruongMoiQuery request,  CancellationToken cancellationToken = default) {
         bool dieuKienThayTatCa = false;
 
         var queryable = DeXuatChuTruongMoi.GetQueryableSet().AsNoTracking()
@@ -57,10 +53,36 @@ internal class
                 NgayBatDauDuKien = e.NgayBatDauDuKien,
                 LanhDaoPhuTrachId = e.LanhDaoPhuTrachId,    
                 DonViPhuTrachChinhId = e.DonViPhuTrachChinhId,    
+                TongMucDauTu= e.TongMucDauTu,
+                NguoiXuLyChinhId = e.NguoiXuLyChinhId,  
+
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                //
+                //   public List<DanhMucDonViCbo>? DanhSachDonViPhoiHop { get; set; }
+                //    public ICollection<DeXuatDonViXuLy>? DeXuatDonViXuLys { get; set; } = [];
+                /*
+                 
+public class DeXuatDonViXuLy : IJunctionEntity<Guid, long>, IAggregateRoot {
+    public Guid LeftId { get; set; }
+    public long RightId { get; set; }
 
+
+    public DeXuatChuTruongMoi? DeXuat { get; set; } //e.DeXuatDonViXuLys!
+
+public class DanhMucDonViCbo{
+    public string? TenDonVi { get; set; }
+    public long Id { get; set; }
+
+}
+
+}*/
+           DanhSachDonViPhoiHop = DmDonVi.GetQueryableSet().Join( e.DeXuatDonViXuLys!,   dm => dm.Id,  dx => dx.RightId,                   
+                (dm, dx) => new DanhMucDonViCbo {
+                    Id = dm.Id,
+                    TenDonVi = dm.TenDonVi
+                }) .ToList(),
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

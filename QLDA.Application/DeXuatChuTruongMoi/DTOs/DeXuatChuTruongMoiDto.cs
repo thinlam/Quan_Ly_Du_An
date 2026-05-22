@@ -32,4 +32,5 @@ public class DeXuatChuTruongMoiDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo,
     public string? MaTrangThai { get; set; }
     public string? TenTrangThai { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+    public List<DanhMucDonViCbo>? DanhSachDonViPhoiHop { get; set; }
 }

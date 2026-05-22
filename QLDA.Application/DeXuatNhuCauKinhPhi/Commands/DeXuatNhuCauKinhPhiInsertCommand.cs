@@ -25,12 +25,13 @@ internal class DeXuatNhuCauKinhPhiInsertCommandHandler : IRequestHandler<DeXuatN
     {
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatNhuCauKinhPhi, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = new DeXuatNhuCauKinhPhi
         {
             DuAnId = request.Dto.DuAnId,
             BuocId = request.Dto.BuocId,
+            KinhPhiDeXuat = request.Dto.KinhPhiDeXuat,
             DonViDeXuatId = request.Dto.DonViDeXuatId,
             SoPhieuChuyen = request.Dto.SoPhieuChuyen,
             NgayPhieuChuyen = request.Dto.NgayPhieuChuyen,

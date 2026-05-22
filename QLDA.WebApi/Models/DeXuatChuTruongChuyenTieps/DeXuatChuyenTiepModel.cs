@@ -3,7 +3,7 @@ using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
 using SequentialGuid;
 
-namespace QLDA.WebApi.Models.PheDuyetEntityNames.DeXuatChuTruongChuyenTieps;
+namespace QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 
 public class DeXuatChuyenTiepModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKemModel, ITienDo{
     [DefaultValue(null)] public Guid? Id { get; set; }

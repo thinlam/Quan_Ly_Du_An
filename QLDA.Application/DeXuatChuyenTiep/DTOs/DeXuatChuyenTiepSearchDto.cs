@@ -4,4 +4,5 @@ namespace QLDA.Application.DeXuatChuyenTieps.DTOs;
 
 public record DeXuatChuyenTiepSearchDto : CommonSearchDto
 {
+ 
 }

@@ -46,6 +46,8 @@ public static class PheDuyetEntityNames
 
     [Description("Đề xuất chủ trương chuyển tiếp")]
     public const string DeXuatNhuCauKinhPhi = "DeXuatNhuCauKinhPhi";
-    
+    [Description("Đề xuất")]
+    public const string DeXuatMacDinhStt = "DeXuatMacDinh";
+
 
 }

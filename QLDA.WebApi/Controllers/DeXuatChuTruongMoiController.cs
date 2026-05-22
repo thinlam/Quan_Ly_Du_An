@@ -67,17 +67,17 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
 
         var entity = model.ToEntity();
-        await Mediator.Send(new DeXuatChuTruongMoiInsertCommand(entity));
+        var savedEntity =  await Mediator.Send(new DeXuatChuTruongMoiInsertCommand(entity));
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
-            entity.Id, GroupTypeConstants.ChuTruongMoi) ?? []];
+            savedEntity.Id, GroupTypeConstants.ChuTruongMoi) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            GroupId = entity.Id.ToString(),
+            GroupId = savedEntity.Id.ToString(),
             Entities = files
         });
 
-        return ResultApi.Ok(entity.Id);
+        return ResultApi.Ok(savedEntity.Id);
     }
 
    

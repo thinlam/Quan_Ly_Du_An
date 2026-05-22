@@ -2,7 +2,7 @@ using BuildingBlocks.Domain.Entities.Abstractions;
 using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
 
-namespace QLDA.WebApi.Models.PheDuyetEntityNames.DeXuatChuTruongChuyenTieps;
+namespace QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 
 public static class DeXuatChuyenTiepMappingConfiguration {
     public static DeXuatChuyenTiepModel ToModel(this DeXuatChuyenTiep entity, List<TepDinhKem>? danhSachTepDinhKem = null) =>
@@ -10,8 +10,11 @@ public static class DeXuatChuyenTiepMappingConfiguration {
             Id = entity.Id,
             BuocId = entity.BuocId,
             DuAnId = entity.DuAnId,
-           
-
+            NhuCauKinhPhi = entity.NhuCauKinhPhi,
+            SoLieuGiaiNgan = entity.SoLieuGiaiNgan,
+            UocGiaiNgan = entity.UocGiaiNgan,
+            KhoiLuongThucTe = entity.KhoiLuongThucTe,
+            KhoiLuongDuKien = entity.KhoiLuongDuKien,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList()
         };

@@ -23,7 +23,6 @@ public class DeXuatChuTruongMoi : Entity<Guid>, IAggregateRoot
 
     public long? DonViPhuTrachChinhId { get; set; }
     public int? TrangThaiId { get; set; }
-    public List<TepDinhKem>? DanhSachTepDinhKem { get; set; }
 
 
     #region Navigation Properties

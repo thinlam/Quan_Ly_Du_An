@@ -16,6 +16,7 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             LanhDaoPhuTrachId = entity.LanhDaoPhuTrachId,
             NguoiXuLyChinhId = entity.LanhDaoPhuTrachId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
+            HinhThucDauTuId = entity.HinhThucDauTuId,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList()
         };
@@ -31,6 +32,7 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             NgayBatDauDuKien = model.NgayBatDauDuKien,
             LanhDaoPhuTrachId = model.LanhDaoPhuTrachId,
             NguoiXuLyChinhId = model.NguoiXuLyChinhId,
+            HinhThucDauTuId = model.HinhThucDauTuId,
             DonViPhuTrachChinhId = model.DonViPhuTrachChinhId
 
         };
@@ -43,6 +45,7 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
         entity.NgayBatDauDuKien = model.NgayBatDauDuKien;
         entity.LanhDaoPhuTrachId = model.LanhDaoPhuTrachId;
         entity.NguoiXuLyChinhId = model.NguoiXuLyChinhId;
+        entity.HinhThucDauTuId = model.HinhThucDauTuId;
         entity.DonViPhuTrachChinhId = model.DonViPhuTrachChinhId;
     }
 }

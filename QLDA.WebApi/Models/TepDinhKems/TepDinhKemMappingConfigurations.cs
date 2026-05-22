@@ -7,7 +7,7 @@ using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.PheDuyetDuToans;
-using QLDA.WebApi.Models.PheDuyetEntityNames.DeXuatChuTruongChuyenTieps;
+using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.PhuLucHopDongs;
 using QLDA.WebApi.Models.QuyetDinhDuyetDuAns;
 using QLDA.WebApi.Models.QuyetDinhDuyetKHLCNTs;

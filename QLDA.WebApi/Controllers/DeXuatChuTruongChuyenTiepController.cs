@@ -1,13 +1,18 @@
-using QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
-using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
-using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
+using Azure.Core;
+using QLDA.Application.DeXuatChuyenTieps.Commands;
+using QLDA.Application.DeXuatChuyenTieps.DTOs;
+using QLDA.Application.DeXuatChuyenTieps.Queries;
+using QLDA.Application.DeXuatChuyenTieps.Commands;
+using QLDA.Application.DeXuatChuyenTieps.DTOs;
+using QLDA.Application.DeXuatChuyenTieps.Queries;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
-using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
+using QLDA.WebApi.Models.DeXuatChuTruongMois;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
+using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Net.Mime;
 
@@ -25,11 +30,11 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DeXuatChuyenTiepModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id) {
-        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiGetQuery() {
+        var entity = await Mediator.Send(new DeXuatChuyenTiepGetQuery() {
             Id = id,
             ThrowIfNull = true,
             IsNoTracking = true,
@@ -44,7 +49,7 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
 
     [HttpDelete("{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id) {
-        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiDeleteCommand(id));
+        var res = await Mediator.Send(new DeXuatChuyenTiepDeleteCommand(id));
         return ResultApi.Ok(res);
     }
 
@@ -60,47 +65,46 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiModel model) {
+    public async Task<ResultApi> Create([FromBody] DeXuatChuyenTiepModel model) {
         //Cập nhật bước hiện tại của dự án
         
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
 
         var entity = model.ToEntity();
-        await Mediator.Send(new DeXuatNhuCauKinhPhiInsertCommand(entity));
-
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,
+        var savedEntity =        await Mediator.Send(new DeXuatChuyenTiepInsertCommand(entity));
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id,
             GroupTypeConstants.ChuTruongChuyenTiep) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            GroupId = entity.Id.ToString(),
+            GroupId = savedEntity.Id.ToString(),
             Entities = files
         });
         
-        return ResultApi.Ok(entity.Id);
+        return ResultApi.Ok(savedEntity.Id);
     }
 
    
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhi>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DeXuatChuyenTiep>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Update(
-        [FromBody] DeXuatNhuCauKinhPhiModel model,
+        [FromBody] DeXuatChuyenTiepModel model,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiUpdateCommand(
+        var entity = await Mediator.Send(new DeXuatChuyenTiepUpdateCommand(
             new()
             {
-                Id = model.GetId(),
+                Id = model.Id,
                 DuAnId = model.DuAnId,
                 BuocId = model.BuocId,
-                DonViDeXuatId = model.DonViDeXuatId,
-                SoPhieuChuyen = model.SoPhieuChuyen,
-                NgayPhieuChuyen = model.NgayPhieuChuyen,
-                KinhPhiDeXuat = model.KinhPhiDeXuat,
-                TrichYeu = model.TrichYeu,
+                SoLieuGiaiNgan = model.SoLieuGiaiNgan,
+                NhuCauKinhPhi = model.NhuCauKinhPhi,
+                KhoiLuongDuKien = model.KhoiLuongDuKien,
+                KhoiLuongThucTe = model.KhoiLuongThucTe,
+                UocGiaiNgan = model.UocGiaiNgan
             }
         ), cancellationToken);
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,GroupTypeConstants.ChuTruongChuyenTiep) ?? []];
@@ -123,19 +127,15 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
 
 
     [HttpGet("danh-sach-tien-do")]
-    [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<DeXuatChuyenTiepDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get([FromQuery] DeXuatNhuCauKinhPhiSearchDto req) {
-        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiQuery() {
-            DuAnId = req.DuAnId,
+    public async Task<ResultApi> Get([FromQuery] CommonSearchDto req) {
+        var res = await Mediator.Send(new DeXuatChuyenTiepGetQuery() {
+            DuAnId = req.DuAnId??Guid.Empty,
             BuocId = req.BuocId,
             GlobalFilter = req.GlobalFilter,
             PageIndex = req.PageIndex,
             PageSize = req.PageSize,
-            DonViDeXuatId = req.DonViDeXuatId,
-            SoPhieuChuyen = req.SoPhieuChuyen,
-            TuNgay = req.TuNgay,
-            DenNgay = req.DenNgay,
             IsNoTracking = true,    
             
         });

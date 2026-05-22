@@ -19,7 +19,6 @@ public class DeXuatChuyenTiep : Entity<Guid>, IAggregateRoot
     public string? KhoiLuongDuKien { get; set; }
 
     public int? TrangThaiId { get; set; }
-    public List<TepDinhKem>? DanhSachTepDinhKem { get; set; }
 
 
     #region Navigation Properties

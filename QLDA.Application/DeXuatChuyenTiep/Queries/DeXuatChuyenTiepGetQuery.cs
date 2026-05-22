@@ -3,7 +3,12 @@ using Microsoft.EntityFrameworkCore;
 namespace QLDA.Application.DeXuatChuyenTieps.Queries;
 
 public record DeXuatChuyenTiepGetQuery : IRequest<DeXuatChuyenTiep> {
-    public Guid Id { get; set; }
+    public Guid? DuAnId { get; set; }
+    public int? BuocId { get; set; }    
+    public string? GlobalFilter { get; set; }
+    public int? PageIndex { get; set; }
+    public int? PageSize { get; set; }
+    public Guid? Id { get; set; }
     public bool ThrowIfNull { get; set; } = true;
     public bool IsNoTracking { get; set; }
 }
@@ -17,14 +22,11 @@ internal class DeXuatChuyenTiepGetQueryHandler(IServiceProvider serviceProvider)
         serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
 
-    public async Task<DeXuatChuyenTiep> Handle(DeXuatChuyenTiepGetQuery request,
-        CancellationToken cancellationToken = default) {
-        var queryable = DeXuatChuyenTiep.GetOrderedSet()
-            .Where(e => e.Id == request.Id);
+    public async Task<DeXuatChuyenTiep> Handle(DeXuatChuyenTiepGetQuery request,        CancellationToken cancellationToken = default) {
+        var queryable = DeXuatChuyenTiep.GetOrderedSet().Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)
             queryable = queryable.AsNoTracking();
-
 
         var entity = await queryable
             .FirstOrDefaultAsync(cancellationToken);

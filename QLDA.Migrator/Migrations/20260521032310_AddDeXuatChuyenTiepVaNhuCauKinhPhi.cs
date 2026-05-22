@@ -11,11 +11,7 @@ namespace QLDA.Migrator.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<Guid>(
-                name: "DeXuatChuyenTiepId",
-                table: "TepDinhKem",
-                type: "uniqueidentifier",
-                nullable: true);
+            
 
             migrationBuilder.CreateTable(
                 name: "DeXuatChuyenTiep",
@@ -90,11 +86,7 @@ namespace QLDA.Migrator.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_TepDinhKem_DeXuatChuyenTiepId",
-                table: "TepDinhKem",
-                column: "DeXuatChuyenTiepId");
-
+        
             migrationBuilder.CreateIndex(
                 name: "IX_DeXuatChuyenTiep_DuAnId",
                 table: "DeXuatChuyenTiep",
@@ -127,34 +119,19 @@ namespace QLDA.Migrator.Migrations
                 table: "DeXuatNhuCauKinhPhi",
                 column: "TrangThaiId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_TepDinhKem_DeXuatChuyenTiep_DeXuatChuyenTiepId",
-                table: "TepDinhKem",
-                column: "DeXuatChuyenTiepId",
-                principalTable: "DeXuatChuyenTiep",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_TepDinhKem_DeXuatChuyenTiep_DeXuatChuyenTiepId",
-                table: "TepDinhKem");
-
+           
             migrationBuilder.DropTable(
                 name: "DeXuatChuyenTiep");
 
             migrationBuilder.DropTable(
                 name: "DeXuatNhuCauKinhPhi");
 
-            migrationBuilder.DropIndex(
-                name: "IX_TepDinhKem_DeXuatChuyenTiepId",
-                table: "TepDinhKem");
-
-            migrationBuilder.DropColumn(
-                name: "DeXuatChuyenTiepId",
-                table: "TepDinhKem");
+         
         }
     }
 }

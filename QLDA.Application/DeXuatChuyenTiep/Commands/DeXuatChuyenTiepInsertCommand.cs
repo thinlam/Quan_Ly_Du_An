@@ -25,7 +25,7 @@ internal class DeXuatChuyenTiepInsertCommandHandler : IRequestHandler<DeXuatChuy
     {
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatChuTruongChuyenTiep, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = new DeXuatChuyenTiep
         {

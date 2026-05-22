@@ -1,5 +1,10 @@
 ﻿namespace QLDA.Domain.Entities.ViMaster;
 
+public class DanhMucDonViCbo{
+    public string? TenDonVi { get; set; }
+    public long Id { get; set; }
+
+}
 public class DanhMucDonVi :IHasKey<long>, IAggregateRoot
 {
     public long Id { get; set; }
