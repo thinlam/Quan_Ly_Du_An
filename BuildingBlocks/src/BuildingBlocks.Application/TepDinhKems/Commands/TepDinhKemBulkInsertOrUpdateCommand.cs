@@ -8,6 +8,11 @@ public record TepDinhKemBulkInsertOrUpdateCommand() : IRequest
 {
     public required string GroupId { get; set; }
     public required List<TepDinhKem> Entities { get; set; }
+    /// <summary>
+    /// Phạm vi sync theo GroupType (cùng GroupId có thể có nhiều loại tệp).
+    /// Bắt buộc khi <see cref="Entities"/> rỗng nhưng cần xóa mềm theo loại; nếu null sẽ suy ra từ Entities.
+    /// </summary>
+    public List<string>? GroupTypes { get; set; }
     public bool KySo { get; set; }
 }
 
@@ -28,7 +33,7 @@ internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem
         }
         else
         {
-            using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken); await InsertOrUpdateAsync(request, cancellationToken);
+            using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
             await InsertOrUpdateAsync(request, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -43,7 +48,16 @@ internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem
     /// <returns></returns>
     private async Task InsertOrUpdateAsync(TepDinhKemBulkInsertOrUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        var files = await _repository.GetQueryableSet().Where(e => e.GroupId == request.GroupId).ToListAsync(cancellationToken);
+        request.Entities ??= [];
+        var groupTypes = ResolveGroupTypes(request);
+        if (request.Entities.Count == 0 && groupTypes.Count == 0)
+            return;
+
+        var filesQuery = _repository.GetQueryableSet().Where(e => e.GroupId == request.GroupId);
+        if (groupTypes.Count > 0)
+            filesQuery = filesQuery.Where(e => groupTypes.Contains(e.GroupType));
+
+        var files = await filesQuery.ToListAsync(cancellationToken);
 
         await SyncHelper.SyncCollection(repository: _repository, existingEntities: files, requestEntities: request.Entities, (existing, request) =>
         {
@@ -54,6 +68,19 @@ internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem
             existing.Size = request.Size;
         }, cancellationToken: cancellationToken);
     }
+
+    private static List<string> ResolveGroupTypes(TepDinhKemBulkInsertOrUpdateCommand request)
+    {
+        if (request.GroupTypes is { Count: > 0 })
+            return request.GroupTypes;
+
+        return request.Entities
+            .Select(e => e.GroupType)
+            .Where(t => !string.IsNullOrEmpty(t))
+            .Distinct()
+            .ToList();
+    }
+
     /// <summary>
     /// Xoá cứng
     /// </summary>

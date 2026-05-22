@@ -43,6 +43,9 @@ public class TepDinhKemDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveCreated,
 
     public Guid? ParentId { get; set; } //ban đầu sẽ có 1 file gốc, sau đó đem file này đi ký số sẽ tạo ra file child
 
+    /// <summary>Người tạo — join UserMaster.HoTen qua CreatedBy = UserPortalId (list ký số).</summary>
+    public string? TenNguoiTao { get; set; }
+
     #endregion
 
     [System.Text.Json.Serialization.JsonIgnoreAttribute] public string CreatedBy { get; set; } = string.Empty;
