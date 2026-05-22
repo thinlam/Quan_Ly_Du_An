@@ -73,6 +73,13 @@
 > - `GetDanhSachQuery`: Thêm `LeftOuterJoin` thứ 3 với `DanhMucDonVi` trên `PhongBanNhanId` để lấy `TenPhongBanNhan`
 > - `BanGiaoHoSoMappingConfiguration.ToModel()`: Map thêm `PhongBanNhanId` và `TenPhongBanNhan`
 
+> **✅ Updated (22/05/2026) – Version 11 – Bugfix mất tệp HS sau bàn giao**
+> - **Nguyên nhân:** `TepDinhKemBulkInsertOrUpdateCommand` sync toàn bộ tệp cùng `GroupId`, không tách `GroupType`. Endpoint `ban-giao` chỉ gửi `BienBanBanGiao` → 4 tệp `BanGiaoHoSo` ban đầu bị xóa mềm.
+> - **Sửa:** Handler lọc `existingEntities` theo `GroupType` (suy ra từ `Entities` hoặc property mới `GroupTypes`).
+> - **Controller:** Insert/Update truyền `GroupTypes = [BanGiaoHoSo]`; `ban-giao` truyền `GroupTypes = [BienBanBanGiao]`.
+> - Query `chi-tiet` / `danh-sach` **không đổi** – đã filter đúng theo `EGroupType`.
+> - **Phụ:** Bỏ gọi `InsertOrUpdateAsync` trùng 2 lần trong nhánh transaction.
+
 ---
 
 ## 1. Phân tích yêu cầu
@@ -107,7 +114,7 @@
 **Tệp đính kèm** (TepDinhKem):
 - Lưu trữ qua bảng `TepDinhKem` (không có FK trực tiếp)
 - `GroupId` = `BanGiaoHoSo.Id.ToString()`
-- Truy vấn: `TepDinhKem.Where(f => f.GroupId == entity.Id.ToString())`
+- Truy vấn: `TepDinhKem.Where(f => f.GroupId == entity.Id.ToString() && f.GroupType == ...)` – **luôn kèm `GroupType`**
 
 ### 1.3 Enum ETrangThaiBanGiao
 
@@ -1195,23 +1202,27 @@ public enum EGroupType {
 }
 ```
 
-2. **Lưu tệp HS bàn giao** (Insert/Update):
+2. **Lưu tệp HS bàn giao** (Insert/Update) – **bắt buộc** chỉ định `GroupTypes` vì cùng `GroupId` còn có biên bản:
 ```csharp
 await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
     GroupId = entity.Id.ToString(),
+    GroupTypes = [EGroupType.BanGiaoHoSo.ToString()],
     Entities = model.GetDanhSachTepHSBanGiao(entity.Id)
-    // → files[i].EGroupType = EGroupType.BanGiaoHoSo
+    // → files[i].GroupType = BanGiaoHoSo
 });
 ```
 
-3. **Lưu biên bản bàn giao** (endpoint ban-giao):
+3. **Lưu biên bản bàn giao** (endpoint ban-giao) – **bắt buộc** `GroupTypes = BienBanBanGiao` để không xóa tệp HS đã có:
 ```csharp
 await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
     GroupId = entity.Id.ToString(),
+    GroupTypes = [EGroupType.BienBanBanGiao.ToString()],
     Entities = model.GetDanhSachBienBanBanGiao(entity.Id)
-    // → files[i].EGroupType = EGroupType.BienBanBanGiao
+    // → files[i].GroupType = BienBanBanGiao
 });
 ```
+
+> ⚠️ **Lưu ý (Version 11):** Không sync theo toàn bộ `GroupId` khi một bản ghi có ≥ 2 `EGroupType`. Thiếu `GroupTypes` sẽ làm mất tệp loại kia (ví dụ: sau `ban-giao` chỉ còn biên bản, mất 4 tệp HS gốc).
 
 4. **Lấy file** - Query tách theo EGroupType trong GetDanhSachQuery:
 ```csharp
