@@ -39,13 +39,13 @@ internal class BaoCaoKetQuaKhaoSatDuyetCommandHandler : IRequestHandler<BaoCaoKe
         var trangThaiDaTrinh = await _statusRepository
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s =>
-                s.Ma == TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DaTrinh &&
-                s.Loai == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, cancellationToken);
+                s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh &&
+                s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s =>
-                s.Ma == TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DaDuyet &&
-                s.Loai == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, cancellationToken);
+                s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet &&
+                s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");

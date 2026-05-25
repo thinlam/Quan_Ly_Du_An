@@ -30,8 +30,8 @@ internal class BaoCaoKetQuaKhaoSatInsertCommandHandler
         var trangThaiDuThao = await _statusRepo
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s =>
-                s.Ma == TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DuThao &&
-                s.Loai == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, cancellationToken);
+                s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao &&
+                s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = request.Dto.ToEntity();
         entity.TrangThaiId = trangThaiDuThao?.Id;
