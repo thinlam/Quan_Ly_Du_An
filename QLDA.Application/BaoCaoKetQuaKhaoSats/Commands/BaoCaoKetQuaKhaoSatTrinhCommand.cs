@@ -32,18 +32,18 @@ internal class BaoCaoKetQuaKhaoSatTrinhCommandHandler
         var trangThaiDuThao = await _statusRepository
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s =>
-                s.Ma == TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DuThao &&
-                s.Loai == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, cancellationToken);
+                s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao &&
+                s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiTraLai = await _statusRepository
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s =>
-                s.Ma == TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.TraLai &&
-                s.Loai == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, cancellationToken);
+                s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai &&
+                s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaTrinh = await _statusRepository
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s =>
-                s.Ma == TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DaTrinh &&
-                s.Loai == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, cancellationToken);
+                s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh &&
+                s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 

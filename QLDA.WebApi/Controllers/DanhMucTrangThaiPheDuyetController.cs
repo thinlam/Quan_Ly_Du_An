@@ -30,13 +30,17 @@ public class DanhMucTrangThaiPheDuyetController(IServiceProvider serviceProvider
     [ProducesResponseType<ResultApi<PaginatedList<DanhMucDto<int>>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach-day-du")]
-    public async Task<ResultApi> GetAll([FromQuery] AggregateRootPagination req, string? globalFilter) {
+    public async Task<ResultApi> GetAll(
+        [FromQuery] AggregateRootPagination req,
+        string? globalFilter,
+        string? loai) {
         var res = await Mediator.Send(new DanhMucGetDanhSachQuery() {
             DanhMuc = EDanhMuc.DanhMucTrangThaiPheDuyet,
             PageIndex = req.PageIndex,
             GlobalFilter = globalFilter,
             PageSize = req.PageSize,
-            GetAll = true
+            GetAll = true,
+            Loai = loai
         });
         return ResultApi.Ok(res);
     }
