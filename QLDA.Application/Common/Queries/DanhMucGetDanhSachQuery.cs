@@ -13,6 +13,12 @@ public record DanhMucGetDanhSachQuery : AggregateRootPagination, IRequest<object
     /// </summary>
     public string? GlobalFilter { get; set; }
 
+    /// <summary>
+    /// Lọc danh mục trạng thái phê duyệt theo Loai (PheDuyetEntityNames).
+    /// Chỉ áp dụng khi DanhMuc = DanhMucTrangThaiPheDuyet.
+    /// </summary>
+    public string? Loai { get; set; }
+
     public List<long>? Ids { get; set; }
     public EDanhMuc DanhMuc { get; set; }
 }
@@ -150,11 +156,45 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
             EDanhMuc.DanhMucPhuongThucKySo => await GetDanhMucAsync<DanhMucPhuongThucKySo, int, DanhMucDto<int>>(
             DanhMucPhuongThucKySo,
             request, cancellationToken),
-            EDanhMuc.DanhMucTrangThaiPheDuyet => await GetDanhMucAsync<DanhMucTrangThaiPheDuyet, int, DanhMucDto<int>>(
-                DanhMucTrangThaiPheDuyet,
-                request, cancellationToken),
+            EDanhMuc.DanhMucTrangThaiPheDuyet => await GetDanhMucTrangThaiPheDuyetAsync(request, cancellationToken),
             _ => Enumerable.Empty<object>()
         };
+    }
+
+    private async Task<PaginatedList<DanhMucDto<int>>> GetDanhMucTrangThaiPheDuyetAsync(
+        DanhMucGetDanhSachQuery request,
+        CancellationToken cancellationToken) {
+        var ids = request.Ids?.Select(e => e.ToString());
+        var query = DanhMucTrangThaiPheDuyet.GetQueryableSet()
+            .Where(x => !x.IsDeleted)
+            .WhereIf(!string.IsNullOrWhiteSpace(request.Loai), x => x.Loai == request.Loai)
+            .WhereIf(request.Ids != null, e => ids!.Contains(e.Id!.ToString()) || e.Used || request.GetAll,
+                e => request.GetAll || e.Used);
+
+        string keyword = request.GlobalFilter?.ToLower() ?? string.Empty;
+        string expression = string.Empty;
+
+        if (request.GlobalFilter != null) {
+            expression = "Ten.ToLower().Contains(@0) or MoTa.ToLower().Contains(@0)";
+        }
+
+        try {
+            var predicate = DynamicExpressionParser.ParseLambda<DanhMucTrangThaiPheDuyet, bool>(
+                new ParsingConfig(), false, expression, keyword);
+            query = query.Where(predicate);
+        } catch {
+            // ignored
+        }
+
+        if (request.Order)
+            return await query
+                .OrderBy(x => x.Stt)
+                .Select(x => x.ToDanhMucDto<DanhMucTrangThaiPheDuyet, int, DanhMucDto<int>>())
+                .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
+
+        return await query
+            .Select(x => x.ToDanhMucDto<DanhMucTrangThaiPheDuyet, int, DanhMucDto<int>>())
+            .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
     }
 
     private async Task<PaginatedList<TDto>> GetDanhMucAsync<TEntity, TKey, TDto>(
