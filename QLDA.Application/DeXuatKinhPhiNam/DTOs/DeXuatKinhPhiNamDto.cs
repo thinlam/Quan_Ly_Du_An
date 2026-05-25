@@ -1,11 +1,10 @@
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Interfaces;
 using SequentialGuid;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
 
-public class DeXuatNhuCauKinhPhiNamDto : IHasKey<Guid?>, IMustHaveId<Guid>,  IMayHaveTepDinhKemDto {
+public class DeXuatNhuCauKinhPhiNamDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKemDto {
     [DefaultValue(null)] public Guid? Id { get; set; }
 
     public Guid GetId() {
@@ -21,6 +20,6 @@ public class DeXuatNhuCauKinhPhiNamDto : IHasKey<Guid?>, IMustHaveId<Guid>,  IMa
     public string? MaTrangThai { get; set; }
     public int? TrangThaiId { get; set; }
     public string? TenTrangThai { get; set; }
-    public List<DeXuatNhuCauKinhPhi>? DanhSachDeXuat { get; set; }
+    public List<Guid>? DanhSachDeXuat { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

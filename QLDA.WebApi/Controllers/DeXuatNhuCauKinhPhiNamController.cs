@@ -1,31 +1,18 @@
-using Azure.Core;
+using System.Net.Mime;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Queries;
-using QLDA.Application.DuAns.Commands;
-using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
-using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
-using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Đề xuất kế hoạch kinh phí năm")]
 [Route("api/tong-hop-kinh-phi")]
-public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
-    // GET
-    public DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) : base(serviceProvider) {
-    }
-
-    /// <summary>
-    /// Chi tiết
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
+public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
     [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiNamModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
@@ -42,7 +29,6 @@ public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
-
     [HttpDelete("{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id) {
         var res = await Mediator.Send(new DeXuatNhuCauKinhPhiNamDeleteCommand(id));
@@ -54,11 +40,7 @@ public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiNamModel model) {
-        //Cập nhật bước hiện tại của dự án
-        
-      
-        var entity = model.ToEntity();
-        var savedEntity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamInsertCommand(entity));
+        var savedEntity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamInsertCommand(model.ToInsertDto()));
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, GroupTypeConstants.NhuCauKinhPhi) ?? []];
 
@@ -70,45 +52,32 @@ public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
         return ResultApi.Ok(savedEntity.Id);
     }
 
-   
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiNam>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhiNamModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Update(
         [FromBody] DeXuatNhuCauKinhPhiNamModel model,
         [FromServices] IUnitOfWork unitOfWork,
-        CancellationToken cancellationToken = default)
-    {
-        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamUpdateCommand(
-            new()
-            {
-                Id = model.GetId(),
-                So = model.So,
-                NgayKeHoach = model.NgayKeHoach,
-                TrichYeu = model.TrichYeu,
-                GhiChu = model.GhiChu,
-                TongKinhPhiDeXuat = model.TongKinhPhiDeXuat
-            }
-        ), cancellationToken);
+        CancellationToken cancellationToken = default) {
+        var insertDto = model.ToInsertDto();
+        insertDto.Id = model.GetId();
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,GroupTypeConstants.NhuCauKinhPhi) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        {
+        var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamUpdateCommand(insertDto), cancellationToken);
+
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.NhuCauKinhPhi) ?? []];
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
+        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
             GroupId = [entity.Id.ToString()]
         }, cancellationToken);
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
-
-
 
     [HttpGet("danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiNamDto>>>(StatusCodes.Status200OK)]
@@ -121,10 +90,9 @@ public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
             NguoiDeXuatId = req.NguoiDeXuatId,
             PhongBanDeXuatId = req.PhongBanDeXuatId,
             GlobalFilter = req.GlobalFilter,
-            PageIndex = req.PageIndex??1,
-            PageSize = req.PageSize??1000000,
+            PageIndex = req.PageIndex ?? 1,
+            PageSize = req.PageSize ?? 1000000,
             IsNoTracking = true,
-            
         });
         return ResultApi.Ok(res);
     }

@@ -9,11 +9,6 @@ using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DeXuatChuTruongMois.Queries;
 
-public class DanhMucDonViCbo {
-    public string? TenDonVi { get; set; }
-    public long Id { get; set; }
-}
-
 public record DeXuatChuTruongMoiQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<DeXuatChuTruongMoiDto>> {
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
