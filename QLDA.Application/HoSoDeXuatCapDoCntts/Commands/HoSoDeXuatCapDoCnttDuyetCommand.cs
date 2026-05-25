@@ -29,6 +29,9 @@ internal class HoSoDeXuatCapDoCnttDuyetCommandHandler : IRequestHandler<HoSoDeXu
     }
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttDuyetCommand request, CancellationToken cancellationToken) {
+        if(_settings == null) {
+            throw new ManagedException("Không lấy được cấu hình ứng dụng.");
+        }
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {

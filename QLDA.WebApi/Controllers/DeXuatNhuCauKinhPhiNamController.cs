@@ -15,7 +15,7 @@ using System.Net.Mime;
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Đề xuất kế hoạch kinh phí năm")]
-[Route("api/de-xuat-nhu-cau-kinh-phi-nam")]
+[Route("api/tong-hop-kinh-phi")]
 public class DeXuatNhuCauKinhPhiNamController : AggregateRootController {
     // GET
     public DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) : base(serviceProvider) {

@@ -50,7 +50,6 @@ internal class
         var queryable = DeXuatNhuCauKinhPhiNam.GetQueryableSet().AsNoTracking()
             .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
-            .Where(e => !e.DuAn!.IsDeleted)
           //  .WhereIf(request. != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
             .WhereIf(tuNgayDto != null, e => e.NgayKeHoach >= tuNgayDto)

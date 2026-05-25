@@ -25,11 +25,11 @@ internal class DeXuatChuyenTiepTraLaiCommandHandler : IRequestHandler<DeXuatChuy
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(DeXuatChuyenTiepTraLaiCommand request, CancellationToken cancellationToken) {
-        // Permission check: LDDV role only
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {

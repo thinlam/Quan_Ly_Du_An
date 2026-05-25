@@ -3,7 +3,7 @@ using QLDA.Domain.Interfaces;
 
 namespace QLDA.Domain.Entities;
 
-public class DeXuatTrinhKinhPhiNam : IJunctionEntity<Guid, Guid>, IAggregateRoot {
+public class DeXuatTrinhKinhPhiNam : Entity<Guid>, IAggregateRoot {
     public Guid LeftId { get; set; }
   
     public Guid RightId { get; set; }

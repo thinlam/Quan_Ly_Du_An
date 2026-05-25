@@ -13,6 +13,7 @@ public record DeXuatNhuCauKinhPhiQuery : AggregateRootPagination, IMayHaveGlobal
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
     public int? TrangThaiId { get; set; }
+    public int? TrangThaiTongHopId { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public long? DonViDeXuatId { get; set; }
     public DateOnly? TuNgay { get; set; } 
@@ -22,9 +23,8 @@ public record DeXuatNhuCauKinhPhiQuery : AggregateRootPagination, IMayHaveGlobal
 internal class
     DeXuatNhuCauKinhPhiQueryHandler(IServiceProvider ServiceProvider)
     : IRequestHandler<DeXuatNhuCauKinhPhiQuery, PaginatedList<DeXuatNhuCauKinhPhiDto>> {
-    private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi =
-        ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
-
+    private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
+    private readonly IRepository<DeXuatTrinhKinhPhiNam, Guid> DeXuatTrinhKinhPhiNam = ServiceProvider.GetRequiredService<IRepository<DeXuatTrinhKinhPhiNam, Guid>>();
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
         ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
@@ -33,6 +33,7 @@ internal class
     public async Task<PaginatedList<DeXuatNhuCauKinhPhiDto>> Handle(DeXuatNhuCauKinhPhiQuery request,
         CancellationToken cancellationToken = default) {
         bool dieuKienThayTatCa = false;
+       
 
         // Convert DateOnly? request values to DateTimeOffset? to compare with NgayPhieuChuyen (DateTimeOffset?)
         DateTimeOffset? tuNgayDto = null;
@@ -51,6 +52,12 @@ internal class
             .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            //.WhereIf(
+            //    request.TrangThaiTongHopId != null,
+            //    e => DeXuatTrinhKinhPhiNam.GetQueryableSet()
+            //        .IgnoreQueryFilters()
+            //        .Any(x => x.RightId == e.Id)
+            //)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))

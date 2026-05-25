@@ -16,7 +16,6 @@ public class DeXuatNhuCauKinhPhiNam : Entity<Guid>, IAggregateRoot
 
     public ICollection<DeXuatTrinhKinhPhiNam>? DeXuats { get; set; } = [];
     #region Navigation Properties
-    public DuAn? DuAn { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
     #endregion
 }

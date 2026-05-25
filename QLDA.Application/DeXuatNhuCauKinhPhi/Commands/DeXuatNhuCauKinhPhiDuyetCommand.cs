@@ -25,6 +25,7 @@ internal class DeXuatNhuCauKinhPhiDuyetCommandHandler : IRequestHandler<DeXuatNh
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 

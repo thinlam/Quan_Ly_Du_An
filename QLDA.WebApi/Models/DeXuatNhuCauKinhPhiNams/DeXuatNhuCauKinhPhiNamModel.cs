@@ -30,7 +30,7 @@ public class DeXuatNhuCauKinhPhiNamModel : IHasKey<Guid?>, IMustHaveId<Guid>, IM
     public string? MaTrangThai { get; set; }
     public int? TrangThaiId { get; set; }
     public string? TenTrangThai { get; set; }
-    public List<DeXuatNhuCauKinhPhiModel>? DanhSachDeXuat { get; set; }
+    public List<DeXuatTrinhKinhPhiNam>? DeXuats { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 
 }

@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.DeXuatNhuCauKinhPhiNamMappings;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
@@ -11,6 +12,7 @@ public record DeXuatNhuCauKinhPhiNamInsertCommand(DeXuatNhuCauKinhPhiNam Dto) : 
 internal class DeXuatNhuCauKinhPhiNamInsertCommandHandler : IRequestHandler<DeXuatNhuCauKinhPhiNamInsertCommand, DeXuatNhuCauKinhPhiNam>
 {
     private readonly IRepository<DeXuatNhuCauKinhPhiNam, Guid> _repo;
+    private readonly IRepository<DeXuatTrinhKinhPhiNam, Guid> _repoDeXuat;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -26,6 +28,9 @@ internal class DeXuatNhuCauKinhPhiNamInsertCommandHandler : IRequestHandler<DeXu
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        var deXuatIds = request.Dto.DeXuats?
+           .Select(x => x.RightId)
+           .ToList();
 
         var entity = new DeXuatNhuCauKinhPhiNam
         {
@@ -42,7 +47,10 @@ internal class DeXuatNhuCauKinhPhiNamInsertCommandHandler : IRequestHandler<DeXu
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
+        // save danh sách đề xuất được trình
+        entity.SyncDeXuatIds(deXuatIds);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
         return entity;
     }
 }

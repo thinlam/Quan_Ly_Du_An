@@ -121,6 +121,8 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
             DuAnId = req.DuAnId,
             BuocId = req.BuocId,
             TrangThaiId = req.TrangThaiId,
+            TrangThaiTongHopId = req.TrangThaiTongHopId,
+            SoPhieuChuyen = req.SoPhieuChuyen,
             GlobalFilter = req.GlobalFilter,
             PageIndex = req.PageIndex,
             PageSize = req.PageSize,

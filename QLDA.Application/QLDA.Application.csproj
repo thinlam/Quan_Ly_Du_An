@@ -1,10 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="DanhMucTrangThaiPheDuyet\**" />
+      <Compile Remove="DmTrangThaiPheDuyets\**" />
+      <EmbeddedResource Remove="DanhMucTrangThaiPheDuyet\**" />
+      <EmbeddedResource Remove="DmTrangThaiPheDuyets\**" />
+      <None Remove="DanhMucTrangThaiPheDuyet\**" />
+      <None Remove="DmTrangThaiPheDuyets\**" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\QLDA.Domain\QLDA.Domain.csproj" />
@@ -29,7 +38,6 @@
     <ItemGroup>
       <Folder Include="DanhMucDonVis\Commands\" />
       <Folder Include="DanhMucDonVis\DTOs\" />
-      <Folder Include="DanhMucManHinhs\Commands\" />
       <Folder Include="DanhMucNguonVons\Commands\" />
       <Folder Include="DanhMucNhaThaus\Commands\" />
       <Folder Include="QuyetDinhDuyetDuAnHangMucs\Queries\" />

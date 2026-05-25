@@ -50,3 +50,4 @@ publish/
 repomix-output.xml
 *.db*
 .env
+/QLDA.Application/DanhMucTrangThaiPheDuyet/Queries/DmTrangThaiPheDuyetGetDanhSachQuery.cs

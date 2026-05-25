@@ -37,7 +37,9 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhKeHoachTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.DeXuatChuTruongMoi => new DeXuatChuTruongMoiTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.DeXuatChuTruongChuyenTiep => new DeXuatChuyenTiepTrinhCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.DeXuatNhuCauKinhPhi => new DeXuatNhuCauKinhPhiNamTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.DeXuatNhuCauKinhPhi => new DeXuatNhuCauKinhPhiTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam => new DeXuatNhuCauKinhPhiNamTrinhCommand(request.Id, request.NoiDung),
+
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
         return await _mediator.Send(command, cancellationToken);
