@@ -53,5 +53,10 @@ public static class PheDuyetEntityNames
     [Description("Đề xuất")]
     public const string DeXuatMacDinhStt = "DeXuatMacDinh";
 
+    /// <summary>
+    /// UC55 - Báo cáo kết quả khảo sát (#9474)
+    /// </summary>
+    [Description("Báo cáo kết quả khảo sát")]
+    public const string BaoCaoKetQuaKhaoSat = "BaoCaoKetQuaKhaoSat";
 
 }

@@ -13,6 +13,7 @@ QuanLyPheDuyet (Approval Management) is a **polymorphic workflow system** used b
 | HoSoDeXuatCapDoCntt | `HoSoDeXuatCapDoCntt` | Hồ sơ đề xuất cấp độ ATTT |
 | HoSoMoiThauDienTu | `HoSoMoiThauDienTu` | Hồ sơ mời thầu điện tử |
 | QuyetDinhDieuChinh | `QuyetDinhDieuChinh` | Quyết định điều chỉnh |
+| BaoCaoKetQuaKhaoSat | `BaoCaoKetQuaKhaoSat` | Báo cáo kết quả khảo sát (UC55) |
 
 ## State Machine
 
