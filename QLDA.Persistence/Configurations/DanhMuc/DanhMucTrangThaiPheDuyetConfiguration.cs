@@ -55,7 +55,12 @@ public class DanhMucTrangThaiPheDuyetConfiguration : AggregateRootConfiguration<
             new DanhMucTrangThaiPheDuyet { Id = 22, Ma = TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DaTrinh, Ten = TrangThaiPheDuyetCodes.Default.TenDaTrinh, Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 23, Ma = TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DaDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaDuyet, Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 24, Ma = TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 25, Ma = TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TuChoi, Ten = TrangThaiPheDuyetCodes.Default.TenTuChoi, Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 5, Used = true, CreatedAt = SeedCreatedAt }
+            new DanhMucTrangThaiPheDuyet { Id = 25, Ma = TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TuChoi, Ten = TrangThaiPheDuyetCodes.Default.TenTuChoi, Loai = PheDuyetEntityNames.QuyetDinhDieuChinh, Stt = 5, Used = true, CreatedAt = SeedCreatedAt },
+            // BaoCaoKetQuaKhaoSat statuses (UC55 - #9474) — không seed TC
+            new DanhMucTrangThaiPheDuyet { Id = 26, Ma = TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DuThao, Ten = TrangThaiPheDuyetCodes.Default.TenDuThao, Loai = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 27, Ma = TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DaTrinh, Ten = TrangThaiPheDuyetCodes.Default.TenDaTrinh, Loai = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 28, Ma = TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.DaDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaDuyet, Loai = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 29, Ma = TrangThaiPheDuyetCodes.BaoCaoKetQuaKhaoSat.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat, Stt = 4, Used = true, CreatedAt = SeedCreatedAt }
         );
     }
 }

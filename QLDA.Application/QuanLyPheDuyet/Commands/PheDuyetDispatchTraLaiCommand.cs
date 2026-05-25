@@ -1,3 +1,4 @@
+using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
@@ -35,6 +36,7 @@ internal class PheDuyetDispatchTraLaiCommandHandler : IRequestHandler<PheDuyetDi
             PheDuyetEntityNames.HoSoDeXuatCapDoCntt => new HoSoDeXuatCapDoCnttTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiTraLaiCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat => new BaoCaoKetQuaKhaoSatTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhDieuChinh => new QuyetDinhDieuChinhTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhKeHoachTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.DeXuatChuTruongMoi => new DeXuatChuTruongMoiTraLaiCommand(request.Id, request.NoiDung),

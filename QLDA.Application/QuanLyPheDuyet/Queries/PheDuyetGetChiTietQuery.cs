@@ -17,6 +17,7 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     private readonly IRepository<PheDuyetDuToan, Guid> _duToanRepo;
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> _hoSoCnttRepo;
     private readonly IRepository<HoSoMoiThauDienTu, Guid> _hoSoThauRepo;
+    private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _baoCaoKhaoSatRepo;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
     private readonly IServiceProvider _serviceProvider;
 
@@ -25,6 +26,7 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
         _hoSoCnttRepo = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
         _hoSoThauRepo = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
+        _baoCaoKhaoSatRepo = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
     }
 
@@ -33,6 +35,7 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
             PheDuyetEntityNames.PheDuyetDuToan => await GetDuToanDetail(request.Id, cancellationToken),
             PheDuyetEntityNames.HoSoDeXuatCapDoCntt => await GetHoSoDeXuatCapDoCnttDetail(request.Id, cancellationToken),
             PheDuyetEntityNames.HoSoMoiThauDienTu => await GetHoSoMoiThauDienTuDetail(request.Id, cancellationToken),
+            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat => await GetBaoCaoKetQuaKhaoSatDetail(request.Id, cancellationToken),
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
 
@@ -109,6 +112,25 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 MaTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenHinhThuc = e.HinhThucLuaChonNhaThau != null ? e.HinhThucLuaChonNhaThau.Ten : null
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    private async Task<object?> GetBaoCaoKetQuaKhaoSatDetail(Guid id, CancellationToken cancellationToken) {
+        return await _baoCaoKhaoSatRepo.GetQueryableSet()
+            .Include(e => e.TrangThai)
+            .Where(e => e.Id == id && !e.IsDeleted)
+            .Select(e => new {
+                e.Id,
+                e.DuAnId,
+                e.BuocId,
+                e.TrangThaiId,
+                e.NgayTrinh,
+                e.NoiDungBaoCao,
+                e.NoiDungNghiemThu,
+                NgayKhaoSat = e.NgayKhaoSat,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }

@@ -19,17 +19,24 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private readonly IRepository<PheDuyetDuToan, Guid> _duToanRepo;
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> _hoSoCnttRepo;
     private readonly IRepository<HoSoMoiThauDienTu, Guid> _hoSoThauRepo;
+    private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _baoCaoKhaoSatRepo;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
 
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
         _hoSoCnttRepo = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
         _hoSoThauRepo = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
+        _baoCaoKhaoSatRepo = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
     }
 
     public async Task<PaginatedList<PheDuyetListItemDto>> Handle(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken) {
-        var validTypes = new[] { PheDuyetEntityNames.PheDuyetDuToan, PheDuyetEntityNames.HoSoDeXuatCapDoCntt, PheDuyetEntityNames.HoSoMoiThauDienTu };
+        var validTypes = new[] {
+            PheDuyetEntityNames.PheDuyetDuToan,
+            PheDuyetEntityNames.HoSoDeXuatCapDoCntt,
+            PheDuyetEntityNames.HoSoMoiThauDienTu,
+            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat
+        };
         if (request.Type != null && !validTypes.Contains(request.Type)) {
             return new PaginatedList<PheDuyetListItemDto>([], 0, request.Skip(), request.Take());
         }
@@ -46,6 +53,10 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
 
         if (request.Type == null || request.Type == PheDuyetEntityNames.HoSoMoiThauDienTu) {
             items.AddRange(await GetHoSoMoiThauDienTuItems(request, cancellationToken));
+        }
+
+        if (request.Type == null || request.Type == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat) {
+            items.AddRange(await GetBaoCaoKetQuaKhaoSatItems(request, cancellationToken));
         }
 
         var sorted = items.OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue).ToList();
@@ -141,6 +152,39 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+            });
+
+        var items = await query.ToListAsync(cancellationToken);
+        foreach (var item in items)
+            item.NgayXuLyMoiNhat = latestDates.GetValueOrDefault(item.Id);
+
+        return items;
+    }
+
+    private async Task<List<PheDuyetListItemDto>> GetBaoCaoKetQuaKhaoSatItems(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken) {
+        var historyData = await _historyRepo.GetQueryableSet()
+            .Where(h => h.EntityName == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat)
+            .Select(h => new { h.EntityId, h.NgayXuLy })
+            .ToListAsync(cancellationToken);
+
+        var latestDates = historyData
+            .GroupBy(h => h.EntityId)
+            .ToDictionary(g => g.Key, g => g.Max(x => x.NgayXuLy));
+
+        var query = _baoCaoKhaoSatRepo.GetQueryableSet().AsNoTracking()
+            .Where(e => !e.IsDeleted)
+            .Include(e => e.TrangThai)
+            .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereGlobalFilter(request, e => e.NoiDungBaoCao, e => e.NoiDungNghiemThu)
+            .Select(e => new PheDuyetListItemDto {
+                Id = e.Id,
+                Type = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat,
+                DuAnId = e.DuAnId,
+                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TrichYeu = e.NoiDungBaoCao,
+                TrangThaiId = e.TrangThaiId,
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);
