@@ -20,6 +20,7 @@ internal class DeXuatNhuCauKinhPhiNamGetQueryHandler(IServiceProvider servicePro
     public async Task<DeXuatNhuCauKinhPhiNam> Handle(DeXuatNhuCauKinhPhiNamGetQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = DeXuatNhuCauKinhPhiNam.GetOrderedSet()
+            .Include(e => e.DeXuats)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

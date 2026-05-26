@@ -1,32 +1,23 @@
 using System.Net.Mime;
+using QLDA.Application.BaoCaoTienDos.Commands;
+using QLDA.Application.BaoCaoTienDos.DTOs;
+using QLDA.Application.BaoCaoTienDos.Queries;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Application.ThuyetMinhDuAns.Commands;
-using QLDA.Application.ThuyetMinhDuAns.DTOs;
-using QLDA.Application.ThuyetMinhDuAns.Queries;
+using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.TepDinhKems;
-using QLDA.WebApi.Models.ThuyetMinhDuAns;
 
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Thuyết minh dự án")]
 [Route("api/thuyet-minh-du-an")]
-public class ThuyetMinhDuAnController : AggregateRootController {
-    // GET
-    public ThuyetMinhDuAnController(IServiceProvider serviceProvider) : base(serviceProvider) {
-    }
-
-    /// <summary>
-    /// Chi tiết
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [ProducesResponseType<ResultApi<ThuyetMinhDuAnModel>>(StatusCodes.Status200OK)]
+public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
+    [ProducesResponseType<ResultApi<BaoCaoTienDoModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id) {
-        var entity = await Mediator.Send(new ThuyetMinhDuAnGetQuery() {
+        var entity = await Mediator.Send(new BaoCaoTienDoGetQuery() {
             Id = id,
             ThrowIfNull = true,
             IsNoTracking = true,
@@ -38,33 +29,23 @@ public class ThuyetMinhDuAnController : AggregateRootController {
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
-
     [HttpDelete("{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id) {
-        var res = await Mediator.Send(new ThuyetMinhDuAnDeleteCommand(id));
+        var res = await Mediator.Send(new BaoCaoTienDoDeleteCommand(id));
         return ResultApi.Ok(res);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <remarks>
-    ///du an id la bac buoc
-    /// </remarks>
-    /// <param name="model"></param>
-    /// <returns></returns>
+    /// <remarks>du an id la bac buoc</remarks>
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Create([FromBody] ThuyetMinhDuAnModel model) {
-        //Cập nhật bước hiện tại của dự án
-        
+    public async Task<ResultApi> Create([FromBody] BaoCaoTienDoModel model) {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
 
         var entity = model.ToEntity();
-        await Mediator.Send(new ThuyetMinhDuAnInsertOrUpdateCommand(entity));
+        await Mediator.Send(new BaoCaoTienDoInsertOrUpdateCommand(entity));
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
@@ -76,25 +57,19 @@ public class ThuyetMinhDuAnController : AggregateRootController {
         return ResultApi.Ok(entity.Id);
     }
 
-    /// <summary>
-    /// Cập nhật
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType<ResultApi<ThuyetMinhDuAnModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<BaoCaoTienDoModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Update([FromBody] ThuyetMinhDuAnModel model) {
+    public async Task<ResultApi> Update([FromBody] BaoCaoTienDoModel model) {
         var entity =
-            await Mediator.Send(new ThuyetMinhDuAnGetQuery { Id = model.GetId(), ThrowIfNull = true });
+            await Mediator.Send(new BaoCaoTienDoGetQuery { Id = model.GetId(), ThrowIfNull = true });
         entity.Update(model);
 
-        await Mediator.Send(new ThuyetMinhDuAnInsertOrUpdateCommand(entity));
+        await Mediator.Send(new BaoCaoTienDoInsertOrUpdateCommand(entity));
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
-        //Thêm file mới
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepDinhKem
@@ -102,20 +77,12 @@ public class ThuyetMinhDuAnController : AggregateRootController {
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
-    /// <summary>
-    /// Văn bản trong tiến độ dự án lấy theo từng bước
-    /// </summary>
-    /// <param name="duAnId"></param>
-    /// <param name="buocId"></param>
-    /// <param name="globalFilter"></param>
-    /// <param name="pageIndex"></param>
-    /// <param name="pageSize"></param>
-    /// <returns></returns>
     [HttpGet("danh-sach-tien-do")]
-    [ProducesResponseType<ResultApi<PaginatedList<ThuyetMinhDuAnDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<BaoCaoTienDoDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0) {
-        var res = await Mediator.Send(new ThuyetMinhDuAnGetDanhSachQuery() {
+    public async Task<ResultApi> GetDanhSach([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null,
+        int pageIndex = 0, int pageSize = 0) {
+        var res = await Mediator.Send(new BaoCaoTienDoGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
             GlobalFilter = globalFilter,

@@ -24,7 +24,6 @@ internal class
     DeXuatNhuCauKinhPhiQueryHandler(IServiceProvider ServiceProvider)
     : IRequestHandler<DeXuatNhuCauKinhPhiQuery, PaginatedList<DeXuatNhuCauKinhPhiDto>> {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
-    private readonly IRepository<DeXuatTrinhKinhPhiNam, Guid> DeXuatTrinhKinhPhiNam = ServiceProvider.GetRequiredService<IRepository<DeXuatTrinhKinhPhiNam, Guid>>();
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
         ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
