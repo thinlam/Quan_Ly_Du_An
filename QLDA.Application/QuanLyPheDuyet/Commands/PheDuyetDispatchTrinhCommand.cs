@@ -9,6 +9,7 @@ using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PheDuyetDuToans.Commands;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
+using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ToTrinhKeHoachs.Commands;
 using QLDA.Domain.Constants;
 
@@ -39,6 +40,7 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.DeXuatChuTruongChuyenTiep => new DeXuatChuyenTiepTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.DeXuatNhuCauKinhPhi => new DeXuatNhuCauKinhPhiTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam => new DeXuatNhuCauKinhPhiNamTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.ThuyetMinhDuAn => new ThuyetMinhDuAnTrinhCommand(request.Id, request.NoiDung),
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };

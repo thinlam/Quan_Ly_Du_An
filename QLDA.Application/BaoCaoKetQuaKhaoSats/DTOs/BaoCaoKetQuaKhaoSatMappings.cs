@@ -1,4 +1,5 @@
 using BuildingBlocks.CrossCutting.ExtensionMethods;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 
@@ -23,8 +24,7 @@ public static class BaoCaoKetQuaKhaoSatMappings
         entity.NgayKhaoSat = model.NgayKhaoSat.ToStartOfDayUtc();
     }
 
-    public static BaoCaoKetQuaKhaoSatDto ToDto(this BaoCaoKetQuaKhaoSat entity) => new()
-    {
+    public static BaoCaoKetQuaKhaoSatDto ToDto(this BaoCaoKetQuaKhaoSat entity, List<TepDinhKem>? files) => new() {
         Id = entity.Id,
         DuAnId = entity.DuAnId,
         BuocId = entity.BuocId,
@@ -35,6 +35,19 @@ public static class BaoCaoKetQuaKhaoSatMappings
         TenTrangThai = entity.TrangThaiId == null
             ? TrangThaiPheDuyetCodes.Default.TenDuThao
             : entity.TrangThai?.Ten,
-        NgayTrinh = entity.NgayTrinh.ToDateOnlyVn(),
+        DanhSachTepDinhKem = files?.Select(f => new TepDinhKemDto
+        {
+            Id = f.Id,
+            ParentId = f.ParentId,
+            GroupId = f.GroupId,
+            GroupType = f.GroupType,
+            FileName = f.FileName,
+            OriginalName = f.OriginalName,
+            Path = f.Path,
+            Size = f.Size,
+            Type = f.Type,
+
+        }).ToList(),
+        //NgayTrinh = entity.NgayTrinh.ToDateOnlyVn(),
     };
 }

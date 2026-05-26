@@ -1,10 +1,15 @@
+using BuildingBlocks.Domain.Entities.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Queries;
+using QLDA.Application.TepDinhKems.Commands;
+using QLDA.Application.TepDinhKems.Queries;
+using QLDA.Domain.Constants;
 using QLDA.WebApi.Models;
 using QLDA.WebApi.Models.BaoCaoKetQuaKhaoSats;
+using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -18,7 +23,12 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Get(Guid id)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatGetQuery { Id = id });
-        return ResultApi.Ok(entity.ToDto());
+        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+        {
+            GroupId = [entity.Id.ToString()]
+        });
+
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     [HttpGet("danh-sach")]
@@ -32,8 +42,11 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
         {
             PageIndex = dto.PageIndex,
             PageSize = dto.PageSize,
+            DuAnId = dto.DuAnId,
+            BuocId = dto.BuocId,
             GlobalFilter = dto.GlobalFilter,
         });
+     
         return ResultApi.Ok(result);
     }
 
@@ -42,6 +55,15 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Create([FromBody] BaoCaoKetQuaKhaoSatModel model)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatInsertCommand(model.ToInsertDto()));
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.BaoCaoKetQuaKhaoSat) ?? []];
+
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        });
+
+
         return ResultApi.Ok(entity.Id);
     }
 
@@ -50,7 +72,18 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Update([FromBody] BaoCaoKetQuaKhaoSatModel model)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatUpdateCommand(model.ToUpdateModel()));
-        return ResultApi.Ok(entity.Id);
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.BaoCaoKetQuaKhaoSat) ?? []];
+        
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = files
+        });
+        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
+        {
+            GroupId = [entity.Id.ToString()]
+        });
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     [HttpDelete("{id}")]

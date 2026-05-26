@@ -13,7 +13,7 @@ public record DeXuatNhuCauKinhPhiQuery : AggregateRootPagination, IMayHaveGlobal
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
     public int? TrangThaiId { get; set; }
-    public int? TrangThaiTongHopId { get; set; }
+    public bool? DaDuyetTongHop { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public long? DonViDeXuatId { get; set; }
     public DateOnly? TuNgay { get; set; } 

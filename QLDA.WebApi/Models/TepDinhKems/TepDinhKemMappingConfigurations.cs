@@ -16,6 +16,7 @@ using QLDA.WebApi.Models.QuyetDinhDuyetQuyetToans;
 using QLDA.WebApi.Models.QuyetDinhLapBanQLDAs;
 using QLDA.WebApi.Models.QuyetDinhLapBenMoiThaus;
 using QLDA.WebApi.Models.QuyetDinhLapHoiDongThamDinhs;
+using QLDA.WebApi.Models.ThuyetMinhDuAns;
 using QLDA.WebApi.Models.VanBanChuTruongs;
 using QLDA.WebApi.Models.VanBanPhapLys;
 
@@ -132,4 +133,9 @@ public static class TepDinhKemMappingConfigurations {
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatNhuCauKinhPhi).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiNamModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatNhuCauKinhPhiNam).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTepDinhKem(this ThuyetMinhDuAnModel model, Guid groupId)
+        => model.DanhSachTepDinhKem?.ToEntities(groupId,  EGroupType.ThuyetMinhDuAn).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTepDinhKemThamDinh(this ThuyetMinhDuAnModel model, Guid groupId)
+      => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ThamDinhThuyetMinhDuAn).ToList() ?? [];
+
 }

@@ -6,5 +6,5 @@ public class BaoCaoKetQuaKhaoSatInsertDto
     public int? BuocId { get; set; }
     public string? NoiDungBaoCao { get; set; }
     public string? NoiDungNghiemThu { get; set; }
-    public DateOnly? NgayKhaoSat { get; set; }
+    public DateOnly NgayKhaoSat { get; set; }
 }

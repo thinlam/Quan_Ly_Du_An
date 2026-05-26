@@ -12,7 +12,7 @@ public class BaoCaoKetQuaKhaoSat : Entity<Guid>, IAggregateRoot
 
     public string? NoiDungBaoCao { get; set; }
     public string? NoiDungNghiemThu { get; set; }
-    public DateTimeOffset? NgayKhaoSat { get; set; }
+    public DateTimeOffset NgayKhaoSat { get; set; }
     public int? TrangThaiId { get; set; }
     public DateTimeOffset? NgayTrinh { get; set; }
 

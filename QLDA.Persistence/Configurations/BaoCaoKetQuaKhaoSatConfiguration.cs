@@ -16,7 +16,7 @@ public class BaoCaoKetQuaKhaoSatConfiguration : AggregateRootConfiguration<BaoCa
 
         builder.Property(e => e.NgayKhaoSat)
             .HasConversion(
-                toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
+                toDb =>  toDb.ToUniversalTime() ,
                 fromDb => fromDb);
 
         builder.Property(e => e.NgayTrinh)

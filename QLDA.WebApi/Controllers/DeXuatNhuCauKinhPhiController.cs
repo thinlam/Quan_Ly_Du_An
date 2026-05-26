@@ -91,7 +91,8 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
                 DonViDeXuatId = model.DonViDeXuatId,
                 SoPhieuChuyen = model.SoPhieuChuyen,
                 NgayPhieuChuyen = model.NgayPhieuChuyen,
-                TrichYeu = model.TrichYeu
+                TrichYeu = model.TrichYeu,
+                KinhPhiDeXuat = model.KinhPhiDeXuat
             }
         ), cancellationToken);
 
@@ -121,7 +122,7 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
             DuAnId = req.DuAnId,
             BuocId = req.BuocId,
             TrangThaiId = req.TrangThaiId,
-            TrangThaiTongHopId = req.TrangThaiTongHopId,
+            DaDuyetTongHop = req.DaDuyetTongHop,
             SoPhieuChuyen = req.SoPhieuChuyen,
             GlobalFilter = req.GlobalFilter,
             PageIndex = req.PageIndex,
