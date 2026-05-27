@@ -12,14 +12,16 @@ namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 /// </summary>
 public record QuyetDinhDieuChinhUpdateCommand(QuyetDinhDieuChinhUpdateDto Dto) : IRequest<QuyetDinhDieuChinh>;
 
-internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDinhDieuChinhUpdateCommand, QuyetDinhDieuChinh> {
+internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDinhDieuChinhUpdateCommand, QuyetDinhDieuChinh>
+{
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
     private readonly IRepository<ThongTinDieuChinhChiPhi, Guid> _chiPhiRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public QuyetDinhDieuChinhUpdateCommandHandler(IServiceProvider serviceProvider) {
+    public QuyetDinhDieuChinhUpdateCommandHandler(IServiceProvider serviceProvider)
+    {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _chiPhiRepository = serviceProvider.GetRequiredService<IRepository<ThongTinDieuChinhChiPhi, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
@@ -27,7 +29,8 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<QuyetDinhDieuChinh> Handle(QuyetDinhDieuChinhUpdateCommand request, CancellationToken cancellationToken) {
+    public async Task<QuyetDinhDieuChinh> Handle(QuyetDinhDieuChinhUpdateCommand request, CancellationToken cancellationToken)
+    {
         var dto = request.Dto;
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -36,11 +39,13 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repository.GetQueryableSet()
+            .Include(e => e.ThongTinDieuChinhChiPhi)
             .FirstOrDefaultAsync(e => e.Id == dto.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật!");
 
-        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
+        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
+        {
             throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
         }
         entity.DuAnId = dto.DuAnId;
@@ -54,34 +59,41 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
 
         if (dto.ChiPhi != null)
         {
-            entity.ThongTinDieuChinhChiPhi ??=
-                new ThongTinDieuChinhChiPhi();
-
-            entity.ThongTinDieuChinhChiPhi.TongMucDauTu =
-                dto.ChiPhi.TongMucDauTu;
-
-            entity.ThongTinDieuChinhChiPhi.ChiPhiXayLap =
-                dto.ChiPhi.ChiPhiXayLap;
-
-            entity.ThongTinDieuChinhChiPhi.ChiPhiThietBi =
-                dto.ChiPhi.ChiPhiThietBi;
-
-            entity.ThongTinDieuChinhChiPhi.ChiPhiKhac =
-                dto.ChiPhi.ChiPhiKhac;
-
-            entity.ThongTinDieuChinhChiPhi.ChiPhiDuPhong =
-                dto.ChiPhi.ChiPhiDuPhong;
+            if (entity.ThongTinDieuChinhChiPhi != null)
+            {
+                entity.ThongTinDieuChinhChiPhi.TongMucDauTu = dto.ChiPhi.TongMucDauTu;
+                entity.ThongTinDieuChinhChiPhi.ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap;
+                entity.ThongTinDieuChinhChiPhi.ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi;
+                entity.ThongTinDieuChinhChiPhi.ChiPhiKhac = dto.ChiPhi.ChiPhiKhac;
+                entity.ThongTinDieuChinhChiPhi.ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong;
+            }
+            else
+            {
+                var chiPhi = new ThongTinDieuChinhChiPhi
+                {
+                    Id = Guid.NewGuid(),
+                    QuyetDinhDieuChinhId = entity.Id,
+                    TongMucDauTu = dto.ChiPhi.TongMucDauTu,
+                    ChiPhiXayLap = dto.ChiPhi.ChiPhiXayLap,
+                    ChiPhiThietBi = dto.ChiPhi.ChiPhiThietBi,
+                    ChiPhiKhac = dto.ChiPhi.ChiPhiKhac,
+                    ChiPhiDuPhong = dto.ChiPhi.ChiPhiDuPhong
+                };
+                await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
+                entity.ThongTinDieuChinhChiPhi = chiPhi;
+            }
         }
-        else
+        else if (entity.ThongTinDieuChinhChiPhi != null)
         {
+            _chiPhiRepository.Delete(entity.ThongTinDieuChinhChiPhi);
             entity.ThongTinDieuChinhChiPhi = null;
         }
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        return entity; 
-     
+        return entity;
+
         // entity.Update(dto);
 
         // var existingChiPhi = await _chiPhiRepository.GetQueryableSet()
