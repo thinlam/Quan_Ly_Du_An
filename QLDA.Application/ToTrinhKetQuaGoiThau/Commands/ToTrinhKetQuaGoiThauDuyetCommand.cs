@@ -5,30 +5,31 @@ using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
-namespace QLDA.Application.ToTrinhPheDuyets.Commands;
+namespace QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 
 /// <summary>
 /// Duyệt phân khai kinh phí - LDDV role
 /// </summary>
-public record ToTrinhPheDuyetDuyetCommand(Guid Id, string Loai) : IRequest<int>;
+public record ToTrinhKetQuaGoiThauDuyetCommand(Guid Id) : IRequest<int>;
 
-internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetDuyetCommand, int> {
-    private readonly IRepository<Domain.Entities.ToTrinhPheDuyet, Guid> _repository;
+internal class ToTrinhKetQuaGoiThauDuyetCommandHandler : IRequestHandler<ToTrinhKetQuaGoiThauDuyetCommand, int> {
+    private readonly IRepository<Domain.Entities.ToTrinhKetQuaGoiThau, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
 
-    public ToTrinhPheDuyetDuyetCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhPheDuyet, Guid>>();
+    public ToTrinhKetQuaGoiThauDuyetCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhKetQuaGoiThau, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(ToTrinhPheDuyetDuyetCommand request, CancellationToken cancellationToken) {
+    public async Task<int> Handle(ToTrinhKetQuaGoiThauDuyetCommand request, CancellationToken cancellationToken) {
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
@@ -47,7 +48,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
@@ -60,7 +61,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = request.Loai,// get Loai from request.Loai if needed
+            EntityName = PheDuyetEntityNames.ToTrinhKetQuaGoiThau,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,

@@ -10,7 +10,7 @@ namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 /// <summary>
 /// Trả lại phân khai kinh phí - LDDV role, cần lý do
 /// </summary>
-public record ToTrinhPheDuyetTraLaiCommand(Guid Id, string NoiDung) : IRequest<int>;
+public record ToTrinhPheDuyetTraLaiCommand(Guid Id,string Loai, string NoiDung) : IRequest<int>;
 
 internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheDuyetTraLaiCommand, int> {
     private readonly IRepository<Domain.Entities.ToTrinhPheDuyet, Guid> _repository;
@@ -67,7 +67,7 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         // Create history record with reason
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.ToTrinhPheDuyet,
+            EntityName = request.Loai,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,

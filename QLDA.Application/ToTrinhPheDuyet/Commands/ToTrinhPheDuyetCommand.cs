@@ -9,7 +9,7 @@ namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 /// <summary>
 /// Trình phân khai kinh phí - chỉ phòng KH-TC (PhongBanId = 219)
 /// </summary>
-public record ToTrinhPheDuyetCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
+public record ToTrinhPheDuyetCommand(Guid Id, string Loai, string? NoiDung = null) : IRequest<int>;
 
 internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCommand, int> {
     private readonly IRepository<Domain.Entities.ToTrinhPheDuyet, Guid> _repository;
@@ -46,11 +46,11 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần duyệt");
 
         // Validate current status must be null (legacy), Dự thảo, or Trả lại
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc trả lại");
         }
 
         // Update status to Đã trình
@@ -59,7 +59,7 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.ToTrinhPheDuyet,
+            EntityName = request.Loai,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,

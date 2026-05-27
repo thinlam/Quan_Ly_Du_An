@@ -59,13 +59,15 @@ public static class PheDuyetEntityNames
     [Description("Báo cáo kết quả khảo sát")]
     public const string BaoCaoKetQuaKhaoSat = "BaoCaoKetQuaKhaoSat";
     
-    [Description("Tờ trình phê duyệt")]
-    public const string ToTrinhPheDuyet = "ToTrinhPheDuyet";
+    [Description("Tờ trình phê duyệt khảo sát")]
+    public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
 
     [Description("Thuyết minh dự án")]
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
 
     [Description("Thẩm định")]
     public const string ThamDinh = "ThamDinh";
-    
+
+    [Description("Tờ trình kết quả gói thầu")]
+    public const string ToTrinhKetQuaGoiThau = "ToTrinhKetQuaGoiThau";
 }
