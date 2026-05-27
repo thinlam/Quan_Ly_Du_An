@@ -43,37 +43,45 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
             throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
         }
-        dto.TrangThaiId = entity.TrangThaiId;
-        entity = new QuyetDinhDieuChinh
+        entity.DuAnId = dto.DuAnId;
+        entity.BuocId = dto.BuocId;
+        entity.LoaiDieuChinhId = dto.LoaiDieuChinhId;
+        entity.LyDo = dto.LyDo;
+        entity.Lan = dto.Lan;
+        entity.NgayQuyetDinh = dto.NgayQuyetDinh;
+        entity.SoQuyetDinh = dto.SoQuyetDinh;
+        entity.TrichYeu = dto.TrichYeu;
+
+        if (dto.ChiPhi != null)
         {
-            Id= entity.Id,
-            DuAnId = request.Dto.DuAnId,
-            BuocId = request.Dto.BuocId,
-            LoaiDieuChinhId = request.Dto.LoaiDieuChinhId,
-            LyDo = request.Dto.LyDo,
-            Lan = request.Dto.Lan,
-            NgayQuyetDinh = request.Dto.NgayQuyetDinh,
-            SoQuyetDinh = request.Dto.SoQuyetDinh,
-            TrichYeu = request.Dto.TrichYeu,
-            TrangThaiId = trangThaiDuThao?.Id ?? 0,
-            ThongTinDieuChinhChiPhi = request.Dto.ChiPhi == null
-               ? null
-               : new ThongTinDieuChinhChiPhi
-               {
-                   Id = Guid.NewGuid(),
-                   TongMucDauTu = request.Dto.ChiPhi.TongMucDauTu,
-                   ChiPhiXayLap = request.Dto.ChiPhi.ChiPhiXayLap,
-                   ChiPhiThietBi = request.Dto.ChiPhi.ChiPhiThietBi,
-                   ChiPhiKhac = request.Dto.ChiPhi.ChiPhiKhac,
-                   ChiPhiDuPhong = request.Dto.ChiPhi.ChiPhiDuPhong
-               }
-        };
+            entity.ThongTinDieuChinhChiPhi ??=
+                new ThongTinDieuChinhChiPhi();
+
+            entity.ThongTinDieuChinhChiPhi.TongMucDauTu =
+                dto.ChiPhi.TongMucDauTu;
+
+            entity.ThongTinDieuChinhChiPhi.ChiPhiXayLap =
+                dto.ChiPhi.ChiPhiXayLap;
+
+            entity.ThongTinDieuChinhChiPhi.ChiPhiThietBi =
+                dto.ChiPhi.ChiPhiThietBi;
+
+            entity.ThongTinDieuChinhChiPhi.ChiPhiKhac =
+                dto.ChiPhi.ChiPhiKhac;
+
+            entity.ThongTinDieuChinhChiPhi.ChiPhiDuPhong =
+                dto.ChiPhi.ChiPhiDuPhong;
+        }
+        else
+        {
+            entity.ThongTinDieuChinhChiPhi = null;
+        }
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        await _repository.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        return entity;
+        return entity; 
+     
         // entity.Update(dto);
 
         // var existingChiPhi = await _chiPhiRepository.GetQueryableSet()

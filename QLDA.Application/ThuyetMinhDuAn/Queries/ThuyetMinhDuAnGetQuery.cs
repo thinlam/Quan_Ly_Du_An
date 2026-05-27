@@ -22,7 +22,7 @@ internal class ThuyetMinhDuAnGetQueryHandler(IServiceProvider serviceProvider)
         serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
 
-    public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnGetQuery request,        CancellationToken cancellationToken = default) {
+    public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnGetQuery request, CancellationToken cancellationToken = default) {
         var queryable = ThuyetMinhDuAn.GetOrderedSet().Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

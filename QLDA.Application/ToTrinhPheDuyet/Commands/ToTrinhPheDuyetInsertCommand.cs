@@ -25,7 +25,7 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
     {
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.ToTrinhPheDuyet, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = new ToTrinhPheDuyet
         {
@@ -34,6 +34,7 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
             So = request.Dto.So,
             NgayToTrinh = request.Dto.NgayToTrinh,
             TrichYeu = request.Dto.TrichYeu,
+            Loai = request.Dto.Loai,
             TrangThaiId = trangThaiDuThao?.Id,
         };
 

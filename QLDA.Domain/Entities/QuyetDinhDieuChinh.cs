@@ -36,8 +36,6 @@ public class QuyetDinhDieuChinh : Entity<Guid>, IAggregateRoot {
 
     public string? LyDo { get; set; }
 
-    public string? TepDinhKem { get; set; }
-
     /// <summary>
     /// FK Trạng thái phê duyệt điều chỉnh (7 trạng thái riêng)
     /// </summary>

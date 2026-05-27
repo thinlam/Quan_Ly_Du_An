@@ -57,8 +57,10 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
 
         var entity = await Mediator.Send(new ToTrinhPheDuyetInsertCommand(dto), cancellationToken);
+        // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhPheDuyet theo Loai
+        //tạo contanst LoaiToTrinhPheDuyet
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PheDuyetKhaoSat) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -80,7 +82,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
     {
         var entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PheDuyetKhaoSat) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -107,6 +109,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
             IsNoTracking = true,
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
+            Loai = dto.Loai,
             PageSize = dto.PageSize,
             PageIndex = dto.PageIndex,
             GlobalFilter = dto.GlobalFilter,

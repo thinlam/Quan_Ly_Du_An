@@ -73,8 +73,9 @@ internal class
                 SoPhieuChuyen = e.SoPhieuChuyen,
                 NgayPhieuChuyen = e.NgayPhieuChuyen,
                 TrichYeu = e.TrichYeu,
-                 
+                KinhPhiDeXuat = e.KinhPhiDeXuat,
                 TrangThaiId = e.TrangThaiId,
+
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()

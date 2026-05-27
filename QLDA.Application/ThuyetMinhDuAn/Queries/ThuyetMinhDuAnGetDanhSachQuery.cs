@@ -43,12 +43,12 @@ internal class    ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider Service
                 So = e.So,
                 NgayTrinh = e.NgayTrinh,
                 TrichYeu = e.TrichYeu,
+                KetQuaThamDinh = e.KetQuaThamDinh,
                 TrangThaiThamDinhId = e.TrangThaiThamDinhId,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThaiThamDinh = e.TrangThaiThamDinhId != null  ? e.TrangThaiThamDinh.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-
+                TenTrangThaiThamDinh = e.TrangThaiThamDinhId != null  ? e.TrangThaiThamDinh.Ten : string.Empty,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

@@ -14,8 +14,9 @@ public static class ThuyetMinhDuAnMappings
             BuocId = dto.BuocId,
             So = dto.So,
             NgayTrinh = dto.NgayTrinh,
-            KetQuaThamDinh = dto.KetQuaThamDinh,
             TrichYeu = dto.TrichYeu,
+            KetQuaThamDinh = dto.KetQuaThamDinh,
+            TrangThaiId = dto.TrangThaiId,
             TrangThaiThamDinhId = dto.TrangThaiThamDinhId
         };
     }
