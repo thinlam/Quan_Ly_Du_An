@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.GoiThaus.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.Providers;
 
 public record GoiThauGetTinhHinhDauThauQuery(TinhHinhDauThauSearchDto SearchDto) : AggregateRootPagination, IRequest<PaginatedList<GoiThauDto>> {
@@ -92,6 +93,7 @@ internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHi
                         PhuongThucLuaChonNhaThauId = e.PhuongThucLuaChonNhaThauId, //TenPhuongThucGoiNhaThau
                         TomTatCongViecChinhGoiThau = e.TomTatCongViecChinhGoiThau,
                         ThoiGianBatDauToChucLuaChonNhaThau = e.ThoiGianBatDauToChucLuaChonNhaThau,
+                        DanhSachTepDinhKem = TepDinhKem.GetQueryableSet().Where(i => i.GroupId == e.Id.ToString()).Select(i => i.ToDto()).ToList(),
                     })
                     .ToListAsync(cancellationToken);
         return PaginatedList<GoiThauDto>.Create(entities,  request.SearchDto.Skip(), request.SearchDto.Take());  

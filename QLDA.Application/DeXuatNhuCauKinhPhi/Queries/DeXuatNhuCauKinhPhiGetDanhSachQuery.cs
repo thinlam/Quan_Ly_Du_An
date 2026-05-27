@@ -31,7 +31,7 @@ internal class
 
     public async Task<PaginatedList<DeXuatNhuCauKinhPhiDto>> Handle(DeXuatNhuCauKinhPhiQuery request,
         CancellationToken cancellationToken = default) {
-        bool dieuKienThayTatCa = false;
+       // bool dieuKienThayTatCa = false;
        
 
         // Convert DateOnly? request values to DateTimeOffset? to compare with NgayPhieuChuyen (DateTimeOffset?)
@@ -48,7 +48,7 @@ internal class
         }
 
         var queryable = DeXuatNhuCauKinhPhi.GetQueryableSet().AsNoTracking()
-            .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
+       //     .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             //.WhereIf(

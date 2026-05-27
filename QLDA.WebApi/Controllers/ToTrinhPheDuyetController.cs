@@ -55,7 +55,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
-
+        dto.Loai= GroupTypeConstants.PheDuyetKhaoSat; // set loại để phân biệt với các entity khác dùng chung bảng TepDinhKem
         var entity = await Mediator.Send(new ToTrinhPheDuyetInsertCommand(dto), cancellationToken);
         // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhPheDuyet theo Loai
         //tạo contanst LoaiToTrinhPheDuyet

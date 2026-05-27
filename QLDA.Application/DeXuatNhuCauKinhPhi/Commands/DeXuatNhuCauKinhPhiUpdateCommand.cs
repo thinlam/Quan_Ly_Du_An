@@ -24,20 +24,22 @@ internal class DeXuatNhuCauKinhPhiUpdateCommandHandler : IRequestHandler<DeXuatN
     {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        var trangThaiTraLai = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
-        var entity = await _repo.GetQueryableSet()
-            .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+        var entity = await _repo.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThai?.Ma != "LEG")
+        if (entity.TrangThaiId != trangThaiDuThao?.Id && trangThaiTraLai?.Id != entity.TrangThaiId)
         {
-            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
+            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo hoặc trả lại ");
         }
         entity.DonViDeXuatId = request.Dto.DonViDeXuatId;
         entity.SoPhieuChuyen = request.Dto.SoPhieuChuyen;
         entity.NgayPhieuChuyen = request.Dto.NgayPhieuChuyen;
         entity.TrichYeu = request.Dto.TrichYeu;
+        entity.KinhPhiDeXuat = request.Dto.KinhPhiDeXuat;
         
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
