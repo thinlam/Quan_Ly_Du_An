@@ -29,6 +29,7 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(IServiceProvider servicePro
     private readonly IRepository<BanGiaoHoSo, Guid>               _banGiaoHoSoRepo        = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
     private readonly IRepository<PhanKhaiKinhPhi, Guid>           _phanKhaiKinhPhiRepo    = serviceProvider.GetRequiredService<IRepository<PhanKhaiKinhPhi, Guid>>();
     private readonly IRepository<QuyetDinhDieuChinh, Guid>        _quyetDinhDieuChinhRepo = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
+    private readonly IRepository<ToTrinhPheDuyet, Guid>           _ToTrinhPheDuyetRepo    = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
 
     public async Task<List<TepDinhKemDto>> Handle(
         DuAnGetDanhSachTepDinhKemQuery request,
@@ -101,7 +102,7 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(IServiceProvider servicePro
         AddIds(await _toTrinhKeHoachRepo.GetQueryableSet()
             .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
             .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
-
+        
         AddIds(await _banGiaoHoSoRepo.GetQueryableSet()
             .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
             .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
@@ -113,11 +114,16 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(IServiceProvider servicePro
         AddIds(await _quyetDinhDieuChinhRepo.GetQueryableSet()
             .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
             .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
+        
+        AddIds(await _ToTrinhPheDuyetRepo.GetQueryableSet()
+            .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
+            .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
 
         var files = await _tepDinhKemRepo.GetQueryableSet()
             .Where(f => groupIds.Contains(f.GroupId) && !f.IsDeleted)
             .ToListAsync(cancellationToken);
-
+       
+        
         return files.ToDtos();
     }
 }

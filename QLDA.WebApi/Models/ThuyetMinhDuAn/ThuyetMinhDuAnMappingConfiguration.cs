@@ -15,6 +15,7 @@ public static class ThuyetMinhDuAnMappingConfiguration
             So = entity.So,
             NgayTrinh = entity.NgayTrinh,
             TrichYeu = entity.TrichYeu,
+            KetQuaThamDinh = entity.KetQuaThamDinh,
             TrangThaiThamDinhId = entity.TrangThaiThamDinhId,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList(),
@@ -30,6 +31,7 @@ public static class ThuyetMinhDuAnMappingConfiguration
             So = model.So,
             NgayTrinh = model.NgayTrinh,
             TrichYeu = model.TrichYeu,
+            KetQuaThamDinh = model.KetQuaThamDinh,
             TrangThaiThamDinhId = model.TrangThaiThamDinhId,
             TrangThaiId = model.TrangThaiId
         };

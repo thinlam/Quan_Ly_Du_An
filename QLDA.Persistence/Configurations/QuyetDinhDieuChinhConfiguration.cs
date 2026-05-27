@@ -9,7 +9,6 @@ public class QuyetDinhDieuChinhConfiguration : AggregateRootConfiguration<QuyetD
     public override void Configure(EntityTypeBuilder<QuyetDinhDieuChinh> builder) {
         builder.ToTable(nameof(QuyetDinhDieuChinh));
 
-        builder.HasIndex(e => new { e.PheDuyetEntityName, e.PheDuyetEntityId });
         builder.HasIndex(e => e.DuAnId);
 
         builder.HasOne(e => e.DuAn)
@@ -21,7 +20,7 @@ public class QuyetDinhDieuChinhConfiguration : AggregateRootConfiguration<QuyetD
             .WithMany()
             .HasForeignKey(e => e.LoaiDieuChinhId)
             .OnDelete(DeleteBehavior.Restrict);
-
+        
         builder.HasOne(e => e.TrangThai)
             .WithMany()
             .HasForeignKey(e => e.TrangThaiId)

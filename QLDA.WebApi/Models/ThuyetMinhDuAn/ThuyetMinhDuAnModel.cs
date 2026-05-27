@@ -28,6 +28,7 @@ public class ThuyetMinhDuAnModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTe
     public string So { get; set; }
     public DateTimeOffset NgayTrinh { get; set; }
     public string? TrichYeu { get; set; }
+    public string? KetQuaThamDinh { get; set; }
     public int? TrangThaiId { get; set; }
     public int? TrangThaiThamDinhId { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }

@@ -1,23 +1,24 @@
 using System.Net.Mime;
-using QLDA.Application.BaoCaoTienDos.Commands;
-using QLDA.Application.BaoCaoTienDos.DTOs;
-using QLDA.Application.BaoCaoTienDos.Queries;
+using QLDA.Application.ThuyetMinhDuAns.Commands;
+using QLDA.Application.ThuyetMinhDuAns.DTOs;
+using QLDA.Application.ThuyetMinhDuAns.Queries;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.WebApi.Models.BaoCaoTienDos;
+using QLDA.WebApi.Models.ThuyetMinhDuAns;
 using QLDA.WebApi.Models.TepDinhKems;
+using QLDA.Application.DanhMucDonVis.Queries;
 
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Thuyết minh dự án")]
 [Route("api/thuyet-minh-du-an")]
 public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
-    [ProducesResponseType<ResultApi<BaoCaoTienDoModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<ThuyetMinhDuAnModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id) {
-        var entity = await Mediator.Send(new BaoCaoTienDoGetQuery() {
+        var entity = await Mediator.Send(new ThuyetMinhDuAnGetQuery() {
             Id = id,
             ThrowIfNull = true,
             IsNoTracking = true,
@@ -31,7 +32,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
     [HttpDelete("{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id) {
-        var res = await Mediator.Send(new BaoCaoTienDoDeleteCommand(id));
+        var res = await Mediator.Send(new ThuyetMinhDuAnDeleteCommand(id));
         return ResultApi.Ok(res);
     }
 
@@ -40,12 +41,12 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Create([FromBody] BaoCaoTienDoModel model) {
+    public async Task<ResultApi> Create([FromBody] ThuyetMinhDuAnModel model) {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
-
+      
         var entity = model.ToEntity();
-        await Mediator.Send(new BaoCaoTienDoInsertOrUpdateCommand(entity));
+        entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   ); 
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
@@ -53,20 +54,26 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepDinhKem
         });
+        var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id).ToList();
 
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = danhSachFileThamDinh
+        });
         return ResultApi.Ok(entity.Id);
     }
 
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType<ResultApi<BaoCaoTienDoModel>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<ThuyetMinhDuAnModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Update([FromBody] BaoCaoTienDoModel model) {
+    public async Task<ResultApi> Update([FromBody] ThuyetMinhDuAnModel model) {
         var entity =
-            await Mediator.Send(new BaoCaoTienDoGetQuery { Id = model.GetId(), ThrowIfNull = true });
+            await Mediator.Send(new ThuyetMinhDuAnGetQuery { Id = model.GetId(), ThrowIfNull = true });
         entity.Update(model);
 
-        await Mediator.Send(new BaoCaoTienDoInsertOrUpdateCommand(entity));
+        await Mediator.Send(new ThuyetMinhDuAnUpdateCommand(entity));
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
@@ -74,15 +81,22 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepDinhKem
         });
-        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
+        var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id);
+
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = danhSachFileThamDinh
+        });
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachFileThamDinh));
     }
 
     [HttpGet("danh-sach-tien-do")]
-    [ProducesResponseType<ResultApi<PaginatedList<BaoCaoTienDoDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<ThuyetMinhDuAnDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetDanhSach([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null,
         int pageIndex = 0, int pageSize = 0) {
-        var res = await Mediator.Send(new BaoCaoTienDoGetDanhSachQuery() {
+        var res = await Mediator.Send(new ThuyetMinhDuAnGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
             GlobalFilter = globalFilter,

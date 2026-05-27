@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 
@@ -7,8 +8,9 @@ namespace QLDA.Application.QuyetDinhDieuChinhs.Queries;
 
 public record QuyetDinhDieuChinhGetDanhSachQuery(
     Guid? DuAnId = null,
-    string? PheDuyetEntityName = null,
-    Guid? PheDuyetEntityId = null,
+    int? BuocId = null,
+    //string? PheDuyetEntityName = null,
+    //Guid? PheDuyetEntityId = null,
     string? GlobalFilter = null,
     int Page = 1,
     int PageSize = 20
@@ -16,9 +18,10 @@ public record QuyetDinhDieuChinhGetDanhSachQuery(
 
 public record QuyetDinhDieuChinhListItemDto {
     public Guid Id { get; set; }
-    public string PheDuyetEntityName { get; set; } = default!;
-    public Guid PheDuyetEntityId { get; set; }
+    //public string PheDuyetEntityName { get; set; } = default!;
+    //public Guid PheDuyetEntityId { get; set; }
     public Guid DuAnId { get; set; }
+    public int? BuocId { get; set; }
     public string? SoQuyetDinh { get; set; }
     public DateTimeOffset? NgayQuyetDinh { get; set; }
     public string? TrichYeu { get; set; }
@@ -28,6 +31,7 @@ public record QuyetDinhDieuChinhListItemDto {
     public string? MaTrangThai { get; set; }
     public string? TenTrangThai { get; set; }
     public int Lan { get; set; }
+    public List<TepDinhKemDto> DanhSachTepDinhKem { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }
 
@@ -35,9 +39,11 @@ public record PagedResultDto<T>(List<T> Items, int TotalCount, int Page, int Pag
 
 internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<QuyetDinhDieuChinhGetDanhSachQuery, PagedResultDto<QuyetDinhDieuChinhListItemDto>> {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
+    private readonly IRepository<TepDinhKem, Guid> _tepRepo;
 
     public QuyetDinhDieuChinhGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
+        _tepRepo = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     }
 
     public async Task<PagedResultDto<QuyetDinhDieuChinhListItemDto>> Handle(QuyetDinhDieuChinhGetDanhSachQuery request, CancellationToken cancellationToken) {
@@ -49,14 +55,17 @@ internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<Quyet
         if (request.DuAnId.HasValue) {
             query = query.Where(e => e.DuAnId == request.DuAnId.Value);
         }
-
-        if (!string.IsNullOrEmpty(request.PheDuyetEntityName)) {
-            query = query.Where(e => e.PheDuyetEntityName == request.PheDuyetEntityName);
+        if (request.BuocId.HasValue)
+        {
+            query = query.Where(e => e.BuocId == request.BuocId.Value);
         }
+        //if (!string.IsNullOrEmpty(request.PheDuyetEntityName)) {
+        //    query = query.Where(e => e.PheDuyetEntityName == request.PheDuyetEntityName);
+        //}
 
-        if (request.PheDuyetEntityId.HasValue) {
-            query = query.Where(e => e.PheDuyetEntityId == request.PheDuyetEntityId.Value);
-        }
+        //if (request.PheDuyetEntityId.HasValue) {
+        //    query = query.Where(e => e.PheDuyetEntityId == request.PheDuyetEntityId.Value);
+        //}
 
         if (!string.IsNullOrEmpty(request.GlobalFilter)) {
             var filter = request.GlobalFilter.ToLower();
@@ -73,9 +82,10 @@ internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<Quyet
             .Take(request.PageSize)
             .Select(e => new QuyetDinhDieuChinhListItemDto {
                 Id = e.Id,
-                PheDuyetEntityName = e.PheDuyetEntityName,
-                PheDuyetEntityId = e.PheDuyetEntityId,
+                //PheDuyetEntityName = e.PheDuyetEntityName,
+                //PheDuyetEntityId = e.PheDuyetEntityId,
                 DuAnId = e.DuAnId,
+                BuocId = e.BuocId,
                 SoQuyetDinh = e.SoQuyetDinh,
                 NgayQuyetDinh = e.NgayQuyetDinh,
                 TrichYeu = e.TrichYeu,
@@ -85,7 +95,10 @@ internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<Quyet
                 MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
                 TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
                 Lan = e.Lan,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                DanhSachTepDinhKem = _tepRepo.GetQueryableSet()
+                    .Where(i => i.GroupId == e.Id.ToString())
+                    .Select(i => i.ToDto()).ToList(),
             })
             .ToListAsync(cancellationToken);
 

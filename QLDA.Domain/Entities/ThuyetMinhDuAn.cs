@@ -14,7 +14,7 @@ public class ThuyetMinhDuAn : Entity<Guid>, IAggregateRoot
     public DateTimeOffset NgayTrinh { get; set; }
     public string So { get; set; }
     public string? TrichYeu { get; set; }
-
+    public string? KetQuaThamDinh { get; set; }
 
 
     #region Navigation Properties

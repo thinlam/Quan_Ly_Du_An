@@ -20,6 +20,8 @@ public class ThuyetMinhDuAnConfiguration : AggregateRootConfiguration<ThuyetMinh
 
         builder.Property(e => e.TrichYeu)
             .HasMaxLength(500);
+        builder.Property(e => e.KetQuaThamDinh)
+          .HasMaxLength(4000);
 
         builder.HasOne(e => e.DuAn)
             .WithMany()

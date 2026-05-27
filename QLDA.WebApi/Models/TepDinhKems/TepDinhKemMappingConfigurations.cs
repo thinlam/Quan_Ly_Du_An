@@ -136,6 +136,6 @@ public static class TepDinhKemMappingConfigurations {
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this ThuyetMinhDuAnModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId,  EGroupType.ThuyetMinhDuAn).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKemThamDinh(this ThuyetMinhDuAnModel model, Guid groupId)
-      => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ThamDinhThuyetMinhDuAn).ToList() ?? [];
+      => model.DanhSachTepThamDinh?.ToEntities(groupId, EGroupType.ThamDinhThuyetMinhDuAn).ToList() ?? [];
 
 }

@@ -2,15 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
 using QLDA.Application.QuyetDinhDieuChinhs.DTOs;
 using QLDA.Domain.Constants;
+using System.Data;
 
 namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 
 /// <summary>
 /// Tạo mới quyết định điều chỉnh
 /// </summary>
-public record QuyetDinhDieuChinhInsertCommand(QuyetDinhDieuChinhInsertDto Dto) : IRequest<int>;
+public record QuyetDinhDieuChinhInsertCommand(QuyetDinhDieuChinhInsertDto Dto) : IRequest<QuyetDinhDieuChinh>;
 
-internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDinhDieuChinhInsertCommand, int>
+internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDinhDieuChinhInsertCommand, QuyetDinhDieuChinh>
 {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
     private readonly IRepository<ThongTinDieuChinhChiPhi, Guid> _chiPhiRepository;
@@ -27,32 +28,54 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(QuyetDinhDieuChinhInsertCommand request, CancellationToken cancellationToken)
+    public async Task<QuyetDinhDieuChinh> Handle(QuyetDinhDieuChinhInsertCommand request, CancellationToken cancellationToken)
     {
         var dto = request.Dto;
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DuThao && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao 
+            && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDuThao, "Không tìm thấy trạng thái 'Dự thảo'");
+        var entity = new QuyetDinhDieuChinh
+        {
+            Id = Guid.NewGuid(),
+            DuAnId = request.Dto.DuAnId,
+            BuocId = request.Dto.BuocId,
+            LoaiDieuChinhId = request.Dto.LoaiDieuChinhId,
+            LyDo = request.Dto.LyDo,
+            NgayQuyetDinh = request.Dto.NgayQuyetDinh,
+            SoQuyetDinh = request.Dto.SoQuyetDinh,
+            TrichYeu = request.Dto.TrichYeu,
+            TrangThaiId = trangThaiDuThao?.Id??0,
+            ThongTinDieuChinhChiPhi = request.Dto.ChiPhi == null
+                ? null
+                : new ThongTinDieuChinhChiPhi
+                {
+                    Id = Guid.NewGuid(),
+                    TongMucDauTu = request.Dto.ChiPhi.TongMucDauTu,
+                    ChiPhiXayLap = request.Dto.ChiPhi.ChiPhiXayLap,
+                    ChiPhiThietBi = request.Dto.ChiPhi.ChiPhiThietBi,
+                    ChiPhiKhac = request.Dto.ChiPhi.ChiPhiKhac,
+                    ChiPhiDuPhong = request.Dto.ChiPhi.ChiPhiDuPhong
+                }
+        };
 
-        var lan = await _repository.GetQueryableSet()
-            .CountAsync(e => e.PheDuyetEntityId == dto.EntityId
-                             && e.PheDuyetEntityName == dto.Entity
-                             && !e.IsDeleted, cancellationToken) + 1;
+        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await _repository.AddAsync(entity, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
+       
+        //if (request.Dto.ChiPhi is null)
+        //{
 
-        // var entity = dto.ToEntity();
-        // entity.TrangThaiId = trangThaiDuThao.Id;
-        // entity.Lan = lan;
+        //    entity.ThongTinDieuChinhChiPhi ??= new ThongTinDieuChinhChiPhi();
+        //}
 
-        // await _repository.AddAsync(entity, cancellationToken);
 
-        // if (dto.ChiPhi != null)
-        // {
-        //     var chiPhi = dto.ChiPhi.ToEntity(entity.Id);
-        //     await _chiPhiRepository.AddAsync(chiPhi, cancellationToken);
-        // }
+        //await _unitOfWork.SaveChangesAsync(cancellationToken);
+        //await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return entity;
     }
 }

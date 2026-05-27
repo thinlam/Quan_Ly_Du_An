@@ -2,17 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.ToTrinhKeHoachs.DTOs;
+using QLDA.Application.ToTrinhPheDuyets.DTOs;
 using QLDA.Domain.Constants;
 
-namespace QLDA.Application.ToTrinhKeHoachs.Queries;
+namespace QLDA.Application.ToTrinhPheDuyets.Queries;
 
-public record ToTrinhKeHoachGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhKeHoachDto>> {
+public record ToTrinhPheDuyetGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhPheDuyetDto>> {
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
 
+    public string? Loai { get; set; }
     public string? So { get; set; }
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
@@ -20,25 +21,23 @@ public record ToTrinhKeHoachGetPaginatedQuery : AggregateRootPagination, IMayHav
 }
 
 internal class
-    ToTrinhKeHoachGetPaginatedQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<ToTrinhKeHoachGetPaginatedQuery,
-        PaginatedList<ToTrinhKeHoachDto>> {
-    private readonly IRepository<ToTrinhKeHoach, Guid> ToTrinhKeHoach =
-        ServiceProvider.GetRequiredService<IRepository<ToTrinhKeHoach, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    ToTrinhPheDuyetGetPaginatedQueryHandler(IServiceProvider ServiceProvider)
+    : IRequestHandler<ToTrinhPheDuyetGetPaginatedQuery,  PaginatedList<ToTrinhPheDuyetDto>> {
+    private readonly IRepository<ToTrinhPheDuyet, Guid> ToTrinhPheDuyet =  ServiceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
+    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
-    public async Task<PaginatedList<ToTrinhKeHoachDto>> Handle(ToTrinhKeHoachGetPaginatedQuery request,
+    public async Task<PaginatedList<ToTrinhPheDuyetDto>> Handle(ToTrinhPheDuyetGetPaginatedQuery request,
         CancellationToken cancellationToken = default) {
         bool dieuKienThayTatCa = false;
 
-        var queryable = ToTrinhKeHoach.GetQueryableSet().AsNoTracking()
+        var queryable = ToTrinhPheDuyet.GetQueryableSet().AsNoTracking()
             .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.Loai != null, e => e.Loai == request.Loai)
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),
                 e => e.TrichYeu!.ToLower().Contains(request.TrichYeu!.ToLower()))
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
@@ -50,7 +49,7 @@ internal class
             );
 
         return await queryable
-            .Select(e => new ToTrinhKeHoachDto() {
+            .Select(e => new ToTrinhPheDuyetDto() {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,

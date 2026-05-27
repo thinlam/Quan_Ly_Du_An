@@ -10,14 +10,15 @@ public class QuyetDinhDieuChinh : Entity<Guid>, IAggregateRoot {
     /// <summary>
     /// Loại phe duyệt gốc (PheDuyetDuToan, PhanKhaiKinhPhi, etc.)
     /// </summary>
-    public string PheDuyetEntityName { get; set; } = default!;
+   // public string PheDuyetEntityName { get; set; } = default!;
 
     /// <summary>
     /// FK tới phe duyệt gốc
     /// </summary>
-    public Guid PheDuyetEntityId { get; set; }
+    //public Guid PheDuyetEntityId { get; set; }
 
     public Guid DuAnId { get; set; }
+    public int? BuocId { get; set; }
 
     /// <summary>
     /// Số quyết định điều chỉnh

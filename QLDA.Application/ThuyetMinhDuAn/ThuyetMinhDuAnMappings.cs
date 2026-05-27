@@ -14,12 +14,13 @@ public static class ThuyetMinhDuAnMappings
             BuocId = dto.BuocId,
             So = dto.So,
             NgayTrinh = dto.NgayTrinh,
+            KetQuaThamDinh = dto.KetQuaThamDinh,
             TrichYeu = dto.TrichYeu,
             TrangThaiThamDinhId = dto.TrangThaiThamDinhId
         };
     }
 
-    public static ThuyetMinhDuAnDto ToDto(this ThuyetMinhDuAn entity, List<TepDinhKem>? files = null)
+    public static ThuyetMinhDuAnDto ToDto(this ThuyetMinhDuAn entity, List<TepDinhKem>? files = null, List<TepDinhKem>? filesThamDinh = null)
     {
         return new ThuyetMinhDuAnDto
         {
@@ -28,10 +29,12 @@ public static class ThuyetMinhDuAnMappings
             BuocId = entity.BuocId,
             So = entity.So,
             NgayTrinh = entity.NgayTrinh,
+            KetQuaThamDinh = entity.KetQuaThamDinh,
             TrichYeu = entity.TrichYeu,
             TrangThaiThamDinhId = entity.TrangThaiThamDinhId,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
+            DanhSachTepThamDinh = filesThamDinh?.Select(x => x.ToDto()).ToList(),
         };
     }
 }

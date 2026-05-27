@@ -11,6 +11,7 @@ public class ThuyetMinhDuAnInsertDto : IMayHaveTepDinhKemDto, ITienDo {
     public DateTimeOffset NgayTrinh { get; set; }
     public string So { get; set; } = string.Empty;
     public string? TrichYeu { get; set; }
+    public string? KetQuaThamDinh { get; set; }
     public int? TrangThaiId { get; set; }
     public int? TrangThaiThamDinhId { get; set; }
     public string? MaTrangThaiThamDinh { get; set; }
