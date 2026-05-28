@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
@@ -12,31 +13,39 @@ namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 /// </summary>
 public record QuyetDinhDieuChinhDuyetCommand(Guid Id) : IRequest<int>;
 
-internal class QuyetDinhDieuChinhDuyetCommandHandler : IRequestHandler<QuyetDinhDieuChinhDuyetCommand, int> {
+internal class QuyetDinhDieuChinhDuyetCommandHandler : IRequestHandler<QuyetDinhDieuChinhDuyetCommand, int>
+{
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAppSettingsProvider _settings;
 
-    public QuyetDinhDieuChinhDuyetCommandHandler(IServiceProvider serviceProvider) {
+ 
+ 
+
+    public QuyetDinhDieuChinhDuyetCommandHandler(IServiceProvider serviceProvider)
+    {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(QuyetDinhDieuChinhDuyetCommand request, CancellationToken cancellationToken) {
-        // Permission: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt điều chỉnh");
+    public async Task<int> Handle(QuyetDinhDieuChinhDuyetCommand request, CancellationToken cancellationToken)
+    {
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
+        {
+            throw new ManagedException("Tài khoản không có quyền.");
         }
-
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DaTrinh && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+        .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.QuyetDinhDieuChinh.DaDuyet && s.Loai == PheDuyetEntityNames.QuyetDinhDieuChinh, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
@@ -46,13 +55,15 @@ internal class QuyetDinhDieuChinhDuyetCommandHandler : IRequestHandler<QuyetDinh
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
         // Validate: must be ĐTr (Đã trình) to transition to ĐD (Đã duyệt)
-        if (entity.TrangThaiId != trangThaiDaTrinh?.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh?.Id)
+        {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
         entity.TrangThaiId = trangThaiDaDuyet.Id;
 
-        var history = new PheDuyetHistory {
+        var history = new PheDuyetHistory
+        {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.QuyetDinhDieuChinh,
             EntityId = entity.Id,

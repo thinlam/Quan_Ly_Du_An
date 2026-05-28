@@ -33,7 +33,6 @@ internal class    ToTrinhKetQuaGoiThauDanhSachQueryHandler(IServiceProvider Serv
 
     public async Task<PaginatedList<ToTrinhKetQuaGoiThauDto>> Handle(ToTrinhKetQuaGoiThauDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        bool dieuKienThayTatCa = false;
 
         DateTimeOffset? tuNgayDto = null;
         DateTimeOffset? denNgayExclusiveDto = null; 
@@ -47,7 +46,6 @@ internal class    ToTrinhKetQuaGoiThauDanhSachQueryHandler(IServiceProvider Serv
         }
 
         var queryable = ToTrinhKetQuaGoiThau.GetQueryableSet().AsNoTracking()
-            .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)

@@ -70,4 +70,8 @@ public static class PheDuyetEntityNames
 
     [Description("Tờ trình kết quả gói thầu")]
     public const string ToTrinhKetQuaGoiThau = "ToTrinhKetQuaGoiThau";
+
+    [Description("Tờ trình thẩm định nhà thầu")]
+    public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
+    
 }

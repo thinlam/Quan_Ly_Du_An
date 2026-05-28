@@ -27,10 +27,8 @@ internal class    DeXuatChuyenTiepGetDanhSachQueryHandler(IServiceProvider Servi
 
     public async Task<PaginatedList<DeXuatChuyenTiepDto>> Handle(DeXuatChuyenTiepGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        bool dieuKienThayTatCa = false;
 
         var queryable = DeXuatChuyenTiep.GetQueryableSet().AsNoTracking()
-            .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)

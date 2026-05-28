@@ -35,7 +35,16 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             PheDuyetEntityNames.PheDuyetDuToan,
             PheDuyetEntityNames.HoSoDeXuatCapDoCntt,
             PheDuyetEntityNames.HoSoMoiThauDienTu,
-            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat
+            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat,
+            PheDuyetEntityNames.DeXuatChuTruongMoi,
+            PheDuyetEntityNames.DeXuatChuTruongChuyenTiep,
+            PheDuyetEntityNames.DeXuatNhuCauKinhPhi,
+            PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
+            PheDuyetEntityNames.ThuyetMinhDuAn,
+            PheDuyetEntityNames.ToTrinhKeHoach,
+            PheDuyetEntityNames.ToTrinhKetQuaGoiThau,
+            PheDuyetEntityNames.ToTrinhThamDinhNhaThau,
+            PheDuyetEntityNames.QuyetDinhDieuChinh
         };
         if (request.Type != null && !validTypes.Contains(request.Type)) {
             return new PaginatedList<PheDuyetListItemDto>([], 0, request.Skip(), request.Take());

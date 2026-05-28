@@ -31,10 +31,7 @@ internal class
 
     public async Task<PaginatedList<DeXuatNhuCauKinhPhiDto>> Handle(DeXuatNhuCauKinhPhiQuery request,
         CancellationToken cancellationToken = default) {
-       // bool dieuKienThayTatCa = false;
-       
 
-        // Convert DateOnly? request values to DateTimeOffset? to compare with NgayPhieuChuyen (DateTimeOffset?)
         DateTimeOffset? tuNgayDto = null;
         DateTimeOffset? denNgayExclusiveDto = null; // exclusive upper bound
         if (request.TuNgay.HasValue) {
@@ -43,12 +40,10 @@ internal class
         }
         if (request.DenNgay.HasValue) {
             var dt = request.DenNgay.Value.ToDateTime(TimeOnly.MinValue);
-            // use exclusive upper bound to include the whole DenNgay day
             denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
         }
 
         var queryable = DeXuatNhuCauKinhPhi.GetQueryableSet().AsNoTracking()
-       //     .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             //.WhereIf(

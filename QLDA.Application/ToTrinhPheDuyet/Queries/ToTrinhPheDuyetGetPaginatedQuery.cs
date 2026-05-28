@@ -30,10 +30,8 @@ internal class
 
     public async Task<PaginatedList<ToTrinhPheDuyetDto>> Handle(ToTrinhPheDuyetGetPaginatedQuery request,
         CancellationToken cancellationToken = default) {
-        bool dieuKienThayTatCa = false;
 
         var queryable = ToTrinhPheDuyet.GetQueryableSet().AsNoTracking()
-            .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)

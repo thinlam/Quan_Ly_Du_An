@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Application.Providers;
 using QLDA.Application.QuyetDinhDieuChinhs.DTOs;
 using QLDA.Domain.Constants;
 using System.Data;
@@ -19,6 +20,7 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
+
     public QuyetDinhDieuChinhInsertCommandHandler(IServiceProvider serviceProvider)
     {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
@@ -26,6 +28,7 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
+
     }
 
     public async Task<QuyetDinhDieuChinh> Handle(QuyetDinhDieuChinhInsertCommand request, CancellationToken cancellationToken)
@@ -33,7 +36,7 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
         var dto = request.Dto;
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao 
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao
             && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDuThao, "Không tìm thấy trạng thái 'Dự thảo'");
@@ -47,7 +50,7 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
             NgayQuyetDinh = request.Dto.NgayQuyetDinh,
             SoQuyetDinh = request.Dto.SoQuyetDinh,
             TrichYeu = request.Dto.TrichYeu,
-            TrangThaiId = trangThaiDuThao?.Id??0,
+            TrangThaiId = trangThaiDuThao?.Id ?? 0,
             ThongTinDieuChinhChiPhi = request.Dto.ChiPhi == null
                 ? null
                 : new ThongTinDieuChinhChiPhi
@@ -65,7 +68,7 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
         await _repository.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-       
+
         //if (request.Dto.ChiPhi is null)
         //{
 

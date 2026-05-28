@@ -46,7 +46,7 @@ internal class ToTrinhKetQuaGoiThauTrinhCommandHandler : IRequestHandler<ToTrinh
 
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
         {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc trả lại!");
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;

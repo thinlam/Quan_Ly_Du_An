@@ -8,7 +8,7 @@ namespace QLDA.Domain.Entities;
 public class PheDuyetHistory : Entity<Guid>, IAggregateRoot {
     public string EntityName { get; set; } = default!;
     public Guid EntityId { get; set; }
-    public Guid DuAnId { get; set; }
+    public Guid? DuAnId { get; set; }
 
     /// <summary>
     /// USER_MASTER.UserPortalId

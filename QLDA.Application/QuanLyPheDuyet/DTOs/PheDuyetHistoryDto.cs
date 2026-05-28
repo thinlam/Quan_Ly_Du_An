@@ -7,7 +7,7 @@ public class PheDuyetHistoryDto {
     public Guid Id { get; set; }
     public string EntityName { get; set; } = default!;
     public Guid EntityId { get; set; }
-    public Guid DuAnId { get; set; }
+    public Guid? DuAnId { get; set; }
     public long? NguoiXuLyId { get; set; }
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }

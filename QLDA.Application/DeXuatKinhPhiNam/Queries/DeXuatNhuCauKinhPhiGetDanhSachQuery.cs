@@ -34,7 +34,6 @@ internal class
 
     public async Task<PaginatedList<DeXuatNhuCauKinhPhiNamDto>> Handle(DeXuatNhuCauKinhPhiNamQuery request,
         CancellationToken cancellationToken = default) {
-        bool dieuKienThayTatCa = false;
 
         DateTimeOffset? tuNgayDto = null;
         DateTimeOffset? denNgayExclusiveDto = null; 
@@ -48,7 +47,6 @@ internal class
         }
 
         var queryable = DeXuatNhuCauKinhPhiNam.GetQueryableSet().AsNoTracking()
-            .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
           //  .WhereIf(request. != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
