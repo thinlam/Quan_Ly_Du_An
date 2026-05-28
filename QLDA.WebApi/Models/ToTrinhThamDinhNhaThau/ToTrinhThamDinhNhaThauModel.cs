@@ -29,8 +29,7 @@ public class ToTrinhThamDinhNhaThauModel : IHasKey<Guid?>, IMustHaveId<Guid>, IM
     public DateTimeOffset NgayTrinh     { get; set; } 
     public string? TrichYeu { get; set; } = string.Empty;
     public int? TrangThaiDangTaiId { get; set; }
-    public int? TrangThaiThamDinhId { get; set; }
-    
+    public bool? DaThamDinh { get; set; }
     public List<KetQuaThamDinhNhaThauModel>? DanhSachNhaThaus { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemModel>? DanhSachTepThamDinh { get; set; }

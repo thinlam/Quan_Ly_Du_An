@@ -21,6 +21,7 @@ public class KetQuaThamDinhNhaThauModel : IHasKey<Guid?>,  IMayHaveTepDinhKemMod
     
     public Guid ToTrinhId { get; set; }
     public Guid NhaThauId { get; set; }
+    public Guid GoiThauId { get; set; }
     public string? KetQuaDanhGia { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 }

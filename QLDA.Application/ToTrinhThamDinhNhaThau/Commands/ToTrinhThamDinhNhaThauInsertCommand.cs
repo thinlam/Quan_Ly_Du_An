@@ -32,7 +32,7 @@ internal class ToTrinhThamDinhNhaThauInsertCommandHandler : IRequestHandler<ToTr
             NgayTrinh = request.Dto.NgayTrinh,
             TrichYeu = request.Dto.TrichYeu,
             TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId,
-            TrangThaiThamDinhId = request.Dto.TrangThaiThamDinhId,
+            DaThamDinh = request.Dto.DaThamDinh,
             TrangThaiId = trangThaiDuThao?.Id
            
         };

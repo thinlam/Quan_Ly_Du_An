@@ -15,7 +15,7 @@ public static class ToTrinhThamDinhNhaThauMappingConfiguration
             NgayTrinh = entity.NgayTrinh,
             DanhSachNhaThaus = entity.NhaThaus?.Select(x => x.ToModel()).ToList(),
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
-            TrangThaiThamDinhId = entity.TrangThaiThamDinhId,
+            DaThamDinh = entity.DaThamDinh,
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList(),
             DanhSachTepThamDinh = danhSachTepThamDinh?.Select(o => o.ToModel()).ToList(),
         };
@@ -32,7 +32,7 @@ public static class ToTrinhThamDinhNhaThauMappingConfiguration
             NgayTrinh = model.NgayTrinh,
             TrangThaiDangTaiId = model.TrangThaiDangTaiId,
             NhaThaus = model.DanhSachNhaThaus?.Select(x => x.ToEntity()).ToList() ?? [],
-            TrangThaiThamDinhId = model.TrangThaiThamDinhId,
+            DaThamDinh = model.DaThamDinh,
         };
  
 }

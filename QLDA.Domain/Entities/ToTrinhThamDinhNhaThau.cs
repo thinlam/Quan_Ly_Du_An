@@ -14,12 +14,11 @@ public class ToTrinhThamDinhNhaThau : Entity<Guid>, IAggregateRoot, ITienDo
     public string? TrichYeu { get; set; }
     public int? TrangThaiId { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
-    public int? TrangThaiThamDinhId { get; set; }
+    public bool? DaThamDinh { get; set; }
     public List<KetQuaThamDinhNhaThau>? NhaThaus { get; set; } = [];
 
     #region Navigation Properties
     public DuAn? DuAn { get; set; }
-    public DanhMucTrangThaiPheDuyet? TrangThaiThamDinh { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
     #endregion
 

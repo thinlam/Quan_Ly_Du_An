@@ -10,6 +10,7 @@ public static class KetQuaThamDinhNhaThauMappingConfiguration
             Id = entity.Id,
             ToTrinhId = entity.ToTrinhId,
             NhaThauId = entity.NhaThauId,
+            GoiThauId = entity.GoiThauId,
             KetQuaDanhGia = entity.KetQuaDanhGia,
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList(),
         };
@@ -21,6 +22,7 @@ public static class KetQuaThamDinhNhaThauMappingConfiguration
             Id = model.GetId(),
             ToTrinhId = model.ToTrinhId,
             NhaThauId = model.NhaThauId,
+            GoiThauId = model.GoiThauId,
             KetQuaDanhGia = model.KetQuaDanhGia
         };
  

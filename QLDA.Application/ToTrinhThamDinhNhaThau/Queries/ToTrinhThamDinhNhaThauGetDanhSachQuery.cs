@@ -62,6 +62,7 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
                 NgayTrinh = e.NgayTrinh,
                 TrichYeu = e.TrichYeu,
                 TrangThaiDangTaiId = e.TrangThaiDangTaiId,
+                DaThamDinh = e.DaThamDinh,
                 // trả thêm tên dự án
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,

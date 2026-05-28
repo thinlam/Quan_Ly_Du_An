@@ -20,10 +20,8 @@ public class ToTrinhThamDinhNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
-    public int? TrangThaiThamDinhId { get; set; }
-    public string? TenTrangThaiThamDinh { get; set; }
+    public bool? DaThamDinh { get; set; }
     public string? TenTrangThai { get; set; }
-    public string? TenTrangThaiDangTai { get; set; }
     public List<KetQuaThamDinhNhaThau>? DanhSachNhaThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }

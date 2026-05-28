@@ -26,6 +26,8 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
     public async Task<int> Handle(QuyetDinhDieuChinhDeleteCommand request, CancellationToken cancellationToken) {
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt , cancellationToken);
+        var trangThaiTraLai = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
@@ -33,8 +35,8 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
         // Validate: only allow delete when status is DT (Dự thảo)
-        if (entity.TrangThaiId != trangThaiDuThao?.Id) {
-            throw new ManagedException("Chỉ có thể xóa khi trạng thái là Dự thảo");
+        if (entity.TrangThaiId != trangThaiDuThao?.Id || entity.TrangThaiId != trangThaiTraLai?.Id) {
+            throw new ManagedException("Chỉ có thể xóa chưa duyệt!");
         }
 
         entity.IsDeleted = true;

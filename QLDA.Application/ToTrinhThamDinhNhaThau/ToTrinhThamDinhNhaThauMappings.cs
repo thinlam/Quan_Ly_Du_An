@@ -15,7 +15,7 @@ public static class ToTrinhThamDinhNhaThauMappings
         foreach (var item in NhaThaus) {
             entity.NhaThaus.Add(new KetQuaThamDinhNhaThau {
                 ToTrinhId = entity.Id,
-                NhaThauId = item.NhaThauId,
+                 NhaThauId = item.NhaThauId,
                 KetQuaDanhGia = item.KetQuaDanhGia,
             }); 
         }
@@ -29,6 +29,7 @@ public static class ToTrinhThamDinhNhaThauMappings
             TrichYeu = entity.TrichYeu,
             TrangThaiId = entity.TrangThaiId,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
+            DaThamDinh= entity.DaThamDinh,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
             DanhSachTepThamDinh = filesThamDinh?.Select(x => x.ToDto()).ToList(),
             //DanhSachNhaThau = entity.DanhSachNhaThau?.Select(x => new KetQuaThamDinhNhaThau() { 

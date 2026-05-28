@@ -15,7 +15,7 @@ public class ToTrinhThamDinhNhaThauInsUpdDto : IMayHaveTepDinhKemDto
     public string? TrichYeu { get; set; }
     public int? TrangThaiId { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
-    public int? TrangThaiThamDinhId { get; set; }
+    public bool? DaThamDinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }
     public List<KetQuaThamDinhNhaThau>? DanhSachNhaThau { get; set; }

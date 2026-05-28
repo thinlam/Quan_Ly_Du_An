@@ -40,7 +40,7 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         entity.NgayTrinh = request.Dto.NgayTrinh;
         entity.TrichYeu = request.Dto.TrichYeu;
         entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
-        entity.TrangThaiThamDinhId = request.Dto.TrangThaiThamDinhId;
+        entity.DaThamDinh = request.Dto.DaThamDinh;
         entity.SyncNhaThauIds(request.Dto.Id,request.Dto.NhaThaus);
         // insert file cho TepDinhKem
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);

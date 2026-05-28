@@ -12,6 +12,7 @@ public class KetQuaThamDinhNhaThau : Entity<Guid>
 {
     public Guid ToTrinhId { get; set; }
     public Guid NhaThauId { get; set; }
+    public Guid GoiThauId { get; set; }
     public string? KetQuaDanhGia { get; set; }
     //public List<TepDinhKem>? DanhSachTepDinhKem { get; set; }
 
@@ -19,6 +20,7 @@ public class KetQuaThamDinhNhaThau : Entity<Guid>
 
     public ToTrinhThamDinhNhaThau? ToTrinhThamDinhNhaThau { get; set; }
     public DanhMucNhaThau? NhaThau { get; set; }
+    public GoiThau? GoiThau { get; set; }
 
     #endregion
 }
