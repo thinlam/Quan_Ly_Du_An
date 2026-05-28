@@ -34,8 +34,8 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
             So = request.Dto.So,
             NgayTrinh = request.Dto.NgayTrinh,
             TrichYeu = request.Dto.TrichYeu,
-            KetQuaThamDinh = request.Dto.KetQuaThamDinh,
-            TrangThaiThamDinhId = request.Dto.TrangThaiThamDinhId,
+            //KetQuaThamDinh = request.Dto.KetQuaThamDinh,//chỉ user phòng KH-tc
+            //TrangThaiThamDinhId = request.Dto.TrangThaiThamDinhId,
             TrangThaiId = trangThaiDuThao?.Id,
         };
 

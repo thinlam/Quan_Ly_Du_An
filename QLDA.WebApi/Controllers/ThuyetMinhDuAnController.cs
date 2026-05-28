@@ -34,7 +34,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAnThamDinh]
         });
-        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepThamDinh));
     }
 
     [HttpDelete("{id}/xoa")]
@@ -42,8 +42,32 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         var res = await Mediator.Send(new ThuyetMinhDuAnDeleteCommand(id));
         return ResultApi.Ok(res);
     }
-
+    
     /// <remarks>du an id la bac buoc</remarks>
+    //[HttpPost("tham-dinh")]
+    //[Consumes(MediaTypeNames.Application.Json)]
+    //[ProducesResponseType<ResultApi<ThuyetMinhDuAnThamDinhModel>>(StatusCodes.Status200OK)]
+    //[ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    //public async Task<ResultApi> ThamDinh([FromBody] ThuyetMinhDuAnThamDinhModel thamDinhModel)
+    //{
+
+    //    var entity =
+    //       await Mediator.Send(new ThuyetMinhDuAnGetQuery { Id = thamDinhModel.GetId(), ThrowIfNull = true });
+    //    var model = entity.ToModel();
+    //    entity.TrangThaiThamDinhId = thamDinhModel.TrangThaiThamDinhId;
+    //    entity.KetQuaThamDinh = thamDinhModel.KetQuaThamDinh;
+    //    await Mediator.Send(new ThuyetMinhDuAnThamDinhCommand(entity));
+
+    //    var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id);
+
+    //    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+    //    {
+    //        GroupId = entity.Id.ToString(),
+    //        Entities = danhSachFileThamDinh
+    //    });
+    //    return ResultApi.Ok(entity.Id);
+
+    //}
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
@@ -65,18 +89,6 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             Entities = files
         });
 
-     
-        //var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id).ToList();
-        List<TepDinhKem> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
-            entity.Id, GroupTypeConstants.ThuyetMinhDuAnThamDinh) ?? []];
-
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        {
-            GroupId = entity.Id.ToString(),
-            GroupTypes = [GroupTypeConstants.ThuyetMinhDuAnThamDinh],
-            Entities = filesThamDinh
-        });
-
         return ResultApi.Ok(entity.Id);
     }
 
@@ -91,6 +103,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
         await Mediator.Send(new ThuyetMinhDuAnUpdateCommand(entity));
 
+
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
@@ -98,12 +111,15 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             Entities = danhSachTepDinhKem
         });
         var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id);
+        //if ()// chỉ có user phòng KH-tc
+        //{
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        {
-            GroupId = entity.Id.ToString(),
-            Entities = danhSachFileThamDinh
-        });
+            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            {
+                GroupId = entity.Id.ToString(),
+                Entities = danhSachFileThamDinh
+            });
+       // }
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachFileThamDinh));
     }
 

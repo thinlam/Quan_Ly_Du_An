@@ -35,3 +35,16 @@ public class ThuyetMinhDuAnModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTe
     public List<TepDinhKemModel>? DanhSachTepThamDinh { get; set; }
     
 }
+public class ThuyetMinhDuAnThamDinhModel    : IHasKey<Guid>
+{
+    public Guid Id { get; set; }
+    public Guid GetId()
+    {
+        return (Guid)Id;
+    }
+    public string? KetQuaThamDinh { get; set; }
+
+    public int? TrangThaiThamDinhId { get; set; }
+
+    public List<TepDinhKemModel>? DanhSachTepThamDinh { get; set; }
+}

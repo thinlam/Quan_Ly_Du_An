@@ -19,17 +19,40 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
     }
 
     public async Task<HoSoMoiThauDienTu> Handle(HoSoMoiThauDienTuUpdateCommand request, CancellationToken cancellationToken = default) {
-        var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DuThao && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
-
+       
         var entity = await HoSoMoiThauDienTu.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 
-        // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiPheDuyet?.Ma != "LEG") {
-            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
+        //// Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
+        //if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiPheDuyet?.Ma != "LEG") {
+        //    throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
+        //}
+        var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+        .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DuThao && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
+        var trangThaiTra = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.TraLai && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
+        var trangThaiDaDuyet = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaDuyet && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
+        var trangThaiDaTrinh = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaTrinh && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
+
+        
+        var currentStatus = entity.TrangThaiId;
+        var allowEdit = currentStatus == trangThaiDuThao?.Id || currentStatus == trangThaiTra?.Id;
+
+        if (allowEdit)
+        {
+            entity.DuAnId = request.Model.DuAnId;
+            entity.BuocId = request.Model.BuocId;
+            entity.HinhThucLuaChonNhaThauId = request.Model.HinhThucLuaChonNhaThauId;
+            entity.HinhThucLuaChonNhaThauId = request.Model.HinhThucLuaChonNhaThauId;
+            entity.GoiThauId = request.Model.GoiThauId;
+            entity.GiaTri = request.Model.GiaTri;
+            entity.ThoiGianThucHien = request.Model.ThoiGianThucHien;
         }
+        else
+            entity.TrangThaiDangTai = request.Model.TrangThaiDangTai;
 
         entity.Update(request.Model);
 

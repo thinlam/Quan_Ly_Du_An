@@ -3,7 +3,7 @@ using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.ThuyetMinhDuAns.DTOs;
 
-public class ThuyetMinhDuAnUpdateDto : IMayHaveTepDinhKemDto {
+public class ThuyetMinhDuAnThamDinhDto : IMayHaveTepDinhKemDto {
     public Guid Id { get; set; }
     public Guid DuAnId { get; set; }
     public int BuocId { get; set; }

@@ -26,6 +26,8 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
+
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -54,7 +56,7 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy yêu cầu cần trả");
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
