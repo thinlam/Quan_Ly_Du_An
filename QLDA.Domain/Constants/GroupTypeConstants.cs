@@ -26,9 +26,13 @@ public static class GroupTypeConstants
     public const string NhuCauKinhPhiNam = "DeXuatNhuCauKinhPhiNam";
     public const string BaoCaoKetQuaKhaoSat = "BaoCaoKetQuaKhaoSat";
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
+    public const string ThuyetMinhDuAnThamDinh = "ThuyetMinhDuAnThamDinh";
     public const string QuyetDinhDieuChinh = "QuyetDinhDieuChinh";
     public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
     public const string PheDuyetKetQuaGoiThauDuAn = "PheDuyetKetQuaGoiThauDuAn";
+    public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
+    public const string NoiDungThamDinhNhaThau = "NoiDungThamDinhNhaThau";
+    public const string KetQuaThamDinhNhaThau = "KetQuaThamDinhNhaThau";
     
 
 }

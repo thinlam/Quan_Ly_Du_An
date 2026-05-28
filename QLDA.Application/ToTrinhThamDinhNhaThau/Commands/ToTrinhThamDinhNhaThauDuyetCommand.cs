@@ -5,23 +5,23 @@ using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
-namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
+namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 
 /// <summary>
 /// Duyệt phân khai kinh phí - LDDV role
 /// </summary>
-public record DeXuatNhuCauKinhPhiNamDuyetCommand(Guid Id) : IRequest<int>;
+public record ToTrinhThamDinhNhaThauDuyetCommand(Guid Id) : IRequest<int>;
 
-internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXuatNhuCauKinhPhiNamDuyetCommand, int> {
-    private readonly IRepository<Domain.Entities.DeXuatNhuCauKinhPhiNam, Guid> _repository;
+internal class ToTrinhThamDinhNhaThauDuyetCommandHandler : IRequestHandler<ToTrinhThamDinhNhaThauDuyetCommand, int> {
+    private readonly IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
 
-    public DeXuatNhuCauKinhPhiNamDuyetCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatNhuCauKinhPhiNam, Guid>>();
+    public ToTrinhThamDinhNhaThauDuyetCommandHandler(IServiceProvider serviceProvider) {
+        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -29,7 +29,7 @@ internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXua
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(DeXuatNhuCauKinhPhiNamDuyetCommand request, CancellationToken cancellationToken) {
+    public async Task<int> Handle(ToTrinhThamDinhNhaThauDuyetCommand request, CancellationToken cancellationToken) {
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
@@ -61,8 +61,9 @@ internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXua
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
+            EntityName = PheDuyetEntityNames.ToTrinhThamDinhNhaThau,
             EntityId = entity.Id,
+            DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow

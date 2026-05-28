@@ -69,7 +69,6 @@ internal class DeXuatNhuCauKinhPhiNamTraLaiCommandHandler : IRequestHandler<DeXu
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
             EntityId = entity.Id,
-            DuAnId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiTraLai.Id,
             NoiDung = request.NoiDung,

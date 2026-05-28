@@ -3,32 +3,33 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Domain.Entities;
 
-namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
+namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 
 /// <summary>
 /// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
 /// </summary>
-public record DeXuatNhuCauKinhPhiNamTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
+public record ToTrinhThamDinhNhaThauTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
-internal class DeXuatNhuCauKinhPhiNamTrinhCommandHandler : IRequestHandler<DeXuatNhuCauKinhPhiNamTrinhCommand, int>
+internal class ToTrinhThamDinhNhaThauTrinhCommandHandler : IRequestHandler<ToTrinhThamDinhNhaThauTrinhCommand, int>
 {
-    private readonly IRepository<DeXuatNhuCauKinhPhiNam, Guid> _repository;
+    private readonly IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DeXuatNhuCauKinhPhiNamTrinhCommandHandler(IServiceProvider serviceProvider)
+    public ToTrinhThamDinhNhaThauTrinhCommandHandler(IServiceProvider serviceProvider)
     {
-        _repository = serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhiNam, Guid>>();
+        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(DeXuatNhuCauKinhPhiNamTrinhCommand request, CancellationToken cancellationToken)
+    public async Task<int> Handle(ToTrinhThamDinhNhaThauTrinhCommand request, CancellationToken cancellationToken)
     {
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
@@ -55,8 +56,9 @@ internal class DeXuatNhuCauKinhPhiNamTrinhCommandHandler : IRequestHandler<DeXua
         var history = new PheDuyetHistory
         {
             Id = Guid.NewGuid(),
-            EntityName = PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
+            EntityName = PheDuyetEntityNames.ToTrinhThamDinhNhaThau,
             EntityId = entity.Id,
+            DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,

@@ -14,6 +14,7 @@ public static class ToTrinhKetQuaGoiThauMappingConfiguration
             TrichYeu = entity.TrichYeu,
             So = entity.So,
             NgayTrinh = entity.NgayTrinh,
+            TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 .Select(o => o.ToModel()).ToList()
         };

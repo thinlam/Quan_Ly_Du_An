@@ -1,13 +1,14 @@
-using System.Net.Mime;
-using QLDA.Application.ThuyetMinhDuAns.Commands;
-using QLDA.Application.ThuyetMinhDuAns.DTOs;
-using QLDA.Application.ThuyetMinhDuAns.Queries;
+using QLDA.Application.DanhMucDonVis.Queries;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.WebApi.Models.ThuyetMinhDuAns;
+using QLDA.Application.ThuyetMinhDuAns.Commands;
+using QLDA.Application.ThuyetMinhDuAns.DTOs;
+using QLDA.Application.ThuyetMinhDuAns.Queries;
+using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.TepDinhKems;
-using QLDA.Application.DanhMucDonVis.Queries;
+using QLDA.WebApi.Models.ThuyetMinhDuAns;
+using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -25,7 +26,13 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         });
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
+            GroupId = [entity.Id.ToString()],
+            EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAn]
+        });
+        var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+        {
+            GroupId = [entity.Id.ToString()],
+            EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAnThamDinh]
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
@@ -46,21 +53,30 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
       
         var entity = model.ToEntity();
-        entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   ); 
-
-        var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
-
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
-            GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
-        });
-        var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id).ToList();
+        entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   );
+       
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
+            entity.Id, GroupTypeConstants.ThuyetMinhDuAn) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachFileThamDinh
+            GroupTypes = [GroupTypeConstants.ThuyetMinhDuAn],
+            Entities = files
         });
+
+     
+        //var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id).ToList();
+        List<TepDinhKem> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
+            entity.Id, GroupTypeConstants.ThuyetMinhDuAnThamDinh) ?? []];
+
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            GroupTypes = [GroupTypeConstants.ThuyetMinhDuAnThamDinh],
+            Entities = filesThamDinh
+        });
+
         return ResultApi.Ok(entity.Id);
     }
 

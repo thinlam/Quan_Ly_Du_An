@@ -58,6 +58,10 @@ public enum EGroupType {
     DeXuatNhuCauKinhPhi,
     DeXuatNhuCauKinhPhiNam,
     ThuyetMinhDuAn,
-    ThamDinhThuyetMinhDuAn
+    ThamDinhThuyetMinhDuAn,
+    ToTrinhThamDinhNhaThau,
+    NoiDungToTrinhThamDinhNhaThau,
+    KetQuaThamDinhNhaThau,
+    
 
 }
