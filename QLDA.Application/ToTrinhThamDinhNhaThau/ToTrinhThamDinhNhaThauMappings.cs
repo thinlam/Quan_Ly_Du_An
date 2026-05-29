@@ -34,6 +34,7 @@ public static class ToTrinhThamDinhNhaThauMappings
             TrangThaiId = entity.TrangThaiId,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
             DaThamDinh= entity.DaThamDinh,
+            
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
             DanhSachTepThamDinh = filesThamDinh?.Select(x => x.ToDto()).ToList(),
             //DanhSachNhaThau = entity.DanhSachNhaThau?.Select(x => new KetQuaThamDinhNhaThau() { 

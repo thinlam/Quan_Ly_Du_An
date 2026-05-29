@@ -31,11 +31,3 @@ public class TrienKhaiKeHoachLCNT : Entity<Guid>, IAggregateRoot
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
     #endregion
 }
-public class DonViTuVanKeHoach 
-{
-    public long Id { get; set; }
-    public Guid KeHoachId { get; set; }
-    public string? TenDonVi { get; set; }
-    //public List<TepDinhKem>? DanhSachTepDinhKem { get; set; }
-    public TrienKhaiKeHoachLCNT? KeHoach { get; set; }
-}

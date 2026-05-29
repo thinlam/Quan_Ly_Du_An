@@ -73,16 +73,6 @@ namespace QLDA.Migrator.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TenDonVi = table.Column<string>(type: "nvarchar(400)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DonViTuVanKeHoach", x => x.KeHoachLCNTId);
-                    table.ForeignKey(
-                        name: "FK_DonViTuVanKeHoach_TrienKhaiKeHoachLCNT_KeHoachLCNTId",
-                        column: x => x.KeHoachLCNTId,
-                        principalTable: "TrienKhaiKeHoachLCNT",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

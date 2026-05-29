@@ -12,8 +12,8 @@ public class TrienKhaiKeHoachLCNTConfiguration : AggregateRootConfiguration<Trie
         .HasForeignKey(e => e.DuAnId)
         .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(e => e.GoiThau)
-        .WithOne()
-        .HasForeignKey<TrienKhaiKeHoachLCNT>(e => e.GoiThauId)
+        .WithMany()
+        .HasForeignKey(e => e.GoiThauId)
         .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(e => e.BuocId)

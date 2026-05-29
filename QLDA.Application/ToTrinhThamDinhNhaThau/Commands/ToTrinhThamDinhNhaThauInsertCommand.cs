@@ -29,7 +29,7 @@ internal class ToTrinhThamDinhNhaThauInsertCommandHandler : IRequestHandler<ToTr
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(request.Dto, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        entity.SyncNhaThauIds(request.Dto.NhaThaus);
+       // entity.SyncNhaThauIds(request.Dto.NhaThaus);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
         return entity;
