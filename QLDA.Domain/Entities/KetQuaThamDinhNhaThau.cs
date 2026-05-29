@@ -8,8 +8,10 @@ namespace QLDA.Domain.Entities;
 /// </summary>
 
 
-public class KetQuaThamDinhNhaThau : Entity<Guid>
+public class KetQuaThamDinhNhaThau 
 {
+    
+    public Guid Id { get; set; }
     public Guid ToTrinhId { get; set; }
     public Guid NhaThauId { get; set; }
     public Guid GoiThauId { get; set; }

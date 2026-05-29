@@ -24,23 +24,12 @@ internal class ToTrinhThamDinhNhaThauInsertCommandHandler : IRequestHandler<ToTr
         CancellationToken cancellationToken = default) {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-
-        var entity = new Domain.Entities.ToTrinhThamDinhNhaThau {
-            So = request.Dto.So,
-            BuocId = request.Dto.BuocId,
-            DuAnId = request.Dto.DuAnId,
-            NgayTrinh = request.Dto.NgayTrinh,
-            TrichYeu = request.Dto.TrichYeu,
-            TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId,
-            DaThamDinh = request.Dto.DaThamDinh,
-            TrangThaiId = trangThaiDuThao?.Id
-           
-        };
+        var entity = request.Dto;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        await _repo.AddAsync(entity, cancellationToken);
+        await _repo.AddAsync(request.Dto, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        entity.SyncNhaThauIds(entity.Id,request.Dto.NhaThaus);
+        entity.SyncNhaThauIds(request.Dto.NhaThaus);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
         return entity;

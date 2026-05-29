@@ -22,7 +22,22 @@ public class ToTrinhThamDinhNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
     public int? TrangThaiDangTaiId { get; set; }
     public bool? DaThamDinh { get; set; }
     public string? TenTrangThai { get; set; }
-    public List<KetQuaThamDinhNhaThau>? DanhSachNhaThau { get; set; }
+    public List<KetQuaThamDinhNhaThauDto>? DanhSachNhaThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }
 }
+//Id = model.GetId(),
+
+public class KetQuaThamDinhNhaThauDto
+{
+    public Guid Id { get; set; }
+    public Guid ToTrinhId { get; set; }
+    public Guid NhaThauId { get; set; }
+    public Guid GoiThauId { get; set; }
+    public string? KetQuaDanhGia { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepDinhKem  { get; set; }
+  
+
+}
+
+  

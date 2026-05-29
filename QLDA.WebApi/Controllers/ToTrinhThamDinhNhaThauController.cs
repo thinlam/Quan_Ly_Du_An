@@ -7,6 +7,7 @@ using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Queries;
 using QLDA.Domain.Constants;
+using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
 using System.Net.Mime;
@@ -31,10 +32,31 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
-            GroupId = [entity.Id.ToString()]
+            GroupId = [entity.Id.ToString()],
+            EGroupTypes= [GroupTypeConstants.ToTrinhThamDinhNhaThau]
         });
+        var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+        {
+            GroupId = [entity.Id.ToString()],
+            EGroupTypes = [GroupTypeConstants.NoiDungThamDinhNhaThau]
+        });
+        var nhaThauModel = entity.NhaThaus.Select(o => o.ToModel()).ToList();
+        foreach ( var item in nhaThauModel)
+        {
+            var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+            {
+                GroupId = [item.Id.ToString()],
+                EGroupTypes = [GroupTypeConstants.KetQuaThamDinhNhaThau]
+            });
+            item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
+        }
 
-        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem.ToList()));
+
+        return ResultApi.Ok(entity.ToModel(nhaThauModel: nhaThauModel, // Hoặc kết quả xử lý danh sách nhà thầu của bạn
+    danhSachTepDinhKem: danhSachTepDinhKem.ToList(),
+    danhSachTepThamDinh: danhSachTepThamDinh.ToList()
+   // nhaThauModel, danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()
+    ));
     }
 
     [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]

@@ -12,8 +12,8 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260528103211_UpateTableKetQuaThamDinhNhaThau")]
-    partial class UpateTableKetQuaThamDinhNhaThau
+    [Migration("20260529031639_UpateTableKetQuaThamDinhNhaThaIdDrop")]
+    partial class UpateTableKetQuaThamDinhNhaThaIdDrop
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5865,48 +5865,30 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.KetQuaThamDinhNhaThau", b =>
                 {
-                    b.Property<Guid>("ToTrinhId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("ToTrinhId");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GoiThauId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("KetQuaDanhGia")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("NhaThauId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("NhaThauId");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<Guid>("ToTrinhId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ToTrinhId");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("GoiThauId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("Index")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("KetQuaDanhGia")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ToTrinhId", "NhaThauId");
+                    b.HasKey("Id");
 
                     b.HasIndex("GoiThauId");
 
                     b.HasIndex("NhaThauId");
+
+                    b.HasIndex("ToTrinhId");
 
                     b.ToTable("KetQuaThamDinhNhaThau", (string)null);
                 });
@@ -7220,6 +7202,9 @@ namespace QLDA.Migrator.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("DaThamDinh")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("DuAnId")
                         .HasColumnType("uniqueidentifier");
 
@@ -7245,9 +7230,6 @@ namespace QLDA.Migrator.Migrations
                     b.Property<int?>("TrangThaiId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TrangThaiThamDinhId")
-                        .HasColumnType("int");
-
                     b.Property<string>("TrichYeu")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
@@ -7268,8 +7250,6 @@ namespace QLDA.Migrator.Migrations
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
                     b.HasIndex("TrangThaiId");
-
-                    b.HasIndex("TrangThaiThamDinhId");
 
                     b.ToTable("ToTrinhThamDinhNhaThau", (string)null);
                 });
@@ -8230,7 +8210,7 @@ namespace QLDA.Migrator.Migrations
                     b.HasOne("QLDA.Domain.Entities.GoiThau", "GoiThau")
                         .WithMany()
                         .HasForeignKey("GoiThauId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", "NhaThau")
@@ -8649,15 +8629,9 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("TrangThaiId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiPheDuyet", "TrangThaiThamDinh")
-                        .WithMany()
-                        .HasForeignKey("TrangThaiThamDinhId");
-
                     b.Navigation("DuAn");
 
                     b.Navigation("TrangThai");
-
-                    b.Navigation("TrangThaiThamDinh");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.TrienKhaiKeHoachLCNT", b =>

@@ -41,7 +41,7 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         entity.TrichYeu = request.Dto.TrichYeu;
         entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
         entity.DaThamDinh = request.Dto.DaThamDinh;
-        entity.SyncNhaThauIds(request.Dto.Id,request.Dto.NhaThaus);
+        entity.SyncNhaThauIds(request.Dto.NhaThaus);
         // insert file cho TepDinhKem
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);

@@ -7,6 +7,7 @@ namespace QLDA.Domain.Entities;
 [DisplayName("Tờ trình thẩm định nhà thầu")]
 public class ToTrinhThamDinhNhaThau : Entity<Guid>, IAggregateRoot, ITienDo
 {
+    public Guid Id { get; set; }
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string So { get; set; }

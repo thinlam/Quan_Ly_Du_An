@@ -33,6 +33,7 @@ public class GoiThauTrinhPheDuyetKetQua :  IAggregateRoot
     #region Navigation Properties
 
     public ToTrinhKetQuaGoiThau? ToTrinhKetQuaGoiThau { get; set; }
+    public GoiThau? GoiThau { get; set; }
 
     #endregion
 }

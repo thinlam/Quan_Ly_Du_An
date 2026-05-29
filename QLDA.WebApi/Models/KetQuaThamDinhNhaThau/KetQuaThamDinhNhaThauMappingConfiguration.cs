@@ -19,7 +19,7 @@ public static class KetQuaThamDinhNhaThauMappingConfiguration
     public static KetQuaThamDinhNhaThau ToEntity(this KetQuaThamDinhNhaThauModel model)
         => new()
         {
-            Id = model.GetId(),
+            //Id = model.GetId(),
             ToTrinhId = model.ToTrinhId,
             NhaThauId = model.NhaThauId,
             GoiThauId = model.GoiThauId,

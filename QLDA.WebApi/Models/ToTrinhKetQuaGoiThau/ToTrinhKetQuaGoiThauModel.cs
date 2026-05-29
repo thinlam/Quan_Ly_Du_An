@@ -28,5 +28,11 @@ public class ToTrinhKetQuaGoiThauModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
     public DateTimeOffset? NgayTrinh     { get; set; } 
     public string? TrichYeu { get; set; } = string.Empty;
     public int? TrangThaiDangTaiId { get; set; }
+    public List<GoiThauCboModel>? GoiThaus { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
+}
+public class GoiThauCboModel
+{
+    public Guid GoiThauId { get; set; }
+    public string? TenGoiThau { get; set; }
 }

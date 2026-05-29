@@ -35,8 +35,8 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
         // Validate: only allow delete when status is DT (Dự thảo)
-        if (entity.TrangThaiId != trangThaiDuThao?.Id || entity.TrangThaiId != trangThaiTraLai?.Id) {
-            throw new ManagedException("Chỉ có thể xóa chưa duyệt!");
+        if (entity.TrangThaiId == trangThaiDuThao?.Id || entity.TrangThaiId == trangThaiTraLai?.Id) {
+            throw new ManagedException("Chỉ có thể xóa khi chưa duyệt!");
         }
 
         entity.IsDeleted = true;

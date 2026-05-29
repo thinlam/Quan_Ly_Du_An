@@ -1,10 +1,11 @@
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
+using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 namespace QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
 
 public static class ToTrinhThamDinhNhaThauMappingConfiguration
 {
-    public static ToTrinhThamDinhNhaThauModel ToModel(this ToTrinhThamDinhNhaThau entity, List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem> ? danhSachTepThamDinh = null) =>
+    public static ToTrinhThamDinhNhaThauModel ToModel(this ToTrinhThamDinhNhaThau entity,List<KetQuaThamDinhNhaThauModel>? nhaThauModel = null, List<KetQuaThamDinhNhaThauDto>? nhaThaus = null, List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem> ? danhSachTepThamDinh = null) =>
         new()
         {
             Id = entity.Id,
@@ -13,9 +14,9 @@ public static class ToTrinhThamDinhNhaThauMappingConfiguration
             TrichYeu = entity.TrichYeu,
             So = entity.So,
             NgayTrinh = entity.NgayTrinh,
-            DanhSachNhaThaus = entity.NhaThaus?.Select(x => x.ToModel()).ToList(),
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
             DaThamDinh = entity.DaThamDinh,
+            DanhSachNhaThaus = nhaThauModel ?? new List<KetQuaThamDinhNhaThauModel>(),
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList(),
             DanhSachTepThamDinh = danhSachTepThamDinh?.Select(o => o.ToModel()).ToList(),
         };

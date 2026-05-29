@@ -21,7 +21,8 @@ internal class ToTrinhKetQuaGoiThauGetQueryHandler(IServiceProvider serviceProvi
         CancellationToken cancellationToken = default) {
         var queryable = ToTrinhKetQuaGoiThau.GetOrderedSet()
             .Include(e => e.GoiThaus)
-            .Where(e => e.Id == request.Id);
+           .ThenInclude(g => g.GoiThau)
+           .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)
             queryable = queryable.AsNoTracking();

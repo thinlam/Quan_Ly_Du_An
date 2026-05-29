@@ -15,6 +15,11 @@ public static class ToTrinhKetQuaGoiThauMappingConfiguration
             So = entity.So,
             NgayTrinh = entity.NgayTrinh,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
+            GoiThaus = entity.GoiThaus.Select(o => new GoiThauCboModel
+            {
+                GoiThauId = o.GoiThauId,
+                TenGoiThau = o.GoiThau?.Ten 
+            }).ToList() ?? new List<GoiThauCboModel>(),
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 .Select(o => o.ToModel()).ToList()
         };

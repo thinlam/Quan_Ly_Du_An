@@ -5,7 +5,7 @@ namespace QLDA.Application.ToTrinhThamDinhNhaThaus;
 
 public static class ToTrinhThamDinhNhaThauMappings
 {
-    public static void SyncNhaThauIds(this ToTrinhThamDinhNhaThau entity, Guid id, List<KetQuaThamDinhNhaThau>? NhaThaus) {
+    public static void SyncNhaThauIds(this ToTrinhThamDinhNhaThau entity, List<KetQuaThamDinhNhaThau>? NhaThaus) {
         if (NhaThaus is null) {
             entity.NhaThaus = [];
             return;
@@ -13,11 +13,15 @@ public static class ToTrinhThamDinhNhaThauMappings
         entity.NhaThaus ??= [];
         entity.NhaThaus.Clear();
         foreach (var item in NhaThaus) {
-            entity.NhaThaus.Add(new KetQuaThamDinhNhaThau {
+            entity.NhaThaus.Add(new KetQuaThamDinhNhaThau
+            {
+                Id = Guid.NewGuid(),
                 ToTrinhId = entity.Id,
-                 NhaThauId = item.NhaThauId,
+                NhaThauId = item.NhaThauId,
+                GoiThauId = item.GoiThauId,
                 KetQuaDanhGia = item.KetQuaDanhGia,
             }); 
+           
         }
     }
 
