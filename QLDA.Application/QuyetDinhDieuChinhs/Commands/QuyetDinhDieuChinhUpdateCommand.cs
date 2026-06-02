@@ -43,10 +43,10 @@ internal class QuyetDinhDieuChinhUpdateCommandHandler : IRequestHandler<QuyetDin
             .FirstOrDefaultAsync(e => e.Id == dto.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật!");
-
+      
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
         {
-            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là Dự thảo");
+            throw new ManagedException("Trạng thái không thể cập nhật!");
         }
         entity.DuAnId = dto.DuAnId;
         entity.BuocId = dto.BuocId;

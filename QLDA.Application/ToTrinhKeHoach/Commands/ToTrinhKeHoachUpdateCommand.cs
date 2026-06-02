@@ -25,16 +25,20 @@ internal class ToTrinhKeHoachUpdateCommandHandler : IRequestHandler<ToTrinhKeHoa
     {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ToTrinhKeHoach.DuThao && s.Loai == PheDuyetEntityNames.ToTrinhKeHoach, cancellationToken);
+        var trangThaiTraLai = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+           .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThai?.Ma != "LEG")
+        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
         {
-            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
+            throw new ManagedException("Trạng thái không thể cập nhật!");
         }
+
+        
 
         entity.So = request.Dto.So;
         entity.NgayToTrinh = request.Dto.NgayToTrinh.ToStartOfDayUtc();

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601072837_tableKeHoachTrienKhaiCacHangMuc")]
+    partial class tableKeHoachTrienKhaiCacHangMuc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -373,7 +376,6 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<long?>("UserPortalId")
-                        .IsRequired()
                         .HasColumnType("bigint")
                         .HasColumnName("User_PortalID");
 
@@ -601,8 +603,6 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("KeHoachId", "CanBoId");
-
-                    b.HasIndex("CanBoId");
 
                     b.ToTable("CanBoTrienKhaiHangMuc", (string)null);
                 });
@@ -7766,20 +7766,11 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.CanBoTrienKhaiHangMuc", b =>
                 {
-                    b.HasOne("BuildingBlocks.Domain.Entities.UserMaster", "CanBo")
-                        .WithMany()
-                        .HasForeignKey("CanBoId")
-                        .HasPrincipalKey("UserPortalId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
                     b.HasOne("QLDA.Domain.Entities.KeHoachTrienKhaiHangMuc", "KeHoachTrienKhai")
                         .WithMany("CanBoTrienKhais")
                         .HasForeignKey("KeHoachId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CanBo");
 
                     b.Navigation("KeHoachTrienKhai");
                 });

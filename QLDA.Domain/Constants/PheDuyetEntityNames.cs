@@ -75,5 +75,7 @@ public static class PheDuyetEntityNames
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
     [Description("Tờ trình triển khai kế hoạch LCNT")]
     public const string TrienKhaiKeHoachLCNT = "TrienKhaiKeHoachLCNT";
+    [Description("Tờ trình kế hoạch triển khai các hạng mục dự án")]
+    public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
     
 }

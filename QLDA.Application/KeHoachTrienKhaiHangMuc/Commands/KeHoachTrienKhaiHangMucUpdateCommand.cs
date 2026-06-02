@@ -1,34 +1,34 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.TrienKhaiKeHoachLCNTMappings;
-using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
+using QLDA.Application.KeHoachTrienKhaiHangMucMappings;
+using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Constants;
 
-namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
+namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 
-public record TrienKhaiKeHoachLCNTUpdateCommand(TrienKhaiKeHoachLCNT Dto) : IRequest<TrienKhaiKeHoachLCNT>;
+public record KeHoachTrienKhaiHangMucUpdateCommand(KeHoachTrienKhaiHangMuc Dto) : IRequest<KeHoachTrienKhaiHangMuc>;
 
-internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienKhaiKeHoachLCNTUpdateCommand, TrienKhaiKeHoachLCNT> {
-    private readonly IRepository<TrienKhaiKeHoachLCNT, Guid> _repo;
+internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeHoachTrienKhaiHangMucUpdateCommand, KeHoachTrienKhaiHangMuc> {
+    private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IUnitOfWork _unitOfWork;
 
-    public TrienKhaiKeHoachLCNTUpdateCommandHandler(IServiceProvider serviceProvider) {
-        _repo = serviceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
+    public KeHoachTrienKhaiHangMucUpdateCommandHandler(IServiceProvider serviceProvider) {
+        _repo = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
-    public async Task<TrienKhaiKeHoachLCNT> Handle(TrienKhaiKeHoachLCNTUpdateCommand request,
+    public async Task<KeHoachTrienKhaiHangMuc> Handle(KeHoachTrienKhaiHangMucUpdateCommand request,
         CancellationToken cancellationToken = default) {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiTraLai = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-        .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+                            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
-            .Include(e => e.DonViTuVans)
+            .Include(e => e.CanBoTrienKhais)
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
@@ -41,10 +41,17 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
         entity.So = request.Dto.So;
-        entity.NgayTrinh = request.Dto.NgayTrinh;
+        entity.NgayToTrinh = request.Dto.NgayToTrinh;
         entity.TrichYeu = request.Dto.TrichYeu;
-        entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
-       // entity.SyncGoiThauIds(request.Dto.DanhSachGoiThau);
+        entity.KinhPhi = request.Dto.KinhPhi;   
+        entity.NgayBatDau = request.Dto.NgayBatDau; 
+        entity.NgayKetThuc = request.Dto.NgayKetThuc;   
+        entity.GiaiDoanId = request.Dto.GiaiDoanId; 
+        entity.ThoiHan = request.Dto.ThoiHan;
+        entity.CanBoChuTriId = request.Dto.CanBoChuTriId;
+        entity.TenHangMuc = request.Dto.TenHangMuc;
+
+      //  entity.SyncCanBoPhoiHop(request.Dto.CanBoTrienKhais);
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);

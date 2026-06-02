@@ -20,6 +20,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> _hoSoCnttRepo;
     private readonly IRepository<HoSoMoiThauDienTu, Guid> _hoSoThauRepo;
     private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _baoCaoKhaoSatRepo;
+    private readonly IRepository<QuyetDinhDieuChinh, Guid> _quyetDinhDieuChinhRepo;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
 
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
@@ -27,6 +28,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         _hoSoCnttRepo = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
         _hoSoThauRepo = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _baoCaoKhaoSatRepo = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
+        _quyetDinhDieuChinhRepo = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
     }
 
@@ -44,7 +46,8 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             PheDuyetEntityNames.ToTrinhKeHoach,
             PheDuyetEntityNames.ToTrinhKetQuaGoiThau,
             PheDuyetEntityNames.ToTrinhThamDinhNhaThau,
-            PheDuyetEntityNames.QuyetDinhDieuChinh
+            PheDuyetEntityNames.QuyetDinhDieuChinh,
+            PheDuyetEntityNames.KeHoachTrienKhaiHangMuc,
         };
         if (request.Type != null && !validTypes.Contains(request.Type)) {
             return new PaginatedList<PheDuyetListItemDto>([], 0, request.Skip(), request.Take());
@@ -52,21 +55,29 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
 
         var items = new List<PheDuyetListItemDto>();
 
-        if (request.Type == null || request.Type == PheDuyetEntityNames.PheDuyetDuToan) {
+        if (request.Type == null || request.Type == PheDuyetEntityNames.PheDuyetDuToan)
+        {
             items.AddRange(await GetDuToanItems(request, cancellationToken));
         }
 
-        if (request.Type == null || request.Type == PheDuyetEntityNames.HoSoDeXuatCapDoCntt) {
+        if (request.Type == null || request.Type == PheDuyetEntityNames.HoSoDeXuatCapDoCntt)
+        {
             items.AddRange(await GetHoSoDeXuatCapDoCnttItems(request, cancellationToken));
         }
 
-        if (request.Type == null || request.Type == PheDuyetEntityNames.HoSoMoiThauDienTu) {
+        if (request.Type == null || request.Type == PheDuyetEntityNames.HoSoMoiThauDienTu)
+        {
             items.AddRange(await GetHoSoMoiThauDienTuItems(request, cancellationToken));
         }
 
-        if (request.Type == null || request.Type == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat) {
+        if (request.Type == null || request.Type == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat)
+        {
             items.AddRange(await GetBaoCaoKetQuaKhaoSatItems(request, cancellationToken));
         }
+       
+
+        // chỉ lấy từ pheDuyetHistory
+
 
         var sorted = items.OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue).ToList();
         return new PaginatedList<PheDuyetListItemDto>(sorted.Skip(request.Skip()).Take(request.Take()).ToList(), sorted.Count, request.Skip(), request.Take());
@@ -169,7 +180,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
 
         return items;
     }
-
+  
     private async Task<List<PheDuyetListItemDto>> GetBaoCaoKetQuaKhaoSatItems(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken) {
         var historyData = await _historyRepo.GetQueryableSet()
             .Where(h => h.EntityName == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat)
