@@ -36,4 +36,5 @@ public enum EDanhMuc {
     [Description("Danh mục phương thức ký sổ")] DanhMucPhuongThucKySo,
     [Description("Danh mục cấp độ CNTT")] DmCapDoCntt,
     [Description("Trạng thái phê duyệt nội dung")] DanhMucTrangThaiPheDuyet,
+    [Description("Danh mục Phương án thiết kế")] DanhMucPhuongAnThietKe,
 }

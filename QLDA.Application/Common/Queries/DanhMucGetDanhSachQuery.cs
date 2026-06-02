@@ -100,6 +100,10 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> DanhMucTrangThaiPheDuyet =
         serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
+    private readonly IRepository<DanhMucPhuongAnThietKe, int> DanhMucPhuongAnThietKe =
+        serviceProvider.GetRequiredService<IRepository<DanhMucPhuongAnThietKe, int>>();
+
+
     public async Task<object> Handle(DanhMucGetDanhSachQuery request,
         CancellationToken cancellationToken) {
         return request.DanhMuc switch {
@@ -153,11 +157,14 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
             EDanhMuc.DmCapDoCntt => await GetDanhMucAsync<DmCapDoCntt, int, DanhMucDto<int>>(
                 DmCapDoCntt,
                 request, cancellationToken),
+            EDanhMuc.DanhMucPhuongAnThietKe => await GetDanhMucAsync<DanhMucPhuongAnThietKe, int, DanhMucDto<int>>(
+             DanhMucPhuongAnThietKe, request, cancellationToken),
             EDanhMuc.DanhMucPhuongThucKySo => await GetDanhMucAsync<DanhMucPhuongThucKySo, int, DanhMucDto<int>>(
             DanhMucPhuongThucKySo,
             request, cancellationToken),
             EDanhMuc.DanhMucTrangThaiPheDuyet => await GetDanhMucTrangThaiPheDuyetAsync(request, cancellationToken),
-            _ => Enumerable.Empty<object>()
+            _ => Enumerable.Empty<object>(),
+
         };
     }
 
