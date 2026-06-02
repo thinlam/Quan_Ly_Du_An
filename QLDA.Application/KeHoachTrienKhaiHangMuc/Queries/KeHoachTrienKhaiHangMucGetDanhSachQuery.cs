@@ -1,9 +1,11 @@
+using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 
@@ -68,6 +70,19 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
                 NgayKetThuc = e.NgayKetThuc,    
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
+                // DanhSachCanBoPhoiHop = e.CanBoTrienKhais != null ? e.CanBoTrienKhais.Select(cb => cb.CanBoId).ToList() : new List<Guid>(),  
+                /* DanhSachCanBoPhoiHop = e.CanBoTrienKhais
+                     .Select(x => new CanBoTrienKhaiDto
+                     {
+                         CanBoId = x.CanBoId,
+
+                         TenCanBo = userMasterRepo
+                             .GetQueryableSet()
+                             .Where(u => u.UserPortalId == x.CanBoId)
+                             .Select(u => u.HoTen)
+                             .FirstOrDefault()
+                     })
+                     .ToList()*/
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString() )
                     .Select(i => i.ToDto()).ToList(),
@@ -75,3 +90,4 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
     }
 }
+ 

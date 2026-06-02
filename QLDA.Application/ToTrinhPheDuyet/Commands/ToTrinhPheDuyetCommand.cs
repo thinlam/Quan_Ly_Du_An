@@ -55,6 +55,8 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
 
         // Update status to Đã trình
         entity.TrangThaiId = trangThaiDaTrinh.Id;
+        //1 QuyetDinhKeHoachThue
+        //2 DuToanDauTu
 
         // Create history record
         var history = new PheDuyetHistory {

@@ -172,7 +172,7 @@ public class NghiemThuController : AggregateRootController {
         Guid? hopDongId = null,
         Guid? thanhToanId = null,
         string? globalFilter = null) {
-        var res = await Mediator.Send(new NghiemThuGetDanhSachQuery() {
+        var res = await Mediator.Send(new NghiemThuGetComboboxQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
             HopDongId = hopDongId,
@@ -180,8 +180,7 @@ public class NghiemThuController : AggregateRootController {
             GlobalFilter = globalFilter,
             PageIndex = 0,
             PageSize = 0,
-            IsNoTracking = true,
-            IsCbo = true
+            IsNoTracking = true
         });
         return ResultApi.Ok(res);
     }

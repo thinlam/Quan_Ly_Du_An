@@ -22,10 +22,16 @@ public record KetQuaTrungThauDeleteCommandHandler : IRequestHandler<KetQuaTrungT
             // .Include(o => o.DanhSachToTrinh)
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity);
-
+        ManagedException.ThrowIfNull(entity);// kết hoach -> goi thau -> kết quả gói thầu -> hopdong
+        var hasHopDong = await KetQuaTrungThau.GetQueryableSet().AnyAsync(x =>
+                         x.Id == request.Id  && x.GoiThau != null
+                         && x.GoiThau.HopDong != null   && !x.GoiThau.HopDong.IsDeleted,  cancellationToken);
+        if (hasHopDong)
+        {
+            ManagedException.Throw("Đã có hợp đồng. Không thể xóa");
+        }
+        
         entity.IsDeleted = true;
-
         await SyncHelper.SetDeleteWithRelatedFiles(TepDinhKem, [entity.Id.ToString()], cancellationToken);
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);

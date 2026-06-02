@@ -373,7 +373,6 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<long?>("UserPortalId")
-                        .IsRequired()
                         .HasColumnType("bigint")
                         .HasColumnName("User_PortalID");
 
@@ -601,8 +600,6 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("KeHoachId", "CanBoId");
-
-                    b.HasIndex("CanBoId");
 
                     b.ToTable("CanBoTrienKhaiHangMuc", (string)null);
                 });
@@ -3144,6 +3141,69 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("DmNhomDuAn", (string)null);
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucPhuongAnThietKe", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Ma")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int?>("Stt")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ten")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("Ma")
+                        .IsUnique()
+                        .HasFilter("[Ma] IS NOT NULL AND [Ma] <> ''");
+
+                    b.ToTable("DmPhuongAnThietKe", (string)null);
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucPhuongThucKySo", b =>
                 {
                     b.Property<int>("Id")
@@ -5441,6 +5501,97 @@ namespace QLDA.Migrator.Migrations
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
                     b.ToTable("DuToan", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DuToanDauTu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<int?>("BuocId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DuAnBuocId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("DuAnId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Index")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("Nam")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("NgayTrinh")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("NguonVonId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NoiDungChiPhis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PhuongAnThietKeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SoToTrinh")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<long?>("TongDuToan")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("TongMucDauTu")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("TrangThaiId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrichYeu")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DuAnBuocId");
+
+                    b.HasIndex("DuAnId");
+
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
+                    b.HasIndex("NguonVonId");
+
+                    b.HasIndex("PhuongAnThietKeId");
+
+                    b.HasIndex("TrangThaiId");
+
+                    b.ToTable("DuToanDauTu", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.GoiThau", b =>
@@ -7766,20 +7917,11 @@ namespace QLDA.Migrator.Migrations
 
             modelBuilder.Entity("QLDA.Domain.Entities.CanBoTrienKhaiHangMuc", b =>
                 {
-                    b.HasOne("BuildingBlocks.Domain.Entities.UserMaster", "CanBo")
-                        .WithMany()
-                        .HasForeignKey("CanBoId")
-                        .HasPrincipalKey("UserPortalId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
                     b.HasOne("QLDA.Domain.Entities.KeHoachTrienKhaiHangMuc", "KeHoachTrienKhai")
                         .WithMany("CanBoTrienKhais")
                         .HasForeignKey("KeHoachId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CanBo");
 
                     b.Navigation("KeHoachTrienKhai");
                 });
@@ -8146,6 +8288,44 @@ namespace QLDA.Migrator.Migrations
                         .IsRequired();
 
                     b.Navigation("DuAn");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DuToanDauTu", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "DuAnBuoc")
+                        .WithMany()
+                        .HasForeignKey("DuAnBuocId");
+
+                    b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
+                        .WithMany()
+                        .HasForeignKey("DuAnId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNguonVon", "NguonVon")
+                        .WithMany()
+                        .HasForeignKey("NguonVonId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucPhuongAnThietKe", "PhuongAnThietKe")
+                        .WithMany()
+                        .HasForeignKey("PhuongAnThietKeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiPheDuyet", "TrangThai")
+                        .WithMany()
+                        .HasForeignKey("TrangThaiId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DuAn");
+
+                    b.Navigation("DuAnBuoc");
+
+                    b.Navigation("NguonVon");
+
+                    b.Navigation("PhuongAnThietKe");
+
+                    b.Navigation("TrangThai");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.GoiThau", b =>

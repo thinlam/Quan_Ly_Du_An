@@ -6,7 +6,7 @@ namespace QLDA.Application.KeHoachTrienKhaiHangMucMappings;
 
 public static class KeHoachTrienKhaiHangMucMappings
 {
-    public static void SyncCanBoPhoiHop(this KeHoachTrienKhaiHangMuc entity, List<long>? canBoIds)
+    public static void SyncCanBoPhoiHop(this KeHoachTrienKhaiHangMuc entity, List<CanBoTrienKhaiDto>? canBoIds)
     {
         if (canBoIds is null)
         {
@@ -17,12 +17,12 @@ public static class KeHoachTrienKhaiHangMucMappings
         entity.CanBoTrienKhais ??= [];
         entity.CanBoTrienKhais.Clear();
 
-        foreach (var id in canBoIds)
+        foreach (var items in canBoIds)
         {
             entity.CanBoTrienKhais.Add(new CanBoTrienKhaiHangMuc
             {
                 KeHoachId = entity.Id,
-                CanBoId = id
+                CanBoId = items.CanBoId
             });
         }
     }
@@ -30,6 +30,7 @@ public static class KeHoachTrienKhaiHangMucMappings
     {
         var entity = new KeHoachTrienKhaiHangMuc()
         {
+            Id= dto.Id??Guid.NewGuid(),
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             So = dto.So,
@@ -67,7 +68,7 @@ public static class KeHoachTrienKhaiHangMucMappings
             ThoiHan = entity.ThoiHan,
             KinhPhi = entity.KinhPhi,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
-            DanhSachCanBoPhoiHop = entity.CanBoTrienKhais?.Select(x=>x.CanBoId).ToList(),
+            DanhSachCanBoPhoiHop = entity.CanBoTrienKhais?.Select(x=>new CanBoTrienKhaiDto() { CanBoId = x.CanBoId }).ToList(),
 
         };
 }

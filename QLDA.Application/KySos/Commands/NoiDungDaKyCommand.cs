@@ -28,13 +28,11 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
                 .FirstOrDefaultAsync(e => e.Id == entity.ParentId, cancellationToken);
             ManagedException.ThrowIfNull(parent, "Không tìm thấy tệp cha (ParentId)");
 
-            if (IsSignedVersion(parent.GroupType)) {
-                parent.GroupType = GroupTypeConstants.NoiDungDaKySo;
-                entity.GroupType = GroupTypeConstants.KySo;
-                entity.ParentId = parent.Id;
-            } else {
-                entity.GroupType = GroupTypeConstants.KySo;
-            }
+            //if (IsSignedVersion(parent.GroupType)) {
+            //    entity.ParentId = parent.Id;
+            //} else {
+            //    entity.GroupType = GroupTypeConstants.KySo;
+            //}
 
             toInsert.Add(entity);
         }

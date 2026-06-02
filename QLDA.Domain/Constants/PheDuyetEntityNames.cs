@@ -73,9 +73,17 @@ public static class PheDuyetEntityNames
 
     [Description("Tờ trình thẩm định nhà thầu")]
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
+
     [Description("Tờ trình triển khai kế hoạch LCNT")]
     public const string TrienKhaiKeHoachLCNT = "TrienKhaiKeHoachLCNT";
+
     [Description("Tờ trình kế hoạch triển khai các hạng mục dự án")]
     public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
+
+    [Description("Quyết định phê duyệt kế hoạch thuê")]
+    public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue"; 
+
+    [Description("Dự toán chuẩn bị đầu tư ")]
+    public const string DuToanDauTu = "DuToanDauTu";
     
 }

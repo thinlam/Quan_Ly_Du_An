@@ -34,7 +34,7 @@ internal class NoiDungDaKyGetDanhSachQueryHandler
         var query = _tepDinhKemRepository.GetQueryableSet(OnlyNotDeleted: false)
             .AsNoTracking()
             .Where(e => e.ParentId != null)
-            .Where(e => SignedGroupTypes.Contains(e.GroupType))
+           // .Where(e => SignedGroupTypes.Contains(e.GroupType))
             .WhereIf(search.CreateUserId.HasValue,
                 e => e.CreatedBy == search.CreateUserId!.Value.ToString())
             .WhereIf(search.TuNgay.HasValue,

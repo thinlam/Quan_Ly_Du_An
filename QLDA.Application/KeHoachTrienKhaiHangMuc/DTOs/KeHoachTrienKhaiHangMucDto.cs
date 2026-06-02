@@ -25,10 +25,14 @@ public class KeHoachTrienKhaiHangMucDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMa
     public string TenHangMuc { get; set; }
     public int? GiaiDoanId { get; set; }
     public long? CanBoChuTriId { get; set; }
-    public List<long>? DanhSachCanBoPhoiHop { get; set; }
+    public List<CanBoTrienKhaiDto>? DanhSachCanBoPhoiHop { get; set; }
     public DateOnly? NgayBatDau { get; set; }
     public DateOnly? NgayKetThuc { get; set; }
     public DateOnly? ThoiHan { get; set; }
     public long? KinhPhi { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+}
+public class CanBoTrienKhaiDto  {
+    public long CanBoId { get; set; }
+    public string? TenCanBo { get; set; }
 }

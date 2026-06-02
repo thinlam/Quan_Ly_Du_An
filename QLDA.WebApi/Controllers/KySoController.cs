@@ -47,7 +47,8 @@ public class KySoController(IServiceProvider serviceProvider) : AggregateRootCon
         model.DanhSachTepDinhKem ??= [];
 
         var entities = model.DanhSachTepDinhKem
-            .ToEntities(model.GroupId, GroupTypeConstants.KySo)
+            //  .ToEntities(model.GroupId, GroupTypeConstants.KySo)
+              .ToEntities(model.GroupId, model.GroupName??GroupTypeConstants.KySo)
             .ToList();
 
         var count = await Mediator.Send(new NoiDungDaKyCommand {

@@ -54,7 +54,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;
-
+        // hien tai có 2 loai la PheDuyetKhaoSat va QuyetDinhKeHoachThue
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = request.Loai,

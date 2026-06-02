@@ -16,10 +16,5 @@ public class CanBoTrienKhaiHangMucConfiguration    : AggregateRootConfiguration<
             .WithMany(e => e.CanBoTrienKhais)
             .HasForeignKey(e => e.KeHoachId)
             .OnDelete(DeleteBehavior.Cascade);
-        // IMPORTANT
-        builder.HasOne(e => e.CanBo)
-            .WithMany()
-            .HasForeignKey(e => e.CanBoId)
-            .HasPrincipalKey(e => e.UserPortalId).OnDelete(DeleteBehavior.SetNull); 
     }
 }

@@ -19,7 +19,7 @@ public static class GroupTypeConstants
     /// </summary>
     public const string NoiDungDaKySo = "NoiDungDaKySo";
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
-    public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    public const string DuToanDauTu = "DuToanDauTu";
     public const string ChuTruongMoi = "DeXuatChuTruongMoi";
     public const string ChuTruongChuyenTiep = "DeXuatChuyenTiep";
     public const string NhuCauKinhPhi = "DeXuatNhuCauKinhPhi";
@@ -28,14 +28,27 @@ public static class GroupTypeConstants
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
     public const string ThuyetMinhDuAnThamDinh = "ThuyetMinhDuAnThamDinh";
     public const string QuyetDinhDieuChinh = "QuyetDinhDieuChinh";
-    public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
+    public const string ToTrinhKeHoach = "ToTrinhKeHoach";
     public const string PheDuyetKetQuaGoiThauDuAn = "PheDuyetKetQuaGoiThauDuAn";
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
-    public const string NoiDungThamDinhNhaThau = "NoiDungToTrinhThamDinhNhaThau"; 
+    public const string NoiDungThamDinhNhaThau = "NoiDungToTrinhThamDinhNhaThau";
     public const string KetQuaThamDinhNhaThau = "KetQuaThamDinhNhaThau";
     public const string TrienKhaiKeHoachLCNT = "TrienKhaiKeHoachLCNT";
     public const string DonViTuVan = "DonViTuVan";
     public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
+    public const string ToTrinhQuyetDinh = "ToTrinhQuyetDinh";
 
+    public static string GetGroupTypeByLoai(string loai)
+    {
+        return loai switch
+        {
+            //tờ trình basic : dùng chung nhưng group type khác nhau để phân biệt
+            //PheDuyetKhaoSat
+            GroupTypeConstants.ToTrinhQuyetDinh => GroupTypeConstants.ToTrinhQuyetDinh,
+            // GroupTypeConstants.PheDuyetKhaoSat => GroupTypeConstants.PheDuyetKhaoSat,
+            // GroupTypeConstants.QuyetDinhKeHoachThue => GroupTypeConstants.QuyetDinhKeHoachThue,
 
+            _ => throw new ArgumentException($"Không hỗ trợ loại: {loai}")
+        };
+    }
 }

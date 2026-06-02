@@ -20,7 +20,6 @@ internal class KeHoachTrienKhaiHangMucGetQueryHandler(IServiceProvider servicePr
         CancellationToken cancellationToken = default) {
         var queryable = KeHoachTrienKhaiHangMuc.GetOrderedSet()
             .Include(e => e.CanBoTrienKhais)
-           .ThenInclude(g => g.CanBo)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

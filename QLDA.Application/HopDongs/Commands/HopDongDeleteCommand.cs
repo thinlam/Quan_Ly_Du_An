@@ -29,8 +29,9 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
 
         ManagedException.ThrowIfNull(entity);
 
-        await RemoveAsync(entity, cancellationToken);
+       
 
+        await RemoveAsync(entity, cancellationToken);
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
     #region  Private helper methods
@@ -38,13 +39,16 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
     private async Task ValidateAsync(HopDongDeleteCommand request, CancellationToken cancellationToken) {
         var hasNghiemThu = await NghiemThu.GetQueryableSet().AnyAsync(e => e.Id == request.Id && e.HopDong != null && !e.HopDong.IsDeleted, cancellationToken);
         var hasTamUng = await TamUng.GetQueryableSet().AnyAsync(e => e.Id == request.Id && e.HopDong != null && !e.HopDong.IsDeleted, cancellationToken);
-
+        var hasPLHD = await HopDong.GetQueryableSet().AnyAsync(x => x.Id == request.Id && x.PhuLucHopDongs!.Any(pl => !pl.IsDeleted), cancellationToken);
+       
+        if (hasPLHD)
+            ManagedException.Throw("Đã có phụ lục hợp đồng. Không thể xóa");
         ManagedException.ThrowIf(
             when: hasNghiemThu,
             message: "Hợp đồng đã nghiệm thu không thể xoá!"
         );
         ManagedException.ThrowIf(
-            when: hasNghiemThu,
+            when: hasTamUng,
             message: "Hợp đồng đã tạm ứng không thể xoá!"
       );
     }
