@@ -2,25 +2,25 @@ using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Application.ToTrinhPheDuyets;
-using QLDA.Application.ToTrinhPheDuyets.Commands;
-using QLDA.Application.ToTrinhPheDuyets.DTOs;
-using QLDA.Application.ToTrinhPheDuyets.Queries;
+using QLDA.Application.DuToanDauTus;
+using QLDA.Application.DuToanDauTus.Commands;
+using QLDA.Application.DuToanDauTus.DTOs;
+using QLDA.Application.DuToanDauTus.Queries;
 using QLDA.Domain.Constants;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
 
-[Route("api/to-trinh-phe-duyet")]
-[Tags("Tờ trình phê duyệt")]
-public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
+[Route("api/du-toan-dau-tu")]
+[Tags("Dự toán chuẩn bị đầu tư")]
+public class DuToanDauTuController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
 {
-    [ProducesResponseType<ResultApi<ToTrinhPheDuyetDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DuToanDauTuDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id)
     {
-        var entity = await Mediator.Send(new ToTrinhPheDuyetGetQuery()
+        var entity = await Mediator.Send(new DuToanDauTuGetQuery()
         {
             Id = id,
             ThrowIfNull = true,
@@ -40,7 +40,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
     [HttpDelete("{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id)
     {
-        var res = await Mediator.Send(new ToTrinhPheDuyetDeleteCommand(id));
+        var res = await Mediator.Send(new DuToanDauTuDeleteCommand(id));
         return ResultApi.Ok(res);
     }
 
@@ -49,18 +49,18 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create(
-        [FromBody] ToTrinhPheDuyetInsertDto dto,
+        [FromBody] DuToanDauTuDto dto,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
       
-        var entity = await Mediator.Send(new ToTrinhPheDuyetInsertCommand(dto), cancellationToken);
-        // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhPheDuyet theo Loai
-        //tạo contanst LoaiToTrinhPheDuyet
+        var entity = await Mediator.Send(new DuToanDauTuInsertCommand(dto), cancellationToken);
+        // nếu dùng DuToanDauTu cho nhìu màn hình thì lấy  GroupTypeConstants.DuToanDauTu theo Loai
+        //tạo contanst LoaiDuToanDauTu
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhQuyetDinh) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.DuToanDauTu) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -71,18 +71,18 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         return ResultApi.Ok(new { entity.Id });
     }
 
-    [ProducesResponseType<ResultApi<ToTrinhPheDuyetDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<DuToanDauTuDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Update(
-        [FromBody] ToTrinhPheDuyetUpdateDto dto,
+        [FromBody] DuToanDauTuDto dto,
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
+        var entity = await Mediator.Send(new DuToanDauTuUpdateCommand(dto), cancellationToken);
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhQuyetDinh) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.DuToanDauTu) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -99,22 +99,21 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
 
-    [ProducesResponseType<ResultApi<PaginatedList<ToTrinhPheDuyetDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PaginatedList<DuToanDauTuDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach-tien-do")]
-    public async Task<ResultApi> Get([FromQuery] ToTrinhPheDuyetSearchDto dto)
+    public async Task<ResultApi> Get([FromQuery] CommonSearchDto dto)
     {
         // hien tai có 2 loai la PheDuyetKhaoSat va QuyetDinhKeHoachThue
-        var res = await Mediator.Send(new ToTrinhPheDuyetGetPaginatedQuery()
+        var res = await Mediator.Send(new DuToanDauTuGetPaginatedQuery()
         {
             IsNoTracking = true,
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
-            Loai = dto.Loai,
+           
             PageSize = dto.PageSize,
             PageIndex = dto.PageIndex,
             GlobalFilter = dto.GlobalFilter,
-            So = dto.SoQuyetDinh,
             TuNgay = dto.TuNgay,
             DenNgay = dto.DenNgay,
         });

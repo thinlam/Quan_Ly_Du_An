@@ -22,9 +22,10 @@ public static class KeHoachTrienKhaiHangMucMappingConfiguration
             CanBoChuTriId = entity.CanBoChuTriId,
             GiaiDoanId = entity.GiaiDoanId,
             TenHangMuc = entity.TenHangMuc,
-            DanhSachCanBo = entity.CanBoTrienKhais.Select(o => new CanBoTrienKhaiHangMucModel(){
-                CanBoId= o.CanBoId,
-                TenCanBo = o.CanBo?.HoTen }).ToList(),
+            DanhSachCanBo = entity.CanBoTrienKhais.Select(o => new CanBoTrienKhaiHangMucModel()
+            {
+                CanBoId = o.CanBoId
+            }).ToList(),
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 .Select(o => o.ToModel()).ToList()
         };

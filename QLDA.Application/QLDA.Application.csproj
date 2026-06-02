@@ -7,10 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="DanhMucPhuongAnThietKe\**" />
       <Compile Remove="DanhMucTrangThaiPheDuyet\**" />
       <Compile Remove="DmTrangThaiPheDuyets\**" />
+      <EmbeddedResource Remove="DanhMucPhuongAnThietKe\**" />
       <EmbeddedResource Remove="DanhMucTrangThaiPheDuyet\**" />
       <EmbeddedResource Remove="DmTrangThaiPheDuyets\**" />
+      <None Remove="DanhMucPhuongAnThietKe\**" />
       <None Remove="DanhMucTrangThaiPheDuyet\**" />
       <None Remove="DmTrangThaiPheDuyets\**" />
     </ItemGroup>
