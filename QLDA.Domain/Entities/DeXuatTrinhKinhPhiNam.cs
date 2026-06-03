@@ -12,6 +12,7 @@ public class DeXuatTrinhKinhPhiNam : IJunctionEntity<Guid, Guid>, IAggregateRoot
     #region Navigation Properties
 
     public DeXuatNhuCauKinhPhiNam? DeXuatNhuCauKinhPhiNam { get; set; }
+    public DeXuatNhuCauKinhPhi? DeXuatNhuCauKinhPhi { get; set; }
 
     #endregion
 }

@@ -42,6 +42,10 @@ public static class DuToanDauTuMappings {
             Nam = entity.Nam,
             NoiDungChiPhi = entity.NoiDungChiPhis,
 
+            TenNguonVon = entity.NguonVon?.Ten, 
+            TenPhuongAnThietKe = entity.PhuongAnThietKe?.Ten,
+            TenTrangThai = entity.TrangThai?.Ten,
+
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
         };
     }

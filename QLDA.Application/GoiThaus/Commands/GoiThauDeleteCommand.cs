@@ -8,9 +8,10 @@ public record GoiThauDeleteCommand(Guid Id) : IRequest {
 
 public record GoiThauDeleteCommandHandler : IRequestHandler<GoiThauDeleteCommand> {
     private readonly IRepository<GoiThau, Guid> GoiThau;
+    private readonly IRepository<KetQuaTrungThau, Guid> _KetQuaTrungThau;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
-
+    
     public GoiThauDeleteCommandHandler(IServiceProvider serviceProvider) {
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
@@ -22,6 +23,9 @@ public record GoiThauDeleteCommandHandler : IRequestHandler<GoiThauDeleteCommand
         var entity = await GoiThau.GetOrderedSet()
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
+
+        var hasKetQua = await _KetQuaTrungThau.GetQueryableSet().AnyAsync(e => e.Id == entity.Id  && !e.IsDeleted, cancellationToken);
+        ManagedException.ThrowIfNull("Đã có kết quả lcnt! Không thể xóa.");
 
         await RemoveAsync(entity, cancellationToken);
 

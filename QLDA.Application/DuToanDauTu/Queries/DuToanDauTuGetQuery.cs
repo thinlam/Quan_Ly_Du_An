@@ -20,6 +20,9 @@ internal class DuToanDauTuGetQueryHandler(IServiceProvider serviceProvider)
     public async Task<DuToanDauTu> Handle(DuToanDauTuGetQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = DuToanDauTu.GetOrderedSet()
+           .Include(t => t.TrangThai)
+           .Include(t => t.NguonVon)
+           .Include(t => t.PhuongAnThietKe)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

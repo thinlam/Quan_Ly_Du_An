@@ -16,5 +16,9 @@ public class DeXuatTrinhKinhPhiNamConfiguration : AggregateRootConfiguration<DeX
             .WithMany(e => e.DeXuats)
             .HasForeignKey(e => e.LeftId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(e => e.DeXuatNhuCauKinhPhi)
+           .WithMany(e => e.DeXuatDaTrinhKeHoachNam)
+           .HasForeignKey(e => e.RightId)
+           .OnDelete(DeleteBehavior.Cascade);
     }
 }

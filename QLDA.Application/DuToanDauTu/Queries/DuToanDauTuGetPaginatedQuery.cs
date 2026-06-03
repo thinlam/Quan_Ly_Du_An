@@ -58,7 +58,7 @@ internal class
                 NguonVonId = e.NguonVonId,
                 TenNguonVon = e.NguonVon != null ? e.NguonVon.Ten : string.Empty,
                 TenPhuongAnThietKe = e.PhuongAnThietKe != null ? e.PhuongAnThietKe.Ten : string.Empty,  
-              
+                Nam = e.Nam,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,

@@ -27,15 +27,8 @@ internal class DuToanDauTuInsertCommandHandler : IRequestHandler<DuToanDauTuInse
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
-        var entity = new DuToanDauTu
-        {
-            DuAnId = request.Dto.DuAnId,
-            BuocId = request.Dto.BuocId,
-            SoToTrinh = request.Dto.SoToTrinh,
-            NgayTrinh = request.Dto.NgayTrinh,
-            TrichYeu = request.Dto.TrichYeu,
-            TrangThaiId = trangThaiDuThao?.Id,
-        };
+        var entity = request.Dto.ToEntity();
+        entity.TrangThaiId = trangThaiDuThao?.Id;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);

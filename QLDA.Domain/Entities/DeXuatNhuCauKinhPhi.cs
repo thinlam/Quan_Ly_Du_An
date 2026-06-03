@@ -22,5 +22,6 @@ public class DeXuatNhuCauKinhPhi : Entity<Guid>, IAggregateRoot
 
     public DuAn? DuAn { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
+    public List<DeXuatTrinhKinhPhiNam>? DeXuatDaTrinhKeHoachNam { get; set; }
     #endregion
 }
