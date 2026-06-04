@@ -113,7 +113,15 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
     }
 
 
-
+    /*
+     Combo Đề xuất của Kế hoạch năm hiển thị các đề xuất:
+    Trạng thái đề xuất = Đã duyệt.
+    Không thuộc Kế hoạch năm có trạng thái:
+    Chờ duyệt
+    Trả lại
+    Đã duyệt.
+    Nếu thuộc Kế hoạch năm có trạng thái Từ chối thì vẫn được phép hiển thị để chọn lại.
+    */
     [HttpGet("danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -132,4 +140,39 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
         });
         return ResultApi.Ok(res);
     }
+    [HttpGet("danh-sach-combobox")]
+    [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<ResultApi> GetCbo()
+    {
+        var res = await Mediator.Send(new DeXuatNhuCauKinhPhiComboboxQuery()
+        {
+            IsNoTracking = true,
+
+        });
+        return ResultApi.Ok(res);
+    }
+    [HttpGet("theo-doi-tinh-hinh")]
+    [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<ResultApi> GetTinhHinh([FromQuery] DeXuatNhuCauKinhPhiSearchDto req)
+    {
+        var res = await Mediator.Send(new TheoDoiDeXuatNhuCauKinhPhiQuery()
+        {
+            DuAnId = req.DuAnId,
+            BuocId = req.BuocId,
+            TrangThaiId = req.TrangThaiId,
+            TrangThaiKeHoachId = req.TrangThaiKeHoachNamId,
+            SoPhieuChuyen = req.SoPhieuChuyen,
+            TrichYeu = req.TrichYeu,
+            GlobalFilter = req.GlobalFilter,
+            PageIndex = req.PageIndex,
+            PageSize = req.PageSize,
+            IsNoTracking = true,
+
+        });
+        return ResultApi.Ok(res);
+    }
+    
+    
 }

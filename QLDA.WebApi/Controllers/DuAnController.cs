@@ -30,7 +30,7 @@ namespace QLDA.WebApi.Controllers {
         public async Task<ResultApi> Get(Guid id) {
             return ResultApi.Ok(await GetDuAnWithFiles(id, default));
         }
-
+      
         /// <summary>
         /// Xóa tạm
         /// </summary>
@@ -89,6 +89,24 @@ namespace QLDA.WebApi.Controllers {
                 PageIndex = pageIndex,
                 PageSize = pageSize
             });
+            return ResultApi.Ok(res);
+        }
+        [HttpGet("danh-sach-theo-phong-ban")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<ResultApi<PaginatedList<DuAn>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetDuAnPhongBanDangThucHien([FromQuery] int? PageNo, [FromQuery] int? PageSize)
+        {
+            var res = await Mediator.Send(
+                new DuAnGetTheoPhongBanGetQuery
+                {
+                    PageIndex = PageNo ?? 1,
+                    PageSize = PageSize ?? 1000000,
+
+                    ThrowIfNull = true,
+                    IsNoTracking = true
+                });
+
             return ResultApi.Ok(res);
         }
 
@@ -192,7 +210,6 @@ namespace QLDA.WebApi.Controllers {
 
             return ResultApi.Ok(await GetDuAnWithFiles(entity.Id, cancellationToken));
         }
-
         /// <summary>
         /// Cập nhật dự án
         /// </summary>

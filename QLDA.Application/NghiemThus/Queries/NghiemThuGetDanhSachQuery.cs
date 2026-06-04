@@ -30,7 +30,7 @@ internal class
         CancellationToken cancellationToken = default) {
         var queryable = NghiemThu.GetQueryableSet().AsNoTracking()
             .Where(e => !e.DuAn!.IsDeleted)
-            .Where(e => e.ThanhToan == null || !e.ThanhToan!.IsDeleted)
+            
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

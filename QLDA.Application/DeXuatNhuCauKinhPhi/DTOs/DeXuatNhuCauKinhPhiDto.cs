@@ -1,4 +1,5 @@
 using QLDA.Application.Common.Interfaces;
+using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Interfaces;
 using SequentialGuid;
@@ -23,5 +24,7 @@ public class DeXuatNhuCauKinhPhiDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo
     public long? KinhPhiDeXuat { get; set; }
     public string? MaTrangThai { get; set; }
     public string? TenTrangThai { get; set; }
+    public string? TrangThaiKeHoachNamId { get; set; }
+    public string? TenTrangThaiKeHoachNam { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

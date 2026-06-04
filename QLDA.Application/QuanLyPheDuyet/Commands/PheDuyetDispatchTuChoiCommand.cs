@@ -1,4 +1,5 @@
 using QLDA.Application.Common;
+using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
@@ -35,6 +36,8 @@ internal class PheDuyetDispatchTuChoiCommandHandler : IRequestHandler<PheDuyetDi
             PheDuyetEntityNames.QuyetDinhDieuChinh => new QuyetDinhDieuChinhTuChoiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhKeHoachTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
+            PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam => new DeXuatKinhPhiNamTuChoiCommand(request.Id,  request.NoiDung),
+            
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
         return await _mediator.Send(command, cancellationToken);

@@ -23,7 +23,7 @@ internal class DeXuatNhuCauKinhPhiNamInsertCommandHandler : IRequestHandler<DeXu
     public async Task<DeXuatNhuCauKinhPhiNam> Handle(DeXuatNhuCauKinhPhiNamInsertCommand request,
         CancellationToken cancellationToken = default) {
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam, cancellationToken);
 
         var entity = new DeXuatNhuCauKinhPhiNam {
             So = request.Dto.So,

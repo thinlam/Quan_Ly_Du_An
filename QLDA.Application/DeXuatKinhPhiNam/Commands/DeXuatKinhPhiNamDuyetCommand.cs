@@ -38,9 +38,9 @@ internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXua
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatNhuCauKinhPhiNam.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatNhuCauKinhPhiNam.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
@@ -57,6 +57,7 @@ internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXua
 
         // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.NgayDuyet = DateTimeOffset.UtcNow;
 
         // Create history record
         var history = new PheDuyetHistory {
@@ -68,6 +69,7 @@ internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXua
             NgayXuLy = DateTimeOffset.UtcNow
         };
 
+        await _repository.UpdateAsync(entity, cancellationToken);
         await _historyRepository.AddAsync(history, cancellationToken);
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);

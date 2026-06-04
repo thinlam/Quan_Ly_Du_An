@@ -69,7 +69,7 @@ internal class
                 Ngay = e.Ngay,
                 NoiDung = e.NoiDung,
                 SoBienBan = e.SoBienBan,
-                ThanhToanId = e.ThanhToan!.Id
+                ThanhToanId = !e.ThanhToan!.IsDeleted ? e.ThanhToan!.Id: null,
               
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

@@ -23,7 +23,14 @@ public static class TrangThaiPheDuyetCodes
         public const string TraLai = "TL";
         public const string TuChoi = "TC";
     }
-
+    public static class DeXuatNhuCauKinhPhiNam
+    {
+        public const string DuThao = "DT";
+        public const string DaTrinh = "ĐTr";
+        public const string DaDuyet = "ĐD";
+        public const string TraLai = "TL";
+        public const string TuChoi = "TC";
+    }
     public static class HoSoDeXuatCapDoCntt
     {
         public const string DuThao = "DT";

@@ -6,7 +6,7 @@ namespace QLDA.Application.QuanLyPheDuyet.DTOs;
 public class PheDuyetListItemDto {
     public Guid Id { get; set; }
     public string Type { get; set; } = default!;
-    public Guid DuAnId { get; set; }
+    public Guid? DuAnId { get; set; }
     public string? TenDuAn { get; set; }
     public string? SoVanBan { get; set; }
     public string? TrichYeu { get; set; }
