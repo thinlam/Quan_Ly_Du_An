@@ -50,7 +50,6 @@ internal class DeXuatChuTruongMoiTrinhCommandHandler : IRequestHandler<DeXuatChu
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;
-       // entity.NgayTrinh = DateTime.UtcNow;
 
         var history = new PheDuyetHistory
         {

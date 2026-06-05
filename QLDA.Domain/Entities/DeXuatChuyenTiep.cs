@@ -20,6 +20,7 @@ public class DeXuatChuyenTiep : Entity<Guid>, IAggregateRoot
 
     public int? TrangThaiId { get; set; }
 
+    public int? NamDeXuat { get; set; }
 
     #region Navigation Properties
     public DuAn? DuAn { get; set; }

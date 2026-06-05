@@ -36,6 +36,7 @@ internal class DeXuatChuyenTiepInsertCommandHandler : IRequestHandler<DeXuatChuy
             KhoiLuongDuKien = request.Dto.KhoiLuongDuKien,
             KhoiLuongThucTe = request.Dto.KhoiLuongThucTe,
             UocGiaiNgan = request.Dto.UocGiaiNgan,
+            NamDeXuat = request.Dto.NamDeXuat,
             TrangThaiId = trangThaiDuThao?.Id,
         };
 

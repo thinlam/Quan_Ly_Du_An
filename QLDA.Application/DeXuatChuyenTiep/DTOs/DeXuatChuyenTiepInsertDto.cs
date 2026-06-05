@@ -13,6 +13,7 @@ public class DeXuatChuyenTiepInsertDto : IMayHaveTepDinhKemDto, ITienDo {
     public long? NhuCauKinhPhi { get; set; }
     public string? KhoiLuongThucTe { get; set; }
     public string? KhoiLuongDuKien { get; set; }
+    public int? NamDeXuat { get; set; }
     public int? TrangThaiId { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 

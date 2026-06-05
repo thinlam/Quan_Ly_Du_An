@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260605040512_addColNgayTrinhToDeXuatMoiAndChuyenThiep")]
+    partial class addColNgayTrinhToDeXuatMoiAndChuyenThiep
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4791,10 +4794,10 @@ namespace QLDA.Migrator.Migrations
                     b.Property<long?>("LanhDaoPhuTrachId")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("NamDeXuat")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("NgayBatDauDuKien")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NgayTrinh")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<long?>("NguoiXuLyChinhId")
@@ -4871,8 +4874,8 @@ namespace QLDA.Migrator.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
 
-                    b.Property<int?>("NamDeXuat")
-                        .HasColumnType("int");
+                    b.Property<DateTimeOffset?>("NgayTrinh")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<long?>("NhuCauKinhPhi")
                         .HasPrecision(18, 2)

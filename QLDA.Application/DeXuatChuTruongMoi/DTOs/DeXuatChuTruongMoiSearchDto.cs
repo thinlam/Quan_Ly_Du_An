@@ -8,4 +8,7 @@ public record DeXuatChuTruongMoiSearchDto : CommonSearchDto
     public int? HinhThucDauTuId { get; set; }
     public long? DonViPhuTrachId { get; set; }
     public long? LanhDaoPhuTrachId { get; set; }
+    public string? Loai { get; set; }
+    public int? Nam { get; set; }
+    
 }

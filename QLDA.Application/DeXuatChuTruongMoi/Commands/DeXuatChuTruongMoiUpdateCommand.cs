@@ -38,13 +38,14 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
             throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
         }
 
+        entity.NamDeXuat = request.Dto.NamDeXuat;
         entity.TongMucDauTu = request.Dto.TongMucDauTu;
         entity.TomTatNoiDung = request.Dto.TomTatNoiDung;
         entity.HinhThucDauTuId = request.Dto.HinhThucDauTuId;
         entity.NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId;
         entity.NgayBatDauDuKien = request.Dto.NgayBatDauDuKien;
         entity.DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId;
-        entity.LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId;// Không được phép cập nhật
+        entity.LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId;
 
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;

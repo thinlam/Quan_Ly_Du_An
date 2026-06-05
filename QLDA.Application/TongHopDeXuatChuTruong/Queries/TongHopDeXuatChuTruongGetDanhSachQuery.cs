@@ -9,17 +9,15 @@ using QLDA.Domain.Enums;
 
 namespace QLDA.Application.TongHopDeXuatChuTruongs.Queries;
 
-public record TongHopDeXuatChuTruongGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<TongHopDeXuatChuTruongResponseDto> {
+public record TongHopDeXuatChuTruongGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter,  IRequest<TongHopDeXuatChuTruongResponseDto> {
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
 
-    public int? HinhThucDauTuId { get; set; }
-    public long? LanhDaoPhuTrachId { get; set; }
+    public string? Loai { get; set; }
     public long? DonViPhuTrachId { get; set; }
-    public DateOnly? TuNgay { get; set; } // by NgayBatDauDuKien
-    public DateOnly? DenNgay { get; set; }
+    public int? Nam { get; set; } 
 }
 
 internal class
@@ -35,6 +33,14 @@ internal class
     public async Task<TongHopDeXuatChuTruongResponseDto> Handle(TongHopDeXuatChuTruongGetDanhSachQuery request,  CancellationToken cancellationToken = default) {
         var userQuery = userMaster.GetQueryableSet().AsNoTracking();
         var dmDonViQuery = DmDonVi.GetQueryableSet().AsNoTracking();
+        // --- CHUYỂN ĐỔI TIME: DateOnly? sang DateTimeOffset? ---
+        //DateTimeOffset? tuNgayDto = request.TuNgay.HasValue
+        //    ? new DateTimeOffset(request.TuNgay.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : null; // Đầu ngày (00:00:00)
+
+        //DateTimeOffset? denNgayDto = request.DenNgay.HasValue
+        //    ? new DateTimeOffset(request.DenNgay.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : null; // Ngày hôm sau (00:00:00) để dùng phép so sánh nhỏ hơn (<)
+
+
         // 1. Khởi tạo Quereryable gốc cho Đề xuất mới
         var queryableMoi = DeXuatChuTruongMoi.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
@@ -42,6 +48,8 @@ internal class
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.DonViPhuTrachId != null, e => e.DonViPhuTrachChinhId == request.DonViPhuTrachId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
+            
+            .WhereIf(request.Nam != null, e => e.NamDeXuat == request.Nam)
             // Map về cấu trúc chung của TongHopDeXuatChuTruongDto (Loai = "DeXuatMoi")
             .Select(e => new TongHopDeXuatChuTruongDto()
             {
@@ -70,6 +78,7 @@ internal class
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
+            .WhereIf(request.Nam != null, e => e.NamDeXuat == request.Nam)
             .Select(e => new TongHopDeXuatChuTruongDto()
             {
                 Id = e.Id,
@@ -94,7 +103,12 @@ internal class
             // Sử dụng Task.WhenAll để kích hoạt đếm song song dưới DB nhằm tối ưu hiệu năng tốc độ
             var tongDeXuatMoiTask = queryableMoi.Count();
             var tongChuyenTiepTask = queryableCT.Count();
-            var pagedDataTask = await finalQueryable.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+            var dataTask = new PaginatedList<TongHopDeXuatChuTruongDto>();
+            if(request.Loai == "DeXuatMoi")
+                dataTask = await queryableMoi.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+            else if(request.Loai == "ChuyenTiep") 
+                dataTask = await queryableCT.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+            else dataTask = await finalQueryable.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
 
           //  await Task.WhenAll(tongDeXuatMoiTask, tongChuyenTiepTask, pagedDataTask);
 
@@ -103,7 +117,7 @@ internal class
             {
                 TongDeXuatMoi =  tongDeXuatMoiTask,
                 TongDeXuatChuyenTiep =  tongChuyenTiepTask,
-                Data =  pagedDataTask
+                Data = dataTask
             };
         }
         catch (Exception ex)

@@ -31,19 +31,8 @@ internal class DeXuatChuTruongMoiInsertCommandHandler : IRequestHandler<DeXuatCh
             .Select(x => x.RightId)
             .ToList();
 
-        var entity = new DeXuatChuTruongMoi
-        {
-            DuAnId = request.Dto.DuAnId,
-            BuocId = request.Dto.BuocId,
-            TongMucDauTu = request.Dto.TongMucDauTu,
-            TomTatNoiDung = request.Dto.TomTatNoiDung,
-            NgayBatDauDuKien = request.Dto.NgayBatDauDuKien,
-            HinhThucDauTuId = request.Dto.HinhThucDauTuId,
-            NguoiXuLyChinhId = request.Dto.NguoiXuLyChinhId,
-            LanhDaoPhuTrachId = request.Dto.LanhDaoPhuTrachId,
-            DonViPhuTrachChinhId = request.Dto.DonViPhuTrachChinhId,
-            TrangThaiId = trangThaiDuThao?.Id,
-        };
+        var entity = request.Dto;
+        entity.TrangThaiId = trangThaiDuThao?.Id;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);

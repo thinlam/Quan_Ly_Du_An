@@ -35,7 +35,7 @@ internal class DeXuatChuyenTiepUpdateCommandHandler : IRequestHandler<DeXuatChuy
             throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
         }
 
-
+        entity.NamDeXuat = request.Dto.NamDeXuat;
         entity.SoLieuGiaiNgan = request.Dto.SoLieuGiaiNgan;
         entity.NhuCauKinhPhi = request.Dto.NhuCauKinhPhi;
         entity.KhoiLuongDuKien = request.Dto.KhoiLuongDuKien;
@@ -43,7 +43,7 @@ internal class DeXuatChuyenTiepUpdateCommandHandler : IRequestHandler<DeXuatChuy
         entity.UocGiaiNgan = request.Dto.UocGiaiNgan;
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
-
+        
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
