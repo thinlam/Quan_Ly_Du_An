@@ -64,6 +64,11 @@ internal class    TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Serv
                 NgayTrinh = e.NgayTrinh,
                 TrichYeu = e.TrichYeu,
                 TrangThaiDangTaiId = e.TrangThaiDangTaiId,
+                HinhThucLCNT = e.HinhThucLCNT,
+                NoiDung = e.NoiDung,
+                YeuCau = e.YeuCau,
+                ThoiGianThucHien = e.ThoiGianThucHien,
+                GiaTri = e.GiaTri,
                 // trả thêm tên dự án
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,

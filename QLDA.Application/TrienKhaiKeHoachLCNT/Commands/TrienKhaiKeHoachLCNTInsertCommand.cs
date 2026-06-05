@@ -27,12 +27,11 @@ internal class TrienKhaiKeHoachLCNTInsertCommandHandler : IRequestHandler<TrienK
         // TẠI QUERY HANDLER: Phải Include danh sách này lên trước khi gọi Sync
       
         var entity = request.Dto;
-
+        entity.TrangThaiId = trangThaiDuThao?.Id;
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     //    entity.SyncDonViTuVan(request.Dto.DonViTuVans);
-        //await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
         return entity;
     }

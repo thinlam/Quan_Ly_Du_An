@@ -50,6 +50,8 @@ internal class
             .Where(e => !e.IsDeleted)
           //  .WhereIf(request. != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
+            .WhereIf(request.TrichYeu != null, e => e.So.Contains(request.TrichYeu))
+            .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayKeHoach >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayKeHoach < denNgayExclusiveDto);
         return await queryable

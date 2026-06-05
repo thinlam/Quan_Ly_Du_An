@@ -122,13 +122,13 @@ internal class
                         t.DeXuatNhuCauKinhPhiNam != null  && !t.DeXuatNhuCauKinhPhiNam.IsDeleted
                         && t.DeXuatNhuCauKinhPhiNam.TrangThaiId == trangThaiDuThao!.Id)? trangThaiDaTrinh!.Ten : "--",
        
-        NgayDuyetKeHoach = x.DeXuatDaTrinhKeHoachNam!
+            NgayDuyetKeHoach = x.DeXuatDaTrinhKeHoachNam!
                             .Where(t =>
                                 t.DeXuatNhuCauKinhPhiNam != null && !t.DeXuatNhuCauKinhPhiNam.IsDeleted
                                 && t.DeXuatNhuCauKinhPhiNam.NgayDuyet != null)
                             .Select(t =>  t.DeXuatNhuCauKinhPhiNam.NgayDuyet).FirstOrDefault() ,
 
-        TenTrangThaiBanGiamDoc = x.DeXuatDaTrinhKeHoachNam!
+            TenTrangThaiBanGiamDoc = x.DeXuatDaTrinhKeHoachNam!
                             .Where(t => t.DeXuatNhuCauKinhPhiNam != null && !t.DeXuatNhuCauKinhPhiNam.IsDeleted)
                             .Select(t => t.DeXuatNhuCauKinhPhiNam!.TrangThaiId == trangThaiDaDuyet!.Id
                             ? (t.DeXuatNhuCauKinhPhiNam!.TrangThai != null ? t.DeXuatNhuCauKinhPhiNam.TrangThai!.Ten : "--")

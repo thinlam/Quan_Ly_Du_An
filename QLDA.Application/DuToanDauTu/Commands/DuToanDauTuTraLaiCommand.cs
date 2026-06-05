@@ -25,6 +25,7 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -58,8 +59,9 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
         }
 
         entity.TrangThaiId = trangThaiTraLai.Id;
-
-        var history = new PheDuyetHistory {
+        // có trigger khi insert PheDuyetHistory 
+        var history = new PheDuyetHistory
+        {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.DuToanDauTu,
             EntityId = entity.Id,
@@ -69,9 +71,21 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-
         await _historyRepository.AddAsync(history, cancellationToken);
+        try
+        {
+            return await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException dbEx)
+        {
+           
+            // Thêm lỗi thân thiện cho user hoặc ném tiếp ra ngoài tùy kiến trúc
+            throw new ManagedException("Đã xảy ra lỗi hệ thống khi cập nhật lịch sử phê duyệt.");
+        }
+        catch (Exception ex)
+        {
+            throw new ManagedException("Đã xảy ra lỗi hệ thống khi cập nhật lịch sử phê duyệt.");
+        }
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

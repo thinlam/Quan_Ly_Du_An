@@ -14,6 +14,7 @@ public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCom
 
     public NghiemThuDeleteCommandHandler(IServiceProvider serviceProvider) {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
+        ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _unitOfWork = NghiemThu.UnitOfWork;
     }
@@ -21,11 +22,14 @@ public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCom
     public async Task Handle(NghiemThuDeleteCommand request, CancellationToken cancellationToken) {
         var entity = await NghiemThu.GetOrderedSet()
            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
+        var hasNghiemThu = await NghiemThu.GetQueryableSet().AnyAsync(e => e.HopDongId == request.Id && e.HopDong != null && !e.HopDong.IsDeleted, cancellationToken);
         if(entity == null) 
-        ManagedException.ThrowIfNull(entity);
+            ManagedException.ThrowIfNull(entity);
+        var hasThanhToan = await ThanhToan.GetQueryableSet().AnyAsync(e => e.NghiemThuId == request.Id 
+        && e.NghiemThu != null && !e.NghiemThu.IsDeleted, cancellationToken);
 
-        if(entity != null && (entity.ThanhToan != null &&  !(entity.ThanhToan?.IsDeleted??false))) 
-        ManagedException.ThrowIfNull("Nghiệm thu này đã có hóa đơn thanh toán. Không thể xóa");
+        if (hasThanhToan) 
+          ManagedException.Throw("Nghiệm thu này đã có hóa đơn thanh toán. Không thể xóa");
 
         entity.IsDeleted = true;
 

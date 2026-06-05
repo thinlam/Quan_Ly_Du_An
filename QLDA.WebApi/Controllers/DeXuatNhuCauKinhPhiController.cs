@@ -143,11 +143,12 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
     [HttpGet("danh-sach-combobox")]
     [ProducesResponseType<ResultApi<PaginatedList<DeXuatNhuCauKinhPhiDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> GetCbo()
+    public async Task<ResultApi> GetCbo(Guid? keHoachId)
     {
         var res = await Mediator.Send(new DeXuatNhuCauKinhPhiComboboxQuery()
         {
             IsNoTracking = true,
+            KeHoachId = keHoachId
 
         });
         return ResultApi.Ok(res);

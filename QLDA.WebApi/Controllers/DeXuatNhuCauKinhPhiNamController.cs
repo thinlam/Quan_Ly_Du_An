@@ -87,6 +87,8 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
             So = req.So,
             DenNgay = req.DenNgay,
             TuNgay = req.TuNgay,
+            TrichYeu = req.TrichYeu,
+            TrangThaiId = req.TrangThaiId,
             NguoiDeXuatId = req.NguoiDeXuatId,
             PhongBanDeXuatId = req.PhongBanDeXuatId,
             GlobalFilter = req.GlobalFilter,

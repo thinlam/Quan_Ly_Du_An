@@ -40,10 +40,10 @@ internal class KetQuaTrungThauUpdateCommandHandler : IRequestHandler<KetQuaTrung
     #region  Private helper methods
 
     private async Task ValidateAsync(KetQuaTrungThauUpdateCommand request, CancellationToken cancellationToken) {
-        ManagedException.ThrowIf(
-            when: await KetQuaTrungThau.GetQueryableSet().AnyAsync(e => e.Id != request.Dto.Id && e.SoQuyetDinh!.ToLower() == request.Dto.SoQuyetDinh!.ToLower(), cancellationToken: cancellationToken),
-            message: "Số quyết định đã tồn tại"
-        );
+        //ManagedException.ThrowIf(
+        //    when: await KetQuaTrungThau.GetQueryableSet().AnyAsync(e => e.Id != request.Dto.Id && e.SoQuyetDinh!.ToLower() == request.Dto.SoQuyetDinh!.ToLower(), cancellationToken: cancellationToken),
+        //    message: "Số quyết định đã tồn tại"
+        //);
         ManagedException.ThrowIf(
             when: await KetQuaTrungThau.GetQueryableSet().AnyAsync(e => e.Id != request.Dto.Id && e.GoiThauId == request.Dto.GoiThauId, cancellationToken: cancellationToken),
             message: "Gói thầu đã có kết quả trúng thầu"

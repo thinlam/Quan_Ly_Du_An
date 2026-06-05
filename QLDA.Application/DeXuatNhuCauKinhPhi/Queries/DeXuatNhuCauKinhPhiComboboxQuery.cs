@@ -17,6 +17,7 @@ public record DeXuatNhuCauKinhPhiComboboxQuery : AggregateRootPagination, IMayHa
     public int? TrangThaiId { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public long? DonViDeXuatId { get; set; }
+    public Guid? KeHoachId { get; set; }
     public DateOnly? TuNgay { get; set; } 
     public DateOnly? DenNgay { get; set; }
 }
@@ -68,13 +69,29 @@ internal class
             .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
             .WhereIf(tuNgayDto != null, e => e.NgayPhieuChuyen >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayPhieuChuyen < denNgayExclusiveDto)
-            // --- THÊM BỘ LỌC MỚI CỦA BẠN VÀO ĐÂY ---
-            .Where(e => !e.DeXuatDaTrinhKeHoachNam!.Any() // TH1: Chưa có trong kế hoạch năm nào
-                   || e.DeXuatDaTrinhKeHoachNam!.All(x =>
-                        x.DeXuatNhuCauKinhPhiNam == null 
-                        || x.DeXuatNhuCauKinhPhiNam.IsDeleted // TH2: Kế hoạch năm đã bị xóa
-                        || x.DeXuatNhuCauKinhPhiNam.TrangThaiId == trangThaiTuChoiKH!.Id // TH3: Kế hoạch năm bị Từ chối
-              )); 
+        // --- THÊM BỘ LỌC MỚI CỦA BẠN VÀO ĐÂY ---
+        /*
+         3 case 
+        1 thuộc kehoachNam.id = request.KeHoachId
+        2 không thuộc kehoachNam nào
+        3 thuộc kehoachNam nhưng keHoachNam.TrangThai = Từ chối || keHoachNam.IsDeleted = true
+        */
+        // Case 1: Thuộc chính kế hoạch năm đang truyền lên trong request (Nếu có truyền KeHoachId)
+        .Where(e =>
+        // Nếu Đề xuất thuộc chính kế hoạch này thì luôn được lấy (để giữ liên kết cũ khi sửa)
+        (request.KeHoachId.HasValue &&
+        e.DeXuatDaTrinhKeHoachNam!.Any(x => x.DeXuatNhuCauKinhPhiNam != null
+        && x.DeXuatNhuCauKinhPhiNam.Id == request.KeHoachId.Value))
+
+        // HOẶC: Đề xuất này KHÔNG ĐƯỢC TỒN TẠI trong một Kế hoạch năm nào khác đang "Hợp lệ" (Chưa xóa và Chưa bị từ chối)
+        || !e.DeXuatDaTrinhKeHoachNam!.Any(x =>
+            x.DeXuatNhuCauKinhPhiNam != null
+            && x.DeXuatNhuCauKinhPhiNam.IsDeleted                                      // Kế hoạch đang hoạt động
+            && x.DeXuatNhuCauKinhPhiNam.TrangThaiId == trangThaiTuChoiKH!.Id             // Trạng thái KHÁC Từ chối (ví dụ: Chờ duyệt, Đã duyệt)
+            
+            )
+        );
+      
         return await queryable
             .Select(e => new DeXuatNhuCauKinhPhiDto() {
                 Id = e.Id,
