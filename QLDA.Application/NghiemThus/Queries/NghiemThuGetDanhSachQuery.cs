@@ -30,7 +30,7 @@ internal class
         CancellationToken cancellationToken = default) {
         var queryable = NghiemThu.GetQueryableSet().AsNoTracking()
             .Where(e => !e.DuAn!.IsDeleted)
-            
+
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
@@ -38,14 +38,8 @@ internal class
                 request,
                 e => e.SoBienBan,
                 e => e.NoiDung
-            )
-            .WhereFunc(request.IsCbo,
-                q => q
-                    .WhereIf(request.ThanhToanId.HasValue, e => e.ThanhToan!.Id == request.ThanhToanId || e.ThanhToan == null),
-                q => q
-                    .WhereIf(request.ThanhToanId.HasValue, e => e.ThanhToan!.Id == request.ThanhToanId)
-
             );
+           
 
         return await queryable
             .Select(e => new NghiemThuDto() {
@@ -58,7 +52,7 @@ internal class
                 Ngay = e.Ngay,
                 NoiDung = e.NoiDung,
                 SoBienBan = e.SoBienBan,
-                ThanhToanId = !e.ThanhToan!.IsDeleted ? e.ThanhToan!.Id : null,
+                //ThanhToanId = !e.ThanhToan!.IsDeleted ? e.ThanhToan!.Id : null,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

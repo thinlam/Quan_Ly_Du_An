@@ -116,18 +116,18 @@ internal class
             TrangThaiKeHoachNamId = x.DeXuatDaTrinhKeHoachNam!
                     .Where(t =>  t.DeXuatNhuCauKinhPhiNam != null && !t.DeXuatNhuCauKinhPhiNam.IsDeleted)
                     .Select(t => t.DeXuatNhuCauKinhPhiNam!.TrangThaiId).FirstOrDefault(),
-
+            // text: đã trình nếu đã trình. còn lại '----'
             TenTrangThaiKeHoachNam = x.DeXuatDaTrinhKeHoachNam!
                     .Any(t =>
                         t.DeXuatNhuCauKinhPhiNam != null  && !t.DeXuatNhuCauKinhPhiNam.IsDeleted
-                        && t.DeXuatNhuCauKinhPhiNam.TrangThaiId == trangThaiDuThao!.Id)? trangThaiDaTrinh!.Ten : "--",
-       
+                        && t.DeXuatNhuCauKinhPhiNam.TrangThaiId == trangThaiDaTrinh!.Id)? trangThaiDaTrinh!.Ten : "--",
+            // text: Duyệt thì show ngày duyệt. còn lại '----'
             NgayDuyetKeHoach = x.DeXuatDaTrinhKeHoachNam!
                             .Where(t =>
                                 t.DeXuatNhuCauKinhPhiNam != null && !t.DeXuatNhuCauKinhPhiNam.IsDeleted
                                 && t.DeXuatNhuCauKinhPhiNam.NgayDuyet != null)
                             .Select(t =>  t.DeXuatNhuCauKinhPhiNam.NgayDuyet).FirstOrDefault() ,
-
+            // text: Duyệt thì show 'Đã duyệt'. còn lại '----'
             TenTrangThaiBanGiamDoc = x.DeXuatDaTrinhKeHoachNam!
                             .Where(t => t.DeXuatNhuCauKinhPhiNam != null && !t.DeXuatNhuCauKinhPhiNam.IsDeleted)
                             .Select(t => t.DeXuatNhuCauKinhPhiNam!.TrangThaiId == trangThaiDaDuyet!.Id

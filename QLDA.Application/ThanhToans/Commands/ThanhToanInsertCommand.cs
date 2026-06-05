@@ -26,7 +26,7 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
     }
 
     public async Task<ThanhToan> Handle(ThanhToanInsertCommand request, CancellationToken cancellationToken = default) {
-        ValidatePhongKeToanPermission();
+       ValidatePhongKeToanPermission();
         await ValidateAsync(request, cancellationToken);
 
         var entity = request.Dto.ToEntity();

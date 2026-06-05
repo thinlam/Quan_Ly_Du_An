@@ -33,8 +33,8 @@ public class TongHopDeXuatChuTruongController : AggregateRootController {
             PageIndex = req.PageIndex,
             PageSize = req.PageSize,
             IsNoTracking = true,
-            TuNgay = req.TuNgay,
-            DenNgay = req.DenNgay
+            Loai = req.Loai,
+            Nam = req.Nam,
         });
         return ResultApi.Ok(res);
     }

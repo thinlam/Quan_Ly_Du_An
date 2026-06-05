@@ -28,7 +28,7 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
                             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
-            .Include(e => e.CanBoTrienKhais)
+            .Include(e => e.DanhSachHangMuc)
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
@@ -38,18 +38,18 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
 
-        entity.DuAnId = request.Dto.DuAnId;
-        entity.BuocId = request.Dto.BuocId;
-        entity.So = request.Dto.So;
-        entity.NgayToTrinh = request.Dto.NgayToTrinh;
-        entity.TrichYeu = request.Dto.TrichYeu;
-        entity.KinhPhi = request.Dto.KinhPhi;   
-        entity.NgayBatDau = request.Dto.NgayBatDau; 
-        entity.NgayKetThuc = request.Dto.NgayKetThuc;   
-        entity.GiaiDoanId = request.Dto.GiaiDoanId; 
-        entity.ThoiHan = request.Dto.ThoiHan;
-        entity.CanBoChuTriId = request.Dto.CanBoChuTriId;
-        entity.TenHangMuc = request.Dto.TenHangMuc;
+        //entity.DuAnId = request.Dto.DuAnId;
+        //entity.BuocId = request.Dto.BuocId;
+        //entity.So = request.Dto.So;
+        //entity.NgayToTrinh = request.Dto.NgayToTrinh;
+        //entity.TrichYeu = request.Dto.TrichYeu;
+        //entity.KinhPhi = request.Dto.KinhPhi;   
+        //entity.NgayBatDau = request.Dto.NgayBatDau; 
+        //entity.NgayKetThuc = request.Dto.NgayKetThuc;   
+        //entity.GiaiDoanId = request.Dto.GiaiDoanId; 
+        //entity.ThoiHan = request.Dto.ThoiHan;
+        //entity.CanBoChuTriId = request.Dto.CanBoChuTriId;
+        //entity.TenHangMuc = request.Dto.TenHangMuc;
 
       //  entity.SyncCanBoPhoiHop(request.Dto.CanBoTrienKhais);
 

@@ -51,7 +51,7 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
-            .WhereIf(request.TenHangMuc != null, e => e.TenHangMuc.Contains(request.TenHangMuc))
+           // .WhereIf(request.TenHangMuc != null, e => e.TenHangMuc.Contains(request.TenHangMuc))
             .WhereIf(tuNgayDto != null, e => e.NgayToTrinh >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayToTrinh < denNgayExclusiveDto);
         return await queryable
@@ -62,27 +62,10 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
                 So = e.So,
                 NgayTrinh = e.NgayToTrinh,
                 TrichYeu = e.TrichYeu,
-                TrangThaiId = e.TrangThaiId,
-                KinhPhi = e.KinhPhi,
-                CanBoChuTriId = e.CanBoChuTriId,
-                TenHangMuc= e.TenHangMuc,
-                NgayBatDau = e.NgayBatDau,
-                NgayKetThuc = e.NgayKetThuc,    
+                TrangThaiId = e.TrangThaiId,    
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
-                // DanhSachCanBoPhoiHop = e.CanBoTrienKhais != null ? e.CanBoTrienKhais.Select(cb => cb.CanBoId).ToList() : new List<Guid>(),  
-                /* DanhSachCanBoPhoiHop = e.CanBoTrienKhais
-                     .Select(x => new CanBoTrienKhaiDto
-                     {
-                         CanBoId = x.CanBoId,
-
-                         TenCanBo = userMasterRepo
-                             .GetQueryableSet()
-                             .Where(u => u.UserPortalId == x.CanBoId)
-                             .Select(u => u.HoTen)
-                             .FirstOrDefault()
-                     })
-                     .ToList()*/
+                SoHangMuc = e.DanhSachHangMuc.Count(),
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString() )
                     .Select(i => i.ToDto()).ToList(),

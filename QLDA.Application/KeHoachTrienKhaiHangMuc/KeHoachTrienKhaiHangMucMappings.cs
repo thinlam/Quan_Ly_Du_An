@@ -6,23 +6,32 @@ namespace QLDA.Application.KeHoachTrienKhaiHangMucMappings;
 
 public static class KeHoachTrienKhaiHangMucMappings
 {
-    public static void SyncCanBoPhoiHop(this KeHoachTrienKhaiHangMuc entity, List<CanBoTrienKhaiDto>? canBoIds)
+    public static void SyncHangMuc(this KeHoachTrienKhaiHangMuc entity, List<HangMucTrienKhaiDto>? hangMucs)
     {
-        if (canBoIds is null)
+        if (hangMucs is null)
         {
-            entity.CanBoTrienKhais = [];
+            entity.DanhSachHangMuc = [];
             return;
         }
 
-        entity.CanBoTrienKhais ??= [];
-        entity.CanBoTrienKhais.Clear();
+        entity.DanhSachHangMuc ??= [];
+        entity.DanhSachHangMuc.Clear();
 
-        foreach (var items in canBoIds)
+        foreach (var items in hangMucs)
         {
-            entity.CanBoTrienKhais.Add(new CanBoTrienKhaiHangMuc
+            entity.DanhSachHangMuc.Add(new HangMucKeHoach
             {
-                KeHoachId = entity.Id,
-                CanBoId = items.CanBoId
+                KeHoachId = entity.Id   ,
+                GiaiDoanId = items.GiaiDoanId,
+                TenHangMuc = items.TenHangMuc,
+                KinhPhi = items.KinhPhi,
+                NgayBatDau = items.NgayBatDau,
+                NgayKetThuc = items.NgayKetThuc,
+                ThoiHan = items.ThoiHan,
+                CanBoChuTriId = items.CanBoChuTriId,
+                CanBoPhoiHopIds = items.CanBoPhoiHopIds,
+                DonViChuTriId = items.DonViChuTriId,
+                DonViPhoiHopIds = items.DonViPhoiHops,
             });
         }
     }
@@ -37,17 +46,9 @@ public static class KeHoachTrienKhaiHangMucMappings
             NgayToTrinh = dto.NgayTrinh,
             TrichYeu = dto.TrichYeu,
             TrangThaiId = dto.TrangThaiId,
-
-            TenHangMuc = dto.TenHangMuc,
-            CanBoChuTriId = dto.CanBoChuTriId,
-            NgayBatDau = dto.NgayBatDau,
-            NgayKetThuc = dto.NgayKetThuc,
-            ThoiHan = dto.ThoiHan,
-            KinhPhi = dto.KinhPhi,
-            GiaiDoanId = dto.GiaiDoanId,
         };
 
-        entity.SyncCanBoPhoiHop(dto.DanhSachCanBoPhoiHop);
+        entity.SyncHangMuc(dto.HangMucTrienKhai);
 
         return entity;
     }
@@ -61,14 +62,21 @@ public static class KeHoachTrienKhaiHangMucMappings
             NgayTrinh = entity.NgayToTrinh,
             TrichYeu = entity.TrichYeu,
             TrangThaiId = entity.TrangThaiId,
-            TenHangMuc = entity.TenHangMuc,
-            CanBoChuTriId = entity.CanBoChuTriId,
-            NgayBatDau = entity.NgayBatDau,
-            NgayKetThuc = entity.NgayKetThuc,
-            ThoiHan = entity.ThoiHan,
-            KinhPhi = entity.KinhPhi,
+            
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
-            DanhSachCanBoPhoiHop = entity.CanBoTrienKhais?.Select(x=>new CanBoTrienKhaiDto() { CanBoId = x.CanBoId }).ToList(),
+            HangMucTrienKhai = entity.DanhSachHangMuc?.Select(x=>new HangMucTrienKhaiDto() {
+                TenHangMuc = x.TenHangMuc,
+                GiaiDoanId = x.GiaiDoanId,
+                CanBoChuTriId = x.CanBoChuTriId,
+                CanBoPhoiHopIds = x.CanBoPhoiHopIds,
+                DonViChuTriId = x.DonViChuTriId,
+                DonViPhoiHops = x.DonViPhoiHopIds,
+                NgayBatDau = x.NgayBatDau,
+                NgayKetThuc = x.NgayKetThuc,
+                ThoiHan = x.ThoiHan,
+                KinhPhi = x.KinhPhi,
+                
+            }).ToList(),
 
         };
 }

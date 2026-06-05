@@ -37,14 +37,8 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
-
-        entity.DuAnId = request.Dto.DuAnId;
-        entity.BuocId = request.Dto.BuocId;
-        entity.So = request.Dto.So;
-        entity.NgayTrinh = request.Dto.NgayTrinh;
-        entity.TrichYeu = request.Dto.TrichYeu;
-        entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
-       // entity.SyncGoiThauIds(request.Dto.DanhSachGoiThau);
+        entity = request.Dto;
+        // entity.SyncGoiThauIds(request.Dto.DanhSachGoiThau);
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);

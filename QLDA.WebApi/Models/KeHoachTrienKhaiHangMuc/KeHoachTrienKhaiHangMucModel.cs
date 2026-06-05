@@ -37,5 +37,5 @@ public class KeHoachTrienKhaiHangMucModel : IHasKey<Guid?>, IMustHaveId<Guid>, I
     public DateOnly? ThoiHan { get; set; }
     public long? KinhPhi { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
-    public List<CanBoTrienKhaiHangMucModel>? DanhSachCanBo { get; set; }
+    public List<HangMucTrienKhaiModel>? DanhSachHangMuc { get; set; }
 }

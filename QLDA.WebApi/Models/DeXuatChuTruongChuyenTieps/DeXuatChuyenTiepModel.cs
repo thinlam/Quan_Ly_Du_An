@@ -32,6 +32,7 @@ public class DeXuatChuyenTiepModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHave
     public long? NhuCauKinhPhi { get; set; }
     public string? KhoiLuongThucTe { get; set; }
     public string? KhoiLuongDuKien { get; set; }
+    public int? NamDeXuat { get; set; }
     public int? TrangThaiId { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 

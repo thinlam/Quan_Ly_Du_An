@@ -18,6 +18,7 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             NguoiXuLyChinhId = entity.NguoiXuLyChinhId,
             DonViPhuTrachChinhId = entity.DonViPhuTrachChinhId,
             HinhThucDauTuId = entity.HinhThucDauTuId,
+            NamDeXuat = entity.NamDeXuat,
             TrangThaiId = entity.TrangThaiId,
             DonViPhoiHopIds = entity.DeXuatDonViXuLys?.Select(x => x.RightId).ToList(),
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList()
@@ -35,6 +36,7 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             NguoiXuLyChinhId = model.NguoiXuLyChinhId,
             HinhThucDauTuId = model.HinhThucDauTuId,
             DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
+            NamDeXuat = model.NamDeXuat,
             DeXuatDonViXuLys = model.DonViPhoiHopIds?
                 .Select(donViId => new DeXuatDonViXuLy { RightId = donViId })
                 .ToList() ?? [],
@@ -52,6 +54,7 @@ public static class DeXuatChuTruongMoiMappingConfiguration {
             LanhDaoPhuTrachId = model.LanhDaoPhuTrachId,
             NguoiXuLyChinhId = model.NguoiXuLyChinhId,
             DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
+            NamDeXuat = model.NamDeXuat,
             TrangThaiId = model.TrangThaiId,
             DonViPhoiHopIds = model.DonViPhoiHopIds,
         };

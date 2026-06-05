@@ -34,7 +34,7 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
             EGroupTypes = [GroupTypeConstants.KeHoachTrienKhaiHangMuc]
         });
 
-        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem.ToList()));
+        return ResultApi.Ok(entity);
     }
 
     [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]
@@ -50,10 +50,8 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create(
-        [FromBody] KeHoachTrienKhaiHangMucDto dto,
-        [FromServices] IUnitOfWork unitOfWork,
-        CancellationToken cancellationToken = default)
+    public async Task<ResultApi> Create([FromBody] KeHoachTrienKhaiHangMucDto dto,
+        [FromServices] IUnitOfWork unitOfWork,  CancellationToken cancellationToken = default)
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));

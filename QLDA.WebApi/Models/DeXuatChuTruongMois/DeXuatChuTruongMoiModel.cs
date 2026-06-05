@@ -37,6 +37,7 @@ public class DeXuatChuTruongMoiModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHa
     public long? DonViPhuTrachChinhId { get; set; }
     public long? NguoiXuLyChinhId { get; set; }
     public int? TrangThaiId { get; set; }
+    public int? NamDeXuat { get; set; }
     public List<long>? DonViPhoiHopIds { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 

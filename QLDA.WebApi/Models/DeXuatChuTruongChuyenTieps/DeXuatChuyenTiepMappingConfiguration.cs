@@ -1,6 +1,7 @@
 using BuildingBlocks.Domain.Entities.Abstractions;
 using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
+using static Dapper.SqlMapper;
 
 namespace QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 
@@ -16,6 +17,7 @@ public static class DeXuatChuyenTiepMappingConfiguration {
             KhoiLuongThucTe = entity.KhoiLuongThucTe,
             KhoiLuongDuKien = entity.KhoiLuongDuKien,
             TrangThaiId = entity.TrangThaiId,
+            NamDeXuat = entity.NamDeXuat,
             DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList()
         };
 
@@ -29,18 +31,9 @@ public static class DeXuatChuyenTiepMappingConfiguration {
             SoLieuGiaiNgan = model.SoLieuGiaiNgan,
             UocGiaiNgan = model.UocGiaiNgan,
             KhoiLuongThucTe = model.KhoiLuongDuKien,
-            KhoiLuongDuKien = model.KhoiLuongDuKien
-
+            KhoiLuongDuKien = model.KhoiLuongDuKien,
+            NamDeXuat = model.NamDeXuat,
         };
 
-    public static void Update(this DeXuatChuyenTiep entity, DeXuatChuyenTiepModel model) {
-        entity.BuocId = model.BuocId;
-        entity.DuAnId = model.DuAnId;
-        entity.NhuCauKinhPhi = model.NhuCauKinhPhi;
-        entity.SoLieuGiaiNgan = model.SoLieuGiaiNgan;
-        entity.UocGiaiNgan = model.UocGiaiNgan;
-        entity.KhoiLuongThucTe = model.KhoiLuongThucTe;
-        entity.KhoiLuongDuKien = model.KhoiLuongDuKien;
-
-    }
+   
 }

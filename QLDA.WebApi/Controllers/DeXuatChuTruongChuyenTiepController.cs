@@ -104,6 +104,7 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
                 NhuCauKinhPhi = model.NhuCauKinhPhi,
                 KhoiLuongDuKien = model.KhoiLuongDuKien,
                 KhoiLuongThucTe = model.KhoiLuongThucTe,
+                NamDeXuat = model.NamDeXuat,
                 UocGiaiNgan = model.UocGiaiNgan
             }
         ), cancellationToken);

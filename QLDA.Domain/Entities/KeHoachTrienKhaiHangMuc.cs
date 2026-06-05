@@ -16,18 +16,8 @@ public class KeHoachTrienKhaiHangMuc : Entity<Guid>, IAggregateRoot
 
     public string? TrichYeu { get; set; }
     public int? TrangThaiId { get; set; }
+    public ICollection<HangMucKeHoach>? DanhSachHangMuc { get; set; } = [];
 
-
-    public string TenHangMuc { get; set; }
-    public int? GiaiDoanId { get; set; }
-    public long? CanBoChuTriId { get; set; }
-    //public List<long>? DanhSachCanBoPhoiHop { get; set; }
-    public DateOnly? NgayBatDau { get; set; }
-    public DateOnly? NgayKetThuc { get; set; }
-    public DateOnly? ThoiHan { get; set; }
-    public long? KinhPhi { get; set; }
-    public ICollection<CanBoTrienKhaiHangMuc> CanBoTrienKhais { get; set; }
-       = new List<CanBoTrienKhaiHangMuc>();
     #region Navigation Properties
 
     public DuAn? DuAn { get; set; }

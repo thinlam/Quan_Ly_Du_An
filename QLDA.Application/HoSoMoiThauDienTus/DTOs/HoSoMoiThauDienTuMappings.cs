@@ -27,35 +27,6 @@ public static class HoSoMoiThauDienTuMappings {
         entity.TrangThaiId = dto.TrangThaiId;
     }
 
-    public static HoSoMoiThauDienTuDto ToDto(this HoSoMoiThauDienTu entity) =>
-        entity.ToDto(null);
 
-    public static HoSoMoiThauDienTuDto ToDto(this HoSoMoiThauDienTu entity,
-        List<TepDinhKem>? files) => new() {
-        Id = entity.Id,
-        DuAnId = entity.DuAnId,
-        TenDuAn = entity.DuAn?.TenDuAn,
-        BuocId = entity.BuocId,
-        TenBuoc = entity.Buoc?.TenBuoc,
-        HinhThucLuaChonNhaThauId = entity.HinhThucLuaChonNhaThauId,
-        TenHinhThucLuaChonNhaThau = entity.HinhThucLuaChonNhaThau?.Ten,
-        GoiThauId = entity.GoiThauId,
-        TenGoiThau = entity.GoiThau?.Ten,
-        GiaTri = entity.GiaTri,
-        ThoiGianThucHien = entity.ThoiGianThucHien,
-        TrangThaiDangTai = entity.TrangThaiDangTai,
-        TrangThaiId = entity.TrangThaiId,
-        TenTrangThai = entity.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : entity.TrangThaiPheDuyet?.Ten,
-        DanhSachTepDinhKem = files?.Select(f => new TepDinhKemDto {
-            Id = f.Id,
-            ParentId = f.ParentId,
-            GroupId = f.GroupId,
-            GroupType = f.GroupType,
-            FileName = f.FileName,
-            OriginalName = f.OriginalName,
-            Path = f.Path,
-            Size = f.Size,
-            Type = f.Type,
-        }).ToList(),
-    };
+   
 }
