@@ -10,6 +10,13 @@ public class ThanhToanUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
     public DateTimeOffset? NgayHoaDon { get; set; }
     public long GiaTri { get; set; }
     public string? NoiDung { get; set; }
+    public List<Guid>? PhuLucs { get; set; }
 
     public List<TepDinhKemInsertOrUpdateDto>? DanhSachTepDinhKem { get; set; }
+}
+public class phuLucHopDongCboDto
+{
+    public Guid phuLucHopDongId { get; set; }
+    public String Ten { get; set; }
+
 }

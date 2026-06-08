@@ -12,6 +12,7 @@ public class ThanhToanInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo {
     public DateTimeOffset? NgayHoaDon { get; set; }
     [DefaultValue(0)] public long? GiaTri { get; set; }
     public string? NoiDung { get; set; }
+    public List<Guid>? PhuLucs { get; set; }
 
     public List<TepDinhKemInsertDto>? DanhSachTepDinhKem { get; set; }
 }

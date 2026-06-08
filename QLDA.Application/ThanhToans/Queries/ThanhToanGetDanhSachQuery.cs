@@ -26,6 +26,7 @@ internal class
 
     public async Task<PaginatedList<ThanhToanDto>> Handle(ThanhToanGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
+
         var queryable = ThanhToan.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
@@ -39,17 +40,18 @@ internal class
             );
 
         return await queryable
-            .Select(e => new ThanhToanDto() {
-                Id = e.Id,
-                DuAnId = e.DuAnId,
-                BuocId = e.BuocId,
-                SoHoaDon = e.SoHoaDon,
-                NgayHoaDon = e.NgayHoaDon,
-                GiaTri = e.GiaTri,
-                NoiDung = e.NoiDung,
-                NghiemThuId = e.NghiemThuId,
+            .Select(x => new ThanhToanDto() {
+                Id = x.Id,
+                DuAnId = x.DuAnId,
+                BuocId = x.BuocId,
+                SoHoaDon = x.SoHoaDon,
+                NgayHoaDon = x.NgayHoaDon,
+                GiaTri = x.GiaTri,
+                NoiDung = x.NoiDung,
+                NghiemThuId = x.NghiemThuId,
+              //  PhuLucs = x.PhuLucs,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
+                    .Where(i => i.GroupId == x.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

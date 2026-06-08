@@ -25,7 +25,7 @@ internal class ThanhToanGetQueryHandler(IServiceProvider serviceProvider)
                 .WhereFunc(request.IncludeNghiemThu, q => q.Include(e => e.NghiemThu))
                 .WhereFunc(request.IncludeBienBanGiaoNhiemVu, q => q.Include(e => e.NghiemThu).ThenInclude(e => e!.HopDong))
                 .WhereFunc(request.IncludeHopDong, q => q.Include(e => e.NghiemThu).ThenInclude(e => e!.HopDong))
-                .WhereFunc(request.IncludePhuLucHopDong, q => q.Include(e => e.NghiemThu).ThenInclude(e => e!.HopDong).ThenInclude(e => e!.PhuLucHopDongs))
+               // .WhereFunc(request.IncludePhuLucHopDong, q => q.Include(e => e.NghiemThu).ThenInclude(e => e!.HopDong).ThenInclude(e => e!.PhuLucHopDongs))
             ;
 
         if (request.IsNoTracking)

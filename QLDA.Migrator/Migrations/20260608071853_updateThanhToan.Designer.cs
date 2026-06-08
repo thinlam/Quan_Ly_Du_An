@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260608071853_updateThanhToan")]
+    partial class updateThanhToan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5716,7 +5719,8 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<long?>("CanBoChuTriId")
                         .HasColumnType("bigint");
@@ -5725,7 +5729,9 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -5741,7 +5747,9 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("int");
 
                     b.Property<long>("Index")
-                        .HasColumnType("bigint");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -5781,11 +5789,15 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasIndex("GiaiDoanId");
 
+                    b.HasIndex("Index");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
+
                     b.HasIndex("KeHoachId");
 
                     b.HasIndex("TrangThaiId");
 
-                    b.ToTable("HangMucKeHoach");
+                    b.ToTable("HangMucKeHoach", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.HoSoDeXuatCapDoCntt", b =>
@@ -8497,11 +8509,13 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.HasOne("BuildingBlocks.Domain.Entities.DmDonVi", "DonViChuTri")
                         .WithMany()
-                        .HasForeignKey("DonViChuTriId");
+                        .HasForeignKey("DonViChuTriId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucGiaiDoan", "GiaiDoan")
                         .WithMany()
-                        .HasForeignKey("GiaiDoanId");
+                        .HasForeignKey("GiaiDoanId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("QLDA.Domain.Entities.KeHoachTrienKhaiHangMuc", "KeHoach")
                         .WithMany("DanhSachHangMuc")

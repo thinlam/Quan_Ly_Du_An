@@ -12,7 +12,8 @@ public static class ThanhToanMappings {
             SoHoaDon = dto.SoHoaDon,
             NgayHoaDon = dto.NgayHoaDon,
             GiaTri = dto.GiaTri,
-            NoiDung = dto.NoiDung
+            NoiDung = dto.NoiDung,
+            PhuLucHopDongIds = dto.PhuLucs
         };
     }
 
@@ -23,7 +24,8 @@ public static class ThanhToanMappings {
             SoHoaDon = dto.SoHoaDon,
             NgayHoaDon = dto.NgayHoaDon,
             GiaTri = dto.GiaTri,
-            NoiDung = dto.NoiDung
+            NoiDung = dto.NoiDung,
+            PhuLucHopDongIds = dto.PhuLucs
         };
     }
 
@@ -37,6 +39,7 @@ public static class ThanhToanMappings {
             NgayHoaDon = entity.NgayHoaDon,
             GiaTri = entity.GiaTri,
             NoiDung = entity.NoiDung,
+            PhuLucHopDongIds= entity.PhuLucHopDongIds,
             DanhSachTepDinhKem = [.. files?.ToDtos() ?? []]
         };
     }
@@ -45,6 +48,7 @@ public static class ThanhToanMappings {
         entity.SoHoaDon = dto.SoHoaDon;
         entity.NgayHoaDon = dto.NgayHoaDon;
         entity.GiaTri = dto.GiaTri;
+        entity.PhuLucHopDongIds = dto.PhuLucs;
         entity.NoiDung = dto.NoiDung;
     }
 }

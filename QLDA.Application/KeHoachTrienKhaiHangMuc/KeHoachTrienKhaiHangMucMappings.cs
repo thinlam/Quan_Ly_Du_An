@@ -1,11 +1,30 @@
+using QLDA.Application.DuToans.DTOs;
+using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
-using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucMappings;
 
 public static class KeHoachTrienKhaiHangMucMappings
 {
+    public static HangMucKeHoach ToEntity(this HangMucTrienKhaiDto item, Guid keHoachId)
+    {
+        return new HangMucKeHoach
+        {
+            Id = item.Id.GetId(),
+            KeHoachId = keHoachId,
+            GiaiDoanId = item.GiaiDoanId,
+            TenHangMuc = item.TenHangMuc,
+            KinhPhi = item.KinhPhi,
+            NgayBatDau = item.NgayBatDau,
+            NgayKetThuc = item.NgayKetThuc,
+            ThoiHan = item.ThoiHan,
+            CanBoChuTriId = item.CanBoChuTriId,
+            CanBoPhoiHopIds = item.CanBoPhoiHopIds,
+            DonViChuTriId = item.DonViChuTriId,
+            DonViPhoiHopIds = item.DonViPhoiHops,
+        };
+    }
     public static void SyncHangMuc(this KeHoachTrienKhaiHangMuc entity, List<HangMucTrienKhaiDto>? hangMucs)
     {
         hangMucs ??= [];

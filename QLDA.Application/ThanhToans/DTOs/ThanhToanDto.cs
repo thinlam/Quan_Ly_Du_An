@@ -1,4 +1,5 @@
 using QLDA.Application.Common.Interfaces;
+using QLDA.Application.PhuLucHopDongs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Interfaces;
 using SequentialGuid;
@@ -21,5 +22,6 @@ public class ThanhToanDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKe
     public DateTimeOffset? NgayHoaDon { get; set; }
     public long? GiaTri { get; set; }
     public string? NoiDung { get; set; }
+    public List<phuLucHopDongCboDto>? PhuLucs { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
