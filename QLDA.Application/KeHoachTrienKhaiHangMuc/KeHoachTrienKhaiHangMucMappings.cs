@@ -8,6 +8,67 @@ public static class KeHoachTrienKhaiHangMucMappings
 {
     public static void SyncHangMuc(this KeHoachTrienKhaiHangMuc entity, List<HangMucTrienKhaiDto>? hangMucs)
     {
+        hangMucs ??= [];
+        entity.DanhSachHangMuc ??= [];
+
+        var existingIdsInDb = entity.DanhSachHangMuc.Select(x => x.Id).ToHashSet();
+
+        var removeItems = entity.DanhSachHangMuc
+            .Where(x => !hangMucs.Any(y => y.Id == x.Id))
+            .ToList();
+
+        foreach (var item in removeItems)
+        {
+            entity.DanhSachHangMuc.Remove(item);
+        }
+
+        // 3. ADD / UPDATE
+        foreach (var item in hangMucs)
+        {
+            bool isUpdate = item.Id != Guid.Empty && existingIdsInDb.Contains(item.Id??Guid.Empty);
+
+            if (!isUpdate)
+            {
+                entity.DanhSachHangMuc.Add(new HangMucKeHoach
+                {
+                    //Id =  Guid.NewGuid() ,
+                    KeHoachId = entity.Id,
+                    GiaiDoanId = item.GiaiDoanId,
+                    TenHangMuc = item.TenHangMuc,
+                    KinhPhi = item.KinhPhi,
+                    NgayBatDau = item.NgayBatDau,
+                    NgayKetThuc = item.NgayKetThuc,
+                    ThoiHan = item.ThoiHan,
+                    CanBoChuTriId = item.CanBoChuTriId,
+                    CanBoPhoiHopIds = item.CanBoPhoiHopIds,
+                    DonViChuTriId = item.DonViChuTriId,
+                    DonViPhoiHopIds = item.DonViPhoiHops,
+                //    CreatedAt = DateTimeOffset.UtcNow, // Đảm bảo không bị ngày 0001-01-01
+                //    IsDeleted = false
+                });
+            }
+            else
+            {
+                var existing = entity.DanhSachHangMuc.First(x => x.Id == item.Id);
+
+                existing.GiaiDoanId = item.GiaiDoanId;
+                existing.TenHangMuc = item.TenHangMuc;
+                existing.KinhPhi = item.KinhPhi;
+                existing.NgayBatDau = item.NgayBatDau;
+                existing.NgayKetThuc = item.NgayKetThuc;
+                existing.ThoiHan = item.ThoiHan;
+                existing.CanBoChuTriId = item.CanBoChuTriId;
+                existing.CanBoPhoiHopIds = item.CanBoPhoiHopIds;
+                existing.DonViChuTriId = item.DonViChuTriId;
+                existing.DonViPhoiHopIds = item.DonViPhoiHops;
+
+                // Không đụng vào CreatedAt, chỉ cập nhật UpdatedAt
+              //  existing.UpdatedAt = DateTimeOffset.UtcNow;
+            }
+        }
+    }
+    public static void SyncHangMuc1(this KeHoachTrienKhaiHangMuc entity, List<HangMucTrienKhaiDto>? hangMucs)
+    {
         if (hangMucs is null)
         {
             entity.DanhSachHangMuc = [];
@@ -21,6 +82,7 @@ public static class KeHoachTrienKhaiHangMucMappings
         {
             entity.DanhSachHangMuc.Add(new HangMucKeHoach
             {
+                Id = items.Id ?? Guid.NewGuid(),
                 KeHoachId = entity.Id   ,
                 GiaiDoanId = items.GiaiDoanId,
                 TenHangMuc = items.TenHangMuc,

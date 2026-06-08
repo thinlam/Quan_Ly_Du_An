@@ -22,6 +22,7 @@ public class ThanhToan : Entity<Guid>, IAggregateRoot, ITienDo {
     public long? GiaTri { get; set; }
 
     public string? NoiDung { get; set; }
+    public List<Guid>? PhuLucHopDongIds { get; set; }
 
     #region Navigation Properties
 

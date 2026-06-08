@@ -16,7 +16,8 @@ public record KeHoachTrienKhaiHangMucDanhSachQuery : AggregateRootPagination, IM
     public string? So { get; set; }
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
-      
+    public int? TrangThaiId { get; set; }
+    
     public string? TenHangMuc{ get; set; }
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
@@ -51,6 +52,8 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
+            .WhereIf(!string.IsNullOrEmpty(request.TrichYeu), e => e.TrichYeu.Contains(request.TrichYeu))
+            .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
            // .WhereIf(request.TenHangMuc != null, e => e.TenHangMuc.Contains(request.TenHangMuc))
             .WhereIf(tuNgayDto != null, e => e.NgayToTrinh >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayToTrinh < denNgayExclusiveDto);

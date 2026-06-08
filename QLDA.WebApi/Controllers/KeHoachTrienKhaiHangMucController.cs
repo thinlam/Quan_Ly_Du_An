@@ -78,7 +78,7 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new KeHoachTrienKhaiHangMucUpdateCommand(dto.ToEntity()), cancellationToken);
+        var entity = await Mediator.Send(new KeHoachTrienKhaiHangMucUpdateCommand(dto), cancellationToken);
 
         List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KeHoachTrienKhaiHangMuc) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
@@ -108,6 +108,8 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             TenHangMuc = dto.TenHangMuc,
+            TrichYeu = dto.TrichYeu,
+            TrangThaiId = dto.TrangThaiId,
             PageSize = dto.PageSize ?? 1,
             PageIndex = dto.PageIndex ?? 10,
             GlobalFilter = dto.GlobalFilter,

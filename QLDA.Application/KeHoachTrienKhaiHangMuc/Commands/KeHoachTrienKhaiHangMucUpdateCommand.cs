@@ -7,7 +7,7 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 
-public record KeHoachTrienKhaiHangMucUpdateCommand(KeHoachTrienKhaiHangMuc Dto) : IRequest<KeHoachTrienKhaiHangMuc>;
+public record KeHoachTrienKhaiHangMucUpdateCommand(KeHoachTrienKhaiHangMucDto Dto) : IRequest<KeHoachTrienKhaiHangMuc>;
 
 internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeHoachTrienKhaiHangMucUpdateCommand, KeHoachTrienKhaiHangMuc> {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _repo;
@@ -22,6 +22,10 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
 
     public async Task<KeHoachTrienKhaiHangMuc> Handle(KeHoachTrienKhaiHangMucUpdateCommand request,
         CancellationToken cancellationToken = default) {
+        try
+        {
+
+        
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiTraLai = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -37,27 +41,32 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
+        using var tx = await _unitOfWork.BeginTransactionAsync(
+         IsolationLevel.ReadCommitted,
+         cancellationToken);
 
-        //entity.DuAnId = request.Dto.DuAnId;
-        //entity.BuocId = request.Dto.BuocId;
-        //entity.So = request.Dto.So;
-        //entity.NgayToTrinh = request.Dto.NgayToTrinh;
-        //entity.TrichYeu = request.Dto.TrichYeu;
-        //entity.KinhPhi = request.Dto.KinhPhi;   
-        //entity.NgayBatDau = request.Dto.NgayBatDau; 
-        //entity.NgayKetThuc = request.Dto.NgayKetThuc;   
-        //entity.GiaiDoanId = request.Dto.GiaiDoanId; 
-        //entity.ThoiHan = request.Dto.ThoiHan;
-        //entity.CanBoChuTriId = request.Dto.CanBoChuTriId;
-        //entity.TenHangMuc = request.Dto.TenHangMuc;
+            entity.DuAnId = request.Dto.DuAnId;
+            entity.BuocId = request.Dto.BuocId;
+            entity.So = request.Dto.So;
+            entity.NgayToTrinh = request.Dto.NgayTrinh;
+            entity.TrichYeu = request.Dto.TrichYeu;
+           
+            entity.SyncHangMuc(request.Dto.HangMucTrienKhai);
+          
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-      //  entity.SyncCanBoPhoiHop(request.Dto.CanBoTrienKhais);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+          //  using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+          //  await _repo.UpdateAsync(entity, cancellationToken);
+         //   await _unitOfWork.SaveChangesAsync(cancellationToken);
+          //  await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        await _repo.UpdateAsync(entity, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            return entity;
+        }
+        catch (Exception ex)
+        {
 
-        return entity;
+            throw;
+        }
     }
 }

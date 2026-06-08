@@ -23,6 +23,7 @@ public class HangMucKeHoach : Entity<Guid>, IAggregateRoot
     //public ICollection<CanBoTrienKhaiHangMuc> CanBoTrienKhais { get; set; } // bỏ bảng này nhe
     //   = new List<CanBoTrienKhaiHangMuc>();
     #region Navigation Properties
+    public KeHoachTrienKhaiHangMuc KeHoach { get; set; }
     public DmDonVi? DonViChuTri { get; set; }
     public DanhMucGiaiDoan? GiaiDoan { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }

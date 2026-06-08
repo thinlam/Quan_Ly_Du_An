@@ -42,6 +42,7 @@ internal class KeHoachTrienKhaiHangMucGetQueryHandler(IServiceProvider servicePr
             TrichYeu = e.TrichYeu,    
             HangMucTrienKhai = e.DanhSachHangMuc.Select(h => new HangMucTrienKhaiDto
             {
+                Id = h.Id,
                 TenHangMuc = h.TenHangMuc,
                 GiaiDoanId = h.GiaiDoanId,
                 NgayBatDau = h.NgayBatDau,

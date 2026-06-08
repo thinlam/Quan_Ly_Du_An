@@ -27,7 +27,11 @@ public class KeHoachTrienKhaiHangMucConfiguration : AggregateRootConfiguration<K
     
         builder.Property(x => x.TrichYeu)
             .HasMaxLength(4000);
-      
+
+        builder.HasMany(e => e.DanhSachHangMuc)
+        .WithOne(e => e.KeHoach)
+        .HasForeignKey(e => e.KeHoachId)
+        .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.TrangThai)
             .WithMany()
