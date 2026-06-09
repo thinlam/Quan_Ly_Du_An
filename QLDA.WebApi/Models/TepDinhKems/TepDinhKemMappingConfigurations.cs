@@ -1,6 +1,7 @@
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoTienDos;
+using QLDA.WebApi.Models.ChuTruongLapKeHoachs;
 using QLDA.WebApi.Models.DangTaiKeHoachLcntLenMangs;
 using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.DeXuatChuTruongMois;
@@ -151,5 +152,7 @@ public static class TepDinhKemMappingConfigurations {
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.TrienKhaiKeHoachLCNT).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTep(this DonViTuVanKeHoachModel model, Guid groupId)
      => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DonViTuVan).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTep(this ChuTruongLapKeHoachModel model, Guid groupId)
+     => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ChuTruongLapKeHoach).ToList() ?? [];
 
 }

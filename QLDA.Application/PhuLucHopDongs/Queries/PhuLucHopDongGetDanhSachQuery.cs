@@ -6,7 +6,7 @@ using QLDA.Application.PhuLucHopDongs.DTOs;
 
 namespace QLDA.Application.PhuLucHopDongs.Queries;
 
-public record PhuLucHopDongGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<PhuLucHopDongDto>>, IFromDateToDate {
+public record PhuLucHopDongGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<List<PhuLucHopDongDto>>, IFromDateToDate {
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string? GlobalFilter { get; set; }
@@ -23,7 +23,7 @@ public record PhuLucHopDongGetDanhSachQuery : AggregateRootPagination, IMayHaveG
 
 internal class
     PhuLucHopDongGetDanhSachQueryHandler : IRequestHandler<PhuLucHopDongGetDanhSachQuery,
-    PaginatedList<PhuLucHopDongDto>> {
+    List<PhuLucHopDongDto>> {
     private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
 
@@ -32,7 +32,7 @@ internal class
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     }
 
-    public async Task<PaginatedList<PhuLucHopDongDto>> Handle(PhuLucHopDongGetDanhSachQuery request,
+    public async Task<List<PhuLucHopDongDto>> Handle(PhuLucHopDongGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
 
         var queryable = PhuLucHopDong.GetQueryableSet().AsNoTracking()
@@ -68,11 +68,8 @@ internal class
                 Ngay = e.Ngay,
                 HopDongId = e.HopDongId,
                 GiaTri = e.GiaTri,
-                NgayDuKienKetThuc = e.NgayDuKienKetThuc,
-                DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
-                    .Select(i => i.ToDto()).ToList(),
-            })
-            .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+                NgayDuKienKetThuc = e.NgayDuKienKetThuc
+            }).ToListAsync(cancellationToken);
+        //   .PaginatedListAsync(request.Skip(), request.Take(), : cancellationToken);
     }
 }

@@ -1,4 +1,6 @@
+using QLDA.Domain.Constants;
 using System.ComponentModel;
+using static QLDA.Domain.Constants.LoaiDeXuatLCNTonstants;
 
 namespace QLDA.WebApi.Controllers {
     [Tags("Danh mục enum")]
@@ -17,6 +19,7 @@ namespace QLDA.WebApi.Controllers {
                 nameof(EnumLoaiVanBanQuyetDinh),
                 nameof(ETrangThaiMoiThau),
                 nameof(EChiuTrachNhiemXuLy),
+                nameof(ELoaiDeXuatKeHoachLCNT),
             };
             return await Task.FromResult(ResultApi.Ok(result));
         }
@@ -36,6 +39,7 @@ namespace QLDA.WebApi.Controllers {
                 nameof(ELoaiVanBanQuyetDinh) => EnumsExtensions.EnumAll<EnumLoaiVanBanQuyetDinh>(), //nameof(ELoaiVanBanQuyetDinh) table name cho store procedure query - EnumLoaiVanBanQuyetDinh cho code first
                 nameof(ETrangThaiMoiThau) => EnumsExtensions.EnumAll<ETrangThaiMoiThau>(),
                 nameof(EChiuTrachNhiemXuLy) => EnumsExtensions.EnumAll<EChiuTrachNhiemXuLy>(),
+                nameof(ELoaiDeXuatKeHoachLCNT) => EnumsExtensions.EnumAll<LoaiDeXuatLCNTonstants.ELoaiDeXuatKeHoachLCNT>(),
                 _ => result
             };
             return await Task.FromResult(ResultApi.Ok(result));

@@ -111,6 +111,27 @@ public class PhuLucHopDongController(IServiceProvider serviceProvider) : Aggrega
     ///
     /// </remarks>
     /// <returns></returns>
+    /// 
+    /// PhuLucHopDongGetChuaThanhToanQuery
+    [HttpGet("danh-sach-cbobox")]
+    [ProducesResponseType<ResultApi<PaginatedList<PhuLucHopDongDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<ResultApi> GetCboThanhToan([FromQuery] PhuLucHopDongSearchModel searchModel)
+    {
+        var res = await Mediator.Send(new PhuLucHopDongGetChuaThanhToanQuery()
+        {
+            IsNoTracking = true,
+            DuAnId = searchModel.DuAnId,
+            BuocId = searchModel.BuocId,
+            GlobalFilter = searchModel.GlobalFilter,
+            Ten = searchModel.Ten,
+            SoPhuLucHopDong = searchModel.SoPhuLucHopDong,
+            HopDongId = searchModel.HopDongId,
+            ThanhToanId = searchModel.ThanhToanId
+        });
+        return ResultApi.Ok(res);
+    }
+
     [HttpGet("danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<PhuLucHopDongDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]

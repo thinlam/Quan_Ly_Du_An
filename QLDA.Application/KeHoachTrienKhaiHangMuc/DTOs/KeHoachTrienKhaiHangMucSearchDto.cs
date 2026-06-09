@@ -15,6 +15,7 @@ public record KeHoachTrienKhaiHangMucSearchDto
     public string? TenHangMuc { get; set; }
     public int? PageIndex { get; set; }
     public int? PageSize { get; set; }
+    public bool? IsDuAnChuaCoKeHoach { get; set; }
 
-
+    
 }

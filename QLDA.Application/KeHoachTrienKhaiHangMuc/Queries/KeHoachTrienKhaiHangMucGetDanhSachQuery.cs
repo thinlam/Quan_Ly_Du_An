@@ -9,24 +9,28 @@ using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 
-public record KeHoachTrienKhaiHangMucDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<KeHoachTrienKhaiHangMucDto>> {
- 
+public record KeHoachTrienKhaiHangMucDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<KeHoachTrienKhaiHangMucDto>>
+{
+
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
     public string? So { get; set; }
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public int? TrangThaiId { get; set; }
-    
-    public string? TenHangMuc{ get; set; }
+
+    public bool? IsDuAnChuaCoKeHoach { get; set; }
+    public string? TenHangMuc { get; set; }
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
 
 }
 
-internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<KeHoachTrienKhaiHangMucDanhSachQuery, PaginatedList<KeHoachTrienKhaiHangMucDto>> {
-    private readonly IRepository<Domain.Entities.KeHoachTrienKhaiHangMuc, Guid> KeHoachTrienKhaiHangMuc =  ServiceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
+internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<KeHoachTrienKhaiHangMucDanhSachQuery, PaginatedList<KeHoachTrienKhaiHangMucDto>>
+{
+    private readonly IRepository<Domain.Entities.KeHoachTrienKhaiHangMuc, Guid> KeHoachTrienKhaiHangMuc = ServiceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
+    private readonly IRepository<DuAn, Guid> DuAn = ServiceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
 
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
@@ -34,15 +38,18 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
     public async Task<PaginatedList<KeHoachTrienKhaiHangMucDto>> Handle(KeHoachTrienKhaiHangMucDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
 
         DateTimeOffset? tuNgayDto = null;
-        DateTimeOffset? denNgayExclusiveDto = null; 
-        if (request.TuNgay.HasValue) {
+        DateTimeOffset? denNgayExclusiveDto = null;
+        if (request.TuNgay.HasValue)
+        {
             var dt = request.TuNgay.Value.ToDateTime(TimeOnly.MinValue);
             tuNgayDto = new DateTimeOffset(dt);
         }
-        if (request.DenNgay.HasValue) {
+        if (request.DenNgay.HasValue)
+        {
             var dt = request.DenNgay.Value.ToDateTime(TimeOnly.MinValue);
             denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
         }
@@ -54,26 +61,56 @@ internal class    KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider S
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
             .WhereIf(!string.IsNullOrEmpty(request.TrichYeu), e => e.TrichYeu.Contains(request.TrichYeu))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
-           // .WhereIf(request.TenHangMuc != null, e => e.TenHangMuc.Contains(request.TenHangMuc))
+            // .WhereIf(request.TenHangMuc != null, e => e.TenHangMuc.Contains(request.TenHangMuc))
             .WhereIf(tuNgayDto != null, e => e.NgayToTrinh >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayToTrinh < denNgayExclusiveDto);
-        return await queryable
-            .Select(e => new KeHoachTrienKhaiHangMucDto() {
+        if (request.IsDuAnChuaCoKeHoach ?? false)
+        {
+            // left join DuAn get  DuAnId không tồn tại trong bảng KeHoachTrienKhaiHangMuc
+            //var duAnIds = await DuAn.GetQueryableSet()
+            //    .Where(e => !KeHoachTrienKhaiHangMuc.GetQueryableSet().Any(k => k.DuAnId == e.Id))
+            //    .Select(e => e.Id)
+            //    .ToListAsync(cancellationToken);
+
+            //queryable = queryable.Where(e => duAnIds.Contains(e.DuAnId));   
+            var queryDuAn = DuAn.GetQueryableSet()
+                .Where(d => !d.IsDeleted)
+                .Where(d => !KeHoachTrienKhaiHangMuc
+                    .GetQueryableSet()
+                    .Any(k =>
+                        !k.IsDeleted &&
+                        k.DuAnId == d.Id));
+
+            // map DTO riêng
+            return await queryDuAn.Select(e => new KeHoachTrienKhaiHangMucDto()
+            {
                 Id = e.Id,
-                DuAnId=e.DuAnId,
-                BuocId=e.BuocId,
+                DuAnId = e.Id,
+                TenDuAn = e.TenDuAn,
+                TrangThaiId = null,
+                MaTrangThai = string.Empty,
+                TenTrangThai = string.Empty,
+                SoHangMuc = 0,
+            })
+            .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+        }
+        return await queryable
+            .Select(e => new KeHoachTrienKhaiHangMucDto()
+            {
+                Id = e.Id,
+                DuAnId = e.DuAnId,
+                BuocId = e.BuocId,
                 So = e.So,
                 NgayTrinh = e.NgayToTrinh,
                 TrichYeu = e.TrichYeu,
-                TrangThaiId = e.TrangThaiId,    
+                TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
                 SoHangMuc = e.DanhSachHangMuc.Count(),
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString() )
+                    .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
     }
 }
- 

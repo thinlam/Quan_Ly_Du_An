@@ -18,12 +18,10 @@ internal class
     NghiemThuGetComboboxQueryHandler : IRequestHandler<NghiemThuGetComboboxQuery,
     PaginatedList<NghiemThuDto>> {
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
 
     public NghiemThuGetComboboxQueryHandler(IServiceProvider serviceProvider) {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
     }
 
