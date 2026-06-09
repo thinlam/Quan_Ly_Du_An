@@ -1,4 +1,5 @@
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
+using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
@@ -17,6 +18,7 @@ using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
+using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
@@ -57,6 +59,11 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
             //simple ToTrinhPheDuyet
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue, request.NoiDung),
+            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTrinhCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
+            PheDuyetEntityNames.KHLCNTDuToanSanCo => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanSanCo, request.NoiDung),
+            PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng, request.NoiDung),
+            PheDuyetEntityNames.KeHoachTongTheLCNT => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachTongTheLCNT, request.NoiDung),
+            PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu, request.NoiDung),
 
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")

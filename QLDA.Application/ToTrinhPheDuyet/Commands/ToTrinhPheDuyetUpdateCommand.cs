@@ -1,12 +1,13 @@
 using System.Data;
 using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Common;
 using QLDA.Application.ToTrinhPheDuyets.DTOs;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
-public record ToTrinhPheDuyetUpdateCommand(ToTrinhPheDuyetUpdateDto Dto) : IRequest<ToTrinhPheDuyet>;
+public record ToTrinhPheDuyetUpdateCommand(ToTrinhPheDuyetInsUpdDto Dto) : IRequest<ToTrinhPheDuyet>;
 
 internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheDuyetUpdateCommand, ToTrinhPheDuyet>
 {
@@ -23,11 +24,14 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
 
     public async Task<ToTrinhPheDuyet> Handle(ToTrinhPheDuyetUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao 
-            && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-        var trangThaiTraLai = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Dto.Loai);
+        var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
+        var statuses = await _statusRepo.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
+        var statusDict = statuses.ToDictionary(x => x.Ma);
+
+        var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
+        var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
+
 
         var entity = await _repo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
@@ -40,7 +44,7 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
         }
 
         entity.So = request.Dto.So;
-        entity.NgayToTrinh = request.Dto.NgayToTrinh.ToStartOfDayUtc();
+        entity.NgayToTrinh = request.Dto.NgayToTrinh;
         entity.TrichYeu = request.Dto.TrichYeu;
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;

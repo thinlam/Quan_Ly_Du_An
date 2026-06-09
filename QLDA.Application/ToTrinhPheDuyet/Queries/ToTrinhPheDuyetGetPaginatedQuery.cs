@@ -12,7 +12,7 @@ public record ToTrinhPheDuyetGetPaginatedQuery : AggregateRootPagination, IMayHa
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-
+    
     public string? Loai { get; set; }
     public string? So { get; set; }
     public string? TrichYeu { get; set; }
@@ -30,7 +30,7 @@ internal class
 
     public async Task<PaginatedList<ToTrinhPheDuyetDto>> Handle(ToTrinhPheDuyetGetPaginatedQuery request,
         CancellationToken cancellationToken = default) {
-
+        
         var queryable = ToTrinhPheDuyet.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)

@@ -1,12 +1,13 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Common;
 using QLDA.Application.ToTrinhPheDuyets.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
-public record ToTrinhPheDuyetInsertCommand(ToTrinhPheDuyetInsertDto Dto) : IRequest<ToTrinhPheDuyet>;
+public record ToTrinhPheDuyetInsertCommand(ToTrinhPheDuyetInsUpdDto Dto) : IRequest<ToTrinhPheDuyet>;
 
 internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheDuyetInsertCommand, ToTrinhPheDuyet>
 {
@@ -24,8 +25,14 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
     public async Task<ToTrinhPheDuyet> Handle(ToTrinhPheDuyetInsertCommand request, CancellationToken cancellationToken = default)
     {
         // Auto-assign Dự thảo status
-        var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        // hiện tại tờ trình có 2 loại trạng thái là ToTrinhKhongDuyet & DeXuatMacDinh -> lấy trạng thái đúng loại
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Dto.Loai);
+
+        var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
+        var statuses = await _statusRepo.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
+        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
+
 
         var entity = new ToTrinhPheDuyet
         {

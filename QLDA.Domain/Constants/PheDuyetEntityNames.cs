@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 
 namespace QLDA.Domain.Constants;
 
@@ -85,5 +86,45 @@ public static class PheDuyetEntityNames
 
     [Description("Dự toán chuẩn bị đầu tư ")]
     public const string DuToanDauTu = "DuToanDauTu";
+    [Description("Chủ trương lập kế hoạch")]
+    public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";
+    [Description("Tờ trình không duyệt")]
+    public const string ToTrinhKhongDuyet = "ToTrinhKhongDuyet";
+
+    [Description("Kế hoạch lcnt dự toán hoặc sẵn có")]
+    public const string KHLCNTDuToanSanCo = "KHLCNTDuToanSanCo";
+
+    [Description("KHLCNT dự toán/KHTDV yêu cầu riêng")]
+    public const string KHLCNTDuToanYeuCauRieng = "KHLCNTDuToanYeuCauRieng";
     
+    [Description("Kế hoạch tổng thể lựa chọn nhà thầu")]
+        public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
+    [Description("Kế hoạch LCNT giai đoạn CBĐT")]
+    public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
+    
+}
+public static class LoaiToTrinhKhongDuyetExtensions
+{
+    /// <summary>
+    /// Kiểm tra xem một chuỗi có khớp với Description nào trong Enum không
+    /// </summary>
+    public static bool ContainsDescription(string? loai)
+    {
+        if (string.IsNullOrWhiteSpace(loai)) return false;
+
+        // Duyệt qua tất cả các phần tử của Enum và đọc Description của từng thằng
+        foreach (LoaiToTrinhKhongDuyetEnum enumValue in Enum.GetValues(typeof(LoaiToTrinhKhongDuyetEnum)))
+        {
+            var fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
+            var attribute = fieldInfo?.GetCustomAttribute<DescriptionAttribute>();
+
+            // So sánh chuỗi truyền vào với Description (không phân biệt hoa thường)
+            if (attribute != null && string.Equals(attribute.Description, loai, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

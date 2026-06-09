@@ -30,27 +30,27 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
     public async Task<int> Handle(ToTrinhPheDuyetTrinhCommand request, CancellationToken cancellationToken) {
         // Permission: KH-TC only (PhongBanId = 219)
         var phongBanId = _userProvider.Info.PhongBanID;
-        //if (phongBanId != 219) {
-        //    throw new ManagedException("Chỉ phòng KH-TC có quyền trình điều chỉnh");
-        //}
 
-        var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-        var trangThaiTraLai = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-        var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
+        var loaiPheDuyet = isKhongDuyet   ? PheDuyetEntityNames.ToTrinhKhongDuyet
+                                          : PheDuyetEntityNames.DeXuatMacDinhStt;
+        var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
+        var statusDict = statuses.ToDictionary(x => x.Ma);
+
+        var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
+        var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
+        var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định/tờ trình cần thao tác");
 
         // Validate: must be DT (Dự thảo) or TL (Trả lại) to transition to ĐTr (Đã trình)
         if ( entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo!");
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;

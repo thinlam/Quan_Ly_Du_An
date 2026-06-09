@@ -77,5 +77,9 @@ public static class TrangThaiPheDuyetCodes
         public const string DaDuyet = "ĐD";
         public const string TraLai = "TL";
     }
-    
+    public static class DeXuatKhongDuyet
+    {
+        public const string DuThao = "DT";
+        public const string DaTrinh = "ĐTr";
+    }
 }

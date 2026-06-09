@@ -1,9 +1,11 @@
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
+using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 using QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
+using QLDA.Application.DuToanDauTus.Commands;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
@@ -16,7 +18,7 @@ using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
-using QLDA.Application.DuToanDauTus.Commands;
+using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
@@ -24,7 +26,7 @@ namespace QLDA.Application.QuanLyPheDuyet.Commands;
 /// <summary>
 /// Dispatch duyet phe duyet theo type → den dung entity command
 /// </summary>
-public record PheDuyetDispatchDuyetCommand(string Type, Guid Id) : IRequest<int>;
+public record PheDuyetDispatchDuyetCommand(string Type, Guid Id, string? NoiDung) : IRequest<int>;
 
 internal class PheDuyetDispatchDuyetCommandHandler : IRequestHandler<PheDuyetDispatchDuyetCommand, int> {
     private readonly IMediator _mediator;
@@ -55,6 +57,7 @@ internal class PheDuyetDispatchDuyetCommandHandler : IRequestHandler<PheDuyetDis
 
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue),
+            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachDuyetCommand(request.Id, request.NoiDung),
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
