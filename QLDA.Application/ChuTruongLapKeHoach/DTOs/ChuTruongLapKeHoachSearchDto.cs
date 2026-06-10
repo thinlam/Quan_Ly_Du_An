@@ -1,4 +1,4 @@
-using QLDA.Application.Common.Interfaces;
+//using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Interfaces;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.DTOs;
@@ -6,7 +6,10 @@ namespace QLDA.Application.ChuTruongLapKeHoachs.DTOs;
 public record ChuTruongLapKeHoachSearchDto : CommonSearchDto
 {
 
-    public Guid DuAnId { get; set; }
+     /// <summary>
+    /// em comment vì khi e test nó lỗi "ChuTruongLapKeHoachSearchDto đang kế thừa CommonSearchDto, mà trong CommonSearchDto khả năng cao đã có sẵn DuAnId rồi" nên em comment lại để nếu có gì mn chỉ cần xóa dấu // 
+    /// </summary>
+    //public Guid DuAnId { get; set; } 
    // public int? LoaiDeXuat { get; set; }
   //  public string? SoToTrinh { get; set; }
    // public string? TrichYeu { get; set; }
