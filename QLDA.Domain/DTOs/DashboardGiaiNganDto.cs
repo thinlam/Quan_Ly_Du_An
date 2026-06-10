@@ -8,6 +8,8 @@ public class DashboardGiaiNganTheoNguonVonDto {
     public string? TenNguonVon { get; set; }
     public decimal GiaTriGiaiNgan { get; set; }
     public decimal GiaTriHopDong { get; set; }
+    /// <summary>Tổng kế hoạch vốn năm theo nguồn vốn (từ KeHoachVon)</summary>
+    public decimal TongKeHoachVon { get; set; }
 }
 
 /// <summary>
