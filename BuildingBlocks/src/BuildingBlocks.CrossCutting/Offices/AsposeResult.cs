@@ -12,6 +12,11 @@ public class AsposeInstruction<T>
     public required List<T> Items { get; set; }
     public List<string> HiddenColumns { get; set; } = [];
     public List<MergeInstruction>? MergeInstructions { get; set; }
+
+    /// <summary>
+    /// Khi false: giữ nguyên độ rộng cột / cao dòng đã chỉnh trong template (không gọi AutoFit).
+    /// </summary>
+    public bool AutoFitColumnsAndRows { get; set; } = true;
 }
 
 /// <summary>

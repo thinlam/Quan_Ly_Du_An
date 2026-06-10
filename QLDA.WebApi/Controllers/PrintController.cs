@@ -628,6 +628,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
         });
 
         return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
