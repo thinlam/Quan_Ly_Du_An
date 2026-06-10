@@ -37,18 +37,8 @@ public static class GroupTypeConstants
     public const string DonViTuVan = "DonViTuVan";
     public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
     public const string ToTrinhQuyetDinh = "ToTrinhQuyetDinh";
-
-    public static string GetGroupTypeByLoai(string loai)
-    {
-        return loai switch
-        {
-            //tờ trình basic : dùng chung nhưng group type khác nhau để phân biệt
-            //PheDuyetKhaoSat
-            GroupTypeConstants.ToTrinhQuyetDinh => GroupTypeConstants.ToTrinhQuyetDinh,
-            // GroupTypeConstants.PheDuyetKhaoSat => GroupTypeConstants.PheDuyetKhaoSat,
-            // GroupTypeConstants.QuyetDinhKeHoachThue => GroupTypeConstants.QuyetDinhKeHoachThue,
-
-            _ => throw new ArgumentException($"Không hỗ trợ loại: {loai}")
-        };
-    }
+    public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
+    public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
+    
+   
 }

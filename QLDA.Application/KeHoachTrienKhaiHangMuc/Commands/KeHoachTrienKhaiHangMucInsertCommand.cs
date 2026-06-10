@@ -28,12 +28,9 @@ internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeH
       
         var entity = request.entity;
         entity.TrangThaiId = trangThaiDuThao?.Id;
-        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        //entity.SyncDonViTuVan(request.Dto.DonViTuVans);
-        //await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
         return entity;
     }
 }

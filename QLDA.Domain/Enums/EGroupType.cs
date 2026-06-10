@@ -65,6 +65,8 @@ public enum EGroupType {
     TrienKhaiKeHoachLCNT,
     DonViTuVan,
     KeHoachTrienKhai,
-    ChuTruongLapKeHoach
+    ChuTruongLapKeHoach,
+    ThoaThuanGiaoViec,
+    KeHoachLuaChonNhaThauRutGon
 
 }

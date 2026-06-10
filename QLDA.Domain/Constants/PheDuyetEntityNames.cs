@@ -101,6 +101,10 @@ public static class PheDuyetEntityNames
         public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
     [Description("Kế hoạch LCNT giai đoạn CBĐT")]
     public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
+    [Description("Thỏa thuận giao việc")]
+    public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
+    [Description("Kế hoạch lcnt rút gọn")]
+    public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
     
 }
 public static class LoaiToTrinhKhongDuyetExtensions

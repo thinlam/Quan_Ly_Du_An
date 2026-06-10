@@ -1,5 +1,6 @@
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
+using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
@@ -8,17 +9,18 @@ using QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
 using QLDA.Application.DuToanDauTus.Commands;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoMoiThauDienTus.Commands;
+using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PheDuyetDuToans.Commands;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
+using QLDA.Application.ThoaThuanGiaoViecs.Commands;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ToTrinhKeHoachs.Commands;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
-using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
@@ -64,6 +66,8 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng, request.NoiDung),
             PheDuyetEntityNames.KeHoachTongTheLCNT => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachTongTheLCNT, request.NoiDung),
             PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu, request.NoiDung),
+            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecTrinhCommand(request.Id, request.NoiDung),
 
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")

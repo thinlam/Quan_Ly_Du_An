@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609103024_addKeHoachLCNTRutGon")]
+    partial class addKeHoachLCNTRutGon
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6144,12 +6147,24 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("KetQuaDanhGia")
                         .HasColumnType("nvarchar(4000)");
 
+                    b.Property<DateTimeOffset?>("Ngay")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<Guid?>("NhaThauId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("NhaThauId");
 
+                    b.Property<string>("So")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Ten")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("TrangThaiId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TrichYeu")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -7381,9 +7396,6 @@ namespace QLDA.Migrator.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<string>("NoiDung")
-                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("PhamVi")
                         .HasColumnType("nvarchar(4000)");

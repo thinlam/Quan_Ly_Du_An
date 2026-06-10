@@ -51,8 +51,10 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create([FromBody] KeHoachTrienKhaiHangMucDto dto,
-        [FromServices] IUnitOfWork unitOfWork,  CancellationToken cancellationToken = default)
+        [FromServices] IUnitOfWork _unitOfWork, 
+        CancellationToken cancellationToken = default)
     {
+        using var tx = await _unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken); 
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
         var entity = await Mediator.Send(new KeHoachTrienKhaiHangMucInsertCommand(dto.ToEntity()), cancellationToken);
@@ -65,7 +67,8 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
             Entities = files
         }, cancellationToken);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.CommitTransactionAsync(cancellationToken); 
         return ResultApi.Ok(new { entity.Id });
     }
 
