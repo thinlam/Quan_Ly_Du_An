@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611014956_TableKeHoachTrienKhaiChiTietDuAn")]
+    partial class TableKeHoachTrienKhaiChiTietDuAn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5872,6 +5875,9 @@ namespace QLDA.Migrator.Migrations
                     b.Property<Guid>("KeHoachId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("KeHoachTrienKhaiChiTietDuAnId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long?>("KinhPhi")
                         .HasColumnType("bigint");
 
@@ -5909,6 +5915,8 @@ namespace QLDA.Migrator.Migrations
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
                     b.HasIndex("KeHoachId");
+
+                    b.HasIndex("KeHoachTrienKhaiChiTietDuAnId");
 
                     b.HasIndex("TrangThaiId");
 
@@ -8858,6 +8866,10 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("KeHoachId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("QLDA.Domain.Entities.KeHoachTrienKhaiChiTietDuAn", null)
+                        .WithMany("DanhSachHangMuc")
+                        .HasForeignKey("KeHoachTrienKhaiChiTietDuAnId");
 
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiPheDuyet", "TrangThai")
                         .WithMany()

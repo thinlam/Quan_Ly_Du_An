@@ -4,7 +4,8 @@ using QLDA.Application.Common.Mapping;
 
 namespace QLDA.Application.Common.Queries;
 
-public record DanhMucGetDanhSachQuery : AggregateRootPagination, IRequest<object> {
+public record DanhMucGetDanhSachQuery : AggregateRootPagination, IRequest<object>
+{
     public bool GetAll { get; set; }
     public bool Order { get; set; }
 
@@ -24,7 +25,8 @@ public record DanhMucGetDanhSachQuery : AggregateRootPagination, IRequest<object
 }
 
 internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
-    : IRequestHandler<DanhMucGetDanhSachQuery, object> {
+    : IRequestHandler<DanhMucGetDanhSachQuery, object>
+{
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc =
         serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
 
@@ -103,10 +105,16 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<DanhMucPhuongAnThietKe, int> DanhMucPhuongAnThietKe =
         serviceProvider.GetRequiredService<IRepository<DanhMucPhuongAnThietKe, int>>();
 
+    private readonly IRepository<DanhMucTinhHinhXuLy, int> DmTinhHinhXuLy =
+        serviceProvider.GetRequiredService<IRepository<DanhMucTinhHinhXuLy, int>>();
+
+
 
     public async Task<object> Handle(DanhMucGetDanhSachQuery request,
-        CancellationToken cancellationToken) {
-        return request.DanhMuc switch {
+        CancellationToken cancellationToken)
+    {
+        return request.DanhMuc switch
+        {
             EDanhMuc.DanhMucBuocTrangThaiTienDo => await
                 GetDanhMucAsync<DanhMucBuocTrangThaiTienDo, int, DanhMucDto<int>>(DanhMucBuocTrangThaiTienDo, request,
                     cancellationToken),
@@ -158,19 +166,21 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
                 DmCapDoCntt,
                 request, cancellationToken),
             EDanhMuc.DanhMucPhuongAnThietKe => await GetDanhMucAsync<DanhMucPhuongAnThietKe, int, DanhMucDto<int>>(
-             DanhMucPhuongAnThietKe, request, cancellationToken),
+                 DanhMucPhuongAnThietKe, request, cancellationToken),
             EDanhMuc.DanhMucPhuongThucKySo => await GetDanhMucAsync<DanhMucPhuongThucKySo, int, DanhMucDto<int>>(
-            DanhMucPhuongThucKySo,
-            request, cancellationToken),
+                DanhMucPhuongThucKySo, request, cancellationToken),
             EDanhMuc.DanhMucTrangThaiPheDuyet => await GetDanhMucTrangThaiPheDuyetAsync(request, cancellationToken),
+           
+            EDanhMuc.DanhMucTinhHinhXuLy => await GetDanhMucAsync<DanhMucTinhHinhXuLy, int, DanhMucDto<int>>(
+                       DmTinhHinhXuLy, request, cancellationToken),
             _ => Enumerable.Empty<object>(),
-
         };
     }
 
     private async Task<PaginatedList<DanhMucDto<int>>> GetDanhMucTrangThaiPheDuyetAsync(
         DanhMucGetDanhSachQuery request,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken)
+    {
         var ids = request.Ids?.Select(e => e.ToString());
         var query = DanhMucTrangThaiPheDuyet.GetQueryableSet()
             .Where(x => !x.IsDeleted)
@@ -181,15 +191,19 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
         string keyword = request.GlobalFilter?.ToLower() ?? string.Empty;
         string expression = string.Empty;
 
-        if (request.GlobalFilter != null) {
+        if (request.GlobalFilter != null)
+        {
             expression = "Ten.ToLower().Contains(@0) or MoTa.ToLower().Contains(@0)";
         }
 
-        try {
+        try
+        {
             var predicate = DynamicExpressionParser.ParseLambda<DanhMucTrangThaiPheDuyet, bool>(
                 new ParsingConfig(), false, expression, keyword);
             query = query.Where(predicate);
-        } catch {
+        }
+        catch
+        {
             // ignored
         }
 
@@ -210,7 +224,8 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
         CancellationToken cancellationToken = default)
         where TEntity : DanhMuc<TKey>, IAggregateRoot, IMayHaveStt, new()
         where TKey : notnull
-        where TDto : DanhMucDto<TKey>, new() {
+        where TDto : DanhMucDto<TKey>, new()
+    {
         var ids = request.Ids?.Select(e => e.ToString());
         var query = repo.GetQueryableSet()
             .Where(x => !x.IsDeleted)
@@ -221,15 +236,19 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
         string keyword = request.GlobalFilter?.ToLower() ?? string.Empty;
         string expression = string.Empty;
 
-        if (request.GlobalFilter != null) {
+        if (request.GlobalFilter != null)
+        {
             expression = "Ten.ToLower().Contains(@0) or MoTa.ToLower().Contains(@0)";
         }
 
-        try {
+        try
+        {
             var predicate = DynamicExpressionParser.ParseLambda<TEntity, bool>(
                 new ParsingConfig(), false, expression, keyword);
             query = query.Where(predicate);
-        } catch {
+        }
+        catch
+        {
             // ignored
         }
 
