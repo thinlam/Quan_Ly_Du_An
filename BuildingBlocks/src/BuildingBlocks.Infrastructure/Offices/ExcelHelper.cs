@@ -138,8 +138,12 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
         // Clear any remaining $placeholder markers from the worksheet
         worksheet.ClearPlaceholderMarkers();
 
-        worksheet.AutoFitRows();
-        worksheet.AutoFitColumns();
+        if (instruction.AutoFitColumnsAndRows)
+        {
+            worksheet.AutoFitRows();
+            worksheet.AutoFitColumns();
+        }
+
         return new AsposeResult()
         {
             FileBytes = _asposeHelper.SaveWorkbookToBytes(workbook, instruction.TemplatePath),

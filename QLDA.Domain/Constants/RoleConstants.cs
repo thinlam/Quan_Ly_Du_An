@@ -25,4 +25,15 @@ public static class RoleConstants {
     /// Quyền Admin hoặc Manager
     /// </summary>
     public const string GroupAdminOrManager = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV}";
+
+    /// <summary>
+    /// Kết xuất Excel kết quả phân khai vốn được duyệt (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
+    /// </summary>
+    public const string GroupPhanKhaiKinhPhiExport = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
+    /// <summary>
+    /// Kết xuất Excel danh sách đề xuất chủ trương chuyển tiếp (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
+    /// </summary>
+    public const string GroupDeXuatChuTruongChuyenTiepExport = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
 }

@@ -64,6 +64,15 @@ public static class StringExtension
             return propertyType == typeof(int) ? 0 : null;
         }
 
+        if (propertyType == typeof(long) || propertyType == typeof(long?))
+        {
+            var numberCulture = new CultureInfo("vi-VN");
+            if (long.TryParse(cellValue, NumberStyles.Number, numberCulture, out var longVal)
+                || long.TryParse(cellValue, NumberStyles.Number, CultureInfo.InvariantCulture, out longVal))
+                return longVal;
+            return propertyType == typeof(long) ? 0L : null;
+        }
+
         if (propertyType == typeof(double) || propertyType == typeof(double?))
         {
             if (double.TryParse(cellValue, out var doubleVal))

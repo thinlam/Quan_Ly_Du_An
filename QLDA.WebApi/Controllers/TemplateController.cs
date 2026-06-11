@@ -121,4 +121,41 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             FileDownloadName = fileNameTemplate
         };
     }
+
+    [HttpGet("import-de-xuat-chu-truong-chuyen-tiep")]
+    [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<FileContentResult> GetImportDeXuatChuTruongChuyenTiep() {
+        var fileNameTemplate = "Import_DeXuatChuTruongChuyenTiep.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        var danhSachTenDuAn = await DuAn.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.TenDuAn ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync();
+
+        var danhSachTenBuoc = await DuAnBuoc.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Id = e.Id.ToString(),
+                ParentId = e.DuAnId.ToString(),
+                Name = e.TenBuoc ?? e.Buoc!.Ten ?? string.Empty
+            }).Distinct().ToListAsync();
+
+        List<List<ComboData>> comboData = [
+            danhSachTenDuAn,
+            danhSachTenBuoc
+        ];
+
+        var importResult = _excelImporter.GetTemplate(templatePath, comboData);
+
+        return new FileContentResult(importResult.FileBytes,
+            importResult.ContentType) {
+            FileDownloadName = fileNameTemplate
+        };
+    }
 }

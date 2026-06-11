@@ -1,11 +1,19 @@
+using Microsoft.AspNetCore.Authorization;
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuAnBuocs.Queries;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.DuAnBuocs.DTOs;
+using QLDA.Application.DeXuatChuyenTieps.DTOs;
+using QLDA.Application.DeXuatChuyenTieps.Queries;
+using QLDA.Application.PhanKhaiKinhPhis.DTOs;
+using QLDA.Application.PhanKhaiKinhPhis.Queries;
+using QLDA.Domain.Constants;
+using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
+using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.PhuLucHopDongs;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
@@ -594,6 +602,84 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     }
 
     #endregion
+
+    #region KetQuaPhanKhaiVonDuocDuyet
+
+    /// <summary>
+    /// KetQuaPhanKhaiVonDuocDuyet.xlsx — Export kết quả phân khai vốn đã duyệt
+    /// </summary>
+    [HttpGet("api/print/ket-qua-phan-khai-von-duoc-duyet")]
+    [Authorize(Roles = RoleConstants.GroupPhanKhaiKinhPhiExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InKetQuaPhanKhaiVonDuocDuyet([FromQuery] PhanKhaiKinhPhiPrintSearchModel searchModel) {
+        var fileNameTemplate = "KetQuaPhanKhaiVonDuocDuyet.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachDaDuyetExportQuery {
+            DuAnId = searchModel.DuAnId,
+            GlobalFilter = searchModel.GlobalFilter,
+        });
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiExportDto> {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region DanhSachDeXuatChuTruongChuyenTiep
+
+    /// <summary>
+    /// DanhSachDeXuatChuTruongChuyenTiep.xlsx — Export danh sách đề xuất chủ trương chuyển tiếp
+    /// </summary>
+    [HttpGet("api/print/danh-sach-de-xuat-chu-truong-chuyen-tiep")]
+    [Authorize(Roles = RoleConstants.GroupDeXuatChuTruongChuyenTiepExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachDeXuatChuTruongChuyenTiep(
+        [FromQuery] DeXuatChuyenTiepPrintSearchModel searchModel) {
+        var fileNameTemplate = "DanhSachDeXuatChuTruongChuyenTiep.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var data = await Mediator.Send(new DeXuatChuyenTiepGetDanhSachExportQuery {
+            DuAnId = searchModel.DuAnId,
+            BuocId = searchModel.BuocId,
+        });
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatChuyenTiepExportDto> {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
     [HttpGet("api/print/bao-cao-tien-do-du-an")]
     public async Task<IActionResult> InBaoCaoTienDoDuAn([FromQuery] BaoCaoDuAnSearchDto searchModel)
     {
