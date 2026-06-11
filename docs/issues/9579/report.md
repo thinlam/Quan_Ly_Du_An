@@ -25,20 +25,23 @@ Excel `IImporterHelper.ReadDataFromExcel<T>()` map theo thứ tự khai báo pro
 
 ## Excel Column → DTO Property (Position-Based)
 
-| Excel Col | Header (VN)                    | DTO Property                        | Type    | Position |
-|-----------|--------------------------------|-------------------------------------|---------|----------|
-| A         | Tên kế hoạch lựa chọn nhà thầu | `TenKeHoachLuaChonNhaThau`          | string  | 0        |
-| B         | Tên gói thầu                    | `Ten`                               | string  | 1        |
-| C         | Tóm tắt công việc               | `TomTatCongViecChinhGoiThau`        | string  | 2        |
-| D         | Giá trị                         | `GiaTri`                            | long?   | 3        |
-| E         | Loại hợp đồng                   | `TenLoaiHopDong`                    | string  | 4        |
-| F         | Hình thức lựa chọn nhà thầu     | `TenHinhThucLuaChonNhaThau`          | string  | 5        |
-| G         | Phương thức lựa chọn nhà thầu   | `TenPhuongThucLuaChonNhaThau`       | string  | 6        |
-| H         | Nguồn vốn                       | `TenNguonVon`                       | string  | 7        |
-| I         | Thời gian tổ chức lựa nhà thầu  | `ThoiGianToChucLuaChonNhaThau`      | string  | 8        |
-| J         | Thời gian bắt đầu tổ chức       | `ThoiGianBatDauToChucLuaChonNhaThau`| string  | 9        |
-| K         | Thời gian thực hiện (ngày)      | `ThoiGianThucHienGoiThau`           | int?    | 10       |
-| L         | Tùy chọn mua thêm               | `TuyChonMuaThem`                    | string  | 11       |
+> **Template contract (sau fix #import-goi-thau-debug):** Excel Table `GoiThauImport`, ref `A4:L6`, **12 cột, không có STT**.  
+> Xem `docs/issues/import-goi-thau-debug-dataresult-empty.md`.
+
+| Excel Col | Header (VN)                    | DTO Property                        | Type    | Position | Combo |
+|-----------|--------------------------------|-------------------------------------|---------|----------|-------|
+| A         | Kế hoạch lựa chọn nhà thầu     | `TenKeHoachLuaChonNhaThau`          | string  | 0        | $cbo1 |
+| B         | Tên gói thầu                   | `Ten`                               | string  | 1        |       |
+| C         | Tóm tắt công việc chính        | `TomTatCongViecChinhGoiThau`        | string  | 2        |       |
+| D         | Giá gói thầu                   | `GiaTri`                            | long?   | 3        |       |
+| E         | Nguồn vốn                      | `TenNguonVon`                       | string  | 4        | $cbo2 |
+| F         | Hình thức lựa chọn nhà thầu    | `TenHinhThucLuaChonNhaThau`         | string  | 5        | $cbo3 |
+| G         | Phương thức lựa chọn nhà thầu  | `TenPhuongThucLuaChonNhaThau`       | string  | 6        | $cbo4 |
+| H         | Thời gian tổ chức lựa chọn NT  | `ThoiGianToChucLuaChonNhaThau`      | string  | 7        |       |
+| I         | Thời gian bắt đầu tổ chức LCNT | `ThoiGianBatDauToChucLuaChonNhaThau`| string  | 8        |       |
+| J         | Loại hợp đồng                  | `TenLoaiHopDong`                    | string  | 9        | $cbo5 |
+| K         | Thời gian thực hiện gói thầu   | `ThoiGianThucHienGoiThau`           | int?    | 10       |       |
+| L         | Tùy chọn mua thêm              | `TuyChonMuaThem`                    | string  | 11       |       |
 
 ## Template Combos (Dropdown Data)
 | # | Entity                      | Combo Name | Data Source           |
