@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<IExporterHelper, ExporterHelper>();
         services.AddScoped<IImporterHelper, ImporterHelper>();
         services.AddScoped<IAsposeHelper, AsposeHelper>();
+        services.AddScoped<IWordHelper, WordHelper>();
         return services;
     }
 }

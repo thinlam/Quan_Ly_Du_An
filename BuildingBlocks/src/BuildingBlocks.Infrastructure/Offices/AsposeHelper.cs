@@ -9,14 +9,32 @@ public class AsposeHelper : IAsposeHelper
 {
     private static readonly Regex StartMergeRegex = new(@"^\$StartMerge\d*_(.+)$", RegexOptions.Compiled);
     private static readonly Regex EndMergeRegex = new(@"^\$EndMerge\d*_(.+)$", RegexOptions.Compiled);
+    private static bool _isCellsLicenseSet;
+    private static bool _isWordsLicenseSet;
 
+    [Obsolete("Use EnsureCellsLicense or EnsureWordsLicense")]
     public void EnsureLicense(ref bool isLicenseSet)
     {
-        if (!isLicenseSet)
+        EnsureCellsLicense();
+        EnsureWordsLicense();
+        isLicenseSet = true;
+    }
+
+    public void EnsureCellsLicense()
+    {
+        if (!_isCellsLicenseSet)
         {
-            License license = new();
-            license.SetLicense("LicenseAsposeTotal.lic");
-            isLicenseSet = true;
+            new Aspose.Cells.License().SetLicense("LicenseAsposeTotal.lic");
+            _isCellsLicenseSet = true;
+        }
+    }
+
+    public void EnsureWordsLicense()
+    {
+        if (!_isWordsLicenseSet)
+        {
+            new Aspose.Words.License().SetLicense("LicenseAsposeTotal.lic");
+            _isWordsLicenseSet = true;
         }
     }
 

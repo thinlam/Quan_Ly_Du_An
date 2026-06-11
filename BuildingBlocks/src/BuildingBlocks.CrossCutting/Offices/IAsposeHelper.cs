@@ -5,10 +5,20 @@ namespace BuildingBlocks.CrossCutting.Offices;
 public interface IAsposeHelper
 {
     /// <summary>
-    /// Add license
+    /// Add license for both Cells and Words (backward compat)
     /// </summary>
-    /// <param name="isLicenseSet"></param>
+    [Obsolete("Use EnsureCellsLicense or EnsureWordsLicense")]
     public void EnsureLicense(ref bool isLicenseSet);
+
+    /// <summary>
+    /// Set Aspose.Cells license (idempotent)
+    /// </summary>
+    public void EnsureCellsLicense();
+
+    /// <summary>
+    /// Set Aspose.Words license (idempotent)
+    /// </summary>
+    public void EnsureWordsLicense();
 
     public void PutValueSmart(Cell cell, object? val);
     public TemplateBinding ExtractTemplateBinding(Worksheet worksheet);
