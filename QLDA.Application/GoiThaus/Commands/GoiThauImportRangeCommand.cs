@@ -89,21 +89,25 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
             if (!keHoachDict.TryGetValue(item.TenKeHoachLuaChonNhaThau ?? string.Empty, out var keHoachInfo))
                 continue;
 
-            int? loaiHopDongId = null;
-            if (!string.IsNullOrWhiteSpace(item.TenLoaiHopDong))
-                loaiHopDongDict.TryGetValue(item.TenLoaiHopDong, out var tmpLoaiHopDongId);
+            int? loaiHopDongId = !string.IsNullOrWhiteSpace(item.TenLoaiHopDong)
+                && loaiHopDongDict.TryGetValue(item.TenLoaiHopDong, out var loaiHopDongIdVal)
+                ? loaiHopDongIdVal
+                : null;
 
-            int? hinhThucId = null;
-            if (!string.IsNullOrWhiteSpace(item.TenHinhThucLuaChonNhaThau))
-                hinhThucDict.TryGetValue(item.TenHinhThucLuaChonNhaThau, out var tmpHinhThucId);
+            int? hinhThucId = !string.IsNullOrWhiteSpace(item.TenHinhThucLuaChonNhaThau)
+                && hinhThucDict.TryGetValue(item.TenHinhThucLuaChonNhaThau, out var hinhThucIdVal)
+                ? hinhThucIdVal
+                : null;
 
-            int? phuongThucId = null;
-            if (!string.IsNullOrWhiteSpace(item.TenPhuongThucLuaChonNhaThau))
-                phuongThucDict.TryGetValue(item.TenPhuongThucLuaChonNhaThau, out var tmpPhuongThucId);
+            int? phuongThucId = !string.IsNullOrWhiteSpace(item.TenPhuongThucLuaChonNhaThau)
+                && phuongThucDict.TryGetValue(item.TenPhuongThucLuaChonNhaThau, out var phuongThucIdVal)
+                ? phuongThucIdVal
+                : null;
 
-            int? nguonVonId = null;
-            if (!string.IsNullOrWhiteSpace(item.TenNguonVon))
-                nguonVonDict.TryGetValue(item.TenNguonVon, out var tmpNguonVonId);
+            int? nguonVonId = !string.IsNullOrWhiteSpace(item.TenNguonVon)
+                && nguonVonDict.TryGetValue(item.TenNguonVon, out var nguonVonIdVal)
+                ? nguonVonIdVal
+                : null;
 
             await _goiThau.AddAsync(new GoiThau {
                 Id = Guid.NewGuid(),
