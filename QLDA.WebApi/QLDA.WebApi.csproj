@@ -11,6 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Aspose.Words" Version="20.11.0" />
         <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
         <PackageReference Include="Serilog.Enrichers.HttpContext" Version="8.0.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
