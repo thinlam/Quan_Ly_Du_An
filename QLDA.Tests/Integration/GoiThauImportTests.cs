@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
+using BuildingBlocks.Application.Common.DTOs;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -128,7 +130,15 @@ public class GoiThauImportTests(WebApiFixture fixture) : IAsyncLifetime
 
         var response = await AuthedClient.PostAsync("/api/import/goi-thau", content);
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<ResultApi>();
+        result.Should().NotBeNull();
+        result!.Result.Should().BeTrue();
+        result.DataResult.Should().NotBeNull();
+        var rows = (result.DataResult as JsonElement?)?.GetArrayLength() ?? 0;
+        rows.Should().BeGreaterThan(0,
+            "template phải có Excel Table (GoiThauImport) để ReadDataFromExcel đọc được dòng");
     }
 
     #endregion
