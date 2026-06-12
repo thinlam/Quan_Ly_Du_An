@@ -36,4 +36,10 @@ public static class RoleConstants {
     /// </summary>
     public const string GroupDeXuatChuTruongChuyenTiepExport = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
 
+    /// <summary>
+    /// Kết xuất Excel danh mục xin chủ trương đầu tư (CB.PCT, LĐ.PCT)
+    /// </summary>
+    public const string GroupXinChuTruongDauTuExport =
+        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
 }
