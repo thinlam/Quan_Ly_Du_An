@@ -6,10 +6,13 @@ using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.DuAnBuocs.DTOs;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Application.DeXuatChuyenTieps.Queries;
+using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
+using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
+using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
@@ -667,6 +670,46 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         });
 
         var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatChuyenTiepExportDto> {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region DanhSachXinChuTruongDauTu
+
+    /// <summary>
+    /// DanhSachXinChuTruongDauTu.xlsx — Export danh sách xin chủ trương đầu tư
+    /// </summary>
+    [HttpGet("api/print/danh-sach-xin-chu-truong-dau-tu")]
+    [Authorize(Roles = RoleConstants.GroupXinChuTruongDauTuExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> InDanhSachXinChuTruongDauTu(
+        [FromQuery] DeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
+        var fileNameTemplate = "DanhSachXinChuTruongDauTu.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var data = await Mediator.Send(new DeXuatNhuCauKinhPhiGetDanhSachExportQuery {
+            DuAnId = searchModel.DuAnId,
+            TrangThaiId = searchModel.TrangThaiId,
+            GlobalFilter = searchModel.GlobalFilter,
+        });
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatNhuCauKinhPhiExportDto> {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
