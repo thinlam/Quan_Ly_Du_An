@@ -25,7 +25,6 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(IServiceProvider servicePro
     private readonly IRepository<ThanhToan, Guid>                 _thanhToanRepo          = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
     private readonly IRepository<TamUng, Guid>                    _tamUngRepo             = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
     private readonly IRepository<HoSoMoiThauDienTu, Guid>         _hoSoMoiThauRepo        = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
-    private readonly IRepository<ToTrinhKeHoach, Guid>            _toTrinhKeHoachRepo     = serviceProvider.GetRequiredService<IRepository<ToTrinhKeHoach, Guid>>();
     private readonly IRepository<BanGiaoHoSo, Guid>               _banGiaoHoSoRepo        = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
     private readonly IRepository<PhanKhaiKinhPhi, Guid>           _phanKhaiKinhPhiRepo    = serviceProvider.GetRequiredService<IRepository<PhanKhaiKinhPhi, Guid>>();
     private readonly IRepository<QuyetDinhDieuChinh, Guid>        _quyetDinhDieuChinhRepo = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
@@ -99,10 +98,6 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(IServiceProvider servicePro
             .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
             .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
 
-        AddIds(await _toTrinhKeHoachRepo.GetQueryableSet()
-            .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
-            .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
-        
         AddIds(await _banGiaoHoSoRepo.GetQueryableSet()
             .Where(e => e.DuAnId == duAnId && !e.IsDeleted)
             .Select(e => e.Id.ToString()).ToListAsync(cancellationToken));
