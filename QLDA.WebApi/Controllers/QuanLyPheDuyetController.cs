@@ -138,13 +138,13 @@ public class QuanLyPheDuyetController : AggregateRootController {
         var res = await Mediator.Send(new PheDuyetChuyenPhatHanhCommand(type, id, model?.SoPhatHanh));
         return ResultApi.Ok(res);
     }
-    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    [HttpPost("{type}/{id}/chuyen")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Chuyen(string type, Guid id, [FromBody] TuChoiModel? model = null)
-    {
-        var res = await Mediator.Send(new PheDuyetDispatchChuyenCommand(type, id, model?.NoiDung));
-        return ResultApi.Ok(res);
-    }
+    //[ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    //[ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    //[HttpPost("{type}/{id}/chuyen")]
+    //[Consumes(MediaTypeNames.Application.Json)]
+    //public async Task<ResultApi> Chuyen(string type, Guid id, [FromBody] TuChoiModel? model = null)
+    //{
+    //    var res = await Mediator.Send(new PheDuyetDispatchChuyenCommand(type, id, model?.NoiDung));
+    //    return ResultApi.Ok(res);
+    //}
 }

@@ -55,7 +55,7 @@ internal class ToTrinhKeHoachTraLaiCommandHandler : IRequestHandler<ToTrinhKeHoa
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật!");
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {

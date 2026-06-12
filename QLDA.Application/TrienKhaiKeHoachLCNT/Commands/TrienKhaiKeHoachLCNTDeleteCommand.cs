@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common;
+using QLDA.Domain.Constants;
 
 namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 
@@ -12,11 +13,13 @@ public record TrienKhaiKeHoachLCNTDeleteCommandHandler : IRequestHandler<TrienKh
     private readonly IRepository<TrienKhaiKeHoachLCNT, Guid> TrienKhaiKeHoachLCNT;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
 
     public TrienKhaiKeHoachLCNTDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         TrienKhaiKeHoachLCNT = serviceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _unitOfWork = TrienKhaiKeHoachLCNT.UnitOfWork;
     }
 
@@ -26,6 +29,13 @@ public record TrienKhaiKeHoachLCNTDeleteCommandHandler : IRequestHandler<TrienKh
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
+        var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+          .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+
+        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id)
+        {
+            throw new ManagedException("Tờ trình đang ở trạng thái không thể xóa!");
+        }
 
         entity.IsDeleted = true;
 

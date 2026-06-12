@@ -52,7 +52,9 @@ public static class PheDuyetEntityNames
     public const string DeXuatNhuCauKinhPhiNam = "DeXuatNhuCauKinhPhiNam";
 
     [Description("Đề xuất")]
-    public const string DeXuatMacDinhStt = "DeXuatMacDinh";
+    public const string DeXuatMacDinhStt = "DeXuatMacDinh";// đối tượng dùng chung 
+    [Description("Tờ trình có thẩm định")]
+    public const string ToTrinhCoThamDinh = "ToTrinhCoThamDinh"; // đối tượng dùng chung 
 
     /// <summary>
     /// UC55 - Báo cáo kết quả khảo sát (#9474)

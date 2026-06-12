@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611095058_TableToTrinhCoThamDinh")]
+    partial class TableToTrinhCoThamDinh
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5703,44 +5706,6 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("TrangThaiId");
 
                     b.ToTable("DuToanDauTu", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.DuongDiTrangThaiToTrinh", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<bool?>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Loai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MaTrangThaiHienTai")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MaTrangThaiTiepTheo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("RoleId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("RoleLevel")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TenTrangThaiTiepTheo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Used")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DuongDiTrangThaiToTrinh", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.GoiThau", b =>
