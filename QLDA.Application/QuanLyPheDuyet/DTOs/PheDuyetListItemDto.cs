@@ -8,6 +8,8 @@ public class PheDuyetListItemDto {
     public string Type { get; set; } = default!;
     public Guid? DuAnId { get; set; }
     public string? TenDuAn { get; set; }
+    public string? TenBuoc { get; set; }
+    public string? TenGiaiDoan { get; set; }
     public string? SoVanBan { get; set; }
     public string? TrichYeu { get; set; }
     public string? NguoiKy { get; set; }

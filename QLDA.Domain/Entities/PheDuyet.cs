@@ -9,6 +9,7 @@ public class PheDuyet : Entity<Guid>, IAggregateRoot {
     public string EntityName { get; set; } = default!;
     public Guid EntityId { get; set; }
     public Guid? DuAnId { get; set; }
+    public int? BuocId { get; set; }
 
     /// <summary>
     /// USER_MASTER.UserPortalId
@@ -22,6 +23,7 @@ public class PheDuyet : Entity<Guid>, IAggregateRoot {
     #region Navigation Properties
 
     public DuAn? DuAn { get; set; }
+    public DuAnBuoc? Buoc { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
 
     #endregion

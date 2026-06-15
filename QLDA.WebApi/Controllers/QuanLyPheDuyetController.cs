@@ -42,10 +42,11 @@ public class QuanLyPheDuyetController : AggregateRootController {
     public async Task<ResultApi> GetDanhSach(
         [FromQuery] Guid? duAnId,
         [FromQuery] string? type,
+        [FromQuery] string? trangThai,
         [FromQuery] string? globalFilter = null,
         int pageIndex = 0, int pageSize = 0) {
         var res = await Mediator.Send(new PheDuyetGetDanhSachQuery {
-            DuAnId = duAnId, Type = type, GlobalFilter = globalFilter,
+            DuAnId = duAnId, Type = type, GlobalFilter = globalFilter,TrangThai = trangThai,
             PageIndex = pageIndex, PageSize = pageSize, IsNoTracking = true
         });
         return ResultApi.Ok(res);

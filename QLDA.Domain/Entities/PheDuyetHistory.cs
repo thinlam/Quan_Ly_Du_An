@@ -9,6 +9,7 @@ public class PheDuyetHistory : Entity<Guid>, IAggregateRoot {
     public string EntityName { get; set; } = default!;
     public Guid EntityId { get; set; }
     public Guid? DuAnId { get; set; }
+    public int? BuocId { get; set; }
 
     /// <summary>
     /// USER_MASTER.UserPortalId

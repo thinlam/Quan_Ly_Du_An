@@ -11,12 +11,15 @@ namespace QLDA.Application.QuanLyPheDuyet.Queries;
 public record PheDuyetGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<PheDuyetListItemDto>> {
     public Guid? DuAnId { get; set; }
     public string? Type { get; set; }
+    public string? TrangThai { get; set; }
+    
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
 }
 
 internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanhSachQuery, PaginatedList<PheDuyetListItemDto>> {
     private readonly IRepository<PheDuyetDuToan, Guid> _duToanRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> _hoSoCnttRepo;
     private readonly IRepository<HoSoMoiThauDienTu, Guid> _hoSoThauRepo;
@@ -26,6 +29,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
 
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
         _hoSoCnttRepo = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
         _hoSoThauRepo = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
@@ -48,9 +52,12 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             PheDuyetEntityNames.ToTrinhKeHoach,
             PheDuyetEntityNames.ToTrinhKetQuaGoiThau,
             PheDuyetEntityNames.ToTrinhThamDinhNhaThau,
+            PheDuyetEntityNames.QuyetDinhKeHoachThue,
+            PheDuyetEntityNames.DuToanDauTu,
+            PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng,
+            PheDuyetEntityNames.KHLCNTDuToanSanCo,
             PheDuyetEntityNames.QuyetDinhDieuChinh,
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc,
-            PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
         };
         if (request.Type != null && !validTypes.Contains(request.Type)) {
             return new PaginatedList<PheDuyetListItemDto>([], 0, request.Skip(), request.Take());
@@ -101,6 +108,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         var query = _duToanRepo.GetQueryableSet().AsNoTracking()
             .Include(e => e.TrangThai)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.TrangThai != null, e => e.TrangThai.Ma == request.TrangThai)
             .WhereGlobalFilter(request, e => e.So, e => e.NguoiKy, e => e.TrichYeu)
             .Select(e => new PheDuyetListItemDto {
                 Id = e.Id,
@@ -189,33 +197,35 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     {
         var historyData = await _historyRepo.GetQueryableSet()
             .Where(h => h.EntityName == request.Type)
+            
             .Select(h => new { h.EntityId, h.NgayXuLy })
             .ToListAsync(cancellationToken);
 
-        var latestDates = historyData
-            .GroupBy(h => h.EntityId)
-            .ToDictionary(g => g.Key, g => g.Max(x => x.NgayXuLy));
+        //var latestDates = historyData
+        //    .GroupBy(h => h.EntityId)
+        //    .ToDictionary(g => g.Key, g => g.Max(x => x.NgayXuLy));
+        var duAnBuoc = _duAnBuocRepo.GetQueryableSet().AsNoTracking();
 
-        var query = _pheDuyetRepo.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
-            .Include(e => e.TrangThai)
-            .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
-            .WhereGlobalFilter(request, e => e.NoiDung)
-            .Select(e => new PheDuyetListItemDto
+        var query = from e in _pheDuyetRepo.GetQueryableSet().AsNoTracking()
+            join b in duAnBuoc   on e.BuocId equals b.Id into buocGroup
+            from b in buocGroup.DefaultIfEmpty()
+            where !e.IsDeleted
+            select new PheDuyetListItemDto
             {
                 Id = e.Id,
-                Type = request.Type ,
+                Type = request.Type,
                 DuAnId = e.DuAnId,
                 TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenBuoc = b != null ? b.TenBuoc : null,
                 TrichYeu = e.NoiDung,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-            });
-
+                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"  ? e.TrangThai.Ma   : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten  : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                NgayXuLyMoiNhat = e.UpdatedAt
+            };
         var items = await query.ToListAsync(cancellationToken);
-        foreach (var item in items)
-            item.NgayXuLyMoiNhat = latestDates.GetValueOrDefault(item.Id);
+        //foreach (var item in items)
+        //    item.NgayXuLyMoiNhat = latestDates.GetValueOrDefault(item.Id);
 
         return items;
     }
