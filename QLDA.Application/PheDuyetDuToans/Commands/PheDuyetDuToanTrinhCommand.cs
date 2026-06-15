@@ -63,6 +63,7 @@ internal class PheDuyetDuToanTrinhCommandHandler : IRequestHandler<PheDuyetDuToa
             EntityName = PheDuyetEntityNames.PheDuyetDuToan,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,

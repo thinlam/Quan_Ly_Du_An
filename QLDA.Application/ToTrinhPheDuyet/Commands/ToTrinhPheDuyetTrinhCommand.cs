@@ -60,6 +60,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
             EntityName = request.Loai,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,

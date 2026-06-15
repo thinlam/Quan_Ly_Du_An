@@ -55,6 +55,7 @@ internal class QuyetDinhDieuChinhTrinhCommandHandler : IRequestHandler<QuyetDinh
             EntityName = PheDuyetEntityNames.QuyetDinhDieuChinh,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,

@@ -64,6 +64,7 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
             EntityName = PheDuyetEntityNames.ThoaThuanGiaoViec,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiTrinh.Id,
             NoiDung = request.NoiDung,

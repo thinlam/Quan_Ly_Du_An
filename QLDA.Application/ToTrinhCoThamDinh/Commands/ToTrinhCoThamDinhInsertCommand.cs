@@ -4,6 +4,7 @@ using QLDA.Application.Common;
 using QLDA.Application.ToTrinhCoThamDinhs.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
+using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
@@ -28,7 +29,8 @@ internal class ToTrinhCoThamDinhInsertCommandHandler : IRequestHandler<ToTrinhCo
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao
-            && s.Loai == PheDuyetEntityNames.QuyetDinhKeHoachThue, cancellationToken);
+            && s.Loai == PheDuyetEntityNames.ToTrinhCoThamDinh, cancellationToken);
+            ManagedException.ThrowIf(trangThaiDuThao == null, "Không tìm thấy trạng thái cần cập nhật!");
         try
         {
             var entity = request.Dto;
@@ -42,7 +44,7 @@ internal class ToTrinhCoThamDinhInsertCommandHandler : IRequestHandler<ToTrinhCo
         }
         catch (Exception ex)
         {
-
+            Log.Information($"ToTrinhCoThamDinhInsertCommand error {ex.Message}");
             throw;
         }
 

@@ -62,6 +62,7 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             EntityName = PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NgayXuLy = DateTimeOffset.UtcNow

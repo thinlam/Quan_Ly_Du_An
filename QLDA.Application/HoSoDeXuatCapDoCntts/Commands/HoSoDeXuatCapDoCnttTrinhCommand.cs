@@ -55,6 +55,7 @@ internal class HoSoDeXuatCapDoCnttTrinhCommandHandler : IRequestHandler<HoSoDeXu
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.HoSoDeXuatCapDoCntt,
             EntityId = entity.Id,
+            BuocId = entity.BuocId,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,

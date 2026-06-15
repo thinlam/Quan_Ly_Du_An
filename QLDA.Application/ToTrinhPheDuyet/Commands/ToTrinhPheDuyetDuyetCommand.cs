@@ -67,6 +67,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
             EntityName = request.Loai,// get Loai from request.Loai if needed
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow

@@ -57,6 +57,7 @@ internal class ThuyetMinhDuAnTrinhCommandHandler : IRequestHandler<ThuyetMinhDuA
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ThuyetMinhDuAn,
             EntityId = entity.Id,
+            BuocId = entity.BuocId,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,

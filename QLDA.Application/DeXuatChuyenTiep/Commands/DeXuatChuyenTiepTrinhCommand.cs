@@ -58,6 +58,7 @@ internal class DeXuatChuyenTiepTrinhCommandHandler : IRequestHandler<DeXuatChuye
             EntityName = PheDuyetEntityNames.DeXuatChuTruongChuyenTiep,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,

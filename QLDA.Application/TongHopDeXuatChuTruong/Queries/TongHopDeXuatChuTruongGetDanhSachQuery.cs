@@ -33,14 +33,7 @@ internal class
     public async Task<TongHopDeXuatChuTruongResponseDto> Handle(TongHopDeXuatChuTruongGetDanhSachQuery request,  CancellationToken cancellationToken = default) {
         var userQuery = userMaster.GetQueryableSet().AsNoTracking();
         var dmDonViQuery = DmDonVi.GetQueryableSet().AsNoTracking();
-        // --- CHUYỂN ĐỔI TIME: DateOnly? sang DateTimeOffset? ---
-        //DateTimeOffset? tuNgayDto = request.TuNgay.HasValue
-        //    ? new DateTimeOffset(request.TuNgay.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : null; // Đầu ngày (00:00:00)
-
-        //DateTimeOffset? denNgayDto = request.DenNgay.HasValue
-        //    ? new DateTimeOffset(request.DenNgay.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) : null; // Ngày hôm sau (00:00:00) để dùng phép so sánh nhỏ hơn (<)
-
-
+     
         // 1. Khởi tạo Quereryable gốc cho Đề xuất mới
         var queryableMoi = DeXuatChuTruongMoi.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
