@@ -14,4 +14,9 @@ public class AppSettings {
     /// ID phòng Hành chính - Tổng hợp
     /// </summary>
     public long PhongHCTHID { get; set; }
+
+    /// <summary>
+    /// ID phòng Kế hoạch - Tài chính. Nhân viên thuộc phòng này có global bypass cho authorization.
+    /// </summary>
+    public long PhongKHTCID { get; set; }
 }
