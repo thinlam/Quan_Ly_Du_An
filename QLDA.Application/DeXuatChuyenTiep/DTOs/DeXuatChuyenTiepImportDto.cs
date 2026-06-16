@@ -3,8 +3,8 @@ using System.ComponentModel;
 namespace QLDA.Application.DeXuatChuyenTieps.DTOs;
 
 public class DeXuatChuyenTiepImportDto {
-    [Description("STT")]
-    public int? Stt { get; set; }
+    [Description("Dự án")]
+    public string? TenDuAn { get; set; }
 
     [Description("Số liệu giải ngân")]
     public long? SoLieuGiaiNgan { get; set; }
