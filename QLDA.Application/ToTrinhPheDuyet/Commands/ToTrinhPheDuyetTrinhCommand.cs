@@ -33,8 +33,6 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         _quyetDinhDuyetDuToan = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuToan, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
@@ -47,9 +45,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet
                                           : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
-        var statusDict = statuses
-            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
-            .ToDictionary(x => x.Ma!, x => x);
+        var statusDict = statuses.ToDictionary(x => x.Ma);
 
         var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
         var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
@@ -57,7 +53,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
-       
+
         string table = request.Loai;
         if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))
             table = "ToTrinhPheDuyet";
@@ -66,14 +62,15 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
                 .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
 
         ManagedException.ThrowIfNull(entityType, "Không tìm thấy quyết định/tờ trình cần thao tác");
-      
+
         var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
         if (entity == null)
         {
             throw new ManagedException("Không tìm thấy dữ liệu cần thao tác trong hệ thống!");
         }
 
-        if (entity.BuocId.HasValue) {
+        if (entity.BuocId.HasValue)
+        {
             var buoc = await _duAnBuocRepo.GetQueryableSet()
                 .Include(e => e.DuAn)
                 .Include(e => e.DuAnBuocPhongBanPhoiHops)

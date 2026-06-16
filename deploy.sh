@@ -6,17 +6,15 @@
 # Quy trình:
 #   1. Đọc credentials từ .env
 #   2. Publish với Staging environment
-#   3. Mount SMB share
-#   4. Backup destination hiện tại (backup_YYYYMMDD_HHMMSS)
-#   5. Tạo/xử lý app_offline_.htm
-#   6. Copy source sang destination
-#   7. Đợi copy xong mới xóa app_offline
-#   8. Unmount SMB share
+#   3. Push lên SMB qua smbclient (không mount, không sudo)
+#   4. Tạo/xử lý app_offline_.htm
+#   5. Copy source sang destination
+#   6. Đợi copy xong mới xóa app_offline
 #
 # Usage: ./deploy.sh
 #
 # Requirements:
-#   - cifs-utils (apt install cifs-utils)
+#   - smbclient (apt install smbclient)
 #   - .env file với SMB credentials
 #
 # ============================================
@@ -40,7 +38,6 @@ MODULE="QLDA"
 MODULE_NAME="QuanLyDuAn"
 WEBAPI_PATH="./QLDA.WebApi/QLDA.WebApi.csproj"
 ENVIRONMENT="Staging"
-MOUNT_BASE="/tmp/smb_deploy_${MODULE}"
 
 # === Load .env File ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -74,27 +71,10 @@ DEST_SHARE_PATH="${DEST_PATH#*\\}"
 DEST_SHARE="${DEST_SHARE_PATH%%\\*}"
 DEST_REMOTE_PATH="${DEST_SHARE_PATH#*\\}"
 SMB_URL="//${DEST_HOST}/${DEST_SHARE}"
-
-# Mount point for the module destination
 DEST_REMOTE_PATH_SLASH="${DEST_REMOTE_PATH//\\/\/}"
-MOUNT_POINT="${MOUNT_BASE}/${DEST_REMOTE_PATH_SLASH//\//_}"
-DEST_PATH_LOCAL="${MOUNT_POINT}"
 
 log_info "SMB URL: $SMB_URL"
 log_info "Remote path: $DEST_REMOTE_PATH"
-log_info "Mount point: $DEST_PATH_LOCAL"
-
-# === Cleanup on Exit ===
-cleanup_mount() {
-    if mountpoint -q "$DEST_PATH_LOCAL" 2>/dev/null; then
-        log_info "Unmounting SMB share..."
-        $UMOUNT_CMD -l "$DEST_PATH_LOCAL" 2>/dev/null || true
-    fi
-    if [[ -d "$MOUNT_BASE" ]]; then
-        rm -rf "$MOUNT_BASE" 2>/dev/null || true
-    fi
-}
-trap cleanup_mount EXIT
 
 # === Display Deployment Info ===
 echo ""
@@ -189,108 +169,77 @@ else
     log_info "app_offline_.htm already exists in source"
 fi
 
-# === Step 5: Deploy via Mount SMB ===
+# === Step 5: Deploy via smbclient (no mount, no sudo) ===
 log_info "Step 5/5: Deploying to server..."
 
 # Check for required tools
-if ! command -v mount.cifs &> /dev/null; then
-    log_error "mount.cifs not found. Install with: apt install cifs-utils"
+if ! command -v smbclient &> /dev/null; then
+    log_error "smbclient not found. Install with: apt install smbclient"
     exit 1
 fi
 
-# Create backup folder name with timestamp
-BACKUP_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FOLDER="backup_${BACKUP_TIMESTAMP}"
+# smbclient auth line: -U user%pass
+SMB_AUTH="-U=${SMB_USERNAME}%${SMB_PASSWORD}"
 
-# Create mount point
-mkdir -p "$DEST_PATH_LOCAL"
+# Helper: run a single smbclient command non-interactively
+# Usage: smb_run "put localfile remotefile" "del app_offline.htm"
+smb_run() {
+    smbclient "${SMB_URL}" "${SMB_AUTH}" \
+        -c "cd ${DEST_REMOTE_PATH_SLASH}; $*" \
+        </dev/null
+}
 
-# === Step 5a: Mount SMB share ===
-log_info "Mounting SMB share..."
-
-# Determine mount command (use sudo if not root)
-if [[ $EUID -eq 0 ]]; then
-    MOUNT_CMD="mount -t cifs"
-    UMOUNT_CMD="umount"
-else
-    MOUNT_CMD="sudo mount -t cifs"
-    UMOUNT_CMD="sudo umount"
+# === Step 5a: Verify destination exists on SMB (mkdir if missing) ===
+log_info "Verifying destination on SMB share..."
+if ! smb_run "ls" >/dev/null 2>&1; then
+    log_warn "Destination path does not exist, creating: ${SMB_URL}/${DEST_REMOTE_PATH}"
+    if ! smb_run "mkdir \"${DEST_REMOTE_PATH_SLASH}\""; then
+        log_error "Failed to create destination path on SMB share"
+        log_error "Verify SMB_DEST_QLDA and credentials in .env"
+        exit 1
+    fi
 fi
+log_success "Destination OK: ${SMB_URL}/${DEST_REMOTE_PATH}"
 
-if ! $MOUNT_CMD "${SMB_URL}" "$DEST_PATH_LOCAL" -o username="${SMB_USERNAME}",password="${SMB_PASSWORD}",rw,uid=$(id -u),gid=$(id -g),file_mode=0777,dir_mode=0777,vers=3.0; then
-    log_error "Failed to mount SMB share"
-    log_error "Try: sudo mount -t cifs //192.168.1.12/api_mnd /tmp/test -o username=$SMB_USERNAME,password=***,vers=3.0"
+# === Step 5b: Put site in maintenance mode ===
+log_info "Uploading app_offline.htm (site goes down)..."
+
+# Upload app_offline.htm — IIS uses this to take the app pool offline
+if ! smb_run "put \"${APP_OFFLINE_SOURCE}\" \"app_offline.htm\""; then
+    log_error "Failed to upload app_offline.htm"
     exit 1
 fi
-log_success "Mounted: ${SMB_URL} -> ${DEST_PATH_LOCAL}"
-
-# Check if destination exists
-if [[ ! -d "${DEST_PATH_LOCAL}/${DEST_REMOTE_PATH}" ]]; then
-    log_error "Destination path does not exist: ${DEST_PATH_LOCAL}/${DEST_REMOTE_PATH}"
-    umount "$DEST_PATH_LOCAL"
-    exit 1
-fi
-
-DEST_ACTUAL="${DEST_PATH_LOCAL}/${DEST_REMOTE_PATH}"
-
-# === Step 5b: Backup current destination ===
-log_info "Creating backup: $BACKUP_FOLDER"
-
-# Create backup folder
-mkdir -p "${DEST_ACTUAL}/${BACKUP_FOLDER}"
-
-# Copy all files/folders to backup (exclude backup_* and logs)
-shopt -s dotglob
-shopt -s nullglob
-for item in "${DEST_ACTUAL}"/*; do
-    name=$(basename "$item")
-    # Skip backup folders, logs, app_offline
-    [[ "$name" == backup_* ]] && continue
-    [[ "$name" == "logs" ]] && continue
-    [[ "$name" == app_offline* ]] && continue
-    cp -a "$item" "${DEST_ACTUAL}/${BACKUP_FOLDER}/"
-done
-shopt -u dotglob
-
-BACKUP_COUNT=$(find "${DEST_ACTUAL}/${BACKUP_FOLDER}" -type f 2>/dev/null | wc -l)
-log_success "Backup completed: ${BACKUP_COUNT} files copied to ${BACKUP_FOLDER}"
-
-# === Step 5c: Handle app_offline.htm ===
-log_info "Putting site in maintenance mode (app_offline.htm)..."
-
-# Copy app_offline_.htm as app_offline.htm (site goes down)
-cp "$APP_OFFLINE_SOURCE" "${DEST_ACTUAL}/app_offline.htm"
-
 log_success "Site is now in maintenance mode"
 
 # Wait for app pool to recycle
 log_info "Waiting for app pool to recycle (3 seconds)..."
 sleep 3
 
-# === Step 5d: Copy source to destination ===
-log_info "Copying source files to destination..."
+# === Step 5c: Upload source files (overwrite) ===
+log_info "Uploading source files to destination..."
 
-# Use rsync for efficient and reliable copy
-if command -v rsync &> /dev/null; then
-    rsync -av --progress --exclude '.claude' --exclude 'plans' --exclude 'docs' --exclude 'logs' --exclude 'Tests' --exclude 'backup' "${PUBLISH_PATH}/" "${DEST_ACTUAL}/"
-else
-    # Fallback to cp
-    cp -a "${PUBLISH_PATH}/." "${DEST_ACTUAL}/"
+# Excluded dirs are already removed from local publish in Step 2, so a
+# recursive mput of the publish folder is enough. `recurse on; prompt off`
+# auto-answers yes and walks subdirectories; existing files are overwritten.
+if ! smbclient "${SMB_URL}" "${SMB_AUTH}" \
+        -c "cd ${DEST_REMOTE_PATH_SLASH}; lcd \"${PUBLISH_PATH}\"; recurse on; prompt off; mput *" \
+        </dev/null; then
+    log_error "Failed to upload source files via smbclient"
+    exit 1
 fi
 
-log_success "Source files copied"
+log_success "Source files uploaded"
 
 # Wait for file operations to complete
-sync
 sleep 2
 
-# === Step 5e: Remove app_offline.htm (restore site) ===
-log_info "Removing app_offline.htm (restore mode)..."
+# === Step 5d: Remove app_offline.htm (restore site) ===
+log_info "Removing app_offline.htm (site back online)..."
 
-rm -f "${DEST_ACTUAL}/app_offline.htm"
-
-# Copy app_offline_.htm back for next deployment
-cp "$APP_OFFLINE_SOURCE" "${DEST_ACTUAL}/app_offline_.htm"
+if ! smb_run "del \"app_offline.htm\""; then
+    log_error "Failed to remove app_offline.htm"
+    exit 1
+fi
 
 log_success "Site is restored and online"
 
@@ -299,8 +248,6 @@ echo ""
 echo "============================================"
 log_success "${MODULE} DEPLOYMENT SUCCESSFUL"
 echo "============================================"
-echo -e "  ${BLUE}Destination${NC}  : ${DEST_ACTUAL}"
-echo -e "  ${BLUE}Backup${NC}       : ${DEST_ACTUAL}/${BACKUP_FOLDER}"
-echo -e "  ${BLUE}Backup files${NC} : ${BACKUP_COUNT:-0} files"
+echo -e "  ${BLUE}Destination${NC}  : ${SMB_URL}/${DEST_REMOTE_PATH}"
 echo "============================================"
 echo ""
