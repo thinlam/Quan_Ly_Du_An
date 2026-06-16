@@ -69,8 +69,10 @@ class Program
     private record TemplateEntry(string Slug, Action<TemplateGenerator> Run);
 
     private static List<TemplateEntry> BuildRegistry(string basePath) =>
-        // No QLDA descriptors registered yet. Add QLDA-specific descriptors here.
-        [];
+    [
+        new("tong-hop-nhu-cau-kinh-phi-nam",
+            g => g.GenerateTemplate(CreateDescriptor<TongHopNhuCauKinhPhiNamExportDescriptor>(basePath))),
+    ];
 
     private static T CreateDescriptor<T>(string basePath) where T : IExportDescriptor, new()
     {

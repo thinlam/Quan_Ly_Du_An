@@ -17,7 +17,12 @@ public class TemplateGenerator
 
     // Color constants (ARGB hex used by ClosedXML)
     private const string GrayFill = "#C8C8C8";
+    private const string BlueFill = "#D9E1F2";
     private const string WhiteFill = "#FFFFFF";
+    private const string LetterheadLeftText =
+        "ỦY BAN NHÂN DÂN THÀNH PHỐ HỒ CHÍ MINH\nTRUNG TÂM CHUYỂN ĐỔI SỐ";
+    private const string LetterheadRightText =
+        "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\n---------------";
 
     public TemplateGenerator(string outputBasePath, bool force = false)
     {
@@ -132,6 +137,9 @@ public class TemplateGenerator
                 break;
             case TemplateLayoutType.Standard3RowWithBorder:
                 BuildStandard3RowWithBorder(worksheet, title, columns, titleMergeStartCol, titleMergeEndCol);
+                break;
+            case TemplateLayoutType.LetterheadExport:
+                BuildLetterheadExport(worksheet, title, columns);
                 break;
             default:
                 throw new NotImplementedException($"Layout {layout} is not implemented.");
@@ -312,6 +320,108 @@ public class TemplateGenerator
             border.LeftBorderColor = XLColor.Black;
             border.RightBorderColor = XLColor.Black;
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Pattern 9: LetterheadExport
+    // R1-R2: UBND letterhead | R3: report title | R4: blue headers | R5: $Field template row
+    // -----------------------------------------------------------------------
+    private static void BuildLetterheadExport(IXLWorksheet worksheet, string title, List<ExportColumn> columns)
+    {
+        var columnCount = columns.Count;
+        var leftEndCol = Math.Max(1, columnCount - 2);
+        var rightStartCol = leftEndCol + 1;
+
+        WriteLetterheadBlock(worksheet, 1, 2, 1, leftEndCol, LetterheadLeftText, horizontal: XLAlignmentHorizontalValues.Center);
+        WriteLetterheadBlock(worksheet, 1, 2, rightStartCol, columnCount, LetterheadRightText, horizontal: XLAlignmentHorizontalValues.Center);
+
+        var titleCell = worksheet.Cell(3, 1);
+        titleCell.Value = title.ToUpperInvariant();
+        titleCell.Style.Font.SetFontName(DefaultFont);
+        titleCell.Style.Font.SetFontSize(TitleFontSize);
+        titleCell.Style.Font.SetBold(true);
+        titleCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+        titleCell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+        titleCell.Style.Alignment.WrapText = true;
+        worksheet.Range(3, 1, 3, columnCount).Merge();
+        worksheet.Row(3).Height = 28;
+
+        WriteBlueHeaderRow(worksheet, 4, columns);
+        WriteLetterheadFieldRow(worksheet, 5, columns);
+    }
+
+    private static void WriteLetterheadBlock(
+        IXLWorksheet worksheet,
+        int startRow,
+        int endRow,
+        int startCol,
+        int endCol,
+        string text,
+        XLAlignmentHorizontalValues horizontal)
+    {
+        var cell = worksheet.Cell(startRow, startCol);
+        cell.Value = text;
+        cell.Style.Font.SetFontName(DefaultFont);
+        cell.Style.Font.SetFontSize(NormalFontSize);
+        cell.Style.Font.SetBold(true);
+        cell.Style.Alignment.SetHorizontal(horizontal);
+        cell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+        cell.Style.Alignment.WrapText = true;
+        if (endCol > startCol || endRow > startRow)
+        {
+            worksheet.Range(startRow, startCol, endRow, endCol).Merge();
+        }
+        worksheet.Row(startRow).Height = 36;
+    }
+
+    private static void WriteBlueHeaderRow(IXLWorksheet worksheet, int row, List<ExportColumn> columns)
+    {
+        for (var i = 0; i < columns.Count; i++)
+        {
+            var col = columns[i];
+            var cell = worksheet.Cell(row, i + 1);
+            cell.Value = col.Header;
+            cell.Style.Font.SetFontName(DefaultFont);
+            cell.Style.Font.SetBold(true);
+            cell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(BlueFill));
+            cell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+            cell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+            cell.Style.Alignment.WrapText = true;
+            ApplyThinBorder(cell);
+            worksheet.Column(i + 1).Width = col.Width;
+        }
+    }
+
+    private static void WriteLetterheadFieldRow(IXLWorksheet worksheet, int row, List<ExportColumn> columns)
+    {
+        for (var i = 0; i < columns.Count; i++)
+        {
+            var col = columns[i];
+            var cell = worksheet.Cell(row, i + 1);
+            cell.Value = $"${col.Name}";
+            cell.Style.Font.SetFontName(DefaultFont);
+            cell.Style.Font.SetFontSize(FieldRowFontSize);
+            cell.Style.Alignment.SetHorizontal(
+                string.Equals(col.Name, "Stt", StringComparison.OrdinalIgnoreCase)
+                    ? XLAlignmentHorizontalValues.Center
+                    : XLAlignmentHorizontalValues.Center);
+            cell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+            cell.Style.Alignment.WrapText = true;
+            ApplyThinBorder(cell);
+        }
+    }
+
+    private static void ApplyThinBorder(IXLCell cell)
+    {
+        var border = cell.Style.Border;
+        border.TopBorder = XLBorderStyleValues.Thin;
+        border.BottomBorder = XLBorderStyleValues.Thin;
+        border.LeftBorder = XLBorderStyleValues.Thin;
+        border.RightBorder = XLBorderStyleValues.Thin;
+        border.TopBorderColor = XLColor.Black;
+        border.BottomBorderColor = XLColor.Black;
+        border.LeftBorderColor = XLColor.Black;
+        border.RightBorderColor = XLColor.Black;
     }
 
     // -----------------------------------------------------------------------
