@@ -38,7 +38,7 @@ public class DanhMucBuoc : MaterializedPathDanhMuc<int>, IAggregateRoot, IMayHav
      * - duAnBuoc.NgayDuKienKetThuc = duAn.ngayBatDau.AddDays(dmBuoc.SoNgayThucHien)
      */
     /// <summary>
-    /// go to declaration để xem comment nhé 
+    /// go to declaration để xem comment nhé
     /// </summary>
     public int SoNgayThucHien { get; set; }
 

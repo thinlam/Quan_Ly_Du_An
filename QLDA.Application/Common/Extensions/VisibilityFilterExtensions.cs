@@ -11,19 +11,19 @@ namespace QLDA.Application.Common.Extensions;
 /// <summary>
 /// Visibility filter extensions for IQueryable based on user's role-permission toggles
 /// </summary>
-public static class VisibilityFilterExtensions {
+public static class VisibilityFilterExtensions
+{
     /// <summary>
     /// Apply DuAn visibility filter: if user has XemTatCa → show all; if XemTheoPhong → show own department's projects only
     /// </summary>
-    public static IQueryable<DuAn> ApplyDuAnVisibility(this IQueryable<DuAn> query, IUserProvider user, IPolicyProvider policy) {
-
-        //Tạm tắt
-        return query;
+    public static IQueryable<DuAn> ApplyDuAnVisibility(this IQueryable<DuAn> query, IUserProvider user, IPolicyProvider policy)
+    {
 
         if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
             return query;
 
-        if (policy.CanViewByPhong(user, PermissionConstants.DuAn_XemTheoPhong) && user.Info.PhongBanID.HasValue) {
+        if (policy.CanViewByPhong(user, PermissionConstants.DuAn_XemTheoPhong) && user.Info.PhongBanID.HasValue)
+        {
             var phongBanId = user.Info.PhongBanID.Value;
             return query.Where(e =>
                 e.DonViPhuTrachChinhId == phongBanId ||
@@ -43,13 +43,13 @@ public static class VisibilityFilterExtensions {
         IRepository<DuAn, Guid> duAnRepo,
         IUserProvider user,
         IPolicyProvider policy,
-        Func<T, Guid> duAnIdSelector) where T : class {
-        //Tạm tắt
-        return query;
+        Func<T, Guid> duAnIdSelector) where T : class
+    {
         if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
             return query;
 
-        if (policy.CanViewByPhong(user, PermissionConstants.DuAn_XemTheoPhong) && user.Info.PhongBanID.HasValue) {
+        if (policy.CanViewByPhong(user, PermissionConstants.DuAn_XemTheoPhong) && user.Info.PhongBanID.HasValue)
+        {
             var phongBanId = user.Info.PhongBanID.Value;
             var visibleDuAnIds = duAnRepo.GetQueryableSet()
                 .Where(e =>
@@ -68,7 +68,8 @@ public static class VisibilityFilterExtensions {
         IRepository<DuAnBuoc, int> duAnBuocRepo,
         IBuocAuthorizationProvider auth,
         IUserProvider user,
-        Func<T, int?> buocIdSelector) where T : class {
+        Func<T, int?> buocIdSelector) where T : class
+    {
         if (auth.HasGlobalBypass(user)) return query;
         return auth.FilterVisibleChildEntities(query, duAnBuocRepo, user, buocIdSelector);
     }
