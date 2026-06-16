@@ -33,7 +33,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [GroupTypeConstants.ToTrinhThamDinhNhaThau]
+            EGroupTypes = [GroupTypeConstants.ToTrinhThamDinhNhaThau]
         });
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
@@ -41,7 +41,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             EGroupTypes = [GroupTypeConstants.NoiDungThamDinhNhaThau]
         });
         var nhaThauModel = entity.NhaThaus.Select(o => o.ToModel()).ToList();
-        foreach ( var item in nhaThauModel)
+        foreach (var item in nhaThauModel)
         {
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
@@ -55,7 +55,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         return ResultApi.Ok(entity.ToModel(nhaThauModel: nhaThauModel, // Hoặc kết quả xử lý danh sách nhà thầu của bạn
     danhSachTepDinhKem: danhSachTepDinhKem.ToList(),
     danhSachTepThamDinh: danhSachTepThamDinh.ToList()
-   // nhaThauModel, danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()
+    // nhaThauModel, danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()
     ));
     }
 
@@ -72,10 +72,10 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create( [FromBody] ToTrinhThamDinhNhaThauModel dto, [FromServices] IUnitOfWork unitOfWork,  CancellationToken cancellationToken = default)
+    public async Task<ResultApi> Create([FromBody] ToTrinhThamDinhNhaThauModel dto, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default)
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
-        await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
+        await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new ToTrinhThamDinhNhaThauInsertCommand(dto.ToEntity()), cancellationToken);
         var danhSachTepDinhKem = dto.GetDanhSachTepDinhKem(entity.Id).ToList();
@@ -96,7 +96,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         foreach (var nhaThaus in dto.DanhSachNhaThaus)
         {
             var id = nhaThaus.GetId();
-             danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
+            danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
 
             await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
             {
@@ -154,8 +154,8 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             IsNoTracking = true,
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
-            PageSize = dto.PageSize??1,
-            PageIndex = dto.PageIndex??10,
+            PageSize = dto.PageSize ?? 1,
+            PageIndex = dto.PageIndex ?? 10,
             GlobalFilter = dto.GlobalFilter,
             So = dto.So,
             TuNgay = dto.TuNgay,

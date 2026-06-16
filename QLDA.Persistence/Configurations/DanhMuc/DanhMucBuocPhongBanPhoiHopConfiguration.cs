@@ -16,7 +16,7 @@ public class DanhMucBuocPhongBanPhoiHopConfiguration : AggregateRootConfiguratio
         builder.Property(e => e.RightId).HasColumnName("PhongBanId");
 
         builder.HasOne(e => e.Buoc)
-            .WithMany(e => e.PhongBanPhoiHops)
+            .WithMany(e => e.BuocPhongBanPhoiHops)
             .HasForeignKey(e => e.LeftId)
             .OnDelete(DeleteBehavior.Cascade);
     }

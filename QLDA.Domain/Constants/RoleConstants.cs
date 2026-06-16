@@ -14,13 +14,11 @@ public static class RoleConstants {
     /// </summary>
     public const string QLDA_ChuyenVien = "QLDA_ChuyenVien";
     /// <summary>
-    /// Lãnh đạo (LDDV - Lãnh đạo đơn vị)
+    /// Lãnh đạo đơn vị (BGĐ + Trưởng phòng). Phòng Hành chính - Tổng hợp
+    /// được xác định qua IAppSettingsProvider.PhongHCTHID (User.PhongBanID),
+    /// không dùng role riêng.
     /// </summary>
     public const string QLDA_LDDV = "QLDA_LDDV";
-    /// <summary>
-    /// Phòng Hành chính - Tổng hợp
-    /// </summary>
-    public const string QLDA_HC_TH = "QLDA_HC_TH";
     /// <summary>
     /// Quyền Admin hoặc Manager
     /// </summary>
