@@ -13,11 +13,15 @@ namespace QLDA.Application.Common.Extensions;
 /// </summary>
 public static class VisibilityFilterExtensions
 {
+    private const bool VisibilityFilterEnabled = false;
+
     /// <summary>
     /// Apply DuAn visibility filter: if user has XemTatCa → show all; if XemTheoPhong → show own department's projects only
     /// </summary>
     public static IQueryable<DuAn> ApplyDuAnVisibility(this IQueryable<DuAn> query, IUserProvider user, IPolicyProvider policy)
     {
+        if (!VisibilityFilterEnabled)
+            return query;
 
         if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
             return query;
@@ -45,6 +49,9 @@ public static class VisibilityFilterExtensions
         IPolicyProvider policy,
         Func<T, Guid> duAnIdSelector) where T : class
     {
+        if (!VisibilityFilterEnabled)
+            return query;
+
         if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
             return query;
 

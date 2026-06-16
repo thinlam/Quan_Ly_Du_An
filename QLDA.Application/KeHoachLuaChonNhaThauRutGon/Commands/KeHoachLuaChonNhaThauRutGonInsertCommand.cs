@@ -53,7 +53,7 @@ internal class KeHoachLuaChonNhaThauRutGonInsertCommandHandler : IRequestHandler
 
             return entity;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

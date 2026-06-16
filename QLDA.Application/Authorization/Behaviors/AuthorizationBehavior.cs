@@ -12,7 +12,6 @@ namespace QLDA.Application.Authorization.Behaviors;
 public class AuthorizationBehavior<TRequest, TResponse>(IAuthorizationManager _auth) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,

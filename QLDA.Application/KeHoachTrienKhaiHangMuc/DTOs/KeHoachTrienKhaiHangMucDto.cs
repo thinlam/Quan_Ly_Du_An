@@ -26,7 +26,7 @@ public class KeHoachTrienKhaiHangMucDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMa
 }
 public class HangMucTrienKhaiDto  {
     public Guid? Id { get; set; }
-    public string TenHangMuc { get; set; }
+    public string TenHangMuc { get; set; } = string.Empty;
     public int? GiaiDoanId { get; set; }
     public long? DonViChuTriId { get; set; }
     public long? CanBoChuTriId { get; set; }

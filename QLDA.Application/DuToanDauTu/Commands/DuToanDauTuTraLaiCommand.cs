@@ -91,13 +91,13 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
         {
             return await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException dbEx)
+        catch (DbUpdateException)
         {
            
             // Thêm lỗi thân thiện cho user hoặc ném tiếp ra ngoài tùy kiến trúc
             throw new ManagedException("Đã xảy ra lỗi hệ thống khi cập nhật lịch sử phê duyệt.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw new ManagedException("Đã xảy ra lỗi hệ thống khi cập nhật lịch sử phê duyệt.");
         }

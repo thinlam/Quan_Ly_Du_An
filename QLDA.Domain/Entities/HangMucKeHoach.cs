@@ -11,7 +11,7 @@ public class HangMucKeHoach : Entity<Guid>, IAggregateRoot
 {
     public Guid KeHoachId { get; set; }
     public int? GiaiDoanId { get; set; }
-    public string TenHangMuc { get; set; }
+    public string TenHangMuc { get; set; } = string.Empty;
     public long? DonViChuTriId { get; set; }
     public List<long>? DonViPhoiHopIds { get; set; }
     public long? CanBoChuTriId { get; set; }
@@ -23,7 +23,7 @@ public class HangMucKeHoach : Entity<Guid>, IAggregateRoot
     //public ICollection<CanBoTrienKhaiHangMuc> CanBoTrienKhais { get; set; } // bỏ bảng này nhe
     //   = new List<CanBoTrienKhaiHangMuc>();
     #region Navigation Properties
-    public KeHoachTrienKhaiHangMuc KeHoach { get; set; }
+    public KeHoachTrienKhaiHangMuc KeHoach { get; set; } = default!;
     public DmDonVi? DonViChuTri { get; set; }
     public DanhMucGiaiDoan? GiaiDoan { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }

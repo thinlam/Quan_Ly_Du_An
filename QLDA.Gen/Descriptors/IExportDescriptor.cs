@@ -80,6 +80,14 @@ public enum TemplateLayoutType
     /// Used by: ke-hoach-thang-chi-tiet.
     /// </summary>
     KeHoachThangChiTiet,
+
+    /// <summary>
+    /// Letterhead export layout (UBND / Cộng hòa) + blue table header.
+    /// R1-R2: Letterhead (left/right merge) | R3: Report title (merged, bold, centered)
+    /// R4: Display headers (blue #D9E1F2, bold, border) | R5: $Field (template row, border, wrap).
+    /// Template row = R5. Used by: tong-hop-nhu-cau-kinh-phi-nam, danh-sach-de-xuat-chu-truong-chuyen-tiep.
+    /// </summary>
+    LetterheadExport,
 }
 
 public interface IExportDescriptor

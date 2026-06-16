@@ -24,6 +24,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IUserProvider _userProvider;
+    private readonly IUnitOfWork _unitOfWork;
 
     public ToTrinhPheDuyetTrinhCommandHandler(DbContext dbContext, IServiceProvider serviceProvider)
     {
@@ -32,6 +33,8 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         _quyetDinhDuyetDuToan = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuToan, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
@@ -44,7 +47,9 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet
                                           : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
         var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);

@@ -8,7 +8,7 @@ namespace QLDA.WebApi.Models.CanBoTrienKhaiHangMucs;
 
 public class HangMucTrienKhaiModel
 {
-    public string TenHangMuc { get; set; }
+    public string TenHangMuc { get; set; } = string.Empty;
     public int? GiaiDoanId { get; set; }
     public long? CanBoChuTriId { get; set; }
     public string? TenCanBoChuTri { get; set; }

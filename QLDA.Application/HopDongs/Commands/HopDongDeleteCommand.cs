@@ -9,7 +9,6 @@ public record HopDongDeleteCommand(Guid Id) : IRequest<int>;
 public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand, int> {
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
-    private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
     private readonly IRepository<TamUng, Guid> TamUng;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;

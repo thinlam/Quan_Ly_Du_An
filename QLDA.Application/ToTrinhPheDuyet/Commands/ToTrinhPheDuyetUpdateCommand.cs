@@ -34,7 +34,9 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
         bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Dto.Loai);
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepo.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
         var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);

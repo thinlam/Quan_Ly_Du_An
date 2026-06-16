@@ -44,7 +44,9 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
             throw new ManagedException("Tài khoản không có quyền.");
 
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaChuyen);
         var trangThaiTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaTrinh);

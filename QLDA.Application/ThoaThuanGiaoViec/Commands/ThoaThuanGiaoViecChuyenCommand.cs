@@ -36,7 +36,9 @@ internal class ThoaThuanGiaoViecChuyenCommandHandler : IRequestHandler<ThoaThuan
     public async Task<int> Handle(ThoaThuanGiaoViecChuyenCommand request, CancellationToken cancellationToken)
     {
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DuThao);
         var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaChuyen);

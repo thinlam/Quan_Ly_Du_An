@@ -40,7 +40,9 @@ internal class
                 "Không tồn tại dự án");
 
             var statuses = await _statusRepo.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-            var statusDict = statuses.ToDictionary(x => x.Ma);
+            var statusDict = statuses
+                .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+                .ToDictionary(x => x.Ma!, x => x);
 
             var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
             var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);

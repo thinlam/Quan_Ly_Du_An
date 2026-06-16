@@ -10,7 +10,7 @@ public class KeHoachTrienKhaiHangMuc : Entity<Guid>, IAggregateRoot
 {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
-    public string So { get; set; }
+    public string So { get; set; } = string.Empty;
 
     public DateTimeOffset? NgayToTrinh { get; set; }
 

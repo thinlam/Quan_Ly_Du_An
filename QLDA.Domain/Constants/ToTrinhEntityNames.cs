@@ -61,6 +61,7 @@ public static class ToTrinhEntityNamesExtensions
         .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
         .Select(f => f.GetRawConstantValue() as string)
         .Where(val => val != null)
+        .Select(val => val!)
         .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>

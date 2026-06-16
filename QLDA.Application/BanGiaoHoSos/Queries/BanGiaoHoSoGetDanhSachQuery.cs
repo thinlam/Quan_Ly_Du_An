@@ -9,7 +9,6 @@ using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.BanGiaoHoSos.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 

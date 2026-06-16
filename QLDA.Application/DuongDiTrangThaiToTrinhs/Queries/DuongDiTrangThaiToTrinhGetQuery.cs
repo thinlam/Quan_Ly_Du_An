@@ -6,7 +6,7 @@ using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 namespace QLDA.Application.DuongDiTrangThaiToTrinhs.Queries;
 
 public record DuongDiTrangThaiToTrinhGetQuery : AggregateRootPagination, IRequest<PaginatedList<DuongDiTrangThaiToTrinhDto>> {
-    public string Loai { get; set; }
+    public string Loai { get; set; } = string.Empty;
     public string? MaTrangThaiHienTai { get; set; }
 
 }
@@ -25,7 +25,8 @@ public record DuongDiTrangThaiToTrinhGetQueryHandler(IServiceProvider ServicePro
 
         var allItems = await query.ToListAsync(cancellationToken);
         var dmTrangThaiPheDuyet = await DanhMucTrangThaiPheDuyet.GetQueryableSet().AsNoTracking()
-            .ToDictionaryAsync(x => x.Ma, x => x.Ten, cancellationToken);
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionaryAsync(x => x.Ma!, x => x.Ten ?? string.Empty, cancellationToken);
 
         var dtos = allItems.Select(entity => new DuongDiTrangThaiToTrinhDto
         {

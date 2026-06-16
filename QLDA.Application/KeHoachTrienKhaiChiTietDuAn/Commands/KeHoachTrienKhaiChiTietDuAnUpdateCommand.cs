@@ -52,7 +52,7 @@ internal class KeHoachTrienKhaiChiTietDuAnUpdateCommandHandler : IRequestHandler
 
             return request.Dto;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

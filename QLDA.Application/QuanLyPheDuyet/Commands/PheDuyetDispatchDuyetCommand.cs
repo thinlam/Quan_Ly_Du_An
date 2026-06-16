@@ -1,6 +1,5 @@
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
-using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
@@ -56,8 +55,9 @@ internal class PheDuyetDispatchDuyetCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuDuyetCommand(request.Id),
             
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat),
-            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachDuyetCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id, PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon),
+            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachDuyetCommand(request.Id, request.NoiDung ?? string.Empty),
+            // PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id, PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon),
+            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecDuyetCommand(request.Id),
            
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue),

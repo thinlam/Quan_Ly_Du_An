@@ -16,7 +16,7 @@ public class KeHoachTrienKhaiChiTietDuAnDto : IHasKey<Guid?>, IMustHaveId<Guid>,
     public int? BuocId { get; set; }
 
 
-    public string MaMoc { get; set; }
+    public string MaMoc { get; set; } = string.Empty;
     public string? Ten { get; set; }
     public string? GhiChu { get; set; }
     public long? DonViChuTriId { get; set; }

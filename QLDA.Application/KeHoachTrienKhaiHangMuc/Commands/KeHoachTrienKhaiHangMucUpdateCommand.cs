@@ -100,7 +100,7 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
 
             return entity;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

@@ -24,9 +24,9 @@ public class ToTrinhPheDuyetModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveT
  
     public int? BuocId { get; set; }
     public Guid DuAnId { get; set; }
-    public string So { get; set; } 
+    public string So { get; set; } = string.Empty;
     public DateTimeOffset? Ngay { get; set; } 
     public string? TrichYeu { get; set; } = string.Empty;
-    public string Loai { get; set; }// Loại phê duyệt
+    public string Loai { get; set; } = string.Empty;// Loại phê duyệt
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 }

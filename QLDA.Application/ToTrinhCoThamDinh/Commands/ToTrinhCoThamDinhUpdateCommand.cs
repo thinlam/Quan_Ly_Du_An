@@ -32,7 +32,9 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
     public async Task<ToTrinhCoThamDinh> Handle(ToTrinhCoThamDinhUpdateCommand request, CancellationToken cancellationToken = default)
     {
         var statuses = await _statusRepo.GetByLoaiAsync(PheDuyetEntityNames.ToTrinhCoThamDinh, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDaDuyet = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
         var trangThaiChoThamDinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
