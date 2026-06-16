@@ -43,11 +43,11 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
         if (!isHcth)
             throw new ManagedException("Tài khoản không có quyền.");
 
-        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);
+        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
         var statusDict = statuses.ToDictionary(x => x.Ma);
 
-        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DaChuyen);
-        var trangThaiTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DaTrinh);
+        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaChuyen);
+        var trangThaiTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaTrinh);
         ManagedException.ThrowIfNull(trangThaiTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
         var entity = await _repository.GetQueryableSet()

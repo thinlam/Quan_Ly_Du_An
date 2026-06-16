@@ -68,6 +68,7 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         var entity = await Mediator.Send(new PhanKhaiKinhPhiInsertCommand(
             new() {
                 DuAnId = model.DuAnId,
+               // BuocId = model.BuocId,
                 SoToTrinh = model.SoToTrinh,
                 NgayToTrinh = model.NgayToTrinh,
                 NguonVonId = model.NguonVonId,

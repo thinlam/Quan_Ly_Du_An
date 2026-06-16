@@ -13,19 +13,19 @@ namespace QLDA.Migrator.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Ngay",
-                table: "KeHoachLuaChonNhaThauRutGon");
+                table: "ThoaThuanGiaoViec");
 
             migrationBuilder.DropColumn(
                 name: "So",
-                table: "KeHoachLuaChonNhaThauRutGon");
+                table: "ThoaThuanGiaoViec");
 
             migrationBuilder.DropColumn(
                 name: "Ten",
-                table: "KeHoachLuaChonNhaThauRutGon");
+                table: "ThoaThuanGiaoViec");
 
             migrationBuilder.DropColumn(
                 name: "TrichYeu",
-                table: "KeHoachLuaChonNhaThauRutGon");
+                table: "ThoaThuanGiaoViec");
 
             migrationBuilder.AddColumn<string>(
                 name: "NoiDung",
@@ -43,25 +43,25 @@ namespace QLDA.Migrator.Migrations
 
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "Ngay",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 type: "datetimeoffset",
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "So",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 type: "nvarchar(max)",
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Ten",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 type: "nvarchar(max)",
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "TrichYeu",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 type: "nvarchar(max)",
                 nullable: true);
         }

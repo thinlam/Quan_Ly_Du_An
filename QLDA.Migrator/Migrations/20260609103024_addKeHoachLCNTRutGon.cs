@@ -12,7 +12,7 @@ namespace QLDA.Migrator.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "KeHoachLuaChonNhaThauRutGon",
+                name: "ThoaThuanGiaoViec",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -107,22 +107,22 @@ namespace QLDA.Migrator.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_KeHoachLuaChonNhaThauRutGon_DuAnId",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 column: "DuAnId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KeHoachLuaChonNhaThauRutGon_GoiThauId",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 column: "GoiThauId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KeHoachLuaChonNhaThauRutGon_NhaThauId",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 column: "NhaThauId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KeHoachLuaChonNhaThauRutGon_TrangThaiId",
-                table: "KeHoachLuaChonNhaThauRutGon",
+                table: "ThoaThuanGiaoViec",
                 column: "TrangThaiId");
 
             migrationBuilder.CreateIndex(
@@ -145,7 +145,7 @@ namespace QLDA.Migrator.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "KeHoachLuaChonNhaThauRutGon");
+                name: "ThoaThuanGiaoViec");
 
             migrationBuilder.DropTable(
                 name: "ThoaThuanGiaoViec");

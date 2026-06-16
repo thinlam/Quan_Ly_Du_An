@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -10,12 +10,15 @@
       <Compile Remove="DanhMucPhuongAnThietKe\**" />
       <Compile Remove="DanhMucTrangThaiPheDuyet\**" />
       <Compile Remove="DmTrangThaiPheDuyets\**" />
+      <Compile Remove="QuyetDinhDuToan\**" />
       <EmbeddedResource Remove="DanhMucPhuongAnThietKe\**" />
       <EmbeddedResource Remove="DanhMucTrangThaiPheDuyet\**" />
       <EmbeddedResource Remove="DmTrangThaiPheDuyets\**" />
+      <EmbeddedResource Remove="QuyetDinhDuToan\**" />
       <None Remove="DanhMucPhuongAnThietKe\**" />
       <None Remove="DanhMucTrangThaiPheDuyet\**" />
       <None Remove="DmTrangThaiPheDuyets\**" />
+      <None Remove="QuyetDinhDuToan\**" />
     </ItemGroup>
 
     <ItemGroup>

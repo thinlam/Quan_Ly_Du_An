@@ -6163,7 +6163,7 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("HopDong", (string)null);
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThauRutGon", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.ThoaThuanGiaoViec", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -6219,7 +6219,7 @@ namespace QLDA.Migrator.Migrations
 
                     b.HasIndex("TrangThaiId");
 
-                    b.ToTable("KeHoachLuaChonNhaThauRutGon", (string)null);
+                    b.ToTable("ThoaThuanGiaoViec", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KeHoachTrienKhaiChiTietDuAn", b =>
@@ -9054,7 +9054,7 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("LoaiHopDong");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThauRutGon", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.ThoaThuanGiaoViec", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany()

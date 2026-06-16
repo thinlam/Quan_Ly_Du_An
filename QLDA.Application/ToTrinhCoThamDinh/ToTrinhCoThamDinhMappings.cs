@@ -16,6 +16,7 @@ public static class ToTrinhCoThamDinhMappings
             So = entity.So,
             Loai = entity.Loai,
             TrangThaiId = entity.TrangThaiId,
+            TrangThaiThamTraId = entity.TrangThaiThamTraId,
             KetQuaThamDinh = entity.KetQuaThamDinh,
             KetQuaThamTra = entity.KetQuaThamTra,
             DanhSachTepThamDinh = fileThamDinhs?.Select(x => x.ToDto()).ToList(),

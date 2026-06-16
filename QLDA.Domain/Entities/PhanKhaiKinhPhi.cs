@@ -7,6 +7,7 @@ namespace QLDA.Domain.Entities;
 /// </summary>
 public class PhanKhaiKinhPhi : Entity<Guid>, IAggregateRoot {
     public Guid DuAnId { get; set; }
+    public int BuocId { get; set; }
     public string? SoToTrinh { get; set; }
     public DateTimeOffset? NgayToTrinh { get; set; }
     public int? NguonVonId { get; set; }

@@ -107,7 +107,9 @@ public static class PheDuyetEntityNames
     public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
     [Description("Kế hoạch lcnt rút gọn")]
     public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
-    
+    [Description("Quyết định duyệt dự toán")] //issue #9478
+    public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
+
 }
 public static class LoaiToTrinhKhongDuyetExtensions
 {

@@ -14,6 +14,7 @@ namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 public record ToTrinhPheDuyetDuyetCommand(Guid Id, string Loai) : IRequest<int>;
 
 internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetDuyetCommand, int> {
+    private readonly DbContext _dbContext;
     private readonly IRepository<Domain.Entities.ToTrinhPheDuyet, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
@@ -23,7 +24,8 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
 
-    public ToTrinhPheDuyetDuyetCommandHandler(IServiceProvider serviceProvider) {
+    public ToTrinhPheDuyetDuyetCommandHandler(DbContext dbContext, IServiceProvider serviceProvider) {
+        _dbContext = dbContext;
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhPheDuyet, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
@@ -53,10 +55,16 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
-        var entity = await _repository.GetQueryableSet()
-            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        string table = request.Loai;
+        if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))
+            table = "ToTrinhPheDuyet";// hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
+        var entityType = _dbContext.Model.GetEntityTypes()
+                .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
+
+        var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật");
+
 
         if (entity.BuocId.HasValue) {
             var buoc = await _duAnBuocRepo.GetQueryableSet()
@@ -79,7 +87,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = request.Loai,// get Loai from request.Loai if needed
-            EntityId = entity.Id,
+            EntityId = request.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,

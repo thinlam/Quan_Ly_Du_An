@@ -14,6 +14,7 @@ namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 public record ToTrinhPheDuyetTraLaiCommand(Guid Id,string Loai, string NoiDung) : IRequest<int>;
 
 internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheDuyetTraLaiCommand, int> {
+    private readonly DbContext _dbContext;
     private readonly IRepository<Domain.Entities.ToTrinhPheDuyet, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
@@ -24,14 +25,12 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
     private readonly IAppSettingsProvider _settings;
 
 
-    public ToTrinhPheDuyetTraLaiCommandHandler(IServiceProvider serviceProvider) {
+    public ToTrinhPheDuyetTraLaiCommandHandler(DbContext dbContext, IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhPheDuyet, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
         _unitOfWork = _repository.UnitOfWork;
     }
@@ -43,28 +42,27 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         {
             throw new ManagedException("Tài khoản không có quyền.");
         }
-
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");
         }
 
 
-        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
-        var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet  : PheDuyetEntityNames.DeXuatMacDinhStt;
-        var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+      #region kiểm tra có tồn tại không, hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
 
-        var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh);
-        var trangThaiTra = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
+        string table = request.Loai;
+        if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))
+            table = "ToTrinhPheDuyet";
 
-        ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
+        var entityType = _dbContext.Model.GetEntityTypes()
+                .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
 
-        var entity = await _repository.GetQueryableSet()
-            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
 
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy yêu cầu cần trả");
+        if (entity == null)
+            ManagedException.Throw("Không tìm thấy quyết định/tờ trình cần thao tác");
 
+        #endregion
         if (entity.BuocId.HasValue) {
             var buoc = await _duAnBuocRepo.GetQueryableSet()
                 .Include(e => e.DuAn)
@@ -73,11 +71,22 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
             if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
                 throw new ManagedException("Phòng ban không có quyền thao tác bước này");
         }
+        #region 
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
+        var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
+        var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
+        var statusDict = statuses.ToDictionary(x => x.Ma);
+
+        var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh);
+        var trangThaiTra = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
+
+        ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
+        #endregion
 
         // Update status to Trả lại
         entity.TrangThaiId = trangThaiTra.Id;
@@ -86,7 +95,7 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = request.Loai,
-            EntityId = entity.Id,
+            EntityId = request.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiTra.Id,

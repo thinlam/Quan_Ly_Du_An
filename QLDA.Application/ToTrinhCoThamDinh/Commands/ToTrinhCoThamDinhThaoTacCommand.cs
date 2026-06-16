@@ -99,7 +99,7 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
         }
         catch (Exception ex )
         {
-            Log.Information($"ToTrinhCoThamDinhInsertCommand error {ex.Message}");
+            Log.Information($"ToTrinhCoThamDinhThaoTacCommand error: {ex.Message}");
             throw;
         }
     }

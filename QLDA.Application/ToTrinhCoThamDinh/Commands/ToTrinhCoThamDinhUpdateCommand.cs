@@ -61,7 +61,8 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
 
         await _repo.UpdateAsync(request.Dto, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+        entity = await _repo.GetQueryableSet().AsNoTracking()
+          .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken); 
         return entity;
     }
 }

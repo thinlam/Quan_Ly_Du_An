@@ -28,10 +28,10 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
 
     public async Task<int> Handle(PhanKhaiKinhPhiTrinhCommand request, CancellationToken cancellationToken) {
         // Permission check: KH-TC only (PhongBanId = 219)
-        var phongBanId = _userProvider.Info.PhongBanID;
-        if (phongBanId != 219) {
-            throw new ManagedException("Chỉ phòng KH-TC có quyền trình phân khai kinh phí");
-        }
+        //var phongBanId = _userProvider.Info.PhongBanID;
+        //if (phongBanId != 219) {
+        //    throw new ManagedException("Chỉ phòng KH-TC có quyền trình phân khai kinh phí");
+        //}
 
         // Get status IDs from DB by code
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)

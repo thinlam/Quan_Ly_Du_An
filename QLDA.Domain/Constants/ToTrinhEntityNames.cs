@@ -1,4 +1,6 @@
+using QLDA.Domain.Entities;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace QLDA.Domain.Constants;
 
@@ -29,10 +31,11 @@ public static class ToTrinhEntityNames
 
     [Description("Quyết định kế hoạch thuê")]
     public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
-   
-    [Description("DuToanDauTu")]
-    public const string DuToanDauTu = "DuToanDauTu";
-
+    [Description("Tờ trình kế hoạch ")]
+    public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    [Description("Phê duyệt khảo sát")]
+    public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
+  
   
 }
 public enum LoaiToTrinhKhongDuyetEnum
@@ -50,5 +53,26 @@ public enum LoaiToTrinhKhongDuyetEnum
     KeHoachLCNTChuanBiDauTu
 }
 
+
+public static class ToTrinhEntityNamesExtensions
+{
+    // Tạo bộ nhớ đệm (Cache) chứa tất cả các giá trị chuỗi hợp lệ
+    private static readonly HashSet<string> ValidEntityNames = typeof(ToTrinhEntityNames)
+        .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+        .Select(f => f.GetRawConstantValue() as string)
+        .Where(val => val != null)
+        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Kiểm tra xem loại tờ trình truyền vào có nằm trong danh sách cấu hình hay không
+    /// </summary>
+    public static bool ContainsEntity(string loai)
+    {
+        if (string.IsNullOrEmpty(loai)) return false;
+
+        // Trả về true/false ngay lập tức không cần loop hay dùng reflection lại nữa
+        return ValidEntityNames.Contains(loai);
+    }
+}
 
 

@@ -37,11 +37,12 @@ public static class GroupTypeConstants
     public const string DonViTuVan = "DonViTuVan";
     public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
     public const string ToTrinhQuyetDinh = "ToTrinhQuyetDinh";
-    public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
+    public const string KeHoachLuaChonNhaThauRutGon = "ThoaThuanGiaoViec";
     public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
     public const string KeHoachTrienKhaiChiTietDuAn = "KeHoachTrienKhaiChiTietDuAn";
     public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
     public const string QuyetDinhKeHoachThueThamDinh = "QuyetDinhKeHoachThueThamDinh";
+    public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
     
 
 }

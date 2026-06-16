@@ -39,7 +39,7 @@ internal class PheDuyetDispatchChuyenCommandHandler : IRequestHandler<PheDuyetDi
     public async Task<int> Handle(PheDuyetDispatchChuyenCommand request, CancellationToken cancellationToken) {
         IRequest<int> command = request.Type switch {
             
-            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonChuyenCommand(request.Id),
+            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonChuyenCommand(request.Id, PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecChuyenCommand(request.Id),
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")

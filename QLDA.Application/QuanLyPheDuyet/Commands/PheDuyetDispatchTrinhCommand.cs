@@ -54,16 +54,19 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.TrienKhaiKeHoachLCNT => new TrienKhaiKeHoachLCNTTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc => new KeHoachTrienKhaiHangMucTrinhCommand(request.Id),
             PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuTrinhCommand(request.Id),
-            //    PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuTrinhCommand(request.Id),
+            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTrinhCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
 
             //simple ToTrinhPheDuyet
+            PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
+            PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue, request.NoiDung),
-            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTrinhCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
+           
             PheDuyetEntityNames.KHLCNTDuToanSanCo => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanSanCo, request.NoiDung),
             PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng, request.NoiDung),
             PheDuyetEntityNames.KeHoachTongTheLCNT => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachTongTheLCNT, request.NoiDung),
             PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu, request.NoiDung),
+          
             PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecTrinhCommand(request.Id, request.NoiDung),
 
