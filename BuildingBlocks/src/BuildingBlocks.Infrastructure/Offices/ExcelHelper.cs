@@ -8,11 +8,10 @@ namespace BuildingBlocks.Infrastructure.Offices;
 public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
 {
     private readonly IAsposeHelper _asposeHelper = serviceProvider.GetRequiredService<IAsposeHelper>();
-    private bool _isLicenseSet;
 
     public AsposeResult Export<T>(AsposeInstruction<T> instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
         var worksheet = workbook.Worksheets[0];
@@ -157,7 +156,7 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
     /// </summary>
     public AsposeResult ExportDynamic(DynamicExportInstruction instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
         var worksheet = workbook.Worksheets[0];
@@ -301,7 +300,7 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
     public AsposeResult ExportHierarchical<TGroup, TSubGroup, TItem>(
         TwoLevelHierarchicalInstruction<TGroup, TSubGroup, TItem> instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
         var worksheet = workbook.Worksheets[0];
@@ -503,7 +502,7 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
     /// </summary>
     public AsposeResult ExportWithOutline<T>(TreeOutlineInstruction<T> instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
         var worksheet = workbook.Worksheets[0];
@@ -608,7 +607,7 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
     /// </summary>
     public AsposeResult ExportMultiLevelHierarchical(MultiLevelHierarchicalInstruction instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
         var worksheet = workbook.Worksheets[0];
@@ -753,7 +752,7 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
     /// </summary>
     public AsposeResult ExportMultiSheet<T1, T2>(MultiSheetInstruction<T1, T2> instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
 
@@ -782,7 +781,7 @@ public class ExporterHelper(IServiceProvider serviceProvider) : IExporterHelper
     /// </summary>
     public AsposeResult ExportDynamicMultiSheet(DynamicMultiSheetInstruction instruction)
     {
-        _asposeHelper.EnsureLicense(ref _isLicenseSet);
+        _asposeHelper.EnsureCellsLicense();
 
         var workbook = new Workbook(instruction.TemplatePath);
 
