@@ -57,7 +57,8 @@ internal class PheDuyetDispatchDuyetCommandHandler : IRequestHandler<PheDuyetDis
             
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat),
             PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachDuyetCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id, PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon),
+            // PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id, PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon),
+            PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecDuyetCommand(request.Id),
            
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue),
