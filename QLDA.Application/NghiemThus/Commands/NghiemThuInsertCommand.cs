@@ -1,6 +1,9 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.NghiemThus.DTOs;
+using QLDA.Application.Providers;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Commands;
 
@@ -10,18 +13,34 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<HopDong, Guid> HopDong;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<NghiemThuInsertCommandHandler>();
 
     public NghiemThuInsertCommandHandler(IServiceProvider serviceProvider) {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _unitOfWork = NghiemThu.UnitOfWork;
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<NghiemThu> Handle(NghiemThuInsertCommand request, CancellationToken cancellationToken = default) {
         await ValidateAsync(request, cancellationToken);
+
+        // Authorization check on BuocId from DTO
+        if (request.Dto.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         var entity = request.Dto.ToEntity();
 

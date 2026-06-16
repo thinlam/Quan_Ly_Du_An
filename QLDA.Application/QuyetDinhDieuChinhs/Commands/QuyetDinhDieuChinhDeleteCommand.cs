@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
@@ -15,11 +16,17 @@ public record QuyetDinhDieuChinhDeleteCommand(Guid Id) : IRequest<int>;
 internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDinhDieuChinhDeleteCommand, int> {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public QuyetDinhDieuChinhDeleteCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -33,6 +40,15 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
+
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         // Validate: only allow delete when status is DT (Dự thảo)
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {

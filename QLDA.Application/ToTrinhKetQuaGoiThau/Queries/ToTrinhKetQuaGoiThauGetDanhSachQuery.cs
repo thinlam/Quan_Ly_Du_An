@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -8,7 +10,7 @@ using QLDA.Domain.Constants;
 namespace QLDA.Application.ToTrinhKetQuaGoiThaus.Queries;
 
 public record ToTrinhKetQuaGoiThauDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhKetQuaGoiThauDto>> {
- 
+
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
     public long? PhongBanDeXuatId { get; set; }
@@ -16,7 +18,7 @@ public record ToTrinhKetQuaGoiThauDanhSachQuery : AggregateRootPagination, IMayH
     public string? So { get; set; }
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
-      
+
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
@@ -30,12 +32,14 @@ internal class    ToTrinhKetQuaGoiThauDanhSachQueryHandler(IServiceProvider Serv
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
     public async Task<PaginatedList<ToTrinhKetQuaGoiThauDto>> Handle(ToTrinhKetQuaGoiThauDanhSachQuery request,
         CancellationToken cancellationToken = default) {
 
         DateTimeOffset? tuNgayDto = null;
-        DateTimeOffset? denNgayExclusiveDto = null; 
+        DateTimeOffset? denNgayExclusiveDto = null;
         if (request.TuNgay.HasValue) {
             var dt = request.TuNgay.Value.ToDateTime(TimeOnly.MinValue);
             tuNgayDto = new DateTimeOffset(dt);
@@ -47,6 +51,7 @@ internal class    ToTrinhKetQuaGoiThauDanhSachQueryHandler(IServiceProvider Serv
 
         var queryable = ToTrinhKetQuaGoiThau.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))

@@ -2,6 +2,7 @@ using System.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.BanGiaoHoSos.DTOs;
+using QLDA.Application.Authorization;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
@@ -11,10 +12,16 @@ public record BanGiaoHoSoUpdateCommand(BanGiaoHoSoUpdateModel Model) : IRequest<
 
 internal class BanGiaoHoSoUpdateCommandHandler : IRequestHandler<BanGiaoHoSoUpdateCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> _repository;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
 
     public BanGiaoHoSoUpdateCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -22,6 +29,15 @@ internal class BanGiaoHoSoUpdateCommandHandler : IRequestHandler<BanGiaoHoSoUpda
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
+
+        if (request.Model.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == request.Model.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         // Chỉ cho phép cập nhật khi TrangThai = 1 (Khởi tạo)
         if (entity.TrangThai != ETrangThaiBanGiao.KhoiTao) {

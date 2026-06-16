@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ChuTruongLapKeHoachs.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Queries;
 
@@ -20,10 +23,16 @@ internal class
     PaginatedList<ChuTruongLapKeHoachDto>> {
     private readonly IRepository<ChuTruongLapKeHoach, Guid> ChuTruongLapKeHoach;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IUserProvider _user;
+    private readonly IBuocAuthorizationProvider _auth;
 
     public ChuTruongLapKeHoachDanhSachQueryHandler(IServiceProvider serviceProvider) {
         ChuTruongLapKeHoach = serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<ChuTruongLapKeHoachDto>> Handle(ChuTruongLapKeHoachDanhSachQuery request,
@@ -38,6 +47,7 @@ internal class
         var queryable = ChuTruongLapKeHoach.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _user, e => e.BuocId)
             .WhereIf(request.TuNgay != null, e => e.NgayToTrinh >= tuNgay)
             .WhereIf(request.DenNgay != null, e => e.NgayToTrinh <= denNgay)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)

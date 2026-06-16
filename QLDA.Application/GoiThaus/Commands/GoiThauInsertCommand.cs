@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.GoiThaus.DTOs;
 
 namespace QLDA.Application.GoiThaus.Commands;
@@ -12,6 +13,9 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
     private readonly IRepository<DanhMucLoaiHopDong, int> DanhMucLoaiHopDong;
     private readonly IRepository<DanhMucHinhThucLuaChonNhaThau, int> DanhMucHinhThucLuaChonNhaThau;
     private readonly IRepository<DanhMucPhuongThucLuaChonNhaThau, int> DanhMucPhuongThucLuaChonNhaThau;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
 
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<GoiThauInsertCommandHandler>();
@@ -22,12 +26,25 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
         DanhMucLoaiHopDong = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
         DanhMucHinhThucLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<DanhMucHinhThucLuaChonNhaThau, int>>();
         DanhMucPhuongThucLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<DanhMucPhuongThucLuaChonNhaThau, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = GoiThau.UnitOfWork;
     }
 
     public async Task<GoiThau> Handle(GoiThauInsertCommand request, CancellationToken cancellationToken = default) {
 
         await ValidateAsync(request, cancellationToken);
+
+        // Check step authorization
+        if (request.Dto.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         var entity = request.Dto.ToEntity();
 

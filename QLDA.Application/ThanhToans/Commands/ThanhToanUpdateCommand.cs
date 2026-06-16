@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Providers;
 using QLDA.Application.ThanhToans.DTOs;
 
@@ -12,6 +13,8 @@ public record ThanhToanUpdateCommand(ThanhToanUpdateDto Dto) : IRequest<ThanhToa
 internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCommand, ThanhToan> {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<DuAn, Guid> DuAn;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
@@ -20,6 +23,8 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
     public ThanhToanUpdateCommandHandler(IServiceProvider serviceProvider) {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _unitOfWork = ThanhToan.UnitOfWork;
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -32,6 +37,15 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
         var entity = await ThanhToan.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
+
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         entity.Update(request.Dto);
 

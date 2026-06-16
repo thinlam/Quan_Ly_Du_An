@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -12,7 +14,7 @@ public record ThoaThuanGiaoViecGetDanhSachQuery : AggregateRootPagination, IMayH
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-    public DateOnly? TuNgay { get; set; } 
+    public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
 }
 
@@ -24,6 +26,8 @@ internal class    ThoaThuanGiaoViecGetDanhSachQueryHandler(IServiceProvider Serv
         ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
     public async Task<PaginatedList<ThoaThuanGiaoViecDto>> Handle(ThoaThuanGiaoViecGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
@@ -31,11 +35,12 @@ internal class    ThoaThuanGiaoViecGetDanhSachQueryHandler(IServiceProvider Serv
         var queryable = ThoaThuanGiaoViec.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
            // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
           //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
-            
+
         return await queryable
             .Select(e => new ThoaThuanGiaoViecDto() {
                 Id = e.Id,
@@ -46,10 +51,10 @@ internal class    ThoaThuanGiaoViecGetDanhSachQueryHandler(IServiceProvider Serv
                 PhamVi = e.PhamVi,
                 ChatLuong = e.ChatLuong,
                 NoiDung = e.NoiDung,
-                ThoiGian = e.ThoiGian,    
-                GiaTri = e.GiaTri,    
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,   
-                TenGoiThau = e.GoiThau != null ? e.GoiThau.Ten : null, 
+                ThoiGian = e.ThoiGian,
+                GiaTri = e.GiaTri,
+                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenGoiThau = e.GoiThau != null ? e.GoiThau.Ten : null,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,

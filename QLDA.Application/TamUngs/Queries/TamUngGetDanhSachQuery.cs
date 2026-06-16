@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 
@@ -17,10 +19,16 @@ internal class
     PaginatedList<TamUngDto>> {
     private readonly IRepository<TamUng, Guid> TamUng;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _user;
 
     public TamUngGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<TamUngDto>> Handle(TamUngGetDanhSachQuery request,
@@ -36,7 +44,8 @@ internal class
                 e => e.SoPhieuChi,
                 e => e.NoiDung,
                 e => e.HopDong!.Ten
-            );
+            )
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _user, e => e.BuocId);
 
         return await queryable
             .Select(e => new TamUngDto() {

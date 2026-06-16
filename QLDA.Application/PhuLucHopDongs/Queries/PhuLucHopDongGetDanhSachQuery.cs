@@ -1,8 +1,12 @@
+using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.PhuLucHopDongs.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.PhuLucHopDongs.Queries;
 
@@ -26,10 +30,16 @@ internal class
     List<PhuLucHopDongDto>> {
     private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IUserProvider _userProvider;
+    private readonly IBuocAuthorizationProvider _auth;
 
     public PhuLucHopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         PhuLucHopDong = serviceProvider.GetRequiredService<IRepository<PhuLucHopDong, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<List<PhuLucHopDongDto>> Handle(PhuLucHopDongGetDanhSachQuery request,
@@ -38,6 +48,7 @@ internal class
         var queryable = PhuLucHopDong.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

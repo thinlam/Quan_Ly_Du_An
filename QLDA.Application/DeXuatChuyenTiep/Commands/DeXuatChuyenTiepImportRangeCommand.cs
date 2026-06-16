@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatChuyenTieps.Commands;
@@ -21,6 +23,13 @@ internal class DeXuatChuyenTiepImportRangeCommandHandler(IServiceProvider servic
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
+        serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth =
+        serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IUserProvider _user =
+        serviceProvider.GetRequiredService<IUserProvider>();
+
     public async Task Handle(
         DeXuatChuyenTiepImportRangeCommand request,
         CancellationToken cancellationToken = default) {
@@ -28,6 +37,16 @@ internal class DeXuatChuyenTiepImportRangeCommandHandler(IServiceProvider servic
 
         if (importTrongDuAn && request.BuocId <= 0)
             return;
+
+        // Check step authorization for import within DuAn
+        if (importTrongDuAn && request.BuocId > 0) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == request.BuocId, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         Dictionary<string, (Guid Id, int? BuocHienTaiId)>? duAnByTen = null;
         if (!importTrongDuAn) {

@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
+using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.NghiemThus.DTOs;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Queries;
 
@@ -20,10 +25,16 @@ internal class
     PaginatedList<NghiemThuDto>> {
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
 
     public NghiemThuGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<NghiemThuDto>> Handle(NghiemThuGetDanhSachQuery request,
@@ -38,7 +49,8 @@ internal class
                 request,
                 e => e.SoBienBan,
                 e => e.NoiDung
-            );
+            )
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId);
            
 
         return await queryable

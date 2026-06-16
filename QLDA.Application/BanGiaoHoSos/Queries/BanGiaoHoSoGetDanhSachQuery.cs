@@ -2,7 +2,9 @@ using BuildingBlocks.Domain.Providers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Domain.Entities;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Application.Authorization;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 using QLDA.Application.Common.Mapping;
@@ -22,13 +24,17 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
     private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
     private readonly IRepository<BuildingBlocks.Domain.Entities.UserMaster, long> _userMasterRepository;
     private readonly IRepository<DmDonVi, long> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IUserProvider _userProvider;
+    private readonly IBuocAuthorizationProvider _auth;
 
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
         _userMasterRepository = serviceProvider.GetRequiredService<IRepository<BuildingBlocks.Domain.Entities.UserMaster, long>>();
         _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
@@ -42,8 +48,7 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => e.CreatedBy == _userProvider.Id.ToString())
-            .Include(e => e.DuAn)
-            .Include(e => e.Buoc)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId)
             .WhereIf(request.SearchDto.TrangThai.HasValue, e => (int)e.TrangThai == request.SearchDto.TrangThai!.Value)
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId!.Value)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId!.Value)

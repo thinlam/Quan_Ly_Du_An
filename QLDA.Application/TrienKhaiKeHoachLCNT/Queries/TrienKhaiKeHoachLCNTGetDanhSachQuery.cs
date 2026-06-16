@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -30,7 +31,8 @@ internal class    TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Serv
 
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
-
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
     public async Task<PaginatedList<TrienKhaiKeHoachLCNTDto>> Handle(TrienKhaiKeHoachLCNTDanhSachQuery request,
@@ -55,6 +57,8 @@ internal class    TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Serv
             .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayTrinh >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayTrinh < denNgayExclusiveDto);
+
+        queryable = _auth.FilterVisibleChildEntities(queryable, _duAnBuocRepo, User, e => e.BuocId);
         return await queryable
             .Select(e => new TrienKhaiKeHoachLCNTDto() {
                 Id = e.Id,

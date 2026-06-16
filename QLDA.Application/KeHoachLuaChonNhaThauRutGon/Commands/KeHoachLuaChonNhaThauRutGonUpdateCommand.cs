@@ -1,7 +1,9 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.DTOs;
+using QLDA.Application.Authorization;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 
@@ -11,12 +13,18 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
 {
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
 
     public KeHoachLuaChonNhaThauRutGonUpdateCommandHandler(IServiceProvider serviceProvider)
     {
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
@@ -25,7 +33,7 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
         // có 2 role Update là Người Trình và Phòng KHTC
         // if(TrangThai = "Dự thảo"  & user.UserId = entity.CreateBy ) -> allow
         // if(trangThai = "Đã trình" & isPhongKHTC ) -> cho phép
-        
+
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DuThao && s.Loai == PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);
         var trangThaiDaChuyen = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -35,6 +43,16 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
+        if (request.Dto.BuocId.HasValue)
+        {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
+
         if (entity.TrangThaiId != null &&  entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiDaChuyen?.Id)
         {
             throw new ManagedException("Trạng thái không thể cập nhật.");
@@ -43,10 +61,10 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
         entity.NhaThauId = request.Dto.NhaThauId;
         entity.GoiThauId = request.Dto.GoiThauId;
         entity.KetQuaDanhGia = request.Dto.KetQuaDanhGia;
-       
+
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
-        
+
         await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

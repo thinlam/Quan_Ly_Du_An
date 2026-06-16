@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
@@ -13,7 +15,7 @@ public record ToTrinhCoThamDinhGetPaginatedQuery : AggregateRootPagination, IMay
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-    
+
     public string? Loai { get; set; }
     public string? So { get; set; }
     public string? TrichYeu { get; set; }
@@ -27,13 +29,17 @@ internal class
     private readonly IRepository<ToTrinhCoThamDinh, Guid> ToTrinhCoThamDinh =  ServiceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> DuongDiTrangThaiToTrinh = ServiceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IUserProvider _userProvider = ServiceProvider.GetRequiredService<IUserProvider>();
 
     public async Task<PaginatedList<ToTrinhCoThamDinhDto>> Handle(ToTrinhCoThamDinhGetPaginatedQuery request,
         CancellationToken cancellationToken = default) {
-        
+
         var queryable = ToTrinhCoThamDinh.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.Loai != null, e => e.Loai == request.Loai)
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),
@@ -75,7 +81,7 @@ internal class
                 TenTrangThaiThamTra   = e.TrangThaiThamTraId != null && e.TrangThaiThamTraId == (int)TrangThaiThamTra.DaThamTra ? "Đã thẩm tra" :"Chưa thẩm tra",
                 KetQuaThamTra = e.KetQuaThamTra,
                 KetQuaThamDinh = e.KetQuaThamDinh,
-               
+
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

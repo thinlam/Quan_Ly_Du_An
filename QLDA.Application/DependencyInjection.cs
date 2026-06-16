@@ -17,6 +17,9 @@ public static class DependencyInjection
         services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
 
+        // BuocAuthorizationProvider for step-level authorization
+        services.AddScoped<IBuocAuthorizationProvider, BuocAuthorizationProvider>();
+
         return services;
     }
 }

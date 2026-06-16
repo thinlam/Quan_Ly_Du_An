@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Queries;
 
@@ -12,7 +15,7 @@ public record KeHoachLuaChonNhaThauRutGonGetDanhSachQuery : AggregateRootPaginat
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-    public DateOnly? TuNgay { get; set; } 
+    public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
 }
 
@@ -23,6 +26,12 @@ internal class    KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServicePro
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
         ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
 
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
+        ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+
+    private readonly IBuocAuthorizationProvider _auth =
+        ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
     public async Task<PaginatedList<KeHoachLuaChonNhaThauRutGonDto>> Handle(KeHoachLuaChonNhaThauRutGonGetDanhSachQuery request,
@@ -31,6 +40,7 @@ internal class    KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServicePro
         var queryable = KeHoachLuaChonNhaThauRutGon.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
            // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
@@ -42,14 +52,14 @@ internal class    KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServicePro
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                GoiThauId = e.GoiThauId,    
-                KetQuaDanhGia = e.KetQuaDanhGia, 
+                GoiThauId = e.GoiThauId,
+                KetQuaDanhGia = e.KetQuaDanhGia,
                 NhaThauId = e.NhaThauId,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenGoiThau = e.GoiThau != null ? e.GoiThau.Ten : null,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,   
+                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
                 TenNhaThau = e.NhaThau != null ? e.NhaThau.Ten : null,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())

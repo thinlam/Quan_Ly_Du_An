@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -12,13 +14,15 @@ public record ThuyetMinhDuAnGetDanhSachQuery : AggregateRootPagination, IMayHave
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-    public DateOnly? TuNgay { get; set; } 
+    public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
 }
 
 internal class    ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<ThuyetMinhDuAnGetDanhSachQuery, PaginatedList<ThuyetMinhDuAnDto>> {
     private readonly IRepository<ThuyetMinhDuAn, Guid> ThuyetMinhDuAn = ServiceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
@@ -30,11 +34,12 @@ internal class    ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider Service
             .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
            // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
           //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
-            
+
         return await queryable
             .Select(e => new ThuyetMinhDuAnDto() {
                 Id = e.Id,

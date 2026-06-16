@@ -5,6 +5,7 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.HopDongs.DTOs;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.HopDongs.Queries;
 
@@ -18,15 +19,19 @@ internal class
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DuAn, Guid> _duAn;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IUserProvider _userProvider;
     private readonly IPolicyProvider _policyProvider;
+    private readonly IBuocAuthorizationProvider _buocAuth;
 
     public HopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
+        _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     }
 
     public async Task<PaginatedList<HopDongDto>> Handle(HopDongGetDanhSachQuery request,
@@ -35,6 +40,7 @@ internal class
             .Where(e => !e.DuAn!.IsDeleted)
             .Where(e => !e.GoiThau!.IsDeleted)
             .ApplyDuAnChildVisibility(_duAn, _userProvider, _policyProvider, e => e.DuAnId)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _buocAuth, _userProvider, e => e.BuocId)
             .WhereIf(request.SearchDto.IsBienBan.HasValue, e => e.IsBienBan == request.SearchDto.IsBienBan)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.DonViThucHienId != null, e => e.DonViThucHienId == request.SearchDto.DonViThucHienId)

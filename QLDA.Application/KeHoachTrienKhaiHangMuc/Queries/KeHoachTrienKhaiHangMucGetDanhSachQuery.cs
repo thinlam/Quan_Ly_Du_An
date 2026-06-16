@@ -1,10 +1,13 @@
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
@@ -35,6 +38,8 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
 
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
     public async Task<PaginatedList<KeHoachTrienKhaiHangMucDto>> Handle(KeHoachTrienKhaiHangMucDanhSachQuery request,
@@ -56,6 +61,7 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
 
         var queryable = KeHoachTrienKhaiHangMuc.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
@@ -72,7 +78,7 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
             //    .Select(e => e.Id)
             //    .ToListAsync(cancellationToken);
 
-            //queryable = queryable.Where(e => duAnIds.Contains(e.DuAnId));   
+            //queryable = queryable.Where(e => duAnIds.Contains(e.DuAnId));
             var queryDuAn = DuAn.GetQueryableSet()
                 .Where(d => !d.IsDeleted)
                 .Where(d => !KeHoachTrienKhaiHangMuc

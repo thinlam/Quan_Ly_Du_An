@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Domain.Constants;
 using System.Data;
+using QLDA.Application.Authorization;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 
@@ -13,6 +15,9 @@ internal class
     private readonly IRepository<ChuTruongLapKeHoach, Guid> ChuTruongLapKeHoach;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> StatusRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ChuTruongLapKeHoachInsertCommandHandler> _logger;
 
@@ -21,6 +26,9 @@ internal class
         ChuTruongLapKeHoach = serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
         StatusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
         _logger = logger;
         _unitOfWork = ChuTruongLapKeHoach.UnitOfWork;
     }
@@ -33,6 +41,15 @@ internal class
             var trangThaiDuThao = await StatusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
                 .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
             request.Entity.TrangThaiId = trangThaiDuThao?.Id;
+
+            if (request.Entity.BuocId.HasValue) {
+                var buoc = await _duAnBuocRepo.GetQueryableSet()
+                    .Include(e => e.DuAn)
+                    .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                    .FirstOrDefaultAsync(e => e.Id == request.Entity.BuocId.Value, cancellationToken);
+                if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
+                    throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+            }
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 var isExist = ChuTruongLapKeHoach.GetQueryableSet().Any(o => o.Id == request.Entity.Id);

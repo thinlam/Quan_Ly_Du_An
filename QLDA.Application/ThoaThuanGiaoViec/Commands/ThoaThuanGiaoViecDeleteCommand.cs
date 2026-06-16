@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 
@@ -13,6 +14,9 @@ public record ThoaThuanGiaoViecDeleteCommandHandler : IRequestHandler<ThoaThuanG
     private readonly IRepository<ThoaThuanGiaoViec, Guid> ThoaThuanGiaoViec;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public ThoaThuanGiaoViecDeleteCommandHandler(IServiceProvider serviceProvider)
@@ -20,6 +24,9 @@ public record ThoaThuanGiaoViecDeleteCommandHandler : IRequestHandler<ThoaThuanG
         ThoaThuanGiaoViec = serviceProvider.GetRequiredService<IRepository<ThoaThuanGiaoViec, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = ThoaThuanGiaoViec.UnitOfWork;
     }
 
@@ -32,6 +39,15 @@ public record ThoaThuanGiaoViecDeleteCommandHandler : IRequestHandler<ThoaThuanG
         ManagedException.ThrowIfNull(trangThaiDuThao, "Trạng thái không thể xóa!");
 
         ManagedException.ThrowIfNull(entity);
+
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         entity.IsDeleted = true;
 

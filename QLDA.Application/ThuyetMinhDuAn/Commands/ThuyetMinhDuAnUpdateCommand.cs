@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Providers;
 using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Domain.Constants;
@@ -12,6 +13,8 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
     readonly IAppSettingsProvider _settings;
@@ -22,6 +25,8 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
@@ -38,6 +43,15 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
         var entity = await _repo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
+
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         //if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != traLaiStt?.Id)

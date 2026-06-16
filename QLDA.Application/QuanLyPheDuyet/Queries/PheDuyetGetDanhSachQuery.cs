@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Domain.Constants;
@@ -26,6 +28,8 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _baoCaoKhaoSatRepo;
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _quyetDinhDieuChinhRepo;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _user;
 
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
@@ -36,6 +40,8 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         _baoCaoKhaoSatRepo = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
         _quyetDinhDieuChinhRepo = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<PheDuyetListItemDto>> Handle(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken) {
@@ -206,7 +212,10 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         //    .ToDictionary(g => g.Key, g => g.Max(x => x.NgayXuLy));
         var duAnBuoc = _duAnBuocRepo.GetQueryableSet().AsNoTracking();
 
-        var query = from e in _pheDuyetRepo.GetQueryableSet().AsNoTracking()
+        var pheDuyetQuery = _pheDuyetRepo.GetQueryableSet().AsNoTracking()
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _user, e => e.BuocId);
+
+        var query = from e in pheDuyetQuery
             join b in duAnBuoc   on e.BuocId equals b.Id into buocGroup
             from b in buocGroup.DefaultIfEmpty()
             where !e.IsDeleted

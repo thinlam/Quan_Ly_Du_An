@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
@@ -16,6 +17,8 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
     private readonly IRepository<PheDuyetDuToan, Guid> _duToanRepo;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
@@ -24,6 +27,8 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _duToanRepo.UnitOfWork;
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -54,6 +59,15 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
             throw new ManagedException("Chỉ có thể phát hành khi trạng thái là Đã duyệt");
         }
 
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
+
         // Update SoPhatHanh if provided
         if (!string.IsNullOrWhiteSpace(request.SoPhatHanh)) {
             entity.So = request.SoPhatHanh;
@@ -78,6 +92,7 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
 
     private async Task<(PheDuyetDuToan Entity, Guid DuAnId)> GetDuToanEntity(Guid id, CancellationToken cancellationToken) {
         var entity = await _duToanRepo.GetQueryableSet()
+            .Include(e => e.DuAn)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
         return (entity, entity.DuAnId);

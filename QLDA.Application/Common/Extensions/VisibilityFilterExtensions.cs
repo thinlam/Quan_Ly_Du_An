@@ -2,6 +2,7 @@ using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
+using QLDA.Application.Authorization;
 using QLDA.Application.Providers;
 using PermissionConstants = QLDA.Domain.Constants.PermissionConstants;
 
@@ -60,5 +61,15 @@ public static class VisibilityFilterExtensions {
         }
 
         return query.Where(e => false);
+    }
+
+    public static IQueryable<T> WhereFilterBuocVisibility<T>(
+        this IQueryable<T> query,
+        IRepository<DuAnBuoc, int> duAnBuocRepo,
+        IBuocAuthorizationProvider auth,
+        IUserProvider user,
+        Func<T, int?> buocIdSelector) where T : class {
+        if (auth.HasGlobalBypass(user)) return query;
+        return auth.FilterVisibleChildEntities(query, duAnBuocRepo, user, buocIdSelector);
     }
 }

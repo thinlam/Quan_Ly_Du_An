@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
+using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Queries;
 
@@ -18,10 +21,16 @@ internal class
     PaginatedList<KetQuaTrungThauDto>> {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _user;
 
     public KetQuaTrungThauGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _user = serviceProvider.GetRequiredService<IUserProvider>();
     }
 
     public async Task<PaginatedList<KetQuaTrungThauDto>> Handle(KetQuaTrungThauGetDanhSachQuery request,
@@ -30,6 +39,7 @@ internal class
             .Where(e => !e.IsDeleted)
             .Where(e => !e.GoiThau!.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
+            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _user, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.GoiThauId != null, e => e.GoiThau!.Id == request.GoiThauId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 using QLDA.Application.Providers;
@@ -19,6 +20,8 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
     private readonly IUserProvider _userProvider;
@@ -28,9 +31,11 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _duongDiRepo = serviceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
-        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>(); 
+        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
         _userProvider  = serviceProvider.GetRequiredService<IUserProvider>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     }
 
     public async Task<int> Handle(ToTrinhCoThamDinhThaoTacCommand request, CancellationToken cancellationToken) {
@@ -46,6 +51,16 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
                 .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
             var userId = _userProvider.Info.UserID;
             var maTrangThai = entity.TrangThai.Ma;
+
+            if (entity.BuocId.HasValue) {
+                var buoc = await _duAnBuocRepo.GetQueryableSet()
+                    .Include(e => e.DuAn)
+                    .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                    .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+                if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                    throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+            }
+
             // get các trạng thái được phép xử lý
             var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
                        .Where(x => x.Used && !(x.IsDeleted ?? false)
@@ -55,7 +70,7 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == entity.DuAn.DonViPhuTrachChinhId)
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && _userProvider.Info.UserID == entity.DuAn.LanhDaoPhuTrachId)
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // ví dụ phòng KHTC
-                                                                                                                                // chưa xét cấp đơn vị && phòng ban chỉ định
+                                                                                                                               // chưa xét cấp đơn vị && phòng ban chỉ định
                        )).ToListAsync(cancellationToken);
 
             var trangThaiTiepTheoItems = statusDict.GetValueOrDefault(request.TrangThaiTiepTheo);

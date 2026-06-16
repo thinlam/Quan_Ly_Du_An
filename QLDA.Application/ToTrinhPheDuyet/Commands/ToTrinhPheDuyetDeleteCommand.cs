@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 
@@ -13,6 +14,9 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
     private readonly IRepository<ToTrinhPheDuyet, Guid> ToTrinhPheDuyet;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public ToTrinhPheDuyetDeleteCommandHandler(IServiceProvider serviceProvider)
@@ -20,6 +24,9 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
         ToTrinhPheDuyet = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = ToTrinhPheDuyet.UnitOfWork;
     }
 
@@ -39,6 +46,15 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
             throw new ManagedException("Không thể xóa khi đã duyệt");
         }
         ManagedException.ThrowIfNull(entity);
+
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         entity.IsDeleted = true;
 

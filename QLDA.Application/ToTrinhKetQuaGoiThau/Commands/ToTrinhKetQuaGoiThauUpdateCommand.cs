@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.ToTrinhKetQuaGoiThauMappings;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.DTOs;
 using QLDA.Domain.Constants;
@@ -11,11 +12,17 @@ public record ToTrinhKetQuaGoiThauUpdateCommand(ToTrinhKetQuaGoiThauInsertDto Dt
 internal class ToTrinhKetQuaGoiThauUpdateCommandHandler : IRequestHandler<ToTrinhKetQuaGoiThauUpdateCommand, ToTrinhKetQuaGoiThau> {
     private readonly IRepository<ToTrinhKetQuaGoiThau, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public ToTrinhKetQuaGoiThauUpdateCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<ToTrinhKetQuaGoiThau, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
@@ -31,6 +38,15 @@ internal class ToTrinhKetQuaGoiThauUpdateCommandHandler : IRequestHandler<ToTrin
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
+
+        if (entity.BuocId.HasValue) {
+            var buoc = await _duAnBuocRepo.GetQueryableSet()
+                .Include(e => e.DuAn)
+                .Include(e => e.DuAnBuocPhongBanPhoiHops)
+                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        }
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
