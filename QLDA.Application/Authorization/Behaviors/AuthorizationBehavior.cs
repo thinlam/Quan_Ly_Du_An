@@ -9,16 +9,9 @@ namespace QLDA.Application.Authorization.Behaviors;
 /// - Reads: applies IAuthorizationManager.FilterVisible() to IFilterableQuery
 /// - Writes: calls IAuthorizationManager.CanExecuteAsync() and throws ForbiddenException if denied
 /// </summary>
-public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class AuthorizationBehavior<TRequest, TResponse>(IAuthorizationManager _auth) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly IAuthorizationManager _auth;
-
-    public AuthorizationBehavior(IAuthorizationManager auth)
-    {
-        _auth = auth;
-    }
-
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
@@ -28,7 +21,7 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             .GetCustomAttribute<AuthorizeResourceAttribute>();
 
         if (attr is null)
-            return await next();
+            return await next(ct);
 
         var ctx = _auth.Context;
 
@@ -56,6 +49,6 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
                     $"User lacks permission for resource '{attr.ResourceKey}'.");
         }
 
-        return await next();
+        return await next(ct);
     }
 }
