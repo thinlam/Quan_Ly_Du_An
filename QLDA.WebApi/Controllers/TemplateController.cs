@@ -125,7 +125,7 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
     [HttpGet("import-de-xuat-chu-truong-chuyen-tiep")]
     [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<FileContentResult> GetImportDeXuatChuTruongChuyenTiep() {
+    public async Task<FileContentResult> GetImportDeXuatChuTruongChuyenTiep([FromQuery] Guid? duAnId) {
         var fileNameTemplate = "Import_DeXuatChuTruongChuyenTiep.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -133,23 +133,20 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             fileNameTemplate
         );
 
-        var danhSachTenDuAn = await DuAn.GetQueryableSet().Where(e => !e.IsDeleted)
+        var duAnQuery = DuAn.GetQueryableSet().Where(e => !e.IsDeleted);
+
+        if (duAnId.HasValue)
+            duAnQuery = duAnQuery.Where(e => e.Id == duAnId.Value);
+        else
+            duAnQuery = duAnQuery.Where(e => e.TrangThaiDuAn!.Ma == "DTH");
+
+        var danhSachTenDuAn = await duAnQuery
             .Select(e => new ComboData {
                 Name = e.TenDuAn ?? string.Empty,
                 Id = e.Id.ToString(),
             }).ToListAsync();
 
-        var danhSachTenBuoc = await DuAnBuoc.GetQueryableSet().Where(e => !e.IsDeleted)
-            .Select(e => new ComboData {
-                Id = e.Id.ToString(),
-                ParentId = e.DuAnId.ToString(),
-                Name = e.TenBuoc ?? e.Buoc!.Ten ?? string.Empty
-            }).Distinct().ToListAsync();
-
-        List<List<ComboData>> comboData = [
-            danhSachTenDuAn,
-            danhSachTenBuoc
-        ];
+        List<List<ComboData>> comboData = [danhSachTenDuAn];
 
         var importResult = _excelImporter.GetTemplate(templatePath, comboData);
 
