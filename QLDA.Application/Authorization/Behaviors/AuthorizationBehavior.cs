@@ -10,6 +10,7 @@ namespace QLDA.Application.Authorization.Behaviors;
 /// - Writes: calls IAuthorizationManager.CanExecuteAsync() and throws ForbiddenException if denied
 /// </summary>
 public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : notnull
 {
     private readonly IAuthorizationManager _auth;
 

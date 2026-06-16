@@ -1,6 +1,5 @@
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
-using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;

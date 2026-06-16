@@ -38,7 +38,9 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
     {
 
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DaTrinh);
         var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DaChuyen);

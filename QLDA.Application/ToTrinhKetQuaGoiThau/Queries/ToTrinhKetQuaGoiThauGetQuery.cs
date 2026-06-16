@@ -20,7 +20,7 @@ internal class ToTrinhKetQuaGoiThauGetQueryHandler(IServiceProvider serviceProvi
     public async Task<ToTrinhKetQuaGoiThau> Handle(ToTrinhKetQuaGoiThauGetQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = ToTrinhKetQuaGoiThau.GetOrderedSet()
-            .Include(e => e.GoiThaus)
+            .Include(e => e.GoiThaus!)
            .ThenInclude(g => g.GoiThau)
            .Where(e => e.Id == request.Id);
 

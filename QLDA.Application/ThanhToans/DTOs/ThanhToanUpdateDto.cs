@@ -17,6 +17,6 @@ public class ThanhToanUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
 public class phuLucHopDongCboDto
 {
     public Guid phuLucHopDongId { get; set; }
-    public String Ten { get; set; }
+    public String Ten { get; set; } = string.Empty;
 
 }

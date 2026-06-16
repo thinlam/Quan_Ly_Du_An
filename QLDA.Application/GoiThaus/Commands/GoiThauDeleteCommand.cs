@@ -14,6 +14,7 @@ public record GoiThauDeleteCommandHandler : IRequestHandler<GoiThauDeleteCommand
     
     public GoiThauDeleteCommandHandler(IServiceProvider serviceProvider) {
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
+        _KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _unitOfWork = GoiThau.UnitOfWork;
     }

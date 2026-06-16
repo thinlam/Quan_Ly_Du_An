@@ -113,7 +113,7 @@ internal class
                 Data = dataTask
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

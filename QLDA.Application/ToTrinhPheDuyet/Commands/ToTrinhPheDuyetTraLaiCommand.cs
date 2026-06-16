@@ -26,9 +26,12 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
 
 
     public ToTrinhPheDuyetTraLaiCommandHandler(DbContext dbContext, IServiceProvider serviceProvider) {
+        _dbContext = dbContext;
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhPheDuyet, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
 
@@ -75,7 +78,9 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh);
         var trangThaiTra = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);

@@ -9,7 +9,7 @@ public class TongHopDeXuatChuTruongResponseDto
 {
     public int TongDeXuatMoi { get; set; }
     public int TongDeXuatChuyenTiep { get; set; }
-    public PaginatedList<TongHopDeXuatChuTruongDto> Data { get; set; }
+    public PaginatedList<TongHopDeXuatChuTruongDto> Data { get; set; } = new();
 }
     public class TongHopDeXuatChuTruongDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo {
     [DefaultValue(null)] public Guid? Id { get; set; }
@@ -20,7 +20,7 @@ public class TongHopDeXuatChuTruongResponseDto
     }
 
     public Guid DuAnId { get; set; }
-    public string TenDuAn { get; set; }
+    public string TenDuAn { get; set; } = string.Empty;
     public long? PhongBanPhuTrachId { get; set; }
     public string? TenPhongBanPhuTrach { get; set; }
     public int? BuocId { get; set; }

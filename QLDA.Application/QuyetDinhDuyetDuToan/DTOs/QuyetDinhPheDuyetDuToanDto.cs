@@ -20,7 +20,7 @@ public class QuyetDinhDuyetDuToanDto : IHasKey<Guid?>,  IMayHaveTepDinhKemDto {
     public string? TenHinhThucQuanLy {  get; set; }
     public string? TenKeHoachLuaChonNhaThau {  get; set;}
     public decimal? GiaTri {  get; set;}
-    public string ThoiGian {  get; set;}
+    public string ThoiGian { get; set; } = string.Empty;
     public List<QuyetDinhDuyetDuToanNguonVonDto>? KeHoachVons { get; set; }
     public List<QuyetDinhDuyetDuToanChiPhiDto>? ChiPhis { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }

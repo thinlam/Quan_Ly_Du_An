@@ -54,7 +54,8 @@ internal class
         var duongDi = await DuongDiTrangThaiToTrinh.GetQueryableSet().AsNoTracking()
                     .Where(x => x.Used && !(x.IsDeleted ?? false)).ToListAsync(cancellationToken);
         var duongDiLookup = duongDi
-            .GroupBy(x => x.MaTrangThaiHienTai)
+            .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
+            .GroupBy(x => x.MaTrangThaiHienTai!)
             .ToDictionary(
                 g => g.Key,
                 g => g.Select(x => new DuongDiTrangThaiToTrinhDto

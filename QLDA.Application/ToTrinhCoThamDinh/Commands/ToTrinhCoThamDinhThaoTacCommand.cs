@@ -44,7 +44,9 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
 
 
             var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ToTrinhCoThamDinh, cancellationToken);
-            var statusDict = statuses.ToDictionary(x => x.Ma);
+            var statusDict = statuses
+                .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+                .ToDictionary(x => x.Ma!, x => x);
 
 
             var entity = await _repository.GetQueryableSet().Include(e => e.TrangThai).Include(e => e.DuAn)
