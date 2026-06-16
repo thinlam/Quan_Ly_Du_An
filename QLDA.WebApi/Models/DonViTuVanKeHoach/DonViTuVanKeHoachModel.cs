@@ -21,7 +21,7 @@ public class DonViTuVanKeHoachModel : IHasKey<Guid?>, IMayHaveTepDinhKemModel
     }
 
 
-    public string TenDonVi { get; set; }
+    public string TenDonVi { get; set; } = string.Empty;
     public Guid KeHoachId { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 

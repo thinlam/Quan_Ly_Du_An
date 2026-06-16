@@ -6,5 +6,5 @@ namespace QLDA.WebApi.Models.QuanLyPheDuyet;
 public class XuLyChungModel
 {
     public string? NoiDung { get; set; }
-    public string MaTrangThaiTiepTheo { get; set; }
+    public string MaTrangThaiTiepTheo { get; set; } = string.Empty;
 }

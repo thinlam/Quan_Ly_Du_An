@@ -29,7 +29,7 @@ public class TrienKhaiKeHoachLCNTModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
 
     public int? BuocId { get; set; }
     public Guid DuAnId { get; set; }
-    public string So { get; set; }
+    public string So { get; set; } = string.Empty;
     public DateTimeOffset NgayTrinh { get; set; }
     public string? TrichYeu { get; set; } = string.Empty;
     public Guid GoiThauId { get; set; }

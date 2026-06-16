@@ -25,11 +25,11 @@ public class KeHoachTrienKhaiHangMucModel : IHasKey<Guid?>, IMustHaveId<Guid>, I
  
     public int? BuocId { get; set; }
     public Guid DuAnId { get; set; }
-    public string So { get; set; } 
+    public string So { get; set; } = string.Empty;
     public DateTimeOffset? NgayToTrinh { get; set; } 
     public string? TrichYeu { get; set; } = string.Empty;
 
-    public string TenHangMuc { get; set; }
+    public string TenHangMuc { get; set; } = string.Empty;
     public int? GiaiDoanId { get; set; }
     public long? CanBoChuTriId { get; set; }
     public DateOnly? NgayBatDau { get; set; }

@@ -93,7 +93,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="updateDto"></param>
+    /// <param name="Dto"></param>
     /// <param name="unitOfWork"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
