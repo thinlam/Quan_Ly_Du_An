@@ -9,6 +9,6 @@ namespace QLDA.Domain.Entities;
 public class CanBoTrienKhaiHangMuc {
     public Guid KeHoachId { get; set; }
     public long CanBoId { get; set; }
-    public KeHoachTrienKhaiHangMuc KeHoachTrienKhai { get; set; }
+    public KeHoachTrienKhaiHangMuc KeHoachTrienKhai { get; set; } = default!;
 
 }

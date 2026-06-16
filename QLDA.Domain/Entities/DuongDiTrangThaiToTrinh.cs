@@ -7,7 +7,7 @@ namespace QLDA.Domain.Entities;
 public class DuongDiTrangThaiToTrinh :IHasKey<long>, IAggregateRoot
 {
     public long Id { get; set; }
-    public string Loai { get; set; }
+    public string Loai { get; set; } = string.Empty;
     public string? MaTrangThaiHienTai { get; set; }
     public string? MaTrangThaiTiepTheo { get; set; }
     public string? TenTrangThaiTiepTheo { get; set; }
