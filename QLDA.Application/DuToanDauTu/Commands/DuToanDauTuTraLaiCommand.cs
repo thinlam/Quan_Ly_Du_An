@@ -20,6 +20,7 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
@@ -30,6 +31,7 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
@@ -37,7 +39,7 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
 
     public async Task<int> Handle(DuToanDauTuTraLaiCommand request, CancellationToken cancellationToken) {
         var phongBanId = _userProvider.Info.PhongBanID;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHID)
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHId)
         {
             throw new ManagedException("Tài khoản không có quyền.");
         }
@@ -65,7 +67,7 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
                 .Include(e => e.DuAn)
                 .Include(e => e.DuAnBuocPhongBanPhoiHops)
                 .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
                 throw new ManagedException("Phòng ban không có quyền thao tác bước này");
         }
 

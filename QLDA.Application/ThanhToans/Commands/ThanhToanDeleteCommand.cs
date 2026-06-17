@@ -12,6 +12,7 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
@@ -21,13 +22,14 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
     }
 
     public async Task Handle(ThanhToanDeleteCommand request, CancellationToken cancellationToken) {
-        ValidatePhongKeToanPermission();
+        ValidatePhongKHTCPermission();
         var entity = await ThanhToan.GetOrderedSet()
            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
@@ -38,7 +40,7 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
                 .Include(e => e.DuAn)
                 .Include(e => e.DuAnBuocPhongBanPhoiHops)
                 .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
                 throw new ManagedException("Phòng ban không có quyền thao tác bước này");
         }
 
@@ -49,10 +51,10 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private void ValidatePhongKeToanPermission() {
+    private void ValidatePhongKHTCPermission() {
         ManagedException.ThrowIf(
-            _userProvider.Info.PhongBanID != _settings.PhongKeToanID,
-            "Chỉ phòng kế toán có quyền thực hiện thao tác này"
+            _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
+            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
         );
     }
 }

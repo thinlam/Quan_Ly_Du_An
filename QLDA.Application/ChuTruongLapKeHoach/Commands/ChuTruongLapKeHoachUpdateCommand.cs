@@ -16,7 +16,7 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChuTruongLapKeHoachUpdateCommandHandler(IServiceProvider serviceProvider)
@@ -25,7 +25,7 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
@@ -45,7 +45,7 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
                 .Include(e => e.DuAn)
                 .Include(e => e.DuAnBuocPhongBanPhoiHops)
                 .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
                 throw new ManagedException("Phòng ban không có quyền thao tác bước này");
         }
 

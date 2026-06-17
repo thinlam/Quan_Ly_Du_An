@@ -31,7 +31,7 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
 
     public async Task<int> Handle(PheDuyetDuToanTuChoiCommand request, CancellationToken cancellationToken) {
         // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) ?? false;
         var isQuanTri = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_QuanTri) ?? false;
         if (!isLanhDao && !isHcth && !isQuanTri) {

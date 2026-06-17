@@ -8,11 +8,11 @@
 
 ### Workflow 1: SQLite Local (không cần SQL Server)
 
-Dành cho dev phát triển cục bộ. Không cần hạ tầng gì, chỉ cần .NET 8 SDK.
+Dành cho dev phát triển cục bộ. Không cần hạ tầng gì, chỉ cần .NET 8 SDK. Batch files (.bat) chạy trên cả Windows và Linux ( qua `dotnet script` hoặc .NET SDK).
 
 ```bash
 # 1. Clone
-git clone <repository-url> && cd SER
+git clone <repository-url> && cd QLDA
 
 # 2. Tạo database SQLite + schema
 ef.bat update --sqlite           # → dev-data.db
@@ -57,6 +57,8 @@ test.bat
 
 **Dùng khi:** Test với SQL Server thật, môi trường team dùng chung, validate SQL-specific features (Dapper queries, stored procedures).
 
+> **Linux/macOS:** Batch files (.bat) có thể chạy qua `dotnet script` hoặc cần thay bằng shell scripts (.sh) tương đương.
+
 ### Workflow 3: Staging/Production Deployment
 
 Triển khai lên môi trường thật. Migrations + build đã verify chỉ.
@@ -96,7 +98,7 @@ fake.bat all 100 --schema staging
 
 ```bash
 # Build solution
-dotnet build SER.sln
+dotnet build QLDA.sln
 
 # Run all tests
 test.bat
@@ -897,6 +899,8 @@ test.bat myentity
 | HopDong Handler | 3 | Passing |
 | Integration (HTTP) | 12 | All passing |
 | **Total** | **37** | **All passing** |
+
+> **Note:** Phase J (CancellationToken audit) from the build warnings cleanup task is tracked separately and may add additional test coverage.
 
 ### Integration Test Detail
 

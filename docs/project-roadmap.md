@@ -4,9 +4,10 @@
 This roadmap outlines the planned development phases, milestones, and features for the QLDA (Quản Lý Dự Án - Project Management System) application, designed for government IT project management in Ho Chi Minh City.
 
 ## Current Status
-**Branch:** `feat/squash-migrations`  
-**Development Phase:** Implementation (Active)  
-**Version:** Pre-release  
+**Branch:** `main` (PR #89 merge: export-tong-hop-nhu-cau-kinh-phi-nam)
+**Development Phase:** Implementation (Active)
+**Version:** Pre-release
+**Last Updated:** June 2026  
 
 ## Roadmap Phases
 
@@ -22,9 +23,9 @@ This roadmap outlines the planned development phases, milestones, and features f
   - Authentication system (JWT)
   - Database schema and initial migrations
 
-### Phase 2: Data Model Enhancement (Current)
-- **Status:** 🔄 In Progress
-- **Duration:** April 2026 - May 2026
+### Phase 2: Data Model Enhancement (Completed)
+- **Status:** ✅ Complete
+- **Duration:** April 2026 - June 2026
 - **Focus:** Complete domain entities, relationships, and master data
 - **Deliverables:**
   - Enhanced entity relationships (many-to-many, hierarchical)
@@ -34,9 +35,9 @@ This roadmap outlines the planned development phases, milestones, and features f
   - Data seeding for reference data
   - **Current Branch:** `feat/squash-migrations` (squashed migrations)
 
-### Phase 3: API Enhancement & Security
-- **Status:** 📋 Planned
-- **Duration:** May 2026 - June 2026
+### Phase 3: API Enhancement & Security (Current)
+- **Status:** 🔄 In Progress
+- **Duration:** May 2026 - July 2026
 - **Focus:** Complete API endpoints and security implementation
 - **Deliverables:**
   - Complete CRUD endpoints for all entities
@@ -98,8 +99,8 @@ This roadmap outlines the planned development phases, milestones, and features f
 | Milestone | Target Date | Status |
 |-----------|-------------|---------|
 | Architecture Foundation | Mar 2026 | ✅ Complete |
-| Entity Model Complete | Apr 2026 | 🔄 In Progress |
-| API Completion | Jun 2026 | 📋 Planned |
+| Entity Model Complete | Jun 2026 | ✅ Complete |
+| API Completion | Jul 2026 | 🔄 In Progress |
 | Security Implementation | Jul 2026 | 📋 Planned |
 | Business Logic Ready | Aug 2026 | 📋 Planned |
 | Reporting Features | Sep 2026 | 📋 Planned |
@@ -111,7 +112,7 @@ This roadmap outlines the planned development phases, milestones, and features f
 - Complete all entity relationships and configurations
 - Implement advanced search and filtering
 - Enhance validation patterns
-- Complete the squashed migration strategy
+- Build warning cleanup completed (0 warnings achieved)
 - Implement comprehensive error handling
 
 ### Medium-term (Next 4 Months)
@@ -163,4 +164,4 @@ This roadmap outlines the planned development phases, milestones, and features f
 - **Auditors**: Compliance and audit trail requirements
 
 ---
-*Roadmap last updated: April 2026. Subject to change based on stakeholder feedback and technical discoveries.*
+*Roadmap last updated: June 2026. Subject to change based on stakeholder feedback and technical discoveries.*

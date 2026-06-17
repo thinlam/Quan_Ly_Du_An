@@ -8,8 +8,9 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
 
-public record TrienKhaiKeHoachLCNTDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<TrienKhaiKeHoachLCNTDto>> {
- 
+public record TrienKhaiKeHoachLCNTDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<TrienKhaiKeHoachLCNTDto>>
+{
+
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
     public long? PhongBanDeXuatId { get; set; }
@@ -18,7 +19,7 @@ public record TrienKhaiKeHoachLCNTDanhSachQuery : AggregateRootPagination, IMayH
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid? GoiThauId { get; set; }
-      
+
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
@@ -26,25 +27,29 @@ public record TrienKhaiKeHoachLCNTDanhSachQuery : AggregateRootPagination, IMayH
 
 }
 
-internal class    TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<TrienKhaiKeHoachLCNTDanhSachQuery, PaginatedList<TrienKhaiKeHoachLCNTDto>> {
-    private readonly IRepository<Domain.Entities.TrienKhaiKeHoachLCNT, Guid> TrienKhaiKeHoachLCNT =  ServiceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
+internal class TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<TrienKhaiKeHoachLCNTDanhSachQuery, PaginatedList<TrienKhaiKeHoachLCNTDto>>
+{
+    private readonly IRepository<Domain.Entities.TrienKhaiKeHoachLCNT, Guid> TrienKhaiKeHoachLCNT = ServiceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
 
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-    private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<TrienKhaiKeHoachLCNTDto>> Handle(TrienKhaiKeHoachLCNTDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
 
         DateTimeOffset? tuNgayDto = null;
-        DateTimeOffset? denNgayExclusiveDto = null; 
-        if (request.TuNgay.HasValue) {
+        DateTimeOffset? denNgayExclusiveDto = null;
+        if (request.TuNgay.HasValue)
+        {
             var dt = request.TuNgay.Value.ToDateTime(TimeOnly.MinValue);
             tuNgayDto = new DateTimeOffset(dt);
         }
-        if (request.DenNgay.HasValue) {
+        if (request.DenNgay.HasValue)
+        {
             var dt = request.DenNgay.Value.ToDateTime(TimeOnly.MinValue);
             denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
         }
@@ -53,17 +58,18 @@ internal class    TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Serv
             .Where(e => !e.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
-            .WhereIf(request.So != null, e => e.So.Contains(request.So))
+            .WhereIf(request.So != null, e => e.So.Contains(request.So!))
             .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayTrinh >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayTrinh < denNgayExclusiveDto);
 
-        queryable = _auth.FilterVisibleChildEntities(queryable, _duAnBuocRepo, User, e => e.BuocId);
+        queryable = _buocAuth.FilterVisibleChildEntities(queryable, _duAnBuocRepo, _authContext, e => e.BuocId);
         return await queryable
-            .Select(e => new TrienKhaiKeHoachLCNTDto() {
+            .Select(e => new TrienKhaiKeHoachLCNTDto()
+            {
                 Id = e.Id,
-                DuAnId=e.DuAnId,
-                BuocId=e.BuocId,
+                DuAnId = e.DuAnId,
+                BuocId = e.BuocId,
                 So = e.So,
                 NgayTrinh = e.NgayTrinh,
                 TrichYeu = e.TrichYeu,

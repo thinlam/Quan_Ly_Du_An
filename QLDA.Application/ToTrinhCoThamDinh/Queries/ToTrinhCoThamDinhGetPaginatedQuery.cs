@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
@@ -10,7 +10,8 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Queries;
 
-public record ToTrinhCoThamDinhGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhCoThamDinhDto>> {
+public record ToTrinhCoThamDinhGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhCoThamDinhDto>>
+{
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
@@ -25,21 +26,20 @@ public record ToTrinhCoThamDinhGetPaginatedQuery : AggregateRootPagination, IMay
 
 internal class
     ToTrinhCoThamDinhGetPaginatedQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<ToTrinhCoThamDinhGetPaginatedQuery,  PaginatedList<ToTrinhCoThamDinhDto>> {
-    private readonly IRepository<ToTrinhCoThamDinh, Guid> ToTrinhCoThamDinh =  ServiceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
-    private readonly IRepository<DuongDiTrangThaiToTrinh, long> DuongDiTrangThaiToTrinh = ServiceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    : IRequestHandler<ToTrinhCoThamDinhGetPaginatedQuery, PaginatedList<ToTrinhCoThamDinhDto>>
+{
+    private readonly IRepository<ToTrinhCoThamDinh, Guid> _toTrinhCoThamDinh = ServiceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
+    private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiTrangThaiToTrinh = ServiceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
+    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-    private readonly IUserProvider _userProvider = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<ToTrinhCoThamDinhDto>> Handle(ToTrinhCoThamDinhGetPaginatedQuery request,
-        CancellationToken cancellationToken = default) {
-
-        var queryable = ToTrinhCoThamDinh.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = _buocAuth.FilterVisibleChildEntities(_toTrinhCoThamDinh.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.Loai != null, e => e.Loai == request.Loai)
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),
@@ -51,7 +51,7 @@ internal class
                 request,
                 e => e.TrichYeu
             );
-        var duongDi = await DuongDiTrangThaiToTrinh.GetQueryableSet().AsNoTracking()
+        var duongDi = await _duongDiTrangThaiToTrinh.GetQueryableSet().AsNoTracking()
                     .Where(x => x.Used && !(x.IsDeleted ?? false)).ToListAsync(cancellationToken);
         var duongDiLookup = duongDi
             .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
@@ -62,14 +62,15 @@ internal class
                 {
                     MaTrangThaiHienTai = x.MaTrangThaiHienTai,
                     MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
-                    TenTrangThaiTiepTheo =  x.TenTrangThaiTiepTheo,
+                    TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
                     RoleId = x.RoleId,
                     RoleLevel = x.RoleLevel
                 }).ToList()
 
     );
         var list = await queryable
-            .Select(e => new ToTrinhCoThamDinhDto() {
+            .Select(e => new ToTrinhCoThamDinhDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
@@ -79,11 +80,11 @@ internal class
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-                TenTrangThaiThamTra   = e.TrangThaiThamTraId != null && e.TrangThaiThamTraId == (int)TrangThaiThamTra.DaThamTra ? "Đã thẩm tra" :"Chưa thẩm tra",
+                TenTrangThaiThamTra = e.TrangThaiThamTraId != null && e.TrangThaiThamTraId == (int)TrangThaiThamTra.DaThamTra ? "Đã thẩm tra" : "Chưa thẩm tra",
                 KetQuaThamTra = e.KetQuaThamTra,
                 KetQuaThamDinh = e.KetQuaThamDinh,
 
-                DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
+                DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
             })

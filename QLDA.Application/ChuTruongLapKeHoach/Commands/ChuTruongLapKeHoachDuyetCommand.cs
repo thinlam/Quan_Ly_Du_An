@@ -21,6 +21,7 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
@@ -31,13 +32,14 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(ChuTruongLapKeHoachDuyetCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
             throw new ManagedException("Tài khoản không có quyền.");
@@ -63,7 +65,7 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
                 .Include(e => e.DuAn)
                 .Include(e => e.DuAnBuocPhongBanPhoiHops)
                 .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
                 throw new ManagedException("Phòng ban không có quyền thao tác bước này");
         }
 

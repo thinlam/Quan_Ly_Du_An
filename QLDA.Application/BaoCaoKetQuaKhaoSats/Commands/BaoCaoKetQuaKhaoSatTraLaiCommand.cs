@@ -31,7 +31,7 @@ internal class BaoCaoKetQuaKhaoSatTraLaiCommandHandler : IRequestHandler<BaoCaoK
     public async Task<int> Handle(BaoCaoKetQuaKhaoSatTraLaiCommand request, CancellationToken cancellationToken)
     {
         var phongBanId = _userProvider.Info.PhongBanID;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHID)
+        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHId)
         {
             throw new ManagedException("Tài khoản không có quyền.");
         }

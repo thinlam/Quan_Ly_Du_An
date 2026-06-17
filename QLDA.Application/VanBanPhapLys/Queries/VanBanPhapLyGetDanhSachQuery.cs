@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.VanBanPhapLys.DTOs;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.VanBanPhapLys.Queries;
 
@@ -19,24 +19,22 @@ internal class
     PaginatedList<VanBanPhapLyDto>> {
     private readonly IRepository<VanBanPhapLy, Guid> VanBanPhapLy;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAn, Guid> _duAn;
-    private readonly IUserProvider _userProvider;
-    private readonly IPolicyProvider _policyProvider;
+    private readonly IAuthorizationManager _authManager;
 
     public VanBanPhapLyGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         VanBanPhapLy = serviceProvider.GetRequiredService<IRepository<VanBanPhapLy, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
     public async Task<PaginatedList<VanBanPhapLyDto>> Handle(VanBanPhapLyGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = VanBanPhapLy.GetQueryableSet().AsNoTracking()
                 .Where(e => !e.IsDeleted)
-                .Where(e => !e.DuAn!.IsDeleted)
-                .ApplyDuAnChildVisibility(_duAn, _userProvider, _policyProvider, e => e.DuAnId)
+                .Where(e => !e.DuAn!.IsDeleted);
+        queryable = _authManager.FilterVisible(queryable, AuthorizationResourceKeys.DuAn);
+        queryable = queryable
+                .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
                 .WhereGlobalFilter(

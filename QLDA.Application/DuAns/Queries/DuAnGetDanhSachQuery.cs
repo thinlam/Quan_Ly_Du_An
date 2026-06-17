@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Extensions;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.Providers;
@@ -7,32 +7,25 @@ using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAns.Queries;
 
-public record DuAnGetDanhSachQuery(DuAnSearchDto SearchDto) : AggregateRootPagination, IRequest<PaginatedList<DuAnDto>> {
+public record DuAnGetDanhSachQuery(DuAnSearchDto SearchDto) : AggregateRootPagination, IRequest<PaginatedList<DuAnDto>>
+{
     public bool IsNoTracking { get; set; }
 }
 
-internal class DuAnGetDanhSachQueryHandler : IRequestHandler<DuAnGetDanhSachQuery, PaginatedList<DuAnDto>> {
-    private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IUserProvider _userProvider;
-    private readonly IPolicyProvider _policyProvider;
-
-    public DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
-        DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
-    }
-
+internal class DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) : IRequestHandler<DuAnGetDanhSachQuery, PaginatedList<DuAnDto>>
+{
+    private readonly IRepository<DuAn, Guid> DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+    private readonly IAuthorizationManager _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
 
     public async Task<PaginatedList<DuAnDto>> Handle(DuAnGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
-        var queryable = DuAn.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = _authManager.FilterVisible(DuAn.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
             .Include(e => e.DuToans)
-            .ApplyDuAnVisibility(_userProvider, _policyProvider)
             .WhereIf(request.SearchDto.TenDuAn.IsNotNullOrWhitespace(),
-                e => e.TenDuAn!.ToLower().Contains(request.SearchDto.TenDuAn!.ToLower()))
+                e => e.TenDuAn!.ToLower()!.Contains(request.SearchDto.TenDuAn!.ToLower()))
             .WhereIf(request.SearchDto.MaDuAn.IsNotNullOrWhitespace(),
-                e => e.MaDuAn!.ToLower().Contains(request.SearchDto.MaDuAn!.ToLower()))
+                e => e.MaDuAn!.ToLower()!.Contains(request.SearchDto.MaDuAn!.ToLower()))
             .WhereIf(request.SearchDto.ThoiGianKhoiCong > 0, e => e.ThoiGianKhoiCong == request.SearchDto.ThoiGianKhoiCong)
             .WhereIf(request.SearchDto.ThoiGianHoanThanh > 0, e => e.ThoiGianHoanThanh == request.SearchDto.ThoiGianHoanThanh)
             .WhereIf(request.SearchDto.MaNganSach.IsNotNullOrWhitespace(),
@@ -79,7 +72,8 @@ internal class DuAnGetDanhSachQueryHandler : IRequestHandler<DuAnGetDanhSachQuer
             );
 
         return await queryable
-            .Select(e => new DuAnDto() {
+            .Select(e => new DuAnDto()
+            {
                 Id = e.Id,
                 TenDuAn = e.TenDuAn,
                 QuyTrinhId = e.QuyTrinhId,

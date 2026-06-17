@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
@@ -8,7 +8,8 @@ using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Queries;
 
-public record KetQuaTrungThauGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<KetQuaTrungThauDto>> {
+public record KetQuaTrungThauGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<KetQuaTrungThauDto>>
+{
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid? GoiThauId { get; set; }
@@ -18,28 +19,30 @@ public record KetQuaTrungThauGetDanhSachQuery : AggregateRootPagination, IMayHav
 
 internal class
     KetQuaTrungThauGetDanhSachQueryHandler : IRequestHandler<KetQuaTrungThauGetDanhSachQuery,
-    PaginatedList<KetQuaTrungThauDto>> {
+    PaginatedList<KetQuaTrungThauDto>>
+{
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
-    private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IBuocAuthorizationProvider _buocAuth;
+    private readonly IAuthorizationContext _authContext;
 
-    public KetQuaTrungThauGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
+    public KetQuaTrungThauGetDanhSachQueryHandler(IServiceProvider serviceProvider)
+    {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<PaginatedList<KetQuaTrungThauDto>> Handle(KetQuaTrungThauGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
-        var queryable = KetQuaTrungThau.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
+        CancellationToken cancellationToken = default)
+    {
+
+        var queryable = _buocAuth.FilterVisibleChildEntities(KetQuaTrungThau.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.GoiThau!.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _user, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.GoiThauId != null, e => e.GoiThau!.Id == request.GoiThauId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
@@ -50,7 +53,8 @@ internal class
             );
 
         return await queryable
-            .Select(e => new KetQuaTrungThauDto() {
+            .Select(e => new KetQuaTrungThauDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,

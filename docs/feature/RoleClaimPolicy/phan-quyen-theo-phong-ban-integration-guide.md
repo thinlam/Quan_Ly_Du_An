@@ -65,7 +65,7 @@ Hệ thống QLDA (Quản lý Dự án) cung cấp cơ chế **phân quyền 2 t
 |-----------|------------|
 | **Tác nhân (Actor)** | Người dùng thao tác trong hệ thống, xác định bởi Role + PhongBanID + UserID |
 | **Phòng KH-TC** | Phòng Kế hoạch - Tài chính, có quyền global bypass |
-| **Phòng HC-TH** | Phòng Hành chính - Tổng hợp, xác định bằng `PhongHCTHID` |
+| **Phòng HC-TH** | Phòng Hành chính - Tổng hợp, xác định bằng `PhongHCTHId` |
 | **Phòng phụ trách chính** | `DuAn.DonViPhuTrachChinhId` — phòng chịu trách nhiệm chính |
 | **Phòng phối hợp** | `DuAnChiuTrachNhiemXuLy.Loai = DonViPhoiHop` — phòng tham gia phụ |
 | **Phòng theo dõi** | `DuAnChiuTrachNhiemXuLy.Loai = DonViTheoDoi` — chỉ xem (enum chưa có junction) |
@@ -87,7 +87,7 @@ Hệ thống QLDA (Quản lý Dự án) cung cấp cơ chế **phân quyền 2 t
 
 | Component | Project | File | Vai trò |
 |-----------|---------|------|---------|
-| `IAppSettingsProvider` | `QLDA.Application` | `Providers/IAppSettingsProvider.cs` | Đọc config `PhongKHTCID`, `PhongKeToanID`, `PhongHCTHID` |
+| `IAppSettingsProvider` | `QLDA.Application` | `Providers/IAppSettingsProvider.cs` | Đọc config `PhongKHTCID`, `PhongKHTCId`, `PhongHCTHId` |
 | `IPolicyProvider` | `QLDA.Application` | `Providers/IPolicyProvider.cs` | Check permission key + cache |
 | `BuocAuthorizationProvider` | `QLDA.Application` | `Authorization/Providers/BuocAuthorizationProvider.cs` | Check quyền thao tác bước |
 | `VisibilityFilterExtensions` | `QLDA.Application` | `Common/Extensions/VisibilityFilterExtensions.cs` | Extension filter IQueryable |
@@ -95,7 +95,7 @@ Hệ thống QLDA (Quản lý Dự án) cung cấp cơ chế **phân quyền 2 t
 | `PermissionConstants` | `QLDA.Domain` | `Constants/PermissionConstants.cs` | Permission keys + default mapping |
 | `CauHinhVaiTroQuyen` | `QLDA.Persistence` | `Configurations/CauHinhVaiTroQuyenConfiguration.cs` | Seed role-permission toggle |
 | `GetUserByRoleNameQuery` | `QLDA.Application` | `UserMasters/Queries/GetUserByRoleNameQuery.cs` | Load user theo role (cho dropdown Lãnh đạo) |
-| `AppSettings` | `QLDA.WebApi` | `ConfigurationOptions/AppSettings.cs` | Config `PhongKHTCID`, `PhongKeToanID`, `PhongHCTHID` |
+| `AppSettings` | `QLDA.WebApi` | `ConfigurationOptions/AppSettings.cs` | Config `PhongKHTCID`, `PhongKHTCId`, `PhongHCTHId` |
 
 ### 3.2. Sơ đồ kiến trúc
 
@@ -206,8 +206,8 @@ sequenceDiagram
 |---|----------|-----------------|-------|
 | 1 | **BGĐ / Lãnh đạo cấp cao** | `UserID == DuAn.LanhDaoPhuTrachId` | Xem/Sửa/Xóa/Phê duyệt dự án được gán |
 | 2 | **Phòng KH-TC** (mọi role) | `PhongBanID == PhongKHTCID` | Global bypass — full quyền |
-| 3 | **Phòng Kế toán** | `PhongBanID == PhongKeToanID` | CRUD ThanhToan |
-| 4 | **Phòng HC-TH** | `PhongBanID == PhongHCTHID` | Tùy module |
+| 3 | **Phòng Kế Hoạch - Tài chính (KT)** | `PhongBanID == PhongKHTCId` | CRUD ThanhToan |
+| 4 | **Phòng HC-TH** | `PhongBanID == PhongHCTHId` | Tùy module |
 | 5 | **Trưởng phòng phụ trách chính** | `QLDA_LDDV` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | CRUD all trong phòng, phân công, phê duyệt |
 | 6 | **Chuyên viên phòng phụ trách chính** | `QLDA_ChuyenVien` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | CRUD chỉ bản ghi được phân công |
 | 7 | **Trưởng phòng phối hợp** | `QLDA_LDDV` + `PhongBanID` ∈ `DonViPhoiHop` | Xem dự án, CRUD màn hình trong bước |
@@ -223,7 +223,7 @@ sequenceDiagram
 | `QLDA_LDDV` | BGĐ + Trưởng phòng | Bao gồm cả BGĐ (đã gộp với role `QLDA_LD` cũ) |
 | `QLDA_ChuyenVien` | Chuyên viên trong phòng | Giữ |
 | ~~`QLDA_LD`~~ | **ĐÃ BỎ** | Chỉ còn trong comment, sắp xóa |
-| ~~`QLDA_HC_TH`~~ | **ĐÃ BỎ** | Thay bằng `PhongHCTHID` (User.PhongBanID) |
+| ~~`QLDA_HC_TH`~~ | **ĐÃ BỎ** | Thay bằng `PhongHCTHId` (User.PhongBanID) |
 
 ### 5.3. Code xác định tác nhân
 
@@ -237,8 +237,8 @@ var hasRoleTatCa = userProvider.AuthInfo?.HasRole(RoleConstants.QLDA_TatCa) ?? f
 
 // Phân loại tác nhân
 var isKHTP = phongBanId == appSettings.PhongKHTCID;
-var isHCTH = phongBanId == appSettings.PhongHCTHID;
-var isKeToan = phongBanId == appSettings.PhongKeToanID;
+var isHCTH = phongBanId == appSettings.PhongHCTHId;
+var isKHTC = phongBanId == appSettings.PhongKHTCId;
 var isLanhDaoPhuTrach = duAn.LanhDaoPhuTrachId == userId;
 var isPhuTrachChinh = duAn.DonViPhuTrachChinhId == phongBanId;
 var isPhoiHop = duAn.DuAnChiuTrachNhiemXuLys?.Any(x =>
@@ -564,8 +564,8 @@ public class PhanCongChuyenVienCommandValidator : AbstractValidator<PhanCongChuy
 | `DuAnBuoc` | `FilterVisibleSteps()` hoặc `CanExecuteStepAsync()` | Bước — cấu hình riêng |
 | `HopDong` / `GoiThau` / `VanBan` | `ApplyDuAnChildVisibility()` | Child entity — thừa hưởng từ `DuAn` |
 | `DeXuatChuTruongMoi` | `ApplyDuAnChildVisibility()` | Đề xuất liên kết dự án |
-| `PheDuyetDuToan` / `PhanKhaiKinhPhi` | Check `QLDA_LDDV` + `PhongHCTHID` | Riêng — quy trình phê duyệt |
-| `ThanhToan` | `PhongBanID == PhongKeToanID` | Riêng — phòng kế toán |
+| `PheDuyetDuToan` / `PhanKhaiKinhPhi` | Check `QLDA_LDDV` + `PhongHCTHId` | Riêng — quy trình phê duyệt |
+| `ThanhToan` | `PhongBanID == PhongKHTCId` | Riêng — Phòng Kế Hoạch - Tài chính |
 
 ### 11.2. Code pattern cho từng loại
 
@@ -583,8 +583,8 @@ var query = _hopDongRepo.GetQueryableSet()
     .ApplyDuAnChildVisibility(_duAnRepo, user, policy, x => x.DuAnId);
 
 // ThanhToan (specific)
-if (user.PhongBanID != appSettings.PhongKeToanID)
-    throw new ManagedException("Chỉ phòng kế toán có quyền");
+if (user.PhongBanID != appSettings.PhongKHTCId)
+    throw new ManagedException("Chỉ Phòng Kế Hoạch - Tài chính có quyền");
 ```
 
 ---
@@ -654,8 +654,8 @@ public class UserByRoleDto
     "ConnectionStrings": { ... },
     "AllowedHosts": "*",
     "Jwt": { ... },
-    "PhongKeToanID": 219,
-    "PhongHCTHID": 300,
+    "PhongKHTCId": 219,
+    "PhongHCTHId": 300,
     "PhongKHTCID": 500
 }
 ```

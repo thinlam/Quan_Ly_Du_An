@@ -13,31 +13,22 @@ public record KeHoachTrienKhaiChiTietDuAnInsertCommand(KeHoachTrienKhaiChiTietDu
 
 internal class KeHoachTrienKhaiChiTietDuAnInsertCommandHandler : IRequestHandler<KeHoachTrienKhaiChiTietDuAnInsertCommand, KeHoachTrienKhaiChiTietDuAn> {
     private readonly IRepository<KeHoachTrienKhaiChiTietDuAn, Guid> _repo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _userProvider;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public KeHoachTrienKhaiChiTietDuAnInsertCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiChiTietDuAn, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<KeHoachTrienKhaiChiTietDuAn> Handle(KeHoachTrienKhaiChiTietDuAnInsertCommand request,
         CancellationToken cancellationToken = default) {
 
-        if (request.entity.BuocId.HasValue)
-        {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        // Check step authorization
+        await _auth.EnsureCanExecuteStepAsync(request.entity.BuocId, _authContext, cancellationToken);
 
         await _repo.AddAsync(request.entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -15,6 +15,7 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
@@ -25,13 +26,14 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
     }
 
     public async Task<ThanhToan> Handle(ThanhToanUpdateCommand request, CancellationToken cancellationToken = default) {
-        ValidatePhongKeToanPermission();
+        ValidatePhongKHTCPermission();
         await ValidateAsync(request, cancellationToken);
 
         var entity = await ThanhToan.GetQueryableSet()
@@ -43,7 +45,7 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
                 .Include(e => e.DuAn)
                 .Include(e => e.DuAnBuocPhongBanPhoiHops)
                 .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
+            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
                 throw new ManagedException("Phòng ban không có quyền thao tác bước này");
         }
 
@@ -69,10 +71,10 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
 
     #endregion
 
-    private void ValidatePhongKeToanPermission() {
+    private void ValidatePhongKHTCPermission() {
         ManagedException.ThrowIf(
-            _userProvider.Info.PhongBanID != _settings.PhongKeToanID,
-            "Chỉ phòng kế toán có quyền thực hiện thao tác này"
+            _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
+            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
         );
     }
 }

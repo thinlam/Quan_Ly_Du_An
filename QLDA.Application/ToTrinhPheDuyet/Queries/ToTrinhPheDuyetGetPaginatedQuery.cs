@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -9,7 +9,8 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Queries;
 
-public record ToTrinhPheDuyetGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhPheDuyetDto>> {
+public record ToTrinhPheDuyetGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<ToTrinhPheDuyetDto>>
+{
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
@@ -24,21 +25,21 @@ public record ToTrinhPheDuyetGetPaginatedQuery : AggregateRootPagination, IMayHa
 
 internal class
     ToTrinhPheDuyetGetPaginatedQueryHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<ToTrinhPheDuyetGetPaginatedQuery,  PaginatedList<ToTrinhPheDuyetDto>> {
-    private readonly IRepository<ToTrinhPheDuyet, Guid> ToTrinhPheDuyet =  ServiceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    : IRequestHandler<ToTrinhPheDuyetGetPaginatedQuery, PaginatedList<ToTrinhPheDuyetDto>>
+{
+    private readonly IRepository<ToTrinhPheDuyet, Guid> _toTrinhPheDuyet = ServiceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
+    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
-    private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<ToTrinhPheDuyetDto>> Handle(ToTrinhPheDuyetGetPaginatedQuery request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
 
-        var queryable = ToTrinhPheDuyet.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
+        var queryable = _buocAuth.FilterVisibleChildEntities(_toTrinhPheDuyet.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.Loai != null, e => e.Loai == request.Loai)
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),
@@ -52,7 +53,8 @@ internal class
             );
 
         return await queryable
-            .Select(e => new ToTrinhPheDuyetDto() {
+            .Select(e => new ToTrinhPheDuyetDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
@@ -63,7 +65,7 @@ internal class
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
 
-                DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
+                DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
             })

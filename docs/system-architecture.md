@@ -20,7 +20,10 @@ graph TD
 
 -   **Domain Layer (`QLDA.Domain`):** Contains enterprise-wide business rules. It is the core of the application and holds entities, value objects, domain services, and interfaces. It has no dependencies on other layers.
 -   **Application Layer (`QLDA.Application`):** Contains application-specific business rules and orchestrates the domain layer to fulfill use cases. It implements the CQRS pattern with MediatR, DTOs, and validators. It depends only on the Domain layer.
--   **Infrastructure Layer (`QLDA.Infrastructure`):** Houses implementations for external concerns like file systems, email services, date/time services, and other third-party integrations (e.g., Aspose). It depends on the Application and Domain layers.
+-   **Infrastructure Layer**: Two infrastructure implementations exist in the system:
+    - `QLDA.Infrastructure/` — QLDA module-specific infrastructure implementations
+    - `BuildingBlocks.Infrastructure/` — Shared infrastructure from BuildingBlocks library (Aspose.Cells integration, DateTime provider)
+    Both depend on the Application and Domain layers.
 -   **Persistence Layer (`QLDA.Persistence`):** Responsible for data access, including EF Core DbContext, migrations, and repository implementations (both EF Core and Dapper). It depends on the Application and Domain layers.
 -   **Presentation Layer (`QLDA.WebApi`):** The outermost layer, exposing the Web API endpoints. It handles HTTP requests, authentication, and serialization. It depends on the Application, Infrastructure, and Persistence layers.
 
@@ -176,7 +179,7 @@ graph TD
 -   **CI/CD Pipeline:** Automated Continuous Integration/Continuous Deployment pipelines (e.g., Azure DevOps, GitHub Actions) for building, testing, and deploying the application and its migrations.
 -   **Configuration Management:** Use environment variables and `appsettings.json` for application configuration, separating environment-specific settings including `JwtSettings`.
 -   **Monitoring:** Integrate with application performance monitoring (APM) tools (e.g., Application Insights, Prometheus/Grafana) to monitor health, performance, and errors in production.
--   **Database Migrations:** Currently using squashed migration approach with single initial migration for simplified deployment.
+-   **Database Migrations:** EF Core migrations managed via `QLDA.Migrator` project supporting both SQL Server and SQLite providers.
 
 ---
 *This document will be updated as the system evolves.*

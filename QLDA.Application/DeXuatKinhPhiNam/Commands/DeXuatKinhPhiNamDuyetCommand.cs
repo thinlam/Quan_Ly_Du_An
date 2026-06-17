@@ -30,7 +30,7 @@ internal class DeXuatNhuCauKinhPhiNamDuyetCommandHandler : IRequestHandler<DeXua
     }
 
     public async Task<int> Handle(DeXuatNhuCauKinhPhiNamDuyetCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
             throw new ManagedException("Tài khoản không có quyền.");

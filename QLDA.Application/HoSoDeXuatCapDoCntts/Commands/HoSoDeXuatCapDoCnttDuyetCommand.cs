@@ -33,7 +33,7 @@ internal class HoSoDeXuatCapDoCnttDuyetCommandHandler : IRequestHandler<HoSoDeXu
         if(_settings == null) {
             throw new ManagedException("Không lấy được cấu hình ứng dụng.");
         }
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
             throw new ManagedException("Tài khoản không có quyền.");

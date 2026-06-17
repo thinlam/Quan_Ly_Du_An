@@ -31,7 +31,7 @@ internal class HoSoDeXuatCapDoCnttTuChoiCommandHandler : IRequestHandler<HoSoDeX
 
     public async Task<int> Handle(HoSoDeXuatCapDoCnttTuChoiCommand request, CancellationToken cancellationToken) {
         // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) ?? false;
         if (!isLanhDao && !isHcth) {
             throw new ManagedException("Tài khoản không có quyền");

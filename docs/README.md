@@ -60,7 +60,7 @@ QLDA.Solution/
 ## Tài liệu bổ sung
 
 - [Use Cases và Tính năng](features.md)
-- [Kiến trúc hệ thống](architecture.md)
+- [Kiến trúc hệ thống](system-architecture.md)
 - [Mô hình dữ liệu](data-model.md)
 - [API Documentation](api.md)
 

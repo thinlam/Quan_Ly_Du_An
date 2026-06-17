@@ -7,10 +7,10 @@ QLDA (Quản Lý Dự Án) is a comprehensive project management system built wi
 The solution consists of 5 main projects following Clean Architecture:
 
 - **QLDA.Domain**: Core business logic and entities
-- **QLDA.Application**: CQRS pattern implementation with MediatR
+- **QLDA.Application**: CQRS pattern implementation with MediatR (~79 feature modules)
 - **QLDA.Infrastructure**: External service implementations (Aspose, file processing)
 - **QLDA.Persistence**: Data access with EF Core and Dapper
-- **QLDA.WebApi**: Web API presentation layer
+- **QLDA.WebApi**: Web API presentation layer (50+ controllers)
 
 ## Architecture Highlights
 
@@ -32,12 +32,12 @@ The solution consists of 5 main projects following Clean Architecture:
 - **Dual Provider**: SQL Server (production) + SQLite (dev/testing) via `AddPersistenceSqlite()`
 - **SQLite**: `SqliteAppDbContext` clears SQL Server-specific defaults for SQLite compatibility
 - **Configuration**: AggregateRootConfiguration pattern with Fluent API
-- **Migrations**: Single squashed migration (20260424043806_Init.cs)
+- **Migrations**: Managed via `QLDA.Migrator` with both SQL Server and SQLite support
 - **Seed Data**: For DanhMuc tables (LoaiDuAn, TrangThaiDuAn)
 - **Repository**: Generic Repository<TEntity,TKey> implementation
 
 ### WebApi Layer
-- **Controllers**: DuAnController, GoiThauController, HopDongController, Auth
+- **Controllers**: DuAnController, GoiThauController, HopDongController, Auth, 50+ total
 - **Middleware**: ExceptionMiddleware for global error handling
 - **Authentication**: JWT with configurable JwtSettings
 - **Features**: Response caching (12h for combobox endpoints), Swagger with Bearer token
@@ -63,11 +63,32 @@ The solution consists of 5 main projects following Clean Architecture:
 - CQRS implementation for scalable architecture
 
 ## Files and Statistics
-- **Total Files**: 1,568 files
-- **Total Tokens**: 1,297,183 tokens
-- **Total Characters**: 5,359,244 chars
+- **Total Files**: 1,802 files
+- **Total Tokens**: 4,409,335 tokens
+- **Total Characters**: 21,153,319 chars
+- **Top Files by Size**: Migration/Designer files and DbContext snapshot (due to EF Core metadata)
+
+### Layer Breakdown
+| Layer | Files | Notes |
+|-------|-------|-------|
+| QLDA.Domain | ~172 .cs | Entities, enums, interfaces, DTOs |
+| QLDA.Application | ~750 .cs | ~79 feature modules with Commands/Queries/Validators |
+| QLDA.Persistence | ~138 .cs | DbContext, configs, repositories |
+| QLDA.Infrastructure | ~8 .cs | Module-specific infrastructure |
+| QLDA.WebApi | ~290 .cs | 50+ controllers |
+| QLDA.Tests | ~20 .cs | Unit, Integration, Fixtures, Fakers |
+| BuildingBlocks.* | Various | Shared library (CrossCutting, Domain, Application, Persistence, Infrastructure) |
+| QLDA.Migrator | ~20 .cs | EF Core migrations |
 
 ## Security
 - **Status**: No suspicious files detected
 - **Authentication**: JWT Bearer with configurable settings
 - **Data Protection**: Soft delete implementation and audit trails
+
+## Recent Updates (June 2026)
+- Build warning cleanup completed (0 warnings achieved)
+- PR #89 merged: export-tong-hop-nhu-cau-kinh-phi-nam feature
+- Branch: main
+
+---
+*This summary was generated from repomix compaction on June 2026.*

@@ -11,9 +11,8 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<TamUng, Guid> TamUng;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _userProvider;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public HopDongDeleteCommandHandler(IServiceProvider serviceProvider) {
@@ -21,9 +20,8 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HopDong.UnitOfWork;
     }
 
@@ -35,14 +33,7 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
         ManagedException.ThrowIfNull(entity);
 
         // Check step authorization
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         await RemoveAsync(entity, cancellationToken);
         return await _unitOfWork.SaveChangesAsync(cancellationToken);

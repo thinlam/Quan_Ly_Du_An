@@ -400,7 +400,7 @@ dotnet build
 | G | Domain entities | ~148 | ~131 | 2026-06-16 | 14 file, 0 warnings Domain |
 | H | WebApi Models + controllers | ~131 | ~0 | 2026-06-16 | Models init + mapping fixes |
 | I | Application nullability | ~131 | **0** | 2026-06-16 | Application 0 warnings |
-| J | CancellationToken | — | — | | Không có warning compiler; chưa audit riêng |
+| J | CancellationToken | — | — | 2026-06-16 | Chưa hoàn thành; audit riêng trong KẾ HOẠCH |
 
 **Kết quả cuối:** `QLDA.Application`, `BuildingBlocks.Infrastructure`, `QLDA.WebApi` — **0 warnings** (`dotnet build --no-restore`).
 

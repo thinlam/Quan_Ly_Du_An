@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using BuildingBlocks.CrossCutting.Offices;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.DuAns.DTOs;
@@ -7,19 +5,9 @@ using QLDA.Application.DuAnBuocs.Queries;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.DuAnBuocs.DTOs;
-using QLDA.Application.DeXuatChuyenTieps.DTOs;
-using QLDA.Application.DeXuatChuyenTieps.Queries;
-using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
-using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
-using QLDA.Application.PhanKhaiKinhPhis.DTOs;
-using QLDA.Application.PhanKhaiKinhPhis.Queries;
-using QLDA.Domain.Constants;
-using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
-using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
-using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.PhuLucHopDongs;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
@@ -30,7 +18,6 @@ namespace QLDA.WebApi.Controllers;
 public class PrintController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
     private readonly IUserProvider _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     private readonly IExporterHelper _excelExporter = serviceProvider.GetRequiredService<IExporterHelper>();
-    private readonly IWordHelper _wordHelper = serviceProvider.GetRequiredService<IWordHelper>();
 
     /// <summary>
     /// Thêm timestamp vào tên file để tránh trùng khi tải nhiều lần
@@ -609,170 +596,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     }
 
     #endregion
-
-    #region KetQuaPhanKhaiVonDuocDuyet
-
-    /// <summary>
-    /// KetQuaPhanKhaiVonDuocDuyet.xlsx — Export kết quả phân khai vốn đã duyệt
-    /// </summary>
-    [HttpGet("api/print/ket-qua-phan-khai-von-duoc-duyet")]
-    [Authorize(Roles = RoleConstants.GroupPhanKhaiKinhPhiExport)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InKetQuaPhanKhaiVonDuocDuyet([FromQuery] PhanKhaiKinhPhiPrintSearchModel searchModel) {
-        var fileNameTemplate = "KetQuaPhanKhaiVonDuocDuyet.xlsx";
-        var templatePath = Path.Combine(
-            AppContext.BaseDirectory,
-            "PrintTemplates",
-            fileNameTemplate
-        );
-
-        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
-        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-
-        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachDaDuyetExportQuery {
-            DuAnId = searchModel.DuAnId,
-            GlobalFilter = searchModel.GlobalFilter,
-        });
-
-        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiExportDto> {
-            TemplatePath = templatePath,
-            Items = data,
-            HiddenColumns = searchModel.HiddenColumns ?? [],
-            AutoFitColumnsAndRows = false,
-        });
-
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
-            FileDownloadName = GetDownloadFileName(fileNameTemplate)
-        };
-    }
-
-    #endregion
-
-    #region DanhSachDeXuatChuTruongChuyenTiep
-
-    /// <summary>
-    /// DanhSachDeXuatChuTruongChuyenTiep.xlsx — Export danh sách đề xuất chủ trương chuyển tiếp
-    /// </summary>
-    [HttpGet("api/print/danh-sach-de-xuat-chu-truong-chuyen-tiep")]
-    [Authorize(Roles = RoleConstants.GroupDeXuatChuTruongChuyenTiepExport)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InDanhSachDeXuatChuTruongChuyenTiep(
-        [FromQuery] DeXuatChuyenTiepPrintSearchModel searchModel) {
-        var fileNameTemplate = "DanhSachDeXuatChuTruongChuyenTiep.xlsx";
-        var templatePath = Path.Combine(
-            AppContext.BaseDirectory,
-            "PrintTemplates",
-            fileNameTemplate
-        );
-
-        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
-        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-
-        var data = await Mediator.Send(new DeXuatChuyenTiepGetDanhSachExportQuery {
-            DuAnId = searchModel.DuAnId,
-            BuocId = searchModel.BuocId,
-        });
-
-        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatChuyenTiepExportDto> {
-            TemplatePath = templatePath,
-            Items = data,
-            HiddenColumns = searchModel.HiddenColumns ?? [],
-            AutoFitColumnsAndRows = false,
-        });
-
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
-            FileDownloadName = GetDownloadFileName(fileNameTemplate)
-        };
-    }
-
-    #endregion
-
-    #region DanhSachXinChuTruongDauTu
-
-    /// <summary>
-    /// DanhSachXinChuTruongDauTu.xlsx — Export danh sách xin chủ trương đầu tư
-    /// </summary>
-    [HttpGet("api/print/danh-sach-xin-chu-truong-dau-tu")]
-    [Authorize(Roles = RoleConstants.GroupXinChuTruongDauTuExport)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> InDanhSachXinChuTruongDauTu(
-        [FromQuery] DeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
-        var fileNameTemplate = "DanhSachXinChuTruongDauTu.xlsx";
-        var templatePath = Path.Combine(
-            AppContext.BaseDirectory,
-            "PrintTemplates",
-            fileNameTemplate
-        );
-
-        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
-        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-
-        var data = await Mediator.Send(new DeXuatNhuCauKinhPhiGetDanhSachExportQuery {
-            DuAnId = searchModel.DuAnId,
-            TrangThaiId = searchModel.TrangThaiId,
-            GlobalFilter = searchModel.GlobalFilter,
-        });
-
-        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatNhuCauKinhPhiExportDto> {
-            TemplatePath = templatePath,
-            Items = data,
-            HiddenColumns = searchModel.HiddenColumns ?? [],
-            AutoFitColumnsAndRows = false,
-        });
-
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
-            FileDownloadName = GetDownloadFileName(fileNameTemplate)
-        };
-    }
-
-    #endregion
-
-    #region TongHopNhuCauKinhPhiNam
-
-    /// <summary>
-    /// TongHopNhuCauKinhPhiNam.xlsx — Export tổng hợp nhu cầu kinh phí năm
-    /// </summary>
-    [HttpGet("api/print/tong-hop-nhu-cau-kinh-phi-nam")]
-    [Authorize(Roles = RoleConstants.GroupTongHopNhuCauKinhPhiNamExport)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InTongHopNhuCauKinhPhiNam(
-        [FromQuery] TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
-        var fileNameTemplate = "TongHopNhuCauKinhPhiNam.xlsx";
-        var templatePath = Path.Combine(
-            AppContext.BaseDirectory,
-            "PrintTemplates",
-            fileNameTemplate
-        );
-
-        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
-        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-
-        var data = await Mediator.Send(new TheoDoiDeXuatNhuCauKinhPhiGetExportQuery {
-            DuAnId = searchModel.DuAnId,
-            TrangThaiId = searchModel.TrangThaiId,
-            TrangThaiKeHoachId = searchModel.TrangThaiKeHoachNamId,
-            SoPhieuChuyen = searchModel.SoPhieuChuyen,
-            TrichYeu = searchModel.TrichYeu,
-            GlobalFilter = searchModel.GlobalFilter,
-            TuNgay = searchModel.TuNgay,
-            DenNgay = searchModel.DenNgay,
-            DonViDeXuatId = searchModel.DonViDeXuatId,
-        });
-
-        var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopNhuCauKinhPhiNamExportDto> {
-            TemplatePath = templatePath,
-            Items = data,
-            HiddenColumns = searchModel.HiddenColumns ?? [],
-            AutoFitColumnsAndRows = false,
-        });
-
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
-            FileDownloadName = GetDownloadFileName(fileNameTemplate)
-        };
-    }
-
-    #endregion
-
     [HttpGet("api/print/bao-cao-tien-do-du-an")]
     public async Task<IActionResult> InBaoCaoTienDoDuAn([FromQuery] BaoCaoDuAnSearchDto searchModel)
     {
@@ -813,148 +636,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         };
     }
 
-    #region HuongDan_TaoTemplate_Word
-
-    // =============================================================================
-    // HƯỚNG DẪN TẠO TEMPLATE WORD (.docx) CHO MAIL MERGE
-    // =============================================================================
-    //
-    // MỤC ĐÍCH:
-    // Template Word dùng để điền dữ liệu động vào văn bản. Thay vì tạo văn bản
-    // từ code, ta tạo sẵn 1 file .docx với các "placeholder" (trường MailMerge),
-    // sau đó code sẽ thay thế các placeholder đó bằng dữ liệu thực tế.
-    //
-    // LỢI ÍCH:
-    // - Người dùng có thể chỉnh sửa format văn bản (font, bố cục, hình ảnh)
-    // - Không cần code lại khi muốn thay đổi mẫu văn bản
-    // - Tách biệt giữa DATA và PRESENTATION
-    //
-    // =============================================================================
-    // BƯỚC 1: TẠO FILE TEMPLATE (.docx)
-    // =============================================================================
-    //
-    // 1. Mở Microsoft Word, tạo file mới với nội dung mẫu
-    // 2. Thiết kế bố cục văn bản (header, footer, table, paragraph)
-    // 3. LƯU FILE tại: QLDA.WebApi/PrintTemplates/Word/BienBanBanGiao.docx
-    //    - Đảm bảo file nằm trong thư mục output khi build (xem .csproj)
-    //
-    // =============================================================================
-    // BƯỚC 2: CHÈN MAIL MERGE FIELD (PLACEHOLDER)
-    // =============================================================================
-    //
-    // CÁCH THÊM FIELD:
-    // 1. Bật Mail Merge: Tab Mailings → Start Mail Merge → Letters
-    // 2. Đặt con trỏ tại vị trí cần thay thế
-    // 3. Chèn field: Insert → Quick Parts → Field → MailMerge
-    // 4. Đặt tên field (phải khớp CHÍNH XÁC với key trong code)
-    //
-    // VÍ DỤ CÁC TRƯỜNG TRONG TEMPLATE:
-    // +---------------------------+----------------------------------+
-    // | Vị trí trong template    | Tên Field (chính xác)           |
-    // +---------------------------+----------------------------------+
-    // | Ngày bàn giao            | { MERGEFIELD ngay }             |
-    // | Phòng ban chủ trì        | { MERGEFIELD phongBanChuTri }   |
-    // | Phòng ban nhận hồ sơ     | { MERGEFIELD phongBanNhan }     |
-    // | Mã hồ sơ                 | { MERGEFIELD maHoSo }           |
-    // | Tên hồ sơ                | { MERGEFIELD tenHoSo }          |
-    // | Tên dự án                | { MERGEFIELD tenDuAn }          |
-    // | Mã lưu trữ               | { MERGEFIELD maLuuTru }        |
-    // | Tổng số tệp đính kèm    | { MERGEFIELD tongSoTepDinhKem } |
-    // | Ghi chú                  | { MERGEFIELD ghiChu }          |
-    // +---------------------------+----------------------------------+
-    //
-    // LƯU Ý QUAN TRỌNG:
-    // - Tên field PHÂN BIỆT HOA THƯỜNG (phongBanChuTri ≠ phongBanchutri)
-    // - Không dùng khoảng trắng trong tên field
-    // - Không dùng dấu tiếng Việt trong tên field
-    //
-    // =============================================================================
-    // BƯỚC 3: CÁCH HOẠT ĐỘNG (DATA FLOW)
-    // =============================================================================
-    //
-    // FLOW: Người dùng → API → Query Data → WordHelper → Aspose.Words → File .docx
-    //
-    // 1. [Người dùng] Gọi API: GET /api/print/bien-ban-ban-giao-ho-so?id=xxx
-    //
-    // 2. [PrintController]
-    //    - Load file template từ: PrintTemplates/Word/BienBanBanGiao.docx
-    //    - Query dữ liệu BanGiaoHoSo từ database
-    //    - Tạo Dictionary với key = tên field, value = dữ liệu cần thay thế
-    //
-    // 3. [WordHelper.ExportFromTemplate()]
-    //    - Mở template .docx bằng Aspose.Words
-    //    - Bật MailMerge: doc.MailMerge.UseNonMergeFields = true
-    //    - Thay thế từng field: doc.MailMerge.Execute(new[] { key }, new[] { value })
-    //    - Save kết quả ra MemoryStream
-    //
-    // 4. [Aspose.Words xử lý]
-    //    - Tìm field { MERGEFIELD ten_field } trong document
-    //    - Thay thế bằng giá trị tương ứng trong dictionary
-    //    - Giữ nguyên format của template (font, color, alignment)
-    //
-    // 5. [Trả về] File .docx đã điền dữ liệu cho người dùng download
-    //
-    // =============================================================================
-    // VÍ DỤ MINH HỌA
-    // =============================================================================
-    //
-    // TRONG TEMPLATE (BienBanBanGiao.docx):
-    // +----------------------------------------------------------+
-    // | CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM                        |
-    // | Độc lập - Tự do - Hạnh phúc                               |
-    // |                                                            |
-    // | BIÊN BẢN BÀN GIAO HỒ SƠ                                   |
-    // |                                                            |
-    // | Ngày: { MERGEFIELD ngay }                                 |
-    // |                                                            |
-    // | - Đơn vị chủ trì: { MERGEFIELD phongBanChuTri }          |
-    // | - Đơn vị nhận: { MERGEFIELD phongBanNhan }               |
-    // | - Hồ sơ: { MERGEFIELD tenHoSo }                          |
-    // | - Dự án: { MERGEFIELD tenDuAn }                          |
-    // +----------------------------------------------------------+
-    //
-    // TRONG CODE:
-    // Dictionary<string, string> replacements = new()
-    // {
-    //     { "ngay", "ngày 11 tháng 06 năm 2026" },
-    //     { "phongBanChuTri", "Phòng Công nghệ thông tin" },
-    //     { "phongBanNhan", "Phòng Hành chính" },
-    //     { "tenHoSo", "Hồ sơ thiết kế kỹ thuật" },
-    //     { "tenDuAn", "Dự án Xây dựng Trường học" },
-    //     // ...
-    // };
-    //
-    // KẾT QUẢ SAU KHI EXPORT:
-    // +----------------------------------------------------------+
-    // | CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM                        |
-    // | Độc lập - Tự do - Hạnh phúc                               |
-    // |                                                            |
-    // | BIÊN BẢN BÀN GIAO HỒ SƠ                                   |
-    // |                                                            |
-    // | Ngày: ngày 11 tháng 06 năm 2026                           |
-    // |                                                            |
-    // | - Đơn vị chủ trì: Phòng Công nghệ thông tin              |
-    // | - Đơn vị nhận: Phòng Hành chính                          |
-    // | - Hồ sơ: Hồ sơ thiết kế kỹ thuật                         |
-    // | - Dự án: Dự án Xây dựng Trường học                       |
-    // +----------------------------------------------------------+
-    //
-    // =============================================================================
-    // MỞ RỘNG: THÊM FIELD MỚI
-    // =============================================================================
-    //
-    // Khi cần thêm field mới:
-    // 1. Mở template .docx, chèn field mới với tên unique
-    // 2. Trong PrintController, thêm vào dictionary:
-    //    { "tenFieldMoi", giaTriMoi }
-    // 3. Build lại project
-    //
-    // KHÔNG CẦN sửa WordHelper - nó xử lý generic cho mọi field.
-    //
-    // =============================================================================
-
-    #endregion
-
     #region In_BienBanBanGiao_HoSo
 
     /// <summary>
@@ -977,22 +658,34 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         var dto = await Mediator.Send(new BanGiaoHoSoPrintQuery(id));
 
+        new Aspose.Words.License().SetLicense("LicenseAsposeTotal.lic");
+
+        var doc = new Aspose.Words.Document(templatePath);
+        doc.MailMerge.UseNonMergeFields = true;
+
         var replacements = new Dictionary<string, string> {
             { "ngay", dto.NgayBanGiao.HasValue
                 ? $"ngày {dto.NgayBanGiao.Value:dd} tháng {dto.NgayBanGiao.Value:MM} năm {dto.NgayBanGiao.Value:yyyy}"
                 : "" },
-            { "phongBanChuTri", dto.TenPhongBanChuTri ?? "" },
-            { "phongBanNhan", dto.TenPhongBanNhan ?? "" },
+            { "PhongBanChuTri", dto.TenPhongBanChuTri ?? "" },
+            { "PhongBanNhanHoSo", dto.TenPhongBanNhan ?? "" },
             { "maHoSo", dto.Ma ?? "" },
             { "tenHoSo", dto.TenHoSo ?? "" },
-            { "tenDuAn", dto.TenDuAn ?? "" },
+            { "TenDuAn", dto.TenDuAn ?? "" },
             { "maLuuTru", dto.MaDuAn ?? "" },
-            { "tongSoTepDinhKem", dto.TongSoTepDinhKem.ToString() },
+            { "TongSoTepDinhKem", dto.TongSoTepDinhKem.ToString() },
             { "ghiChu", dto.GhiChu ?? "" }
         };
 
-        var fileBytes = _wordHelper.ExportFromTemplate(templatePath, replacements);
-        return File(fileBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        foreach (var kvp in replacements) {
+            doc.MailMerge.Execute(new[] { kvp.Key }, new object[] { kvp.Value });
+        }
+
+        await using var ms = new MemoryStream();
+        doc.Save(ms, Aspose.Words.SaveFormat.Docx);
+        ms.Position = 0;
+
+        return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             GetDownloadFileName(fileNameTemplate));
     }
 

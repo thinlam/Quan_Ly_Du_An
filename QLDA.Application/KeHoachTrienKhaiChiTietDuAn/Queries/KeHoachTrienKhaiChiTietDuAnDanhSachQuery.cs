@@ -2,7 +2,7 @@ using Azure.Core;
 using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
@@ -23,7 +23,7 @@ public record KeHoachTrienKhaiChiTietDuAnDanhSachQuery : AggregateRootPagination
     public int? BuocId { get; set; }
     public int? TrangThaiId { get; set; }
 
-    public int? DonViChuTriId  { get; set; }
+    public int? DonViChuTriId { get; set; }
 
     public string? Ten { get; set; }
     public DateOnly? TuNgay { get; set; }
@@ -38,8 +38,8 @@ internal class KeHoachTrienKhaiChiTietDuAnDanhSachQueryHandler(IServiceProvider 
     private readonly IRepository<Domain.Entities.TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Domain.Entities.TepDinhKem, Guid>>();
     private readonly IRepository<DmDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-    private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<KeHoachTrienKhaiChiTietDuAnDto>> Handle(KeHoachTrienKhaiChiTietDuAnDanhSachQuery request,
         CancellationToken cancellationToken = default)
@@ -47,20 +47,18 @@ internal class KeHoachTrienKhaiChiTietDuAnDanhSachQueryHandler(IServiceProvider 
 
         var _dmDonVi = DmDonVi.GetQueryableSet().AsNoTracking();
 
-        var queryable = KeHoachTrienKhaiChiTietDuAn.GetQueryableSet().AsNoTracking()
-
-        .Where(e => !e.IsDeleted)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
+        var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachTrienKhaiChiTietDuAn.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
-            .WhereIf(request.Ten != null, e => e.Ten.Contains(request.Ten))
-            .WhereIf(!string.IsNullOrEmpty(request.MaMoc), e => e.MaMoc.Contains(request.MaMoc))
+            .WhereIf(request.Ten != null, e => e.Ten!.Contains(request.Ten!))
+            .WhereIf(request.MaMoc.IsNotNullOrWhitespace(), e => e.MaMoc.Contains(request.MaMoc!))
             .WhereIf(request.DonViChuTriId != null, e => e.DonViChuTriId == request.DonViChuTriId)
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
             .WhereIf(request.TuNgay != null, e => e.NgayBatDauKeHoach >= request.TuNgay)
             .WhereIf(request.DenNgay != null, e => e.NgayKetThucKeHoach <= request.DenNgay)
-            .GroupJoin( DmDonVi.GetQueryableSet().AsNoTracking(),  kh => kh.DonViChuTriId, dv => dv.Id,
-                    (kh, dvs) => new {
+            .GroupJoin(DmDonVi.GetQueryableSet().AsNoTracking(), kh => kh.DonViChuTriId, dv => dv.Id,
+                    (kh, dvs) => new
+                    {
                         KeHoach = kh,
                         DonVi = dvs.FirstOrDefault()
                     });
@@ -70,13 +68,13 @@ internal class KeHoachTrienKhaiChiTietDuAnDanhSachQueryHandler(IServiceProvider 
                 Id = e.KeHoach.Id,
                 DuAnId = e.KeHoach.DuAnId,
                 BuocId = e.KeHoach.BuocId,
-                TenDuAn = e.KeHoach.DuAn != null  ? e.KeHoach.DuAn.TenDuAn  : string.Empty,
+                TenDuAn = e.KeHoach.DuAn != null ? e.KeHoach.DuAn.TenDuAn : string.Empty,
                 Ten = e.KeHoach.Ten,
                 MaMoc = e.KeHoach.MaMoc,
                 TrangThaiId = e.KeHoach.TrangThaiId,
-                TenTrangThai = e.KeHoach.TrangThaiXuLy != null  ? e.KeHoach.TrangThaiXuLy.Ten : string.Empty,
+                TenTrangThai = e.KeHoach.TrangThaiXuLy != null ? e.KeHoach.TrangThaiXuLy.Ten : string.Empty,
                 TiLeHoanThanh = e.KeHoach.TiLeHoanThanh,
-                TenDonViChuTri = e.DonVi != null ? e.DonVi.TenDonVi  : string.Empty,
+                TenDonViChuTri = e.DonVi != null ? e.DonVi.TenDonVi : string.Empty,
                 NgayBatDauKeHoach = e.KeHoach.NgayBatDauKeHoach,
                 NgayBatDauThucTe = e.KeHoach.NgayBatDauThucTe,
                 NgayKetThucKeHoach = e.KeHoach.NgayKetThucKeHoach,

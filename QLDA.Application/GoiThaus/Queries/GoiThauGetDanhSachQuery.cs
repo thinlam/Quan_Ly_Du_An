@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Extensions;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.GoiThaus.DTOs;
+using QLDA.Application.Authorization;
 using System.Linq.Dynamic.Core;
 
 namespace QLDA.Application.GoiThaus.Queries;
@@ -20,26 +20,24 @@ internal class
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
-    private readonly IRepository<DuAn, Guid> _duAn;
-    private readonly IUserProvider _userProvider;
-    private readonly IPolicyProvider _policyProvider;
+    private readonly IAuthorizationManager _authManager;
 
     public GoiThauGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
-        _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
     public async Task<PaginatedList<GoiThauDto>> Handle(GoiThauGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = GoiThau.GetQueryableSet().AsNoTracking()
             .Where(e => e.DaDuyet)
-            .Where(e => !e.DuAn!.IsDeleted)
-            .ApplyDuAnChildVisibility(_duAn, _userProvider, _policyProvider, e => e.DuAnId)
+            .Where(e => !e.DuAn!.IsDeleted);
+        queryable = _authManager.FilterVisible(queryable, AuthorizationResourceKeys.DuAn);
+        queryable = queryable
+            .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.KeHoachLuaChonNhaThauId != null,
                 e => e.KeHoachLuaChonNhaThauId == request.SearchDto.KeHoachLuaChonNhaThauId)

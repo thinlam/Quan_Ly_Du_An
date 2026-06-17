@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -10,7 +10,8 @@ using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Queries;
 
-public record KeHoachLuaChonNhaThauRutGonGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<KeHoachLuaChonNhaThauRutGonDto>> {
+public record KeHoachLuaChonNhaThauRutGonGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<KeHoachLuaChonNhaThauRutGonDto>>
+{
     public int? BuocId { get; set; }
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
@@ -19,7 +20,8 @@ public record KeHoachLuaChonNhaThauRutGonGetDanhSachQuery : AggregateRootPaginat
     public DateOnly? DenNgay { get; set; }
 }
 
-internal class    KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<KeHoachLuaChonNhaThauRutGonGetDanhSachQuery, PaginatedList<KeHoachLuaChonNhaThauRutGonDto>> {
+internal class KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<KeHoachLuaChonNhaThauRutGonGetDanhSachQuery, PaginatedList<KeHoachLuaChonNhaThauRutGonDto>>
+{
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> KeHoachLuaChonNhaThauRutGon =
         ServiceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
 
@@ -29,26 +31,28 @@ internal class    KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServicePro
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
         ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
 
-    private readonly IBuocAuthorizationProvider _auth =
+    private readonly IBuocAuthorizationProvider _buocAuth =
         ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
-    private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IAuthorizationContext _authContext =
+        ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<KeHoachLuaChonNhaThauRutGonDto>> Handle(KeHoachLuaChonNhaThauRutGonGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
 
-        var queryable = KeHoachLuaChonNhaThauRutGon.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
+
+        var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachLuaChonNhaThauRutGon.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
-           // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
-           //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
+        // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
+        //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
 
 
         return await queryable
-            .Select(e => new KeHoachLuaChonNhaThauRutGonDto() {
+            .Select(e => new KeHoachLuaChonNhaThauRutGonDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,

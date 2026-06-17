@@ -2,7 +2,7 @@ using BuildingBlocks.Domain.Providers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.Authorization;
 using QLDA.Domain.Entities;
@@ -14,40 +14,40 @@ namespace QLDA.Application.BanGiaoHoSos.Queries;
 
 // Không implement IMayHaveGlobalFilter - không có search full-text
 // CreatedBy luôn lấy từ IUserProvider (JWT token), không cho UI truyền
-public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<BanGiaoHoSoDto>> {
+public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<BanGiaoHoSoDto>>
+{
     public BanGiaoHoSoSearchDto SearchDto { get; set; } = new();
 }
 
-internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>> {
+internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>>
+{
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
     private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
     private readonly IRepository<BuildingBlocks.Domain.Entities.UserMaster, long> _userMasterRepository;
     private readonly IRepository<DmDonVi, long> _danhMucDonViRepository;  // ⚠️ DM_DONVI – không FK
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
-    private readonly IUserProvider _userProvider;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IBuocAuthorizationProvider _buocAuth;
+    private readonly IAuthorizationContext _authContext;
 
-    public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
+    public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider)
+    {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
         _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
         _userMasterRepository = serviceProvider.GetRequiredService<IRepository<BuildingBlocks.Domain.Entities.UserMaster, long>>();
         _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<PaginatedList<BanGiaoHoSoDto>> Handle(BanGiaoHoSoGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         // LeftOuterJoin UserMaster và DanhMucDonVi (không FK – bảng đặc biệt)
         var users = _userMasterRepository.GetQueryableSet().AsNoTracking();
         var donVis = _danhMucDonViRepository.GetQueryableSet().AsNoTracking();
-
-        var queryable = _banGiaoRepository.GetQueryableSet()
-            .AsNoTracking()
-            .Where(e => !e.IsDeleted)
-            .Where(e => e.CreatedBy == _userProvider.Id.ToString())
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId)
+        var queryable = _buocAuth.FilterVisibleChildEntities(_banGiaoRepository.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
+            .Where(e => e.CreatedBy == _authContext.UserId.ToString())
             .WhereIf(request.SearchDto.TrangThai.HasValue, e => (int)e.TrangThai == request.SearchDto.TrangThai!.Value)
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId!.Value)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId!.Value)
@@ -55,7 +55,8 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donViChuTri) => new { x.e, x.user, donViChuTri })
             .LeftOuterJoin(donVis, x => x.e.PhongBanNhanId, d => (long?)d.Id, (x, donViNhan) => new { x.e, x.user, x.donViChuTri, donViNhan })
             .OrderByDescending(x => x.e.CreatedAt)
-            .Select(x => new BanGiaoHoSoDto {
+            .Select(x => new BanGiaoHoSoDto
+            {
                 Id = x.e.Id,
                 Ma = x.e.Ma,
                 TenHoSo = x.e.TenHoSo,
@@ -87,8 +88,10 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
     }
 
-    private static string GetTrangThaiText(ETrangThaiBanGiao trangThai) {
-        return trangThai switch {
+    private static string GetTrangThaiText(ETrangThaiBanGiao trangThai)
+    {
+        return trangThai switch
+        {
             ETrangThaiBanGiao.KhoiTao => "Khởi tạo",
             ETrangThaiBanGiao.DaBanGiao => "Đã bàn giao",
             _ => "Không xác định"
