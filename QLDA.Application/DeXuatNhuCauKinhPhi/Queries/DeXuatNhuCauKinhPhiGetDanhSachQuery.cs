@@ -53,7 +53,6 @@ internal class
         //Phục vụ.
         
         var queryable = DeXuatNhuCauKinhPhi.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
 
             .WhereIf(

@@ -17,7 +17,6 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
     private readonly IRepository<PheDuyetDuToan, Guid> _duToanRepo;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -28,7 +27,6 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
         _duToanRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -61,14 +59,7 @@ internal class PheDuyetChuyenPhatHanhCommandHandler : IRequestHandler<PheDuyetCh
             throw new ManagedException("Chỉ có thể phát hành khi trạng thái là Đã duyệt");
         }
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Update SoPhatHanh if provided
         if (!string.IsNullOrWhiteSpace(request.SoPhatHanh)) {

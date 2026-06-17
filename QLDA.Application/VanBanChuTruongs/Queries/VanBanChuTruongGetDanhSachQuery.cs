@@ -30,12 +30,8 @@ internal class
 
     public async Task<PaginatedList<VanBanChuTruongDto>> Handle(VanBanChuTruongGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        var queryable = VanBanChuTruong.GetQueryableSet().AsNoTracking()
-                .Where(e => !e.IsDeleted)
-                .Where(e => !e.DuAn!.IsDeleted);
-        queryable = _authManager.FilterVisible(queryable, AuthorizationResourceKeys.DuAn);
-        queryable = queryable
-                .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+        var queryable = _authManager.FilterVisible(VanBanChuTruong.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
+                .Where(e => !e.DuAn!.IsDeleted)
                 .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
                 .WhereGlobalFilter(
@@ -44,8 +40,7 @@ internal class
                     e => e.NguoiKy,
                     e => e.ChucVu!.Ten,
                     e => e.LoaiVanBan!.Ten
-                )
-            ;
+                );
 
         return await queryable
             .Select(e => new VanBanChuTruongDto() {

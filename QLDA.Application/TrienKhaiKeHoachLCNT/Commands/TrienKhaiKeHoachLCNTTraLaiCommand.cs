@@ -17,7 +17,6 @@ internal class TrienKhaiKeHoachLCNTTraLaiCommandHandler : IRequestHandler<TrienK
     private readonly IRepository<Domain.Entities.TrienKhaiKeHoachLCNT, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -28,7 +27,6 @@ internal class TrienKhaiKeHoachLCNTTraLaiCommandHandler : IRequestHandler<TrienK
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.TrienKhaiKeHoachLCNT, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -63,14 +61,7 @@ internal class TrienKhaiKeHoachLCNTTraLaiCommandHandler : IRequestHandler<TrienK
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {

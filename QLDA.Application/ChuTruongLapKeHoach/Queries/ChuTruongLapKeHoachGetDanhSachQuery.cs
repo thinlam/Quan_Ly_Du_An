@@ -33,7 +33,6 @@ internal class
         CancellationToken cancellationToken = default)
     {
         var queryable = _buocAuth.FilterVisibleChildEntities(_chuTruongLapKeHoach.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.TuNgay != null, e => e.NgayToTrinh >= request.TuNgay.ToStartOfDayUtc())
             .WhereIf(request.DenNgay != null, e => e.NgayToTrinh <= request.DenNgay.ToEndOfDayUtc())

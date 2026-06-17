@@ -14,14 +14,12 @@ public record BanGiaoHoSoBanGiaoCommand(Guid Id, DateOnly? NgayBanGiao, long? Ph
 
 internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBanGiaoCommand, BanGiaoHoSo> {
     private readonly IRepository<BanGiaoHoSo, Guid> _repository;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public BanGiaoHoSoBanGiaoCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repository.UnitOfWork;
@@ -32,14 +30,7 @@ internal class BanGiaoHoSoBanGiaoCommandHandler : IRequestHandler<BanGiaoHoSoBan
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.TrangThai = ETrangThaiBanGiao.DaBanGiao;
         entity.NgayBanGiao = request.NgayBanGiao?.ToStartOfDayUtc() ?? DateTimeOffset.UtcNow;

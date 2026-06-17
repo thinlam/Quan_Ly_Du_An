@@ -20,7 +20,6 @@ internal class KySoGetDanhSachQueryHandler : IRequestHandler<KySoGetDanhSachQuer
         CancellationToken cancellationToken = default) {
         var queryable = KySo.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Include(e => e.PhuongThucKySo)
             .Include(e => e.ChucVu)
             .WhereGlobalFilter(

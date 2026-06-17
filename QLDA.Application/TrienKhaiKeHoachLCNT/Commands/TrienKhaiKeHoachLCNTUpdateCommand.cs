@@ -13,7 +13,6 @@ public record TrienKhaiKeHoachLCNTUpdateCommand(TrienKhaiKeHoachLCNT Dto) : IReq
 internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienKhaiKeHoachLCNTUpdateCommand, TrienKhaiKeHoachLCNT> {
     private readonly IRepository<TrienKhaiKeHoachLCNT, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _user;
@@ -22,7 +21,6 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
     public TrienKhaiKeHoachLCNTUpdateCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _user = serviceProvider.GetRequiredService<IUserProvider>();
@@ -31,14 +29,7 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
 
     public async Task<TrienKhaiKeHoachLCNT> Handle(TrienKhaiKeHoachLCNTUpdateCommand request,
         CancellationToken cancellationToken = default) {
-        if (request.Dto.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);

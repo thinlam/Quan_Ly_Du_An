@@ -24,7 +24,6 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
         CancellationToken cancellationToken = default) {
         var queryable = HoSoMoiThauDienTu.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Include(e => e.DuAn)
             .Include(e => e.Buoc)
             .Include(e => e.HinhThucLuaChonNhaThau)

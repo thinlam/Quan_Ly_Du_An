@@ -26,7 +26,6 @@ internal class HoSoDeXuatCapDoCnttGetDanhSachQueryHandler
         
         var queryable = HoSoDeXuatCapDoCntt.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Include(e => e.CapDo)
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId)

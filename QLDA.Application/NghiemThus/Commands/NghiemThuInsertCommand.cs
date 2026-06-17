@@ -13,7 +13,6 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<HopDong, Guid> HopDong;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
@@ -23,7 +22,6 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _unitOfWork = NghiemThu.UnitOfWork;
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -33,14 +31,7 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
         await ValidateAsync(request, cancellationToken);
 
         // Authorization check on BuocId from DTO
-        if (request.Dto.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 

@@ -61,7 +61,6 @@ internal class
              Nếu thuộc Kế hoạch năm có trạng thái Từ chối thì vẫn được phép hiển thị để chọn lại.
         */
         var queryable = DeXuatNhuCauKinhPhi.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .Where(    e => e.TrangThaiId == trangThaiDaDuyetDx.Id  )
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)

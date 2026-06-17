@@ -34,7 +34,6 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
         bool dieuKienThayTatCa = false;
         var queryable = _buocAuth.FilterVisibleChildEntities(_thuyetMinhDuAn.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .WhereIf(_authContext.UserId > 0 && !dieuKienThayTatCa, e => e.CreatedBy == _authContext.UserId.ToString(), e => dieuKienThayTatCa)
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);

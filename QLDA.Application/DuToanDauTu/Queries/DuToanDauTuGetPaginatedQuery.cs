@@ -31,7 +31,6 @@ internal class
         CancellationToken cancellationToken = default) {
 
         var queryable = DuToanDauTu.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),

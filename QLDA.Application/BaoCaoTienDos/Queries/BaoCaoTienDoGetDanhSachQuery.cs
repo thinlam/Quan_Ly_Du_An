@@ -34,7 +34,6 @@ internal class
         bool dieuKienThayTatCa = false;
 
         var queryable = BaoCaoTienDo.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)

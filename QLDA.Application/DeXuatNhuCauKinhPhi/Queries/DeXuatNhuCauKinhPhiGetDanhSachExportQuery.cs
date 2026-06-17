@@ -26,7 +26,6 @@ internal class DeXuatNhuCauKinhPhiGetDanhSachExportQueryHandler(IServiceProvider
         var dmDonViQuery = _dmDonVi.GetQueryableSet().AsNoTracking();
 
         var queryable = _repo.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId);

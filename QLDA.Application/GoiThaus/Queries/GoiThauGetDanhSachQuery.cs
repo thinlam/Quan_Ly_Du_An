@@ -32,12 +32,9 @@ internal class
 
     public async Task<PaginatedList<GoiThauDto>> Handle(GoiThauGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        var queryable = GoiThau.GetQueryableSet().AsNoTracking()
+        var queryable = _authManager.FilterVisible(GoiThau.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
             .Where(e => e.DaDuyet)
-            .Where(e => !e.DuAn!.IsDeleted);
-        queryable = _authManager.FilterVisible(queryable, AuthorizationResourceKeys.DuAn);
-        queryable = queryable
-            .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
+            .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.KeHoachLuaChonNhaThauId != null,
                 e => e.KeHoachLuaChonNhaThauId == request.SearchDto.KeHoachLuaChonNhaThauId)
@@ -62,15 +59,8 @@ internal class
                     .WhereIf(request.SearchDto.KetQuaTrungThauId.HasValue, e => e.KetQuaTrungThau!.Id == request.SearchDto.KetQuaTrungThauId || e.KetQuaTrungThau == null)
                     .WhereIf(request.SearchDto.HopDongId.HasValue, e => e.HopDong!.Id == request.SearchDto.HopDongId || e.HopDong == null),
                 q => q
-                    .WhereIf(request.SearchDto.HopDongId.HasValue, e => e.HopDong!.Id == request.SearchDto.HopDongId)
+                    .WhereIf(request.SearchDto.HopDongId.HasValue, e => e.HopDong!.Id == request.SearchDto.HopDongId));
 
-            )
-
-            ;
-
-        /*
-         * Đoạn cmt bên dưới là các trường cần trả cho in excel
-         */
         return await queryable
             .Select(e => new GoiThauDto() {
                 Id = e.Id,

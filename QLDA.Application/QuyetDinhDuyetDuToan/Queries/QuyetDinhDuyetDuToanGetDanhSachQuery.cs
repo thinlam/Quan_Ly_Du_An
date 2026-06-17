@@ -33,7 +33,6 @@ internal class
         CancellationToken cancellationToken = default) {
         var queryable = QuyetDinhDuyetDuToan.GetQueryableSet().AsNoTracking()
             .Include(e => e.DuAn).Include(e => e.HinhThucQuanLyDuAn).Include(e => e.KeHoachLuaChonNhaThau).Include(e => e.TrangThai)
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

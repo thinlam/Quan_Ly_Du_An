@@ -31,7 +31,6 @@ internal class BaoCaoKetQuaKhaoSatGetDanhSachQueryHandler
         BaoCaoKetQuaKhaoSatGetDanhSachQuery request, CancellationToken cancellationToken = default) {
         var queryable = _repository.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Include(e => e.TrangThai)
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId)

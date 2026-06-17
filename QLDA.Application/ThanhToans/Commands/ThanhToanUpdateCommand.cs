@@ -13,7 +13,6 @@ public record ThanhToanUpdateCommand(ThanhToanUpdateDto Dto) : IRequest<ThanhToa
 internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCommand, ThanhToan> {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -24,7 +23,6 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
     public ThanhToanUpdateCommandHandler(IServiceProvider serviceProvider) {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
@@ -40,14 +38,7 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.Update(request.Dto);
 

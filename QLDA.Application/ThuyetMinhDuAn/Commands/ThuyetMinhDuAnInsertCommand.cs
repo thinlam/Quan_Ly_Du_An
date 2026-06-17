@@ -13,7 +13,6 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,7 +21,6 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
@@ -30,14 +28,7 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnInsertCommand request, CancellationToken cancellationToken = default)
     {
-        if (request.Dto.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)

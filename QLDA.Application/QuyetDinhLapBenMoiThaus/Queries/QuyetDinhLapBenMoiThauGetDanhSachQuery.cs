@@ -31,7 +31,6 @@ internal class
     public async Task<PaginatedList<QuyetDinhLapBenMoiThauDto>> Handle(QuyetDinhLapBenMoiThauGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = QuyetDinhLapBenMoiThau.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

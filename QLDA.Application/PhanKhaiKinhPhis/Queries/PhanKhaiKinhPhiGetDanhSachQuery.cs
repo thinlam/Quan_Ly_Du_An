@@ -22,7 +22,6 @@ internal class PhanKhaiKinhPhiGetDanhSachQueryHandler : IRequestHandler<PhanKhai
         var queryable = _repo.GetQueryableSet().AsNoTracking()
             .Include(e => e.TrangThai)
             .Include(e => e.NguonVon)
-            .Where(e => !e.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereGlobalFilter(request,
                 e => e.SoToTrinh,

@@ -55,7 +55,6 @@ internal class TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Service
         }
 
         var queryable = TrienKhaiKeHoachLCNT.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So!))

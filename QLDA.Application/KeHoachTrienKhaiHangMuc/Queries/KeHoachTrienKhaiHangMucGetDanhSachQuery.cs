@@ -59,7 +59,6 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
             denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
         }
         var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachTrienKhaiHangMuc.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
-            .Where(e => !e.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So!))

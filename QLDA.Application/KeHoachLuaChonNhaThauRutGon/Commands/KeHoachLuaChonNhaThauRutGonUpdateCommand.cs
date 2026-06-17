@@ -13,7 +13,6 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
 {
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,7 +21,6 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
     {
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
@@ -43,15 +41,7 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        if (request.Dto.BuocId.HasValue)
-        {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         if (entity.TrangThaiId != null &&  entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiDaChuyen?.Id)
         {

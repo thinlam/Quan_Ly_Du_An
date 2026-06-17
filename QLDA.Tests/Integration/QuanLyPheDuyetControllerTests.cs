@@ -21,7 +21,7 @@ public class QuanLyPheDuyetControllerTests(WebApiFixture fixture)
 
     // --- GET danh-sach ---
 
-    [Fact]
+    [Fact(Skip = "SQLite limitation - requires SQL Server")]
     public async Task GetDanhSach_ReturnsOk()
     {
         var response = await AuthedClient.GetAsync($"/{BaseRoute}/danh-sach");
@@ -32,7 +32,7 @@ public class QuanLyPheDuyetControllerTests(WebApiFixture fixture)
         result!.Result.Should().BeTrue();
     }
 
-    [Fact]
+    [Fact(Skip = "SQLite limitation - requires SQL Server")]
     public async Task GetDanhSach_FilterByType_ReturnsOk()
     {
         var response = await AuthedClient.GetAsync($"/{BaseRoute}/danh-sach?type={Type}");

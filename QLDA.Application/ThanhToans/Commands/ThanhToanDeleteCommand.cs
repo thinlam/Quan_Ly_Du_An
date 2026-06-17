@@ -10,7 +10,6 @@ public record ThanhToanDeleteCommand(Guid Id) : IRequest;
 public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCommand> {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -20,7 +19,6 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     public ThanhToanDeleteCommandHandler(IServiceProvider serviceProvider) {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
@@ -35,14 +33,7 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
 
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

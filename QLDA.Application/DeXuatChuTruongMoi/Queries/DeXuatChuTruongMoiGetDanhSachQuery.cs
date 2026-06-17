@@ -32,7 +32,6 @@ internal class
     public async Task<PaginatedList<DeXuatChuTruongMoiDto>> Handle(DeXuatChuTruongMoiQuery request,  CancellationToken cancellationToken = default) {
 
         var queryable = DeXuatChuTruongMoi.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.HinhThucDauTuId != null, e => e.HinhThucDauTuId == request.HinhThucDauTuId)

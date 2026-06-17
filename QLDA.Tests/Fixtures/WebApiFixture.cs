@@ -120,7 +120,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     {
         public long PhongKHTCId => 0;
         public long PhongHCTHId => 300; // Match PhongBanId in CreateHcthClient()
-        public long PhongKHTCID => 500; // Match PhongBanId in CreateKhTcClient()
+        public long PhongKHTCID => 219; // Match hardcoded PhongBanId=219 in Trinh commands
     }
 
     public async Task InitializeAsync()
@@ -158,6 +158,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
             Level = 0,
             Path = "",
             NgayBatDau = DateTime.UtcNow,
+            LanhDaoPhuTrachId = 1, // Match AuthedClient UserId=1 for authorization
         };
         _seedDb.Set<DuAn>().Add(duAn);
         await _seedDb.SaveChangesAsync();
@@ -280,11 +281,11 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Client with KH-TC department (PhongBanId=500) - global bypass for authorization
+    /// Client with KH-TC department (PhongBanId=219) - global bypass for authorization
     /// </summary>
     public HttpClient CreateKhTcClient()
     {
-        var token = GenerateToken(userId: 20, phongBanId: 500);
+        var token = GenerateToken(userId: 20, phongBanId: 219);
         return CreateClientWithToken(token);
     }
 

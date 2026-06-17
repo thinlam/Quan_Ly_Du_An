@@ -15,7 +15,6 @@ internal class
     private readonly IRepository<ChuTruongLapKeHoach, Guid> ChuTruongLapKeHoach;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> StatusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -26,7 +25,6 @@ internal class
         ChuTruongLapKeHoach = serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
         StatusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
@@ -42,14 +40,7 @@ internal class
                 .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
             request.Entity.TrangThaiId = trangThaiDuThao?.Id;
 
-            if (request.Entity.BuocId.HasValue) {
-                var buoc = await _duAnBuocRepo.GetQueryableSet()
-                    .Include(e => e.DuAn)
-                    .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                    .FirstOrDefaultAsync(e => e.Id == request.Entity.BuocId.Value, cancellationToken);
-                if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                    throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-            }
+            await _auth.EnsureCanExecuteStepAsync(request.Entity.BuocId, _authContext, cancellationToken);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 var isExist = ChuTruongLapKeHoach.GetQueryableSet().Any(o => o.Id == request.Entity.Id);

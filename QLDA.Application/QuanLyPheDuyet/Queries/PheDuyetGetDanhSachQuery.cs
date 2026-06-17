@@ -247,7 +247,6 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             .ToDictionary(g => g.Key, g => g.Max(x => x.NgayXuLy));
 
         var query = _baoCaoKhaoSatRepo.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Include(e => e.TrangThai)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereGlobalFilter(request, e => e.NoiDungBaoCao, e => e.NoiDungNghiemThu)

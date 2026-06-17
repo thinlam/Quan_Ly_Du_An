@@ -8,7 +8,6 @@ public record TamUngUpdateCommand(TamUngUpdateDto Dto) : IRequest<TamUng>;
 
 internal class TamUngUpdateCommandHandler : IRequestHandler<TamUngUpdateCommand, TamUng> {
     private readonly IRepository<TamUng, Guid> TamUng;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +15,6 @@ internal class TamUngUpdateCommandHandler : IRequestHandler<TamUngUpdateCommand,
 
     public TamUngUpdateCommandHandler(IServiceProvider serviceProvider) {
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = TamUng.UnitOfWork;
@@ -29,14 +27,7 @@ internal class TamUngUpdateCommandHandler : IRequestHandler<TamUngUpdateCommand,
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _authContext, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.Update(request.Dto);
 

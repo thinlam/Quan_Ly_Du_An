@@ -13,6 +13,54 @@
 - Search DTOs use `CommonSearchDto` as base class in Application layer
 - For controller request/response with search params, use DTO from Application layer (e.g., `ToTrinhKeHoachSearchDto`)
 
+## Authorization Pattern (AuthorizationManager)
+
+**RULE: All queries with `DuAnId` navigation MUST use `_authManager.FilterVisible()`**
+
+For child entities (entities with `DuAnId` property), apply authorization filter at the START of the query:
+
+```csharp
+// ✅ CORRECT - FilterVisible at the beginning
+var queryable = _authManager.FilterVisible(Entity.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
+    .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+    .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
+    .WhereGlobalFilter(...);
+
+// ❌ WRONG - Missing FilterVisible or placed after other filters
+var queryable = Entity.GetQueryableSet()
+    .Where(e => !e.IsDeleted);  // Redundant - GetQueryableSet already filters IsDeleted
+```
+
+**Required steps for a new child entity query:**
+1. Inject `IAuthorizationManager _authManager` in constructor
+2. Call `_authManager.FilterVisible()` as the first operation on the query
+3. **DO NOT** add `.Where(e => !e.IsDeleted)` — `GetQueryableSet()` already applies this filter
+4. Apply search filters after authorization
+
+**For authorization commands:** Use `EnsureCanExecuteStepAsync` instead of manual BuocId checks:
+```csharp
+// ✅ CORRECT
+await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+
+// ❌ WRONG - Manual BuocId authorization (duplicated code)
+if (entity.BuocId.HasValue) {
+    var buoc = await _duAnBuocRepo.GetQueryableSet()...;
+    if (buoc != null && !await _auth.CanExecuteStepAsync(...))
+        throw new ManagedException("...");
+}
+```
+
+**For child entity queries with `BuocId` navigation:** Use `FilterVisibleChildEntities` to filter by step ownership:
+```csharp
+// ✅ CORRECT - Filter by BuocId ownership via FilterVisibleChildEntities
+var queryable = _buocAuth.FilterVisibleChildEntities(
+    BanGiaoRepository.GetQueryableSet(),
+    _duAnBuocRepo,
+    _authContext,
+    e => e.BuocId  // Selector for the BuocId property
+);
+```
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 

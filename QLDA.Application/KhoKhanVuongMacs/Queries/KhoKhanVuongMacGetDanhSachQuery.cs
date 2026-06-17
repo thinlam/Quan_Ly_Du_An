@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -38,15 +39,17 @@ internal class
     PaginatedList<KhoKhanVuongMacDto>> {
     private readonly IRepository<BaoCaoKhoKhanVuongMac, Guid> KhoKhanVuongMac;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _authManager;
 
     public KhoKhanVuongMacGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         KhoKhanVuongMac = serviceProvider.GetRequiredService<IRepository<BaoCaoKhoKhanVuongMac, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
     public async Task<PaginatedList<KhoKhanVuongMacDto>> Handle(KhoKhanVuongMacGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        var queryable = KhoKhanVuongMac.GetQueryableSet().AsNoTracking()
+        var queryable = _authManager.FilterVisible(KhoKhanVuongMac.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
@@ -58,15 +61,6 @@ internal class
                 e => e.Ngay.HasValue && e.Ngay.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
             .WhereIf(request.DenNgay.HasValue,
                 e => e.Ngay.HasValue && e.Ngay.Value <= request.DenNgay!.Value.ToEndOfDayUtc())
-           .WhereFunc(request.LanhDaoPhuTrachId.HasValue, q => q
-                .WhereIf(request.LanhDaoPhuTrachId > 0, e => e.DuAn!.LanhDaoPhuTrachId == request.LanhDaoPhuTrachId)
-                .WhereIf(request.LanhDaoPhuTrachId == -1, e => e.DuAn!.LanhDaoPhuTrachId == null)
-            )
-            .WhereFunc(request.DonViPhuTrachChinhId.HasValue, q => q
-                .WhereIf(request.DonViPhuTrachChinhId > 0, e => e.DuAn!.DonViPhuTrachChinhId == request.DonViPhuTrachChinhId)
-                .WhereIf(request.DonViPhuTrachChinhId == -1, e => e.DuAn!.DonViPhuTrachChinhId == null)
-            )
-            .WhereIf(request.DonViPhoiHopId.HasValue, e => e.DuAn!.DuAnChiuTrachNhiemXuLys!.Any(i => i.RightId == request.DonViPhoiHopId && i.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop))
             .WhereGlobalFilter(
                 request,
                 e => e.NoiDung,
