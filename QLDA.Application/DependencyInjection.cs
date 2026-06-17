@@ -14,11 +14,14 @@ public static class DependencyInjection
 
         // Authorization infrastructure
         services.AddScoped<IAuthorizationContext, AuthorizationContext>();
-        services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
+        services.AddScoped<IAuthorizationManager, AuthorizationManager>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
 
         // BuocAuthorizationProvider for step-level authorization
         services.AddScoped<IBuocAuthorizationProvider, BuocAuthorizationProvider>();
+
+        // DuAnAuthorizationProvider for project-level authorization
+        services.AddScoped<IAuthorizationProvider, DuAnAuthorizationProvider>();
 
         return services;
     }

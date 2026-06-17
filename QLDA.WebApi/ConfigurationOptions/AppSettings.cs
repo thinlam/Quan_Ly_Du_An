@@ -6,14 +6,14 @@ public class AppSettings {
     public JwtSettings Jwt { get; set; } = new JwtSettings();
     public string? SwaggerPathBase { get; set; }
     /// <summary>
-    /// ID phòng kế toán - đơn vị có quyền CRUD ThanhToan
+    /// ID Phòng Kế Hoạch - Tài chính - đơn vị có quyền CRUD ThanhToan
     /// </summary>
-    public long PhongKeToanID { get; set; }
+    public long PhongKHTCId { get; set; }
 
     /// <summary>
-    /// ID phòng Hành chính - Tổng hợp
+    /// ID Phòng Hành chính - Tổng hợp
     /// </summary>
-    public long PhongHCTHID { get; set; }
+    public long PhongHCTHId { get; set; }
 
     /// <summary>
     /// ID phòng Kế hoạch - Tài chính. Nhân viên thuộc phòng này có global bypass cho authorization.

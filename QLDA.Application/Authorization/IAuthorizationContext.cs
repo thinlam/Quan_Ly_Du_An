@@ -2,7 +2,8 @@ namespace QLDA.Application.Authorization;
 
 /// <summary>
 /// Scoped context per HTTP request.
-/// Holds current user info + cached bypass flags.
+/// Holds current user info + cached authorization flags, computed once per request.
+/// Providers inject this instead of IUserProvider/IAppSettingsProvider/IPolicyProvider directly.
 /// </summary>
 public interface IAuthorizationContext
 {
@@ -10,12 +11,6 @@ public interface IAuthorizationContext
     /// Current user provider.
     /// </summary>
     IUserProvider User { get; }
-
-    /// <summary>
-    /// True if user has global bypass (KHTC identity or admin role).
-    /// Cached — computed once per request.
-    /// </summary>
-    bool HasGlobalBypass { get; }
 
     /// <summary>
     /// Current user's ID.
@@ -26,6 +21,26 @@ public interface IAuthorizationContext
     /// Current user's department ID (PhongBanID from JWT).
     /// </summary>
     long? PhongBanId { get; }
+
+    /// <summary>
+    /// True if user belongs to PhongKHTC department — bypasses all ownership checks.
+    /// Cached, computed once per request.
+    /// </summary>
+    bool HasKhtcBypass { get; }
+
+    /// <summary>
+    /// True if user holds an admin/manager role (DuAn-level: RoleConstants.GroupAdminOrManager)
+    /// OR has DuAn_XemTatCa policy (Buoc-level).
+    /// Cached, computed once per request.
+    /// </summary>
+    bool IsAdminManager { get; }
+
+    /// <summary>
+    /// Combined bypass: HasKhtcBypass || IsAdminManager.
+    /// Provided for places that historically treated admin/manager as bypass.
+    /// Note: most providers should use the specific flag they need, not this aggregate.
+    /// </summary>
+    bool HasGlobalBypass { get; }
 
     /// <summary>
     /// Get LanhDaoPhuTrachId for a DuAn, cached per-DuAn per request.

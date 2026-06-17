@@ -10,7 +10,7 @@ public class AppSettingsProvider : IAppSettingsProvider {
         _settings = settings.Value;
     }
 
-    public long PhongKeToanID => _settings.PhongKeToanID;
-    public long PhongHCTHID => _settings.PhongHCTHID;
+    public long PhongKHTCId => _settings.PhongKHTCId;
+    public long PhongHCTHId => _settings.PhongHCTHId;
     public long PhongKHTCID => _settings.PhongKHTCID;
 }

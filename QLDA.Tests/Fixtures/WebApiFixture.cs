@@ -114,12 +114,12 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Test implementation of IAppSettingsProvider with configurable PhongHCTHID
+    /// Test implementation of IAppSettingsProvider with configurable PhongHCTHId
     /// </summary>
     private class TestAppSettingsProvider : IAppSettingsProvider
     {
-        public long PhongKeToanID => 0;
-        public long PhongHCTHID => 300; // Match PhongBanId in CreateHcthClient()
+        public long PhongKHTCId => 0;
+        public long PhongHCTHId => 300; // Match PhongBanId in CreateHcthClient()
         public long PhongKHTCID => 500; // Match PhongBanId in CreateKhTcClient()
     }
 
@@ -322,11 +322,11 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Client with P.HC-TH role - PhongBanId=300 matches PhongHCTHID in test settings
+    /// Client with P.HC-TH role - PhongBanId=300 matches PhongHCTHId in test settings
     /// </summary>
     public HttpClient CreateHcthClient()
     {
-        // PhongBanID=300 matches PhongHCTHID=300 in TestAppSettingsProvider
+        // PhongBanID=300 matches PhongHCTHId=300 in TestAppSettingsProvider
         var token = GenerateToken(userId: 40, phongBanId: 300, roles: [RoleConstants.QLDA_QuanTri]);
         return CreateClientWithToken(token);
     }

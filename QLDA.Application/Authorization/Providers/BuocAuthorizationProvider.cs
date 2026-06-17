@@ -1,36 +1,29 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Providers;
+using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
-using PermissionConstants = QLDA.Domain.Constants.PermissionConstants;
 
 namespace QLDA.Application.Authorization;
 
-public class BuocAuthorizationProvider(
-    IAppSettingsProvider settings,
-    IPolicyProvider policy) : IBuocAuthorizationProvider
+/// <summary>
+/// Authorization cho step (DuAnBuoc):
+/// - CanExecuteStep (write): HasKhtcBypass OR ownership (admin/manager KHÔNG còn bypass ownership)
+/// - FilterVisibleSteps: filter qua ownership scope
+/// - FilterVisibleChildEntities: filter child entity (KeHoachTrienKhai...) qua subquery visible buoc ids
+///
+/// Authorization flags (HasKhtcBypass, IsAdminManager) are computed once per request
+/// by AuthorizationContext and exposed via IAuthorizationContext parameter.
+/// </summary>
+public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IBuocAuthorizationProvider
 {
-    public bool HasGlobalBypass(IUserProvider user)
+    public Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
-        if (user.Info.PhongBanID == settings.PhongKHTCID)
-            return true;
+        if (ctx.HasKhtcBypass) return Task.FromResult(true);
 
-        if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
-            return true;
-
-        return false;
-    }
-
-    public Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IUserProvider user, CancellationToken ct)
-    {
-        if (HasGlobalBypass(user))
-            return Task.FromResult(true);
-
-        var userId = user.Info.UserID;
+        var userId = ctx.UserId;
         if (userId > 0 && buoc.DuAn?.LanhDaoPhuTrachId == userId)
             return Task.FromResult(true);
 
-        var phongBanId = user.Info.PhongBanID ?? 0;
+        var phongBanId = ctx.PhongBanId ?? 0;
 
         if (buoc.PhongPhuTrachChinhId == phongBanId)
             return Task.FromResult(true);
@@ -54,13 +47,12 @@ public class BuocAuthorizationProvider(
         return Task.FromResult(false);
     }
 
-    public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IUserProvider user)
+    public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx)
     {
-        if (HasGlobalBypass(user))
-            return query;
+        if (ctx.HasKhtcBypass) return query;
 
-        var phongBanId = user.Info.PhongBanID ?? 0;
-        var userId = user.Info.UserID;
+        var phongBanId = ctx.PhongBanId ?? 0;
+        var userId = ctx.UserId;
         if (phongBanId == 0 && userId <= 0)
             return query.Where(e => false);
 
@@ -80,19 +72,18 @@ public class BuocAuthorizationProvider(
 
     public IQueryable<T> FilterVisibleChildEntities<T>(
         IQueryable<T> query,
-        IRepository<DuAnBuoc, int> buocRepo,
-        IUserProvider user,
+        IRepository<DuAnBuoc, int> buocRepository,
+        IAuthorizationContext ctx,
         Func<T, int?> buocIdSelector) where T : class
     {
-        if (HasGlobalBypass(user))
-            return query;
+        if (ctx.HasKhtcBypass) return query;
 
-        var phongBanId = user.Info.PhongBanID ?? 0;
-        var userId = user.Info.UserID;
+        var phongBanId = ctx.PhongBanId ?? 0;
+        var userId = ctx.UserId;
         if (phongBanId == 0 && userId <= 0)
             return query.Where(e => false);
 
-        var visibleBuocIds = buocRepo.GetQueryableSet()
+        var visibleBuocIds = buocRepository.GetQueryableSet()
             .Where(e =>
                 (e.DuAn != null && e.DuAn.LanhDaoPhuTrachId == userId)
                 || e.PhongPhuTrachChinhId == phongBanId
@@ -110,5 +101,18 @@ public class BuocAuthorizationProvider(
         return query.Where(e =>
             buocIdSelector(e) == null
             || visibleBuocIds.Contains(buocIdSelector(e)!.Value));
+    }
+
+    public async Task EnsureCanExecuteStepAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
+    {
+        if (!buocId.HasValue) return;
+
+        var buoc = await buocRepo.GetQueryableSet()
+            .Include(e => e.DuAn)
+            .Include(e => e.DuAnBuocPhongBanPhoiHops)
+            .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
+
+        if (buoc != null && !await CanExecuteStepAsync(buoc, ctx, ct))
+            throw new ManagedException("Phòng ban không có quyền thao tác bước này");
     }
 }

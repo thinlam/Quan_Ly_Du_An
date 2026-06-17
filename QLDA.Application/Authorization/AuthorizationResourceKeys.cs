@@ -11,4 +11,10 @@ public static class AuthorizationResourceKeys
     public const string HopDong = "HopDong";
     public const string GoiThau = "GoiThau";
     public const string VanBan = "VanBan";
+
+    /// <summary>
+    /// All defined resource keys. Used by startup registration to wire up providers
+    /// without each registration site needing to know every key.
+    /// </summary>
+    public static readonly string[] All = [DuAn, DuAnBuoc, HopDong, GoiThau, VanBan];
 }

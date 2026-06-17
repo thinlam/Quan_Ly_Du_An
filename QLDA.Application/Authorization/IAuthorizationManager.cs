@@ -1,8 +1,10 @@
 namespace QLDA.Application.Authorization;
 
 /// <summary>
-/// Singleton façade for authorization.
+/// Scoped façade for authorization.
 /// Resolves the correct provider by resource key and delegates authorization calls.
+/// DI injects all registered IAuthorizationProvider instances; the manager
+/// builds a resourceKey → provider map once at construction.
 /// </summary>
 public interface IAuthorizationManager
 {
@@ -10,12 +12,6 @@ public interface IAuthorizationManager
     /// Scoped context holding current user + cached bypass flags.
     /// </summary>
     IAuthorizationContext Context { get; }
-
-    /// <summary>
-    /// Register a provider for a resource key.
-    /// Throws InvalidOperationException if resourceKey is already registered (fail-fast).
-    /// </summary>
-    void RegisterProvider(string resourceKey, IAuthorizationProvider provider);
 
     /// <summary>
     /// Check if user can execute (write) on the entity.

@@ -1,57 +1,65 @@
-using System.Collections.Concurrent;
-
 namespace QLDA.Application.Authorization;
 
 /// <summary>
-/// Singleton façade that routes authorization calls to the correct provider.
-/// Providers are registered at startup via RegisterProvider().
-/// IAuthorizationContext is resolved per-call from IServiceProvider to respect scoped lifetime.
+/// Scoped façade that routes authorization calls to the correct provider.
+/// All IAuthorizationProvider instances are injected via DI; the manager builds
+/// a resourceKey → provider map once at construction time.
+/// IAuthorizationContext is also injected so provider + context share the same
+/// scope (and therefore the same DbContext, IUserProvider, etc.).
 /// </summary>
-public class AuthorizationManager : IAuthorizationManager
+public class AuthorizationManager(
+    IAuthorizationContext context,
+    IEnumerable<IAuthorizationProvider> providers) : IAuthorizationManager
 {
-    private readonly ConcurrentDictionary<string, IAuthorizationProvider> _providers = new();
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IAuthorizationContext _context = context;
+    private readonly Dictionary<string, IAuthorizationProvider> _providers = BuildProviderMap(providers);
 
-    public AuthorizationManager(IServiceProvider serviceProvider)
+    private static Dictionary<string, IAuthorizationProvider> BuildProviderMap(
+        IEnumerable<IAuthorizationProvider> providers)
     {
-        _serviceProvider = serviceProvider;
+        var map = new Dictionary<string, IAuthorizationProvider>();
+        foreach (var provider in providers)
+        {
+            foreach (var key in AuthorizationResourceKeys.All)
+            {
+                if (!provider.CanHandle(key)) continue;
+
+                if (!map.TryAdd(key, provider))
+                    throw new InvalidOperationException(
+                        $"Multiple IAuthorizationProvider instances handle resource '{key}'. " +
+                        $"Registered: {map[key].GetType().Name}, conflicting: {provider.GetType().Name}.");
+            }
+        }
+        return map;
     }
 
-    public IAuthorizationContext Context
-        => _serviceProvider.GetRequiredService<IAuthorizationContext>();
-
-    public void RegisterProvider(string resourceKey, IAuthorizationProvider provider)
-    {
-        if (!_providers.TryAdd(resourceKey, provider))
-            throw new InvalidOperationException(
-                $"Authorization provider for resource '{resourceKey}' is already registered.");
-    }
+    public IAuthorizationContext Context => _context;
 
     public async Task<bool> CanExecuteAsync(string resourceKey, object entity, CancellationToken ct)
     {
         var provider = ResolveProvider(resourceKey);
-        return await provider.CanExecuteAsync(entity, Context, ct);
+        return await provider.CanExecuteAsync(entity, _context, ct);
     }
 
     public async Task<bool> CanViewAsync(string resourceKey, object entity, CancellationToken ct)
     {
         var provider = ResolveProvider(resourceKey);
-        return await provider.CanViewAsync(entity, Context, ct);
+        return await provider.CanViewAsync(entity, _context, ct);
     }
 
     public IQueryable<T> FilterVisible<T>(IQueryable<T> query, string resourceKey) where T : class
     {
         var provider = ResolveProvider(resourceKey);
-        return provider.Filter(query, Context);
+        return provider.Filter(query, _context);
     }
 
     private IAuthorizationProvider ResolveProvider(string resourceKey)
     {
-        if (_providers.TryGetValue(resourceKey, out var provider))
-            return provider;
+        if (!_providers.TryGetValue(resourceKey, out var provider))
+            throw new InvalidOperationException(
+                $"No authorization provider registered for resource '{resourceKey}'. " +
+                $"Available: [{string.Join(", ", _providers.Keys)}]");
 
-        throw new InvalidOperationException(
-            $"No authorization provider registered for resource '{resourceKey}'. " +
-            $"Available: [{string.Join(", ", _providers.Keys)}]");
+        return provider;
     }
 }
