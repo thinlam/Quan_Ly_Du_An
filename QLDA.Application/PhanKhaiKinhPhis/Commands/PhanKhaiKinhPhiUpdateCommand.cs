@@ -33,6 +33,7 @@ internal class PhanKhaiKinhPhiUpdateCommandHandler : IRequestHandler<PhanKhaiKin
 
         entity.SoToTrinh = request.Dto.SoToTrinh;
         entity.NgayToTrinh = request.Dto.NgayToTrinh;
+        entity.TrichYeu = request.Dto.TrichYeu;
         entity.NguonVonId = request.Dto.NguonVonId;
         entity.KinhPhiDeXuat = request.Dto.KinhPhiDeXuat;
         entity.KinhPhiPhanKhai = request.Dto.KinhPhiPhanKhai;

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260617033228_UpdPhanKhaiKinhPhi")]
+    partial class UpdPhanKhaiKinhPhi
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1856,7 +1859,22 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("DmBuocManHinh", (string)null);
                 });
 
-           modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocTrangThaiTienDo", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocPhongBanPhoiHop", b =>
+                {
+                    b.Property<int>("LeftId")
+                        .HasColumnType("int")
+                        .HasColumnName("BuocId");
+
+                    b.Property<long>("RightId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PhongBanId");
+
+                    b.HasKey("LeftId", "RightId");
+
+                    b.ToTable("DmBuocPhongBanPhoiHop", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocTrangThaiTienDo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -6253,7 +6271,9 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("NhaThauId");
 
                     b.HasIndex("TrangThaiId");
-     });
+
+                    b.ToTable("KeHoachLuaChonNhaThauRutGon", (string)null);
+                });
 
             modelBuilder.Entity("QLDA.Domain.Entities.KeHoachTrienKhaiChiTietDuAn", b =>
                 {
@@ -8677,7 +8697,18 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("ManHinh");
                 });
 
-          modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocTrangThaiTienDo", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocPhongBanPhoiHop", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucBuoc", "Buoc")
+                        .WithMany("PhongBanPhoiHops")
+                        .HasForeignKey("LeftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Buoc");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucBuocTrangThaiTienDo", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucBuoc", "Buoc")
                         .WithMany("BuocTrangThaiTienDos")
@@ -9213,8 +9244,8 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("LoaiHopDong");
                 });
 
-                  modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThauRutGon", b =>
-          {
+            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThauRutGon", b =>
+                {
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany()
                         .HasForeignKey("DuAnId")
@@ -10073,7 +10104,10 @@ namespace QLDA.Migrator.Migrations
 
                     b.Navigation("BuocTrangThaiTienDos");
 
-                    b.Navigation("DuAnBuocs");});
+                    b.Navigation("DuAnBuocs");
+
+                    b.Navigation("PhongBanPhoiHops");
+                });
 
             modelBuilder.Entity("QLDA.Domain.Entities.DanhMuc.DanhMucChuDauTu", b =>
                 {

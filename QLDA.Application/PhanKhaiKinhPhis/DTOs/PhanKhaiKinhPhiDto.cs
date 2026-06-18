@@ -7,6 +7,7 @@ public class PhanKhaiKinhPhiDto : IHasKey<Guid?>, IMayHaveTepDinhKemDto {
     public Guid? Id { get; set; }
     public Guid DuAnId { get; set; }
     public string? SoToTrinh { get; set; }
+    public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayToTrinh { get; set; }
     public int? NguonVonId { get; set; }
     public string? TenNguonVon { get; set; }

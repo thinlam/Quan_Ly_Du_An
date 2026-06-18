@@ -11,7 +11,7 @@ public class PhanKhaiKinhPhiConfiguration : IEntityTypeConfiguration<PhanKhaiKin
         builder.Property(e => e.SoToTrinh).HasMaxLength(100);
         builder.Property(e => e.KinhPhiDeXuat).HasPrecision(18, 2);
         builder.Property(e => e.KinhPhiPhanKhai).HasPrecision(18, 2);
-
+        builder.Property(e => e.TrichYeu).HasMaxLength(4000);
         builder.HasOne(e => e.DuAn)
             .WithMany()
             .HasForeignKey(e => e.DuAnId)

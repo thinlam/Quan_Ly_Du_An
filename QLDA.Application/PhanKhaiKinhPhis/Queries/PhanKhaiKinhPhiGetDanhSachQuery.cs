@@ -38,6 +38,8 @@ internal class PhanKhaiKinhPhiGetDanhSachQueryHandler : IRequestHandler<PhanKhai
                 TenNguonVon = e.NguonVon != null ? e.NguonVon.Ten : null,
                 KinhPhiDeXuat = e.KinhPhiDeXuat,
                 KinhPhiPhanKhai = e.KinhPhiPhanKhai,
+                TrichYeu = e.TrichYeu,
+                ThuyetMinh = e.ThuyetMinh,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
