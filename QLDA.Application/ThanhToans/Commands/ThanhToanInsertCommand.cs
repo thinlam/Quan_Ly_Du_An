@@ -31,9 +31,8 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
     }
 
     public async Task<ThanhToan> Handle(ThanhToanInsertCommand request, CancellationToken cancellationToken = default) {
-       ValidatePhongKHTCPermission();
-
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        // Phân quyền: Owner + Lãnh đạo + KHTC + PhongBanChinh (KHÔNG cho PhongBanPhoiHop)
+        await _auth.EnsureCanExecuteThanhToanAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         await ValidateAsync(request, cancellationToken);
 
@@ -67,11 +66,4 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
     }
 
     #endregion
-
-    private void ValidatePhongKHTCPermission() {
-        ManagedException.ThrowIf(
-            _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
-            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
-        );
-    }
 }

@@ -31,7 +31,7 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
 
     [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<FileContentResult> GetBaoCaoTienDo() {
+    public async Task<FileContentResult> GetBaoCaoTienDo([FromQuery] Guid? duAnId = null) {
         var fileNameTemplate = "Import_BaoCaoTienDo.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory, // ví dụ: ...\QLDA.WebApi
@@ -39,13 +39,17 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             fileNameTemplate
         );
 
-        var danhSachTenDuAn = await DuAn.GetQueryableSet().Where(e => !e.IsDeleted)
+        var duAnQuery = DuAn.GetQueryableSet().Where(e => !e.IsDeleted);
+        if (duAnId.HasValue) duAnQuery = duAnQuery.Where(e => e.Id == duAnId.Value);
+
+        var danhSachTenDuAn = await duAnQuery
             .Select(e => new ComboData {
                 Name = e.TenDuAn ?? string.Empty,
                 Id = e.Id.ToString(),
             }).ToListAsync();
 
         var danhSachTenBuoc = await DuAnBuoc.GetQueryableSet().Where(e => !e.IsDeleted)
+            .WhereIf(duAnId.HasValue, e => e.DuAnId == duAnId!.Value)
             .Select(e => new ComboData() {
                 Id = e.Id.ToString(),
                 ParentId = e.DuAnId.ToString(),
@@ -68,7 +72,7 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
 
     [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<FileContentResult> GetImportGoiThau() {
+    public async Task<FileContentResult> GetImportGoiThau([FromQuery] Guid? duAnId = null) {
         var fileNameTemplate = "Import_GoiThau.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -101,6 +105,7 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             }).ToListAsync();
 
         var danhSachKeHoach = await KeHoachLuaChonNhaThau.GetQueryableSet().Where(e => !e.IsDeleted)
+            .WhereIf(duAnId.HasValue, e => e.DuAnId == duAnId!.Value)
             .Select(e => new ComboData {
                 Name = e.Ten ?? string.Empty,
                 Id = e.Id.ToString(),

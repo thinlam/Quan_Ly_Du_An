@@ -25,8 +25,8 @@ public record DuAnBuocDeleteCommandHandler : IRequestHandler<DuAnBuocDeleteComma
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        if (!await _auth.CanExecuteStepAsync(entity, _authContext, cancellationToken))
-            throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        if (!await _auth.CanManageStepFieldsAsync(entity, _authContext, cancellationToken))
+            throw new ManagedException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được xóa bước");
 
         entity.IsDeleted = true;
         await DuAnBuoc.UpdateAsync(entity, cancellationToken);

@@ -2,6 +2,7 @@ using BuildingBlocks.Domain.Interfaces;
 using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucBuocs.DTOs;
 using QLDA.Application.DuAnBuocs.DTOs;
@@ -23,6 +24,10 @@ internal class DuAnBuocGetTreeListQueryHandler(IServiceProvider serviceProvider)
         serviceProvider.GetRequiredService<IRepository<DanhMucManHinh, int>>();
     private readonly IRepository<DmDonVi, long> DanhMucDonVi =
         serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
+    private readonly IBuocAuthorizationProvider _buocAuth =
+        serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext =
+        serviceProvider.GetRequiredService<IAuthorizationContext>();
     private readonly IUnitOfWork UnitOfWork =
         serviceProvider.GetRequiredService<IUnitOfWork>();
 
@@ -31,7 +36,9 @@ internal class DuAnBuocGetTreeListQueryHandler(IServiceProvider serviceProvider)
         var donVis = DanhMucDonVi.GetQueryableSet().AsNoTracking();
         var dbContext = UnitOfWork as DbContext;
 
-        var baseQuery = DuAnBuoc.GetQueryableSet()
+        var baseQuery = _buocAuth.FilterVisibleSteps(
+                DuAnBuoc.GetQueryableSet(),
+                _authContext)
             .WhereFunc(request.IsNoTracking, q => q.AsNoTracking())
             .Include(e => e.Buoc!.GiaiDoan)
             .Include(e => e.Buoc!.QuyTrinh)

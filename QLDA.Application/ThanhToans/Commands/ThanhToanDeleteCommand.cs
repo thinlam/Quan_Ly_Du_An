@@ -27,25 +27,18 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     }
 
     public async Task Handle(ThanhToanDeleteCommand request, CancellationToken cancellationToken) {
-        ValidatePhongKHTCPermission();
         var entity = await ThanhToan.GetOrderedSet()
            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        // Phân quyền Delete: chỉ Owner + Lãnh đạo + KHTC (PhongBanChinh KHÔNG được xóa)
+        await _auth.EnsureCanManageStepFieldsAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 
         await SyncHelper.SetDeleteWithRelatedFiles(TepDinhKem, [entity.Id.ToString()], cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-    }
-
-    private void ValidatePhongKHTCPermission() {
-        ManagedException.ThrowIf(
-            _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
-            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
-        );
     }
 }

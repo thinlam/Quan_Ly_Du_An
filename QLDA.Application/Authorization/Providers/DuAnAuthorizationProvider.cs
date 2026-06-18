@@ -15,6 +15,12 @@ namespace QLDA.Application.Authorization;
 ///     * T có property DuAnId (HopDong, GoiThau, VanBan...): subquery filter on visible DuAn ids
 ///     * T khác: fail-safe empty result
 ///
+/// Ownership logic:
+/// 1. LanhDaoPhuTrachId == userId → được (ALL - không cần check phòng)
+/// 2. CreatedBy == userId → được (chỉ bản ghi mình tạo)
+/// 3. DonViPhuTrachChinhId == phongBanId → được (ALL trong phòng)
+/// 4. DuAnChiuTrachNhiemXuLys.Any(RightId == phongBanId) → được (ALL trong phòng)
+///
 /// Authorization flags (HasKhtcBypass, IsAdminManager) are computed once per request
 /// by AuthorizationContext and exposed via IAuthorizationContext parameter.
 /// </summary>
@@ -78,6 +84,7 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
 
         return daQuery.Where(e =>
             e.LanhDaoPhuTrachId == userId ||
+            e.CreatedBy == userId.ToString() ||
             e.DonViPhuTrachChinhId == phongBanId ||
             e.DuAnChiuTrachNhiemXuLys!.Any(x =>
                 x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop));
@@ -93,6 +100,7 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
         return duAnRepo.GetQueryableSet()
             .Where(e =>
                 e.LanhDaoPhuTrachId == userId ||
+                e.CreatedBy == userId.ToString() ||
                 e.DonViPhuTrachChinhId == phongBanId ||
                 e.DuAnChiuTrachNhiemXuLys!.Any(x =>
                     x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop))
@@ -128,6 +136,7 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
             .Where(d => d.Id == duAnId)
             .AnyAsync(d =>
                 d.LanhDaoPhuTrachId == userId ||
+                d.CreatedBy == userId.ToString() ||
                 d.DonViPhuTrachChinhId == phongBanId ||
                 d.DuAnChiuTrachNhiemXuLys!.Any(x =>
                     x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop),

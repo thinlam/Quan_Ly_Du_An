@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Constants;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAnBuocs.DTOs;
@@ -15,12 +16,15 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
     : IRequestHandler<DuAnBuocGetDanhSachQuery, PaginatedList<DuAnBuocDto>> {
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc =
         ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _buocAuth =
+        ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext =
+        ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<DuAnBuocDto>> Handle(DuAnBuocGetDanhSachQuery request,
         CancellationToken cancellationToken) {
-        var query = DuAnBuoc.GetQueryableSet(
-                    OnlyUsed: false
-                )
+        var baseSet = DuAnBuoc.GetQueryableSet(OnlyUsed: false);
+        var query = _buocAuth.FilterVisibleSteps(baseSet, _authContext)
                 .AsNoTracking()
                 .Where(e => !e.DuAn!.IsDeleted)
                 .WhereIf(request.QuyTrinhId > 0, e => e.Buoc!.QuyTrinhId == request.QuyTrinhId)

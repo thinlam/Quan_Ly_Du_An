@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.KhoKhanVuongMacs.Commands;
 
@@ -13,6 +14,8 @@ internal class KhoKhanVuongMacInsertOrUpdateCommandHandler : IRequestHandler<Kho
     private readonly IRepository<DanhMucLoaiVanBan, int> DanhMucLoaiVanBan;
     private readonly IRepository<DanhMucChuDauTu, int> DanhMucChuDauTu;
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<KhoKhanVuongMacInsertOrUpdateCommandHandler> _logger;
 
@@ -24,6 +27,8 @@ internal class KhoKhanVuongMacInsertOrUpdateCommandHandler : IRequestHandler<Kho
         DanhMucLoaiVanBan = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiVanBan, int>>();
         DanhMucChuDauTu = serviceProvider.GetRequiredService<IRepository<DanhMucChuDauTu, int>>();
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = KhoKhanVuongMac.UnitOfWork;
     }
@@ -32,7 +37,10 @@ internal class KhoKhanVuongMacInsertOrUpdateCommandHandler : IRequestHandler<Kho
         try {
             ManagedException.ThrowIf( !DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");
-            
+
+            // Phân quyền: Owner/LanhDao/KHTC/PhongBanChinh/PhongBanPhoiHop-In-Scope
+            await _auth.EnsureCanExecuteStepAsync(request.Entity.BuocId, _authContext, cancellationToken);
+
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 var isExist = KhoKhanVuongMac.GetQueryableSet().Any(o => o.Id == request.Entity.Id);
                 if (isExist) {

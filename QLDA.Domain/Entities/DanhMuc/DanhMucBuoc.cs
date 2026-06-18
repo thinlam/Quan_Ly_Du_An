@@ -50,7 +50,6 @@ public class DanhMucBuoc : MaterializedPathDanhMuc<int>, IAggregateRoot, IMayHav
     public ICollection<DanhMucBuocTrangThaiTienDo>? BuocTrangThaiTienDos { get; set; } = [];
     public ICollection<DuAnBuoc>? DuAnBuocs { get; set; } = [];
     public ICollection<DanhMucBuocManHinh>? BuocManHinhs { get; set; } = [];
-    public ICollection<DanhMucBuocPhongBanPhoiHop>? PhongBanPhoiHops { get; set; } = [];
 
     #endregion
 }

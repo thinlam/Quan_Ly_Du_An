@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Entities;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.Authorization;
 
@@ -13,11 +14,11 @@ public static class BuocAuthorizationHelper
 {
     /// <summary>
     /// Tạo filter expression cho ownership check của Bước.
-    /// Logic:
-    /// 1. User là Lãnh Đạo Phụ Trách DuAn → được
-    /// 2. Phòng ban chính của Bước = Phòng ban của user → được
-    /// 3. User nằm trong danh sách PBPH của Bước → được
-    /// 4. Bước chưa gán PB nào VÀ user thuộc scope DuAn → được
+    /// Logic (sau khi siết phân quyền):
+    /// 1. User là Lãnh Đạo Phụ Trách DuAn → được (ALL - không cần check phòng)
+    /// 2. User là người tạo bước → được (chỉ bản ghi mình tạo)
+    /// 3. Phòng ban chính của Bước = Phòng ban của user → được
+    /// 4. User nằm trong danh sách PBPH của Bước AND user thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
     /// </summary>
     public static Expression<Func<DuAnBuoc, bool>> BuildOwnershipFilter(long userId, long? phongBanId)
     {
@@ -27,19 +28,19 @@ public static class BuocAuthorizationHelper
         // Điều kiện 1: User là Lãnh Đạo Phụ Trách DuAn
         var isLanhDao = BuildLanhDaoCondition(param, userId);
 
-        // Điều kiện 2: Phòng ban phụ trách chính
+        // Điều kiện 2: User là người tạo bước
+        var isCreator = BuildCreatorCondition(param, userId);
+
+        // Điều kiện 3: Phòng ban phụ trách chính
         var isPhongBanChinh = BuildPhongBanChinhCondition(param, phongBanIdValue);
 
-        // Điều kiện 3: Trong danh sách phối hợp
-        var isPhongBanPhoiHop = BuildPhongBanPhoiHopCondition(param, phongBanIdValue);
+        // Điều kiện 4: Trong danh sách phối hợp AND thuộc DuAn.ChiuTrachNhiemXuLys
+        var isPhoiHopInScope = BuildPhoiHopInChiuTrachNhiemScopeCondition(param, phongBanIdValue);
 
-        // Điều kiện 4: Fallback - Bước chưa gán PB nhưng user thuộc scope DuAn
-        var isFallbackScope = BuildFallbackDuAnScopeCondition(param, phongBanIdValue);
-
-        // Combine: IsLanhDao || IsPhongBanChinh || IsPhongBanPhoiHop || IsFallbackScope
+        // Combine: IsLanhDao || IsCreator || IsPhongBanChinh || IsPhoiHopInScope
         var combinedBody = Expression.OrElse(
-            Expression.OrElse(isLanhDao, isPhongBanChinh),
-            Expression.OrElse(isPhongBanPhoiHop, isFallbackScope));
+            Expression.OrElse(isLanhDao, isCreator),
+            Expression.OrElse(isPhongBanChinh, isPhoiHopInScope));
 
         return Expression.Lambda<Func<DuAnBuoc, bool>>(combinedBody, param);
     }
@@ -61,61 +62,51 @@ public static class BuocAuthorizationHelper
     private static BinaryExpression BuildLanhDaoCondition(ParameterExpression param, long userId)
     {
         // b.DuAn != null && b.DuAn.LanhDaoPhuTrachId == userId
+        // LanhDaoPhuTrachId is long? — constant must be typed as long? to match the property
+        // and avoid System.InvalidOperationException on null DB values.
         var duAnProperty = Expression.Property(param, "DuAn");
         var lanhDaoProperty = Expression.Property(duAnProperty, "LanhDaoPhuTrachId");
         var nullCheck = Expression.NotEqual(duAnProperty, Expression.Constant(null, typeof(DuAn)));
-        var compareCheck = Expression.Equal(lanhDaoProperty, Expression.Constant(userId));
+        var compareCheck = Expression.Equal(lanhDaoProperty, Expression.Constant(userId, typeof(long?)));
         return Expression.AndAlso(nullCheck, compareCheck);
+    }
+
+    private static BinaryExpression BuildCreatorCondition(ParameterExpression param, long userId)
+    {
+        // b.CreatedBy == userId.ToString()
+        var createdByProperty = Expression.Property(param, "CreatedBy");
+        return Expression.Equal(createdByProperty, Expression.Constant(userId.ToString()));
     }
 
     private static BinaryExpression BuildPhongBanChinhCondition(ParameterExpression param, long phongBanId)
     {
         // b.PhongPhuTrachChinhId == phongBanIdValue
+        // PhongPhuTrachChinhId is long? — constant must be typed as long? to match the property
+        // and avoid System.InvalidOperationException on null DB values.
         var property = Expression.Property(param, "PhongPhuTrachChinhId");
-        return Expression.Equal(property, Expression.Constant(phongBanId));
+        return Expression.Equal(property, Expression.Constant(phongBanId, typeof(long?)));
     }
 
-    private static BinaryExpression BuildPhongBanPhoiHopCondition(ParameterExpression param, long phongBanId)
+    /// <summary>
+    /// Điều kiện 4 mới: User nằm trong DuAnBuocPhongBanPhoiHops AND thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop).
+    /// </summary>
+    private static BinaryExpression BuildPhoiHopInChiuTrachNhiemScopeCondition(ParameterExpression param, long phongBanId)
     {
         // b.DuAnBuocPhongBanPhoiHops != null && b.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanIdValue)
+        // AND b.DuAn != null
+        // AND b.DuAn.DuAnChiuTrachNhiemXuLys!.Any(x => x.RightId == phongBanIdValue && x.Loai == DonViPhoiHop)
         var phongBanPhoiHops = Expression.Property(param, "DuAnBuocPhongBanPhoiHops");
-        var nullCheck = Expression.NotEqual(phongBanPhoiHops, Expression.Constant(null, typeof(ICollection<DuAnBuocPhongBanPhoiHop>)));
-        var anyCall = BuildAnyCall(phongBanPhoiHops, phongBanId);
-        return Expression.AndAlso(nullCheck, anyCall);
-    }
-
-    private static BinaryExpression BuildFallbackDuAnScopeCondition(ParameterExpression param, long phongBanId)
-    {
-        // b.PhongPhuTrachChinhId == null
-        // && (b.DuAnBuocPhongBanPhoiHops == null || !b.DuAnBuocPhongBanPhoiHops.Any())
-        // && b.DuAn != null
-        // && (b.DuAn.DonViPhuTrachChinhId == phongBanIdValue
-        //     || b.DuAn.DuAnChiuTrachNhiemXuLys!.Any(x => x.RightId == phongBanIdValue))
-
-        var phongPhuTrachChinh = Expression.Property(param, "PhongPhuTrachChinhId");
-        var nullPhongChinh = Expression.Equal(phongPhuTrachChinh, Expression.Constant(null, typeof(long?)));
-
-        var phongBanPhoiHops = Expression.Property(param, "DuAnBuocPhongBanPhoiHops");
-        var nullOrEmptyPhoiHop = Expression.OrElse(
-            Expression.Equal(phongBanPhoiHops, Expression.Constant(null, typeof(ICollection<DuAnBuocPhongBanPhoiHop>))),
-            Expression.Not(BuildAnyCall(phongBanPhoiHops, phongBanId)));
+        var nullPhoiHopCheck = Expression.NotEqual(phongBanPhoiHops, Expression.Constant(null, typeof(ICollection<DuAnBuocPhongBanPhoiHop>)));
+        var phoiHopMatch = BuildAnyCall(phongBanPhoiHops, phongBanId);
+        var phoiHopCondition = Expression.AndAlso(nullPhoiHopCheck, phoiHopMatch);
 
         var duAn = Expression.Property(param, "DuAn");
         var notNullDuAn = Expression.NotEqual(duAn, Expression.Constant(null, typeof(DuAn)));
 
-        // b.DuAn.DonViPhuTrachChinhId == phongBanIdValue
-        var donViPhuTrachChinh = Expression.Property(duAn, "DonViPhuTrachChinhId");
-        var matchDonVi = Expression.Equal(donViPhuTrachChinh, Expression.Constant(phongBanId));
-
-        // b.DuAn.DuAnChiuTrachNhiemXuLys!.Any(x => x.RightId == phongBanIdValue)
         var chiuTrachNhiem = Expression.Property(duAn, "DuAnChiuTrachNhiemXuLys");
-        var anyChiuTrachNhiem = BuildAnyChiuTrachNhiemCall(chiuTrachNhiem, phongBanId);
+        var chiuTrachNhiemMatch = BuildAnyChiuTrachNhiemWithLoaiCall(chiuTrachNhiem, phongBanId, EChiuTrachNhiemXuLy.DonViPhoiHop);
 
-        var inScopeDuAn = Expression.OrElse(matchDonVi, anyChiuTrachNhiem);
-
-        return Expression.AndAlso(
-            Expression.AndAlso(nullPhongChinh, nullOrEmptyPhoiHop),
-            Expression.AndAlso(notNullDuAn, inScopeDuAn));
+        return Expression.AndAlso(phoiHopCondition, Expression.AndAlso(notNullDuAn, chiuTrachNhiemMatch));
     }
 
     private static MethodCallExpression BuildAnyCall(Expression collection, long phongBanId)
@@ -134,9 +125,9 @@ public static class BuocAuthorizationHelper
         return Expression.Call(anyMethod, collection, lambda);
     }
 
-    private static MethodCallExpression BuildAnyChiuTrachNhiemCall(Expression collection, long phongBanId)
+    private static MethodCallExpression BuildAnyChiuTrachNhiemWithLoaiCall(Expression collection, long phongBanId, EChiuTrachNhiemXuLy loai)
     {
-        // collection.Any(x => x.RightId == phongBanIdValue)
+        // collection.Any(x => x.RightId == phongBanIdValue && x.Loai == loai)
         var anyMethod = typeof(Enumerable)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .First(m => m.Name == "Any" && m.GetParameters().Length == 2)
@@ -144,8 +135,11 @@ public static class BuocAuthorizationHelper
 
         var param = Expression.Parameter(typeof(DuAnChiuTrachNhiemXuLy), "x");
         var rightIdProperty = Expression.Property(param, "RightId");
-        var condition = Expression.Equal(rightIdProperty, Expression.Constant(phongBanId));
-        var lambda = Expression.Lambda(condition, param);
+        var loaiProperty = Expression.Property(param, "Loai");
+        var rightIdCondition = Expression.Equal(rightIdProperty, Expression.Constant(phongBanId));
+        var loaiCondition = Expression.Equal(loaiProperty, Expression.Constant(loai));
+        var combined = Expression.AndAlso(rightIdCondition, loaiCondition);
+        var lambda = Expression.Lambda(combined, param);
 
         return Expression.Call(anyMethod, collection, lambda);
     }
@@ -162,9 +156,12 @@ public static class BuocAuthorizationHelper
 
 /// <summary>
 /// Authorization cho step (DuAnBuoc):
-/// - CanExecuteStep (write): HasKhtcBypass OR ownership
+/// - CanExecuteStep (write): HasKhtcBypass OR ownership (Owner/LanhDao/PhongBanChinh/PhoiHopInScope)
 /// - FilterVisibleSteps: filter qua ownership scope
 /// - FilterVisibleChildEntities: filter child entity qua subquery visible buoc ids
+/// - CanManageViewerListAsync: chỉ Owner/LanhDao/KHTC (KHÔNG bao gồm PhongBanChinh/PhoiHop) — cho phép chỉnh DanhSachPhongBanPhoiHopIds
+/// - CanManageStepFieldsAsync: chỉ Owner/LanhDao/KHTC — cho phép edit/delete các field của bước
+/// - CanExecuteThanhToanAsync: chỉ Owner/LanhDao/KHTC + PhongBanChinh (KHÔNG cho PhoiHop) — cho phép Insert/Update ThanhToan
 ///
 /// Authorization flags (HasKhtcBypass) are computed once per request
 /// by AuthorizationContext and exposed via IAuthorizationContext parameter.
@@ -218,6 +215,86 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
 
         if (buoc != null && !await CanExecuteStepAsync(buoc, ctx, ct))
             throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+    }
+
+    /// <summary>
+    /// Quyền chỉnh sửa DanhSachPhongBanPhoiHopIds: chỉ Owner (CreatedBy) + Lãnh đạo phụ trách + HasKhtcBypass.
+    /// PhongBanChinh và PhongBanPhoiHop KHÔNG có quyền chỉnh viewer list.
+    /// </summary>
+    public async Task<bool> CanManageViewerListAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
+    {
+        return await CanManageStepFieldsAsync(buoc, ctx, ct);
+    }
+
+    /// <summary>
+    /// Throw ManagedException nếu user không có quyền chỉnh DanhSachPhongBanPhoiHopIds.
+    /// </summary>
+    public async Task EnsureCanManageViewerListAsync(int buocId, IAuthorizationContext ctx, CancellationToken ct = default)
+    {
+        var buoc = await buocRepo.GetQueryableSet()
+            .Include(e => e.DuAn)
+            .FirstOrDefaultAsync(e => e.Id == buocId, ct);
+
+        if (buoc == null) return;
+        if (!await CanManageViewerListAsync(buoc, ctx, ct))
+            throw new ManagedException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa danh sách phòng ban phối hợp");
+    }
+
+    /// <summary>
+    /// Quyền edit/delete các field của bước (TenBuoc, Ngay, ManHinh, PhongPhuTrachChinhId): chỉ Owner + Lãnh đạo + HasKhtcBypass.
+    /// </summary>
+    public async Task<bool> CanManageStepFieldsAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
+    {
+        if (ctx.HasKhtcBypass) return true;
+
+        if (buoc.CreatedBy == ctx.UserId.ToString()) return true;
+
+        var lanhDaoId = buoc.DuAn?.LanhDaoPhuTrachId
+            ?? await ctx.GetLanhDaoPhuTrachIdAsync(buoc.DuAnId, ct);
+        if (lanhDaoId.HasValue && lanhDaoId.Value == ctx.UserId) return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Throw ManagedException nếu user không có quyền edit/delete các field của bước.
+    /// Noop khi buocId null.
+    /// </summary>
+    public async Task EnsureCanManageStepFieldsAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
+    {
+        if (!buocId.HasValue) return;
+        var buoc = await buocRepo.GetQueryableSet()
+            .Include(e => e.DuAn)
+            .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
+        if (buoc == null) return;
+        if (!await CanManageStepFieldsAsync(buoc, ctx, ct))
+            throw new ManagedException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa thông tin bước");
+    }
+
+    /// <summary>
+    /// Quyền Insert/Update ThanhToan: Owner + Lãnh đạo + HasKhtcBypass + PhongBanChinh.
+    /// PhongBanPhoiHop KHÔNG có quyền (kể cả khi thuộc DuAn.ChiuTrachNhiemXuLys).
+    /// </summary>
+    public async Task<bool> CanExecuteThanhToanAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
+    {
+        if (await CanManageStepFieldsAsync(buoc, ctx, ct)) return true;
+
+        // PhongBanChinh được Insert/Update ThanhToan nhưng KHÔNG được Delete
+        return buoc.PhongPhuTrachChinhId == ctx.PhongBanId;
+    }
+
+    /// <summary>
+    /// Throw ManagedException nếu user không có quyền Insert/Update ThanhToan.
+    /// </summary>
+    public async Task EnsureCanExecuteThanhToanAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
+    {
+        if (!buocId.HasValue) return;
+        var buoc = await buocRepo.GetQueryableSet()
+            .Include(e => e.DuAn)
+            .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
+        if (buoc == null) return;
+        if (!await CanExecuteThanhToanAsync(buoc, ctx, ct))
+            throw new ManagedException("Phòng ban không có quyền thao tác thanh toán");
     }
 
     private static IQueryable<T> ApplyChildBuocIdFilter<T>(

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.DuAnBuocs.Queries;
 
@@ -13,10 +14,18 @@ internal class DuAnBuocGetDQueryHandler(IServiceProvider serviceProvider)
     : IRequestHandler<DuAnBuocGetQuery, DuAnBuoc> {
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _buocAuth =
+        serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext =
+        serviceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<DuAnBuoc> Handle(DuAnBuocGetQuery request,
         CancellationToken cancellationToken = default) {
-        var entity = await DuAnBuoc.GetOrderedSet()
+        var baseSet = _buocAuth.FilterVisibleSteps(
+            DuAnBuoc.GetOrderedSet(),
+            _authContext);
+
+        var entity = await baseSet
             .Include(e => e.Buoc!.BuocManHinhs!)
             .ThenInclude(bm => bm.ManHinh)
             .WhereFunc(request.IsNoTracking, q => q.AsNoTracking())
