@@ -131,7 +131,7 @@ public class KetQuaTrungThauController : AggregateRootController {
     [ProducesResponseType<ResultApi<PaginatedList<KetQuaTrungThauDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach-tien-do")]
-    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, Guid? goiThauId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0) {
+    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, Guid? goiThauId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new KetQuaTrungThauGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -140,6 +140,7 @@ public class KetQuaTrungThauController : AggregateRootController {
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

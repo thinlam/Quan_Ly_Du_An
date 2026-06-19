@@ -117,6 +117,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
             So = dto.SoQuyetDinh,
             TuNgay = dto.TuNgay,
             DenNgay = dto.DenNgay,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

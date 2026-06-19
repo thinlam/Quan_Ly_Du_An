@@ -36,6 +36,8 @@ internal class
             .Where(e => e.DaDuyet)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
+            .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0,
+                e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId)
             .WhereIf(request.SearchDto.KeHoachLuaChonNhaThauId != null,
                 e => e.KeHoachLuaChonNhaThauId == request.SearchDto.KeHoachLuaChonNhaThauId)
             .WhereIf(request.SearchDto.Ten.IsNotNullOrWhitespace(), e => e.Ten!.ToLower().Contains(request.SearchDto.Ten!.ToLower()))

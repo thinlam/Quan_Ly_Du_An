@@ -27,6 +27,11 @@ public record KhoKhanVuongMacGetDanhSachQuery : AggregateRootPagination, IMayHav
     /// Loại dự án
     /// </summary>
     public int? LoaiDuAnId { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
     public long? LanhDaoPhuTrachId { get; set; }
@@ -56,6 +61,7 @@ internal class
             .WhereIf(request.TinhTrangId > 0, e => e.TinhTrangId == request.TinhTrangId)
             .WhereIf(request.MucDoKhoKhanId > 0, e => e.MucDoKhoKhanId == request.MucDoKhoKhanId)
             .WhereIf(request.LoaiDuAnId > 0, e => e.DuAn!.LoaiDuAnId == request.LoaiDuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.NoiDung.IsNotNullOrWhitespace(), e => e.NoiDung!.ToLower().Contains(request.NoiDung!.ToLower()))
             .WhereIf(request.TuNgay.HasValue,
                 e => e.Ngay.HasValue && e.Ngay.Value >= request.TuNgay!.Value.ToStartOfDayUtc())

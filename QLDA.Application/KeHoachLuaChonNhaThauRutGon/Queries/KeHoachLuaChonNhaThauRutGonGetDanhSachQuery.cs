@@ -18,6 +18,11 @@ public record KeHoachLuaChonNhaThauRutGonGetDanhSachQuery : AggregateRootPaginat
     public string? GlobalFilter { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<KeHoachLuaChonNhaThauRutGonGetDanhSachQuery, PaginatedList<KeHoachLuaChonNhaThauRutGonDto>>
@@ -45,6 +50,7 @@ internal class KeHoachLuaChonNhaThauRutGonGetDanhSachQueryHandler(IServiceProvid
         var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachLuaChonNhaThauRutGon.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
         // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
         //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());

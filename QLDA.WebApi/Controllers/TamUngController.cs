@@ -133,7 +133,7 @@ public class TamUngController(IServiceProvider serviceProvider) : AggregateRootC
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId,
         Guid? hopDongId = null,
-        string? globalFilter = null, int pageIndex = 0, int pageSize = 0) {
+        string? globalFilter = null, int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new TamUngGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -142,6 +142,7 @@ public class TamUngController(IServiceProvider serviceProvider) : AggregateRootC
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

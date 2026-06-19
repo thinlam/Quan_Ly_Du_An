@@ -21,6 +21,11 @@ public record ToTrinhPheDuyetGetPaginatedQuery : AggregateRootPagination, IMayHa
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -41,6 +46,7 @@ internal class
         var queryable = _buocAuth.FilterVisibleChildEntities(_toTrinhPheDuyet.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.Loai != null, e => e.Loai == request.Loai)
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),
                 e => e.TrichYeu!.ToLower().Contains(request.TrichYeu!.ToLower()))

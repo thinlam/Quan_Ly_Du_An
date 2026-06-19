@@ -121,7 +121,8 @@ public class KeHoachTrienKhaiChiTietDuAnControllerController(IServiceProvider se
             PageIndex = dto.PageIndex ?? 10,
             GlobalFilter = dto.GlobalFilter,
             TuNgay = dto.TuNgay,
-            DenNgay = dto.DenNgay
+            DenNgay = dto.DenNgay,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

@@ -25,7 +25,6 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
         CancellationToken cancellationToken) {
         var baseSet = DuAnBuoc.GetQueryableSet(OnlyUsed: false);
         var query = _buocAuth.FilterVisibleSteps(baseSet, _authContext)
-                .AsNoTracking()
                 .Where(e => !e.DuAn!.IsDeleted)
                 .WhereIf(request.QuyTrinhId > 0, e => e.Buoc!.QuyTrinhId == request.QuyTrinhId)
                 .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)

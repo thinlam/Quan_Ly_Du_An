@@ -4,7 +4,7 @@ using QLDA.Application.Authorization;
 
 namespace QLDA.Application.KhoKhanVuongMacs.Commands;
 
-public record KhoKhanVuongMacInsertOrUpdateCommand(BaoCaoKhoKhanVuongMac Entity) : IRequest {
+public record KhoKhanVuongMacInsertOrUpdateCommand(BaoCaoKhoKhanVuongMac Dto) : IRequest {
 }
 
 internal class KhoKhanVuongMacInsertOrUpdateCommandHandler : IRequestHandler<KhoKhanVuongMacInsertOrUpdateCommand> {
@@ -35,20 +35,20 @@ internal class KhoKhanVuongMacInsertOrUpdateCommandHandler : IRequestHandler<Kho
 
     public async Task Handle(KhoKhanVuongMacInsertOrUpdateCommand request, CancellationToken cancellationToken = default) {
         try {
-            ManagedException.ThrowIf( !DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
+            ManagedException.ThrowIf( !DuAn.GetQueryableSet().Any(e => e.Id == request.Dto.DuAnId),
                 "Không tồn tại dự án");
 
             // Phân quyền: Owner/LanhDao/KHTC/PhongBanChinh/PhongBanPhoiHop-In-Scope
-            await _auth.EnsureCanExecuteStepAsync(request.Entity.BuocId, _authContext, cancellationToken);
+            await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
-                var isExist = KhoKhanVuongMac.GetQueryableSet().Any(o => o.Id == request.Entity.Id);
+                var isExist = KhoKhanVuongMac.GetQueryableSet().Any(o => o.Id == request.Dto.Id);
                 if (isExist) {
-                    await KhoKhanVuongMac.UpdateAsync(request.Entity, cancellationToken);
+                    await KhoKhanVuongMac.UpdateAsync(request.Dto, cancellationToken);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                 } else {
                     //Thêm dự án trước
-                    await KhoKhanVuongMac.AddAsync(request.Entity, cancellationToken);
+                    await KhoKhanVuongMac.AddAsync(request.Dto, cancellationToken);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                 }
 

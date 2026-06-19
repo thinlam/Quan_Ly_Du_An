@@ -27,6 +27,11 @@ public record KeHoachTrienKhaiHangMucDanhSachQuery : AggregateRootPagination, IM
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 
 }
 
@@ -65,6 +70,7 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
        
         var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachTrienKhaiHangMuc.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So!))
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(), e => e.TrichYeu!.Contains(request.TrichYeu!))

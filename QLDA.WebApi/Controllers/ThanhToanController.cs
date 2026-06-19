@@ -139,7 +139,7 @@ public class ThanhToanController(IServiceProvider serviceProvider) : AggregateRo
     public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId,
         Guid? hopDongId = null,
         string? globalFilter = null,
-        int pageIndex = 0, int pageSize = 0) {
+        int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new ThanhToanGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -148,6 +148,7 @@ public class ThanhToanController(IServiceProvider serviceProvider) : AggregateRo
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

@@ -15,6 +15,11 @@ public record KetQuaTrungThauGetDanhSachQuery : AggregateRootPagination, IMayHav
     public Guid? GoiThauId { get; set; }
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -44,6 +49,7 @@ internal class
             .Where(e => !e.GoiThau!.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.GoiThauId != null, e => e.GoiThau!.Id == request.GoiThauId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereGlobalFilter(

@@ -12,6 +12,11 @@ public record VanBanChuTruongGetDanhSachQuery : AggregateRootPagination, IMayHav
     public int? BuocId { get; set; }
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -33,6 +38,7 @@ internal class
         var queryable = _authManager.FilterVisible(VanBanChuTruong.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
                 .Where(e => !e.DuAn!.IsDeleted)
                 .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+                .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
                 .WhereGlobalFilter(
                     request,

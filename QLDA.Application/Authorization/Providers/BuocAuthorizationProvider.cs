@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using BuildingBlocks.CrossCutting.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
@@ -190,7 +191,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         IQueryable<T> query,
         IRepository<DuAnBuoc, int> buocRepository,
         IAuthorizationContext ctx,
-        Func<T, int?> buocIdSelector) where T : class
+        Expression<Func<T, int?>> buocIdSelector) where T : class
     {
         if (ctx.HasKhtcBypass) return query;
 
@@ -214,7 +215,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
             .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
 
         if (buoc != null && !await CanExecuteStepAsync(buoc, ctx, ct))
-            throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+            throw new ForbiddenException("Phòng ban không có quyền thao tác bước này");
     }
 
     /// <summary>
@@ -237,7 +238,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
 
         if (buoc == null) return;
         if (!await CanManageViewerListAsync(buoc, ctx, ct))
-            throw new ManagedException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa danh sách phòng ban phối hợp");
+            throw new ForbiddenException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa danh sách phòng ban phối hợp");
     }
 
     /// <summary>
@@ -268,7 +269,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
             .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
         if (buoc == null) return;
         if (!await CanManageStepFieldsAsync(buoc, ctx, ct))
-            throw new ManagedException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa thông tin bước");
+            throw new ForbiddenException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa thông tin bước");
     }
 
     /// <summary>
@@ -294,33 +295,61 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
             .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
         if (buoc == null) return;
         if (!await CanExecuteThanhToanAsync(buoc, ctx, ct))
-            throw new ManagedException("Phòng ban không có quyền thao tác thanh toán");
+            throw new ForbiddenException("Phòng ban không có quyền thao tác thanh toán");
     }
 
     private static IQueryable<T> ApplyChildBuocIdFilter<T>(
         IQueryable<T> query,
         IQueryable<int> visibleBuocIds,
-        Func<T, int?> buocIdSelector) where T : class
+        Expression<Func<T, int?>> buocIdSelector) where T : class
     {
         var parameter = Expression.Parameter(typeof(T), "e");
-        var buocIdProperty = Expression.Invoke(
-            Expression.Constant(buocIdSelector),
-            parameter);
+
+        // Inline the selector body against the unified query parameter. Invoking
+        // a delegate constant (Expression.Invoke of a Func) is NOT EF-translatable;
+        // a member-access expression tree is. This mirrors the working pattern in
+        // DuAnAuthorizationProvider.ApplyChildDuAnIdFilter.
+        var buocIdProperty = ParameterReplacer.Replace(
+            buocIdSelector.Body, buocIdSelector.Parameters[0], parameter);
+
+        // Coerce int? → int so Queryable.Contains<int> matches. Null branch is
+        // short-circuited by the leading `buocIdProperty == null` OR clause, so
+        // the Coalesce fallback (0) is never observed at runtime. SQL Server
+        // IDENTITY seeds start at 1, so 0 cannot collide with a real DuAnBuoc.Id.
+        var intSelector = Expression.Coalesce(buocIdProperty, Expression.Constant(0, typeof(int)));
+
         var containsMethod = typeof(Queryable).GetMethods()
             .First(m => m.Name == "Contains" && m.GetParameters().Length == 2)
             .MakeGenericMethod(typeof(int));
 
-        // e => visibleBuocIds.Contains(buocIdSelector(e))
+        // e => visibleBuocIds.Contains(buocIdSelector(e) ?? 0)
         var containsCall = Expression.Call(
             containsMethod,
             visibleBuocIds.Expression,
-            buocIdProperty);
+            intSelector);
 
-        // e => buocIdSelector(e) == null || visibleBuocIds.Contains(buocIdSelector(e))
-        var nullCheck = Expression.Equal(buocIdProperty, Expression.Constant(null, typeof(int?)));
+        // e => buocIdSelector(e) == null || visibleBuocIds.Contains(buocIdSelector(e) ?? 0)
+        var nullCheck = Expression.Equal(buocIdProperty, Expression.Constant(null, buocIdProperty.Type));
         var combinedCondition = Expression.OrElse(nullCheck, containsCall);
 
         var lambda = Expression.Lambda<Func<T, bool>>(combinedCondition, parameter);
         return query.Where(lambda);
+    }
+
+    /// <summary>
+    /// Replaces a parameter in an expression body so a selector lambda can be
+    /// inlined against a unified query parameter (EF-translatable member access
+    /// rather than an opaque delegate Invoke).
+    /// </summary>
+    private sealed class ParameterReplacer(ParameterExpression oldParam, ParameterExpression newParam) : ExpressionVisitor
+    {
+        private readonly ParameterExpression _oldParam = oldParam;
+        private readonly ParameterExpression _newParam = newParam;
+
+        protected override Expression VisitParameter(ParameterExpression node)
+            => node == _oldParam ? _newParam : base.VisitParameter(node);
+
+        public static Expression Replace(Expression body, ParameterExpression oldParam, ParameterExpression newParam)
+            => new ParameterReplacer(oldParam, newParam).Visit(body);
     }
 }

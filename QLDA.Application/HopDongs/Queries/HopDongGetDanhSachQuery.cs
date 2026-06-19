@@ -42,6 +42,8 @@ internal class
             .Where(e => !e.GoiThau!.IsDeleted)
             .WhereIf(request.SearchDto.IsBienBan.HasValue, e => e.IsBienBan == request.SearchDto.IsBienBan)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
+            .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0,
+                e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId)
             .WhereIf(request.SearchDto.DonViThucHienId != null, e => e.DonViThucHienId == request.SearchDto.DonViThucHienId)
             .WhereIf(request.SearchDto.TamUngId != null, e => e.TamUng!.Id == request.SearchDto.TamUngId)
             .WhereIf(request.SearchDto.GoiThauId != null, e => e.GoiThauId == request.SearchDto.GoiThauId)

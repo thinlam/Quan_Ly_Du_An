@@ -28,6 +28,7 @@ internal class HoSoDeXuatCapDoCnttGetDanhSachQueryHandler
             .AsNoTracking()
             .Include(e => e.CapDo)
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId)
+            .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId)
             .WhereGlobalFilter(
                 request,

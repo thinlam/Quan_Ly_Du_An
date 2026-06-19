@@ -14,4 +14,9 @@ public record HopDongPrintSearchDto {
     public int? LoaiHopDongId { get; set; }
     public Guid? DonViThucHienId { get; set; }
     public bool? IsBienBan { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }

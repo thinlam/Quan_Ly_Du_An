@@ -38,6 +38,9 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
         if (request.SearchDto.DuAnId.HasValue) {
             queryable = queryable.Where(e => e.DuAnId == request.SearchDto.DuAnId);
         }
+        if (request.SearchDto.LoaiDuAnTheoNamId > 0) {
+            queryable = queryable.Where(e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId);
+        }
 
         // Filter by GoiThauId if provided
         if (request.SearchDto.GoiThauId.HasValue) {

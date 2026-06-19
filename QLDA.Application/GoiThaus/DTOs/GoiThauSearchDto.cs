@@ -12,4 +12,9 @@ public record GoiThauSearchDto : CommonSearchDto {
     public int? PhuongThucLuaChonNhaThauId { get; set; }
     public Guid? KeHoachLuaChonNhaThauId { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }

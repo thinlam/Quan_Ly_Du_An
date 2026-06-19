@@ -7,4 +7,5 @@ public record DeXuatChuyenTiepPrintSearchModel {
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public List<string>? HiddenColumns { get; set; }
+    public int? LoaiDuAnTheoNamId { get; set; }
 }

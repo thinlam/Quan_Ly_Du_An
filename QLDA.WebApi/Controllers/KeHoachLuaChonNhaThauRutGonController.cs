@@ -136,7 +136,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach-tien-do")]
     public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null,
-        int pageIndex = 0, int pageSize = 0) {
+        int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new KeHoachLuaChonNhaThauRutGonGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -144,6 +144,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

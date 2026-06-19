@@ -221,6 +221,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 searchDto.PhuongThucLuaChonNhaThauId,
                 searchDto.KeHoachLuaChonNhaThauId,
                 searchDto.HinhThucLuaChonNhaThauId,
+                searchDto.LoaiDuAnTheoNamId,
             },
             HiddenColumns = searchDto.HiddenColumns
         };
@@ -266,6 +267,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 searchDto.DonViThucHienId,
                 searchDto.IsBienBan,
                 searchDto.GlobalFilter,
+                searchDto.LoaiDuAnTheoNamId,
                 PageIndex = 0,
                 PageSize = 0,
             },
@@ -312,6 +314,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
+                searchModel.LoaiDuAnTheoNamId,
                 PageIndex = 0,
                 PageSize = 0,
             },
@@ -360,6 +363,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 PageSize = 0,
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
+                searchModel.LoaiDuAnTheoNamId,
             },
             HiddenColumns = searchModel.HiddenColumns
         };
@@ -450,6 +454,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
+                searchModel.LoaiDuAnTheoNamId,
                 PageIndex = 0,
                 PageSize = 0,
             },
@@ -499,6 +504,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
+                searchModel.LoaiDuAnTheoNamId,
                 PageIndex = 0,
                 PageSize = 0,
             },
@@ -546,6 +552,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
                 DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
                 searchModel.GlobalFilter,
+                searchModel.LoaiDuAnTheoNamId,
                 PageIndex = 0,
                 PageSize = 0,
             },

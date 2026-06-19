@@ -15,6 +15,11 @@ public record BaoCaoBanGiaoSanPhamGetDanhSachQuery : AggregateRootPagination, IM
     public string? NoiDung { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -37,6 +42,7 @@ internal class
             .WhereIf(User.Id > 0 && !dieuKienThayTatCa, e => e.CreatedBy == User.Id.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.NoiDung.IsNotNullOrWhitespace(),
                 e => e.NoiDung!.ToLower().Contains(request.NoiDung!.ToLower()))
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

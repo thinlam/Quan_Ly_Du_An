@@ -16,8 +16,9 @@ public record DeXuatNhuCauKinhPhiQuery : AggregateRootPagination, IMayHaveGlobal
     public bool? DaDuyetTongHop { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public long? DonViDeXuatId { get; set; }
-    public DateOnly? TuNgay { get; set; } 
+    public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -59,6 +60,7 @@ internal class
                 request.DaDuyetTongHop ?? false, e => e.TrangThaiId == trangThaiDaDuyet.Id
             )
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId )

@@ -18,6 +18,11 @@ public record TongHopVanBanQuyetDinhGetListQuery : AggregateRootPagination,
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<TongHopVanBanQuyetDinhGetListQuery, PaginatedList<TongHopVanBanQuyetDinhDto>> {
@@ -34,6 +39,7 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
         var query = VanBanQuyetDinh.GetQueryableSet()
                 .WhereIf(request.Loai.HasValue, e => e.Loai == request.Loai.ToString())
                 .WhereIf(request.DuAnId.HasValue, e => e.DuAnId == request.DuAnId)
+                .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
                 .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(), e => e.TrichYeu!.ToLower().Contains(request.TrichYeu!.ToLower()))
                 .WhereIf(request.TuNgay.HasValue,

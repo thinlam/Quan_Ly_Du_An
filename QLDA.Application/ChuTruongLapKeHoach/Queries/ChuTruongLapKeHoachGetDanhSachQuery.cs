@@ -17,6 +17,11 @@ public record ChuTruongLapKeHoachDanhSachQuery : AggregateRootPagination, IMayHa
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
     public string? So { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -37,6 +42,7 @@ internal class
             .WhereIf(request.TuNgay != null, e => e.NgayToTrinh >= request.TuNgay.ToStartOfDayUtc())
             .WhereIf(request.DenNgay != null, e => e.NgayToTrinh <= request.DenNgay.ToEndOfDayUtc())
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereGlobalFilter(
                 request,
                 e => e.SoToTrinh

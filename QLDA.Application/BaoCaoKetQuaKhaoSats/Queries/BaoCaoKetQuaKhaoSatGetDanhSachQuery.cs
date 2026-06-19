@@ -13,6 +13,11 @@ public record BaoCaoKetQuaKhaoSatGetDanhSachQuery(BaoCaoKetQuaKhaoSatSearchDto S
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string? GlobalFilter { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class BaoCaoKetQuaKhaoSatGetDanhSachQueryHandler
@@ -33,6 +38,7 @@ internal class BaoCaoKetQuaKhaoSatGetDanhSachQueryHandler
             .AsNoTracking()
             .Include(e => e.TrangThai)
             .WhereIf(request.SearchDto.DuAnId.HasValue, e => e.DuAnId == request.SearchDto.DuAnId)
+            .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId)
             .WhereIf(request.SearchDto.BuocId.HasValue, e => e.BuocId == request.SearchDto.BuocId)
             .WhereGlobalFilter(
                 request,

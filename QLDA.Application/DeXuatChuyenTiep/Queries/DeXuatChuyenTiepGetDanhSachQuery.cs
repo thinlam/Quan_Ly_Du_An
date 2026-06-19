@@ -12,8 +12,13 @@ public record DeXuatChuyenTiepGetDanhSachQuery : AggregateRootPagination, IMayHa
     public Guid? DuAnId { get; set; }
     public bool IsNoTracking { get; set; }
     public string? GlobalFilter { get; set; }
-    public DateOnly? TuNgay { get; set; } 
+    public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class    DeXuatChuyenTiepGetDanhSachQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<DeXuatChuyenTiepGetDanhSachQuery, PaginatedList<DeXuatChuyenTiepDto>> {
@@ -31,6 +36,7 @@ internal class    DeXuatChuyenTiepGetDanhSachQueryHandler(IServiceProvider Servi
         var queryable = DeXuatChuyenTiep.GetQueryableSet().AsNoTracking()
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
            // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
           //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());

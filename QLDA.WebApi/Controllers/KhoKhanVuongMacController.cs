@@ -122,6 +122,7 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
             TinhTrangId = searchModel.TinhTrangId,
             MucDoKhoKhanId = searchModel.MucDoKhoKhanId,
             LoaiDuAnId = searchModel.LoaiDuAnId,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
             TuNgay = searchModel.TuNgay,
             DenNgay = searchModel.DenNgay,
             LanhDaoPhuTrachId = searchModel.LanhDaoPhuTrachId,
@@ -129,5 +130,14 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
             DonViPhoiHopId = searchModel.DonViPhoiHopId,
         });
         return ResultApi.Ok(res);
+        // hiện tại
+        // kế hoạch -   
+        //          -
+        //          -
+        //          - thực tế
+        //mong muốn
+        // kế hoạch -   
+        //          - thực tế
+
     }
 }

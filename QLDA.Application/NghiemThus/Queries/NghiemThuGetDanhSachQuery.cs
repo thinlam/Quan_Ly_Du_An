@@ -19,6 +19,11 @@ public record NghiemThuGetDanhSachQuery : AggregateRootPagination, IMayHaveGloba
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
     public bool IsCbo { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -47,6 +52,7 @@ internal class
         var queryable = _buocAuth.FilterVisibleChildEntities(NghiemThu.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereGlobalFilter(

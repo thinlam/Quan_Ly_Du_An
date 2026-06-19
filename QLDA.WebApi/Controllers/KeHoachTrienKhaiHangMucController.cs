@@ -119,7 +119,8 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
             So = dto.So,
             TuNgay = dto.TuNgay,
             DenNgay = dto.DenNgay,
-            IsDuAnChuaCoKeHoach = dto.IsDuAnChuaCoKeHoach
+            IsDuAnChuaCoKeHoach = dto.IsDuAnChuaCoKeHoach,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }
