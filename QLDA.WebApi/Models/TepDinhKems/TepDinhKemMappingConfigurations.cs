@@ -40,7 +40,19 @@ public static class TepDinhKemMappingConfigurations {
             Path = model.Path,
             Size = model.Size,
         };
-
+    private static TepDinhKem ToEntity(this TepDinhKemModel model, string groupId, EGroupType groupType = EGroupType.None)
+      => new()
+      {
+          Id = model.GetId(),
+          ParentId = model.ParentId,
+          GroupId = groupId,
+          GroupType = model.GroupType ?? groupType.ToString(),
+          Type = model.Type,
+          FileName = model.FileName,
+          OriginalName = model.OriginalName,
+          Path = model.Path,
+          Size = model.Size,
+      };
     private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
         => new() {
             Id = model.GetId(),
@@ -53,6 +65,9 @@ public static class TepDinhKemMappingConfigurations {
             Path = model.Path,
             Size = model.Size,
         };
+    public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, string groupId,
+        EGroupType groupType = EGroupType.None)
+        => models.Select(m => ToEntity(m, groupId, groupType));
 
     public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, Guid groupId,
         EGroupType groupType = EGroupType.None)

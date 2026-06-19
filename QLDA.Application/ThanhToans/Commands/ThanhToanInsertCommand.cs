@@ -32,7 +32,12 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
 
     public async Task<ThanhToan> Handle(ThanhToanInsertCommand request, CancellationToken cancellationToken = default) {
         // Phân quyền: Owner + Lãnh đạo + KHTC + PhongBanChinh (KHÔNG cho PhongBanPhoiHop)
-        await _auth.EnsureCanExecuteThanhToanAsync(request.Dto.BuocId, _authContext, cancellationToken);
+
+        // await _auth.EnsureCanExecuteThanhToanAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        ManagedException.ThrowIf(
+            _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
+            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
+        );
 
         await ValidateAsync(request, cancellationToken);
 

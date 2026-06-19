@@ -46,7 +46,9 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
         CancellationToken cancellationToken = default)
     {
 
-        DateTimeOffset? tuNgayDto = null;
+        try
+        {
+            DateTimeOffset? tuNgayDto = null;
         DateTimeOffset? denNgayExclusiveDto = null;
         if (request.TuNgay.HasValue)
         {
@@ -58,6 +60,9 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
             var dt = request.DenNgay.Value.ToDateTime(TimeOnly.MinValue);
             denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
         }
+      
+
+       
         var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachTrienKhaiHangMuc.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
@@ -115,5 +120,11 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
     }
 }

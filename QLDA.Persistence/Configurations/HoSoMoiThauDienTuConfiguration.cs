@@ -38,12 +38,10 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
             .WithMany()
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(e => e.ChiDinhThau)
             .WithOne(c => c.HoSoMoiThauDienTu)
-            .HasForeignKey<ChiDinhThau>(c => c.HoSoMoiThauId) // Khóa ngoại nằm ở ChiDinhThau
-            .OnDelete(DeleteBehavior.Cascade); //
-
-
-
+            .HasForeignKey<ChiDinhThau>(c => c.HoSoMoiThauId) 
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

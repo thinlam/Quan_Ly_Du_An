@@ -27,7 +27,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
 
     public async Task<HoSoMoiThauDienTu> Handle(HoSoMoiThauDienTuUpdateCommand request, CancellationToken cancellationToken = default) {
        
-        var entity = await HoSoMoiThauDienTu.GetQueryableSet()
+        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ChiDinhThau)
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 
@@ -51,24 +51,44 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
         var allowEdit = currentStatus == trangThaiDuThao?.Id || currentStatus == trangThaiTra?.Id;
 
         if (allowEdit)
-        {
-            entity.DuAnId = request.Model.DuAnId;
-            entity.BuocId = request.Model.BuocId;
-            entity.HinhThucLuaChonNhaThauId = request.Model.HinhThucLuaChonNhaThauId;
-            entity.HinhThucLuaChonNhaThauId = request.Model.HinhThucLuaChonNhaThauId;
-            entity.GoiThauId = request.Model.GoiThauId;
-            entity.GiaTri = request.Model.GiaTri;
-            entity.ThoiGianThucHien = request.Model.ThoiGianThucHien;
-        }
+            entity.Update(request.Model);
         else
             entity.TrangThaiDangTai = request.Model.TrangThaiDangTai;
+        if (request.Model.ChiDinhThau != null)
+        {
+            ChiDinhThauDto dto = request.Model.ChiDinhThau;
 
-        entity.Update(request.Model);
+            if (entity.ChiDinhThau != null)
+            {
+                entity.ChiDinhThau.NguoiKy = dto.NguoiKy;
+                entity.ChiDinhThau.So = dto.So;
+                entity.ChiDinhThau.Ngay = dto.Ngay;
+                entity.ChiDinhThau.ChucVu = dto.ChucVu;
+                entity.ChiDinhThau.TrichYeu = dto.TrichYeu;
 
-        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+                // await _chiDinhThau.UpdateAsync(entity.ChiDinhThau, cancellationToken);
+            }
+            else
+            {
+                entity.ChiDinhThau = new ChiDinhThau()
+                {
+                    NguoiKy = dto.NguoiKy,
+                    So = dto.So,
+                    Ngay = dto.Ngay,
+                    ChucVu = dto.ChucVu,
+                    TrichYeu = dto.TrichYeu
+                };
+                // await _chiDinhThau.AddAsync(entity.ChiDinhThau, cancellationToken);
+            }
+        }
+        else
+        {
+            if (entity.ChiDinhThau != null)
+                entity.ChiDinhThau = null;
+        }
+
         await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return entity;
     }

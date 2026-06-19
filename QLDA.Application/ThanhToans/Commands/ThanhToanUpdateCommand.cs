@@ -38,8 +38,12 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
         ManagedException.ThrowIfNull(entity);
 
         // Phân quyền: Owner + Lãnh đạo + KHTC + PhongBanChinh (KHÔNG cho PhongBanPhoiHop)
-        await _auth.EnsureCanExecuteThanhToanAsync(entity.BuocId, _authContext, cancellationToken);
-
+       // await _auth.EnsureCanExecuteThanhToanAsync(entity.BuocId, _authContext, cancellationToken);
+       
+        ManagedException.ThrowIf(
+            _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
+            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
+        );
         entity.Update(request.Dto);
 
         if (_unitOfWork.HasTransaction) {
