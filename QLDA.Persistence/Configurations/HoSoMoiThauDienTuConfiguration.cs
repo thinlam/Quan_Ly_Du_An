@@ -39,9 +39,9 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(e => e.ChiDinhThau)
+        builder.HasOne(e => e.ToTrinhQuyetDinh)
             .WithOne(c => c.HoSoMoiThauDienTu)
-            .HasForeignKey<ChiDinhThau>(c => c.HoSoMoiThauId) 
+            .HasForeignKey<ToTrinhQuyetDinh>(c => c.HoSoMoiThauId) 
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

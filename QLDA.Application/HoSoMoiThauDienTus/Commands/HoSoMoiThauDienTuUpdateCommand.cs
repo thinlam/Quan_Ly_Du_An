@@ -27,7 +27,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
 
     public async Task<HoSoMoiThauDienTu> Handle(HoSoMoiThauDienTuUpdateCommand request, CancellationToken cancellationToken = default) {
        
-        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ChiDinhThau)
+        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ToTrinhQuyetDinh)
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 
@@ -54,23 +54,23 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
             entity.Update(request.Model);
         else
             entity.TrangThaiDangTai = request.Model.TrangThaiDangTai;
-        if (request.Model.ChiDinhThau != null)
+        if (request.Model.ToTrinhQuyetDinh != null)
         {
-            ChiDinhThauDto dto = request.Model.ChiDinhThau;
+            ToTrinhQuyetDinhDto dto = request.Model.ToTrinhQuyetDinh;
 
-            if (entity.ChiDinhThau != null)
+            if (entity.ToTrinhQuyetDinh != null)
             {
-                entity.ChiDinhThau.NguoiKy = dto.NguoiKy;
-                entity.ChiDinhThau.So = dto.So;
-                entity.ChiDinhThau.Ngay = dto.Ngay;
-                entity.ChiDinhThau.ChucVu = dto.ChucVu;
-                entity.ChiDinhThau.TrichYeu = dto.TrichYeu;
+                entity.ToTrinhQuyetDinh.NguoiKy = dto.NguoiKy;
+                entity.ToTrinhQuyetDinh.So = dto.So;
+                entity.ToTrinhQuyetDinh.Ngay = dto.Ngay;
+                entity.ToTrinhQuyetDinh.ChucVu = dto.ChucVu;
+                entity.ToTrinhQuyetDinh.TrichYeu = dto.TrichYeu;
 
-                // await _chiDinhThau.UpdateAsync(entity.ChiDinhThau, cancellationToken);
+                // await _chiDinhThau.UpdateAsync(entity.ToTrinhQuyetDinh, cancellationToken);
             }
             else
             {
-                entity.ChiDinhThau = new ChiDinhThau()
+                entity.ToTrinhQuyetDinh = new ToTrinhQuyetDinh()
                 {
                     NguoiKy = dto.NguoiKy,
                     So = dto.So,
@@ -78,13 +78,13 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                     ChucVu = dto.ChucVu,
                     TrichYeu = dto.TrichYeu
                 };
-                // await _chiDinhThau.AddAsync(entity.ChiDinhThau, cancellationToken);
+                // await _chiDinhThau.AddAsync(entity.ToTrinhQuyetDinh, cancellationToken);
             }
         }
         else
         {
-            if (entity.ChiDinhThau != null)
-                entity.ChiDinhThau = null;
+            if (entity.ToTrinhQuyetDinh != null)
+                entity.ToTrinhQuyetDinh = null;
         }
 
         await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);

@@ -51,7 +51,10 @@ public enum EGroupType {
     /// </summary>
     BienBanBanGiao,
     HoSoMoiThauDienTu,
-    HoSoMoiThauDienTuChiDinh,
+    HoSoMoiThauDienTuToTrinh,
+    HoSoMoiThauDienTuQuyetDinhTD,
+    HoSoMoiThauDienTuCamKetTD,
+    HoSoMoiThauDienTuBaoCaoTD,
     PhanKhaiKinhPhi,
     ToTrinhKeHoach,
     DeXuatChuTruongMoi,

@@ -3,7 +3,7 @@ using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.HoSoMoiThauDienTus;
 
-public class ChiDinhThauModel :  IMayHaveTepDinhKemModel {
+public class ToTrinhQuyetDinhModel :  IMayHaveTepDinhKemModel {
 
     public long? Id { get; set; }
     public string? So { get; set; }

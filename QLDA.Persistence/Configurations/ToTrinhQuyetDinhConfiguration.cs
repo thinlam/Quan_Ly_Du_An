@@ -4,11 +4,11 @@ using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Persistence.Configurations;
 
-public class ChiDinhThauConfiguration : AggregateRootConfiguration<ChiDinhThau> {
-    public override void Configure(EntityTypeBuilder<ChiDinhThau> builder)
+public class ChiDinhThauConfiguration : AggregateRootConfiguration<ToTrinhQuyetDinh> {
+    public override void Configure(EntityTypeBuilder<ToTrinhQuyetDinh> builder)
     {
 
-        builder.ToTable(nameof(ChiDinhThau));    
+        builder.ToTable(nameof(ToTrinhQuyetDinh));    
 
         builder.ConfigureForBase();
 

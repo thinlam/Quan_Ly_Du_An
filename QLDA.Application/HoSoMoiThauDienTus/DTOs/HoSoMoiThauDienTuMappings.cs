@@ -3,7 +3,8 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.DTOs;
 
-public static class HoSoMoiThauDienTuMappings {
+public static class HoSoMoiThauDienTuMappings
+{
     public static HoSoMoiThauDienTu ToEntity(this HoSoMoiThauDienTuInsertDto dto)
     {
         var entity = new HoSoMoiThauDienTu()
@@ -17,24 +18,30 @@ public static class HoSoMoiThauDienTuMappings {
             ThoiGianThucHien = dto.ThoiGianThucHien,
             TrangThaiDangTai = dto.TrangThaiDangTai,
             TrangThaiId = dto.TrangThaiId,
+            NhaThauId = dto.HoSoMoiThauThamDinh.NhaThauId,
 
         };
-        if (dto.ChiDinhThau == null)
-            entity.ChiDinhThau = null;
-        entity.ChiDinhThau = new ChiDinhThau
+        if (dto.ToTrinhQuyetDinh == null)
+            entity.ToTrinhQuyetDinh = null;
+        else
         {
-            Id = dto.ChiDinhThau.Id,
-            NguoiKy = dto.ChiDinhThau.NguoiKy,
-            Ngay = dto.ChiDinhThau.Ngay,
-            So = dto.ChiDinhThau.So,
-            ChucVu = dto.ChiDinhThau.ChucVu,
-            TrichYeu = dto.ChiDinhThau.TrichYeu
-        };
+
+            entity.ToTrinhQuyetDinh = new ToTrinhQuyetDinh
+            {
+                Id = dto.ToTrinhQuyetDinh.Id,
+                NguoiKy = dto.ToTrinhQuyetDinh.NguoiKy,
+                Ngay = dto.ToTrinhQuyetDinh.Ngay,
+                So = dto.ToTrinhQuyetDinh.So,
+                ChucVu = dto.ToTrinhQuyetDinh.ChucVu,
+                TrichYeu = dto.ToTrinhQuyetDinh.TrichYeu
+            };
+        }
 
         return entity;
 
     }
-    public static void Update(this HoSoMoiThauDienTu entity, HoSoMoiThauDienTuUpdateModel dto) {
+    public static void Update(this HoSoMoiThauDienTu entity, HoSoMoiThauDienTuUpdateModel dto)
+    {
         entity.DuAnId = dto.DuAnId;
         entity.BuocId = dto.BuocId;
         entity.HinhThucLuaChonNhaThauId = dto.HinhThucLuaChonNhaThauId;
@@ -43,9 +50,9 @@ public static class HoSoMoiThauDienTuMappings {
         entity.ThoiGianThucHien = dto.ThoiGianThucHien;
         entity.TrangThaiDangTai = dto.TrangThaiDangTai;
         entity.TrangThaiId = dto.TrangThaiId;
-    
+
     }
 
 
-   
+
 }

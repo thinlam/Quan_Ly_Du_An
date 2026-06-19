@@ -9,7 +9,7 @@ namespace QLDA.Domain.Entities;
 /// </summary>
 
 
-public class ChiDinhThau : IAggregateRoot, IHasKey<long>
+public class ToTrinhQuyetDinh : IAggregateRoot, IHasKey<long>
 {
 
     public long Id { get; set; }

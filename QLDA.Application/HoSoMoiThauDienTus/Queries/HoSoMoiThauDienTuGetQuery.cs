@@ -21,7 +21,7 @@ internal class HoSoMoiThauDienTuGetQueryHandler : IRequestHandler<HoSoMoiThauDie
             .Include(e => e.HinhThucLuaChonNhaThau)
             .Include(e => e.GoiThau)
             .Include(e => e.TrangThaiPheDuyet)
-            .Include(e => e.ChiDinhThau)
+            .Include(e => e.ToTrinhQuyetDinh)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
         return entity;

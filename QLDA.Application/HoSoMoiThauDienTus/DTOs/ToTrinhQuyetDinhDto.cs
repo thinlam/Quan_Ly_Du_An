@@ -2,7 +2,7 @@ using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.DTOs;
 
-public class ChiDinhThauDto
+public class ToTrinhQuyetDinhDto
 {
     public long Id { get; set; }
     public string? So { get; set; }

@@ -14,7 +14,6 @@ internal class HoSoMoiThauDienTuInsertCommandHandler : IRequestHandler<HoSoMoiTh
 {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<ChiDinhThau, long> _chiDinhThau;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,7 +22,6 @@ internal class HoSoMoiThauDienTuInsertCommandHandler : IRequestHandler<HoSoMoiTh
     {
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _chiDinhThau = serviceProvider.GetRequiredService<IRepository<ChiDinhThau, long>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HoSoMoiThauDienTu.UnitOfWork;

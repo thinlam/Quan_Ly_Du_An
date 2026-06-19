@@ -12,6 +12,15 @@ public class HoSoMoiThauDienTuInsertDto : IMayHaveTepDinhKemDto {
     public string? ThoiGianThucHien { get; set; }
     public bool TrangThaiDangTai { get; set; }
     public int? TrangThaiId { get; set; }
-    public ChiDinhThauDto? ChiDinhThau { get; set; }
+    public HoSoMoiThauThamDinhDto? HoSoMoiThauThamDinh { get; set; }
+    public ToTrinhQuyetDinhDto? ToTrinhQuyetDinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+}
+public class HoSoMoiThauThamDinhDto
+{
+    public Guid NhaThauId { get; set; }
+    public List<TepDinhKemDto>? DinhKemQuyetDinh { get; set; }
+    public List<TepDinhKemDto>? DinhKemCamKet { get; set; }
+    public List<TepDinhKemDto>? DinhKemBaoCao { get; set; }
+
 }
