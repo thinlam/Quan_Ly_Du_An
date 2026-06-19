@@ -14,6 +14,7 @@ public static class HoSoMoiThauDienTuMappings {
         ThoiGianThucHien = dto.ThoiGianThucHien,
         TrangThaiDangTai = dto.TrangThaiDangTai,
         TrangThaiId = dto.TrangThaiId,
+       
     };
 
     public static void Update(this HoSoMoiThauDienTu entity, HoSoMoiThauDienTuUpdateModel dto) {

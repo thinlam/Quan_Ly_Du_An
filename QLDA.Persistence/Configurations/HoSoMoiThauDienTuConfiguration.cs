@@ -12,6 +12,7 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
         builder.ConfigureForBase();
 
         builder.Property(e => e.ThoiGianThucHien).HasMaxLength(200);
+        
 
         builder.HasOne(e => e.DuAn)
             .WithMany()
@@ -37,6 +38,12 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
             .WithMany()
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.SetNull);
+        builder.HasOne(e => e.ChiDinhThau)
+            .WithOne(c => c.HoSoMoiThauDienTu)
+            .HasForeignKey<ChiDinhThau>(c => c.HoSoMoiThauId) // Khóa ngoại nằm ở ChiDinhThau
+            .OnDelete(DeleteBehavior.Cascade); //
+
+
 
     }
 }

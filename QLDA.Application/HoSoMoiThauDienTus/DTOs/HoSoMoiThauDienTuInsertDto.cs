@@ -12,5 +12,6 @@ public class HoSoMoiThauDienTuInsertDto : IMayHaveTepDinhKemDto {
     public string? ThoiGianThucHien { get; set; }
     public bool TrangThaiDangTai { get; set; }
     public int? TrangThaiId { get; set; }
+    public ChiDinhThauDto? ChiDinhThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
