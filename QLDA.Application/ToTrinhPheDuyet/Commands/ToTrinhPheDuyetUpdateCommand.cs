@@ -56,6 +56,7 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
         }
 
         entity.So = request.Dto.So;
+        entity.Ten = request.Dto.Ten;
         entity.NgayToTrinh = request.Dto.NgayToTrinh;
         entity.TrichYeu = request.Dto.TrichYeu;
         entity.DuAnId = request.Dto.DuAnId;

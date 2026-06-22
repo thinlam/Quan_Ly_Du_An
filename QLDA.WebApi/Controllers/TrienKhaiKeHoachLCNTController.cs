@@ -109,6 +109,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Update([FromBody] TrienKhaiKeHoachLCNTModel model, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default)
     {
+        using var tx = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken); 
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTUpdateCommand(model.ToEntity()), cancellationToken);
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.TrienKhaiKeHoachLCNT) ?? []];
@@ -126,8 +127,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepDinhKem
         });
-        // file tham dinh
-        
+        await unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }

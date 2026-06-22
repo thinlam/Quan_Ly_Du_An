@@ -11,11 +11,11 @@ public class ToTrinhPheDuyet : Entity<Guid>, IAggregateRoot, IApprovableEntity
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string So { get; set; } = string.Empty;
-
     public DateTimeOffset? NgayToTrinh { get; set; }
-
     public string? TrichYeu { get; set; }
+
     public string Loai { get; set; } = string.Empty;
+    public string? Ten { get; set; } = string.Empty;
     public int? TrangThaiId { get; set; }
 
     #region Navigation Properties

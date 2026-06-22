@@ -12,9 +12,7 @@ public class TrienKhaiKeHoachLCNT : Entity<Guid>, IAggregateRoot
     public int? BuocId { get; set; }
     public Guid GoiThauId { get; set; }
     public string So { get; set; } = string.Empty;
-
     public DateTimeOffset NgayTrinh { get; set; }
-
     public string? TrichYeu { get; set; }
     public int? HinhThucLCNT { get; set; }
     public int? TrangThaiId { get; set; }

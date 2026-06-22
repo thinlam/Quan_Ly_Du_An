@@ -65,6 +65,7 @@ internal class
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
                 So = e.So ?? string.Empty,
+                Ten = e.Ten,
                 TrichYeu = e.TrichYeu,
                 NgayToTrinh = e.NgayToTrinh,
                 TrangThaiId = e.TrangThaiId,

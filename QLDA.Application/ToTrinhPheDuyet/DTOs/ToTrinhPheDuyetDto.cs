@@ -17,7 +17,8 @@ public class ToTrinhPheDuyetDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo, IM
     public int? BuocId { get; set; }
     public DateTimeOffset? NgayToTrinh { get; set; }
     public string So { get; set; } = string.Empty;
-    public string? TrichYeu { get; set; }
+    public string? Ten { get; set; } = string.Empty;
+     public string? TrichYeu { get; set; }
     public string Loai { get; set; } = string.Empty;
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }

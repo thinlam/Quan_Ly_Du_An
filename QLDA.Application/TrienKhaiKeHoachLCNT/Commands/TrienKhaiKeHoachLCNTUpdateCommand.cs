@@ -10,7 +10,8 @@ namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 
 public record TrienKhaiKeHoachLCNTUpdateCommand(TrienKhaiKeHoachLCNT Dto) : IRequest<TrienKhaiKeHoachLCNT>;
 
-internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienKhaiKeHoachLCNTUpdateCommand, TrienKhaiKeHoachLCNT> {
+internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienKhaiKeHoachLCNTUpdateCommand, TrienKhaiKeHoachLCNT>
+{
     private readonly IRepository<TrienKhaiKeHoachLCNT, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IBuocAuthorizationProvider _auth;
@@ -18,7 +19,8 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
     private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
 
-    public TrienKhaiKeHoachLCNTUpdateCommandHandler(IServiceProvider serviceProvider) {
+    public TrienKhaiKeHoachLCNTUpdateCommandHandler(IServiceProvider serviceProvider)
+    {
         _repo = serviceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
@@ -28,7 +30,8 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
     }
 
     public async Task<TrienKhaiKeHoachLCNT> Handle(TrienKhaiKeHoachLCNTUpdateCommand request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -46,13 +49,23 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
-        entity = request.Dto;
-        // entity.SyncGoiThauIds(request.Dto.DanhSachGoiThau);
-
-        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        entity.BuocId = request.Dto.BuocId;
+        entity.DuAnId = request.Dto.DuAnId;
+        entity.NgayTrinh = request.Dto.NgayTrinh;
+        entity.TrichYeu = request.Dto.TrichYeu;
+        entity.So = request.Dto.TrichYeu;
+        
+        entity.NoiDung = request.Dto.NoiDung;
+        entity.YeuCau = request.Dto.YeuCau;
+        entity.GiaTri = request.Dto.GiaTri;
+        entity.GoiThauId = request.Dto.GoiThauId;
+        entity.HinhThucLCNT = request.Dto.HinhThucLCNT;
+        entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
+        entity.ThoiGianThucHien = request.Dto.ThoiGianThucHien;
+        
+        entity.DonViTuVans = request.Dto.DonViTuVans;
         await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return entity;
     }

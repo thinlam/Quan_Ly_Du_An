@@ -17,6 +17,7 @@ public class ToTrinhPheDuyetConfiguration : AggregateRootConfiguration<ToTrinhPh
                 toDb => toDb == 0 ? null : toDb,
                 fromDb => fromDb 
             );
+        builder.Property(x => x.Ten).HasMaxLength(4000);
         builder.Property(x => x.So).HasMaxLength(200);
         builder.Property(x => x.Loai).HasMaxLength(100);
 

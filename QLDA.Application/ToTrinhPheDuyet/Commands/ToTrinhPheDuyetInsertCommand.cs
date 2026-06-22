@@ -48,6 +48,7 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
         var entity = new ToTrinhPheDuyet
         {
             DuAnId = request.Dto.DuAnId,
+            Ten = request.Dto.Ten,
             BuocId = request.Dto.BuocId,
             So = request.Dto.So,
             NgayToTrinh = request.Dto.NgayToTrinh,

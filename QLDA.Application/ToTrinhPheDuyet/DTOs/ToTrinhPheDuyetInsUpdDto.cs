@@ -11,5 +11,7 @@ public class ToTrinhPheDuyetInsUpdDto : IMayHaveTepDinhKemDto {
     public DateTimeOffset? NgayToTrinh { get; set; }
     public string Loai { get; set; } = string.Empty;
     public string? TrichYeu { get; set; }
+    public string? Ten { get; set; }
+    
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
