@@ -18,7 +18,7 @@ internal class DanhMucLoaiDieuChinhGetDanhSachQueryHandler : IRequestHandler<Dan
             .OrderBy(x => x.Stt)
             .Select(e => new DanhMucLoaiDieuChinhDto {
                 Id = e.Id,
-                Ma = e.Ma,
+                Ma = e.Ma!,
                 Ten = e.Ten,
                 MoTa = e.MoTa,
                 Stt = e.Stt,
