@@ -103,30 +103,16 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
     }
 
     [HttpPut("cap-nhat")]
-    public async Task<ResultApi> Update([FromBody] HoSoMoiThauDienTuModel model, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default
-        )
+    public async Task<ResultApi> Update([FromBody] HoSoMoiThauDienTuModel model, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default)
     {
         using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         var entity = await Mediator.Send(new HoSoMoiThauDienTuUpdateCommand(model.ToUpdateModel()));
-        // Gọi hàm dùng chung
         await SaveDanhSachTepDinhKemAsync(model, entity, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return ResultApi.Ok(entity.Id); //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //{
-        //    GroupId = entity.Id.ToString(),
-        //    Entities = model.GetDanhSachTepDinhKem(entity.Id)
-        //});
-
-        //if (entity.ToTrinhQuyetDinh != null)
-        //    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //    {
-        //        GroupId = entity.Id.ToString(),
-        //        Entities = model.ToTrinhQuyetDinh.GetDanhSachTepDinhKemToTrinh(entity.ToTrinhQuyetDinh.Id)
-        //    });
-
+        return ResultApi.Ok(entity.Id);
     }
 
     [HttpDelete("{id}")]
@@ -137,55 +123,55 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
     }
     private async Task SaveDanhSachTepDinhKemAsync(HoSoMoiThauDienTuModel model, HoSoMoiThauDienTu entity, CancellationToken cancellationToken)
     {
-        var toTrinhQuyetDinh = entity.ToTrinhQuyetDinh;
+        var entityId = entity.Id;
 
-        // 1. Tệp đính kèm chính của hồ sơ
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        {
-            GroupId = entity.Id.ToString(),
-            Entities = model.GetDanhSachTepDinhKem(entity.Id)
-        }, cancellationToken);
+        await SyncTepDinhKemAsync(
+            entityId.ToString(),
+            model.GetDanhSachTepDinhKem(entityId),
+            EGroupType.HoSoMoiThauDienTu.ToString(),
+            cancellationToken);
 
-        // 2. Tệp đính kèm từ Tờ trình Quyết định (nếu có)
-        if (toTrinhQuyetDinh != null)
+        if (entity.ToTrinhQuyetDinh != null)
         {
-            var toTrinhId = toTrinhQuyetDinh.Id;
-            if (model.ToTrinhQuyetDinh?.DanhSachTepDinhKem?.Count > 0)
-            {
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-                {
-                    GroupId = toTrinhId.ToString(),
-                    Entities = model.ToTrinhQuyetDinh.GetDanhSachTepDinhKemToTrinh(toTrinhId)
-                }, cancellationToken);
-            }
+            var toTrinhId = entity.ToTrinhQuyetDinh.Id;
+            await SyncTepDinhKemAsync(
+                toTrinhId.ToString(),
+                model.ToTrinhQuyetDinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId) ?? [],
+                EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
+                cancellationToken);
         }
 
-        // 3. Các tệp đính kèm từ Hồ sơ Thẩm định (Chỉ chạy khi có dữ liệu thẩm định)
         if (model.HoSoMoiThauThamDinh != null)
         {
-            // Quyết định thẩm định (Kiểm tra điều kiện giống hàm Create cũ của bạn)
-            if (model.ToTrinhQuyetDinh?.DanhSachTepDinhKem?.Count > 0)
-            {
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-                {
-                    GroupId = entity.Id.ToString(),
-                    Entities = model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemQuyetDinhThamDinh(entity.Id)
-                }, cancellationToken);
-            }
+            await SyncTepDinhKemAsync(
+                entityId.ToString(),
+                model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId),
+                EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
+                cancellationToken);
 
-            // Cam kết thẩm định
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-            {
-                GroupId = entity.Id.ToString(),
-                Entities = model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemCamKetThamDinh(entity.Id)
-            }, cancellationToken);
+            await SyncTepDinhKemAsync(
+                entityId.ToString(),
+                model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemCamKetThamDinh(entityId),
+                EGroupType.HoSoMoiThauDienTuCamKetTD.ToString(),
+                cancellationToken);
 
-            // Báo cáo thẩm định
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-            {
-                GroupId = entity.Id.ToString(),
-                Entities = model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemBaoCaoThamDinh(entity.Id)
-            }, cancellationToken);
+            await SyncTepDinhKemAsync(
+                entityId.ToString(),
+                model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId),
+                EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
+                cancellationToken);
         }
     }
+
+    private Task SyncTepDinhKemAsync(
+        string groupId,
+        List<TepDinhKem> entities,
+        string scopeGroupType,
+        CancellationToken cancellationToken)
+        => Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = groupId,
+            Entities = entities,
+            ScopeGroupTypes = [scopeGroupType]
+        }, cancellationToken);
 }
