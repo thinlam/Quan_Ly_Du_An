@@ -3,6 +3,8 @@ using QLDA.Application.DeXuatChuyenTieps.Commands;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Application.GoiThaus.Commands;
 using QLDA.Application.GoiThaus.DTOs;
+using QLDA.Application.PhanKhaiKinhPhis.Commands;
+using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.WebApi.Models.BaoCaoTienDos;
 
 namespace QLDA.WebApi.Controllers;
@@ -83,5 +85,37 @@ public class ImportController(IServiceProvider serviceProvider) : AggregateRootC
         await Mediator.Send(importQuery);
 
         return ResultApi.Ok(data);
+    }
+
+    [HttpPost("phan-khai-kinh-phi")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultApi), StatusCodes.Status400BadRequest)]
+    public async Task<ResultApi> ImportPhanKhaiKinhPhi(CancellationToken cancellationToken = default) {
+        var formFile = await Request.ReadFormAsync(cancellationToken);
+        var file = formFile.Files.FirstOrDefault();
+
+        if (file == null || file.Length == 0)
+            return ResultApi.Fail("File không hợp lệ");
+
+        var rows = _excelImporter.ReadDataFromExcel<PhanKhaiKinhPhiImportDto>(file.OpenReadStream());
+
+        if (rows.Count == 0)
+            return ResultApi.Fail("File không có dữ liệu");
+
+        for (var i = 0; i < rows.Count; i++)
+            rows[i].ExcelRowNumber = i + 7;
+
+        var result = await Mediator.Send(new PhanKhaiKinhPhiImportRangeCommand(rows), cancellationToken);
+
+        if (result.ErrorCount > 0) {
+            return new ResultApi {
+                Result = false,
+                ErrorMessage = string.Join("\n", result.Errors),
+                DataResult = result,
+            };
+        }
+
+        return ResultApi.Ok(result);
     }
 }

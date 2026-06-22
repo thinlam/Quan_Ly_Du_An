@@ -6,5 +6,6 @@ namespace QLDA.WebApi.Models.PhanKhaiKinhPhis;
 public record PhanKhaiKinhPhiPrintSearchModel {
     public Guid? DuAnId { get; set; }
     public string? GlobalFilter { get; set; }
+    public int? TrangThaiId { get; set; }
     public List<string>? HiddenColumns { get; set; }
 }

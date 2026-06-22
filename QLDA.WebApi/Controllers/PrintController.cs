@@ -621,6 +621,49 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
+    #region DanhSachPhanKhaiKinhPhi
+
+    /// <summary>
+    /// DanhSachPhanKhaiKinhPhi.xlsx — Export danh sách phân khai kinh phí (theo filter grid)
+    /// </summary>
+    [HttpGet("api/print/danh-sach-phan-khai-kinh-phi")]
+    [Authorize(Roles = RoleConstants.GroupPhanKhaiKinhPhiExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachPhanKhaiKinhPhi(
+        [FromQuery] PhanKhaiKinhPhiPrintSearchModel searchModel,
+        CancellationToken cancellationToken = default) {
+        var fileNameTemplate = "DanhSachPhanKhaiKinhPhi.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachExportQuery {
+            DuAnId = searchModel.DuAnId,
+            GlobalFilter = searchModel.GlobalFilter,
+            TrangThaiId = searchModel.TrangThaiId,
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiDanhSachExportDto> {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        var downloadName = $"PhanKhaiKinhPhi_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            FileDownloadName = downloadName
+        };
+    }
+
+    #endregion
+
     #region KetQuaPhanKhaiVonDuocDuyet
 
     /// <summary>
