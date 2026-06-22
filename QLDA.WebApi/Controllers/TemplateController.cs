@@ -160,4 +160,43 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             FileDownloadName = fileNameTemplate
         };
     }
+
+    [HttpGet("import-phan-khai-kinh-phi")]
+    [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<FileContentResult> GetImportPhanKhaiKinhPhi(
+        [FromQuery] Guid? duAnId = null,
+        CancellationToken cancellationToken = default) {
+        var fileNameTemplate = "Import_PhanKhaiKinhPhi.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        var duAnQuery = DuAn.GetQueryableSet().Where(e => !e.IsDeleted);
+        if (duAnId.HasValue)
+            duAnQuery = duAnQuery.Where(e => e.Id == duAnId.Value);
+
+        var danhSachDuAn = await duAnQuery
+            .Select(e => new ComboData {
+                Name = e.TenDuAn ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync(cancellationToken);
+
+        var danhSachNguonVon = await NguonVon.GetQueryableSet().Where(e => !e.IsDeleted)
+            .Select(e => new ComboData {
+                Name = e.Ten ?? string.Empty,
+                Id = e.Id.ToString(),
+            }).ToListAsync(cancellationToken);
+
+        List<List<ComboData>> comboData = [danhSachDuAn, danhSachNguonVon];
+
+        var importResult = _excelImporter.GetTemplate(templatePath, comboData);
+
+        return new FileContentResult(importResult.FileBytes,
+            importResult.ContentType) {
+            FileDownloadName = fileNameTemplate
+        };
+    }
 }

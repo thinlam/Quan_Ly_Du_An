@@ -46,9 +46,11 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
     public async Task<ResultApi> GetDanhSach(
         [FromQuery] Guid? duAnId,
         [FromQuery] string? globalFilter = null,
+        [FromQuery] int? trangThaiId = null,
         int pageIndex = 0, int pageSize = 0) {
         var res = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachQuery {
             DuAnId = duAnId, GlobalFilter = globalFilter,
+            TrangThaiId = trangThaiId,
             PageIndex = pageIndex, PageSize = pageSize, IsNoTracking = true,
         });
         return ResultApi.Ok(res);

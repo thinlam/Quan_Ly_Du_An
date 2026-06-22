@@ -75,7 +75,10 @@ public static class StringExtension
 
         if (propertyType == typeof(double) || propertyType == typeof(double?))
         {
-            if (double.TryParse(cellValue, out var doubleVal))
+            // en-US / Invariant: 100,000 = 100000; vi-VN: 100.000 = 100000
+            if (double.TryParse(cellValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleVal)
+                || double.TryParse(cellValue, NumberStyles.Number, new CultureInfo("en-US"), out doubleVal)
+                || double.TryParse(cellValue, NumberStyles.Number, new CultureInfo("vi-VN"), out doubleVal))
                 return doubleVal;
             return propertyType == typeof(double) ? 0.0 : null;
         }

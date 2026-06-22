@@ -9,6 +9,7 @@ namespace QLDA.Application.PhanKhaiKinhPhis.Queries;
 public record PhanKhaiKinhPhiGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<PhanKhaiKinhPhiDto>> {
     public Guid? DuAnId { get; set; }
     public string? GlobalFilter { get; set; }
+    public int? TrangThaiId { get; set; }
     public bool IsNoTracking { get; set; }
 }
 
@@ -26,6 +27,7 @@ internal class PhanKhaiKinhPhiGetDanhSachQueryHandler : IRequestHandler<PhanKhai
             .Include(e => e.TrangThai)
             .Include(e => e.NguonVon)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.TrangThaiId > 0, e => e.TrangThaiId == request.TrangThaiId)
             .WhereGlobalFilter(request,
                 e => e.SoToTrinh,
                 e => e.NguonVon != null ? e.NguonVon.Ten : null
