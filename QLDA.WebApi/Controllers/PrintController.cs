@@ -784,14 +784,14 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     #region TongHopNhuCauKinhPhiNam
 
     /// <summary>
-    /// TongHopNhuCauKinhPhiNam.xlsx — Export tổng hợp nhu cầu kinh phí năm
+    /// TinhHinhDeXuatNhuCau.xlsx — Export tổng hợp nhu cầu kinh phí năm
     /// </summary>
-    [HttpGet("api/print/tong-hop-nhu-cau-kinh-phi-nam")]
-    [Authorize(Roles = RoleConstants.GroupTongHopNhuCauKinhPhiNamExport)]
+    [HttpGet("api/print/tinh-hinh-de-xuat-nhu-cau")]
+    [Authorize(Roles = RoleConstants.GroupTinhHinhDeXuatNhuCauExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InTongHopNhuCauKinhPhiNam(
+    public async Task<IActionResult> InTinhHinhDeXuatNhuCau(
         [FromQuery] TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
-        var fileNameTemplate = "TongHopNhuCauKinhPhiNam.xlsx";
+        var fileNameTemplate = "TinhHinhDeXuatNhuCau.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
             "PrintTemplates",

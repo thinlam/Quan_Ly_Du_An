@@ -21,13 +21,13 @@
 | Entity kế hoạch năm (join) | `DeXuatNhuCauKinhPhiNam` — **không có `DuAnId`**; nối qua junction `DeXuatTrinhKinhPhiNam` |
 | Controller danh sách | `DeXuatNhuCauKinhPhiController` |
 | API danh sách grid | `GET /api/de-xuat-nhu-cau-kinh-phi/theo-doi-tinh-hinh` |
-| **API export (đã có)** | `GET /api/print/tong-hop-nhu-cau-kinh-phi-nam` |
+| **API export (đã có)** | `GET /api/print/tinh-hinh-de-xuat-nhu-cau` |
 | Query list | `TheoDoiDeXuatNhuCauKinhPhiQuery` |
 | Query export | `TheoDoiDeXuatNhuCauKinhPhiGetExportQuery` |
 | DTO grid | `TheoDoiDeXuatNhuCauKinhPhiDto` |
 | DTO export | `TongHopNhuCauKinhPhiNamExportDto` |
 | Template | `QLDA.WebApi/PrintTemplates/TongHopNhuCauKinhPhiNam.xlsx` |
-| Phân quyền | `RoleConstants.GroupTongHopNhuCauKinhPhiNamExport` |
+| Phân quyền | `RoleConstants.GroupTinhHinhDeXuatNhuCauExport` |
 
 > **Không nhầm với:**
 > - `GET /api/de-xuat-nhu-cau-kinh-phi/danh-sach-tien-do` → màn **Xin chủ trương đầu tư** (export `danh-sach-xin-chu-truong-dau-tu`)
@@ -78,7 +78,7 @@ WHERE dx.IsDeleted = 0;
 | URL màn hình | `https://dxcenter.vietinfo.tech/quan-ly-du-an/tinh-hinh-de-xuat-kinh-phi` |
 | Route slug | `tinh-hinh-de-xuat-kinh-phi` |
 | API list | `GET /api/de-xuat-nhu-cau-kinh-phi/theo-doi-tinh-hinh` |
-| API export | `GET /api/print/tong-hop-nhu-cau-kinh-phi-nam` |
+| API export | `GET /api/print/tinh-hinh-de-xuat-nhu-cau` |
 
 ### 0.2 Filter params (list ↔ export đồng bộ)
 
@@ -146,7 +146,7 @@ dotnet run -- tong-hop-nhu-cau-kinh-phi-nam --force e:\SER\QLDA.WebApi\PrintTemp
 
 ```csharp
 // QLDA.Domain/Constants/RoleConstants.cs
-public const string GroupTongHopNhuCauKinhPhiNamExport =
+public const string GroupTinhHinhDeXuatNhuCauExport =
     $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
 ```
 
@@ -159,7 +159,7 @@ Roles: CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC (+ admin `QLDA_TatCa`, `QLDA_QuanTri`
 ```
 Màn "Tình hình đề xuất kinh phí"
 ├── GET /api/de-xuat-nhu-cau-kinh-phi/theo-doi-tinh-hinh     → Grid (phân trang)
-└── GET /api/print/tong-hop-nhu-cau-kinh-phi-nam             → Export Excel (toàn bộ filter)
+└── GET /api/print/tinh-hinh-de-xuat-nhu-cau             → Export Excel (toàn bộ filter)
 
 DeXuatNhuCauKinhPhi (có DuAnId)
 ├── SoPhieuChuyen, NgayPhieuChuyen, TrangThaiId        → cột PCT
@@ -186,7 +186,7 @@ DeXuatNhuCauKinhPhi (có DuAnId)
 
 | File | Thay đổi |
 |------|----------|
-| `QLDA.Domain/Constants/RoleConstants.cs` | `GroupTongHopNhuCauKinhPhiNamExport` |
+| `QLDA.Domain/Constants/RoleConstants.cs` | `GroupTinhHinhDeXuatNhuCauExport` |
 | `QLDA.WebApi/Controllers/PrintController.cs` | Region `TongHopNhuCauKinhPhiNam` + `InTongHopNhuCauKinhPhiNam` |
 | `QLDA.Gen/Program.cs` | Đăng ký slug `tong-hop-nhu-cau-kinh-phi-nam` |
 | `QLDA.Gen/Descriptors/IExportDescriptor.cs` | Thêm `LetterheadExport` layout |
@@ -205,7 +205,7 @@ DeXuatNhuCauKinhPhi (có DuAnId)
 ## 🌐 API Export
 
 ```http
-GET /api/print/tong-hop-nhu-cau-kinh-phi-nam?duAnId={guid}&trangThaiId={int}&trangThaiKeHoachNamId={int}&soPhieuChuyen={string}&trichYeu={string}
+GET /api/print/tinh-hinh-de-xuat-nhu-cau?duAnId={guid}&trangThaiId={int}&trangThaiKeHoachNamId={int}&soPhieuChuyen={string}&trichYeu={string}
 Authorization: Bearer {token}
 ```
 
@@ -224,7 +224,7 @@ Authorization: Bearer {token}
 **Response:** `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`  
 **Tên file:** `TongHopNhuCauKinhPhiNam_ddMMyyyy_HHmmss.xlsx`
 
-**Swagger:** Authorize JWT → `GET /api/print/tong-hop-nhu-cau-kinh-phi-nam` → Execute.
+**Swagger:** Authorize JWT → `GET /api/print/tinh-hinh-de-xuat-nhu-cau` → Execute.
 
 ---
 
@@ -258,7 +258,7 @@ const params = new URLSearchParams({
   ...(trichYeu && { trichYeu }),
 });
 
-window.open(`/api/print/tong-hop-nhu-cau-kinh-phi-nam?${params}`, '_blank');
+window.open(`/api/print/tinh-hinh-de-xuat-nhu-cau?${params}`, '_blank');
 ```
 
 ---
@@ -308,7 +308,7 @@ window.open(`/api/print/tong-hop-nhu-cau-kinh-phi-nam?${params}`, '_blank');
 | Không thấy `DuAnId` trong DB | Đang xem bảng `DeXuatNhuCauKinhPhiNam` | Xem `DeXuatNhuCauKinhPhi` hoặc dùng `duAnId` chỉ để lọc API |
 | Số dòng export ≠ grid | Filter khác / list không sort | Export sort `CreatedAt, Id`; so cùng filter |
 | Multi-line không xuống dòng | Template cũ | Regenerate `LetterheadExport`; row R5 có wrap text |
-| 403 Forbidden | Thiếu role | `GroupTongHopNhuCauKinhPhiNamExport` |
+| 403 Forbidden | Thiếu role | `GroupTinhHinhDeXuatNhuCauExport` |
 | Template not found | File thiếu trong output | Copy/regenerate vào `PrintTemplates/` |
 
 ---
@@ -325,12 +325,12 @@ window.open(`/api/print/tong-hop-nhu-cau-kinh-phi-nam?${params}`, '_blank');
 
 | Hạng mục | Giá trị |
 |----------|---------|
-| API endpoint | `GET /api/print/tong-hop-nhu-cau-kinh-phi-nam` |
+| API endpoint | `GET /api/print/tinh-hinh-de-xuat-nhu-cau` |
 | Handler | `TheoDoiDeXuatNhuCauKinhPhiGetExportQueryHandler` |
 | Template | `TongHopNhuCauKinhPhiNam.xlsx` |
 | QLDA.Gen slug | `tong-hop-nhu-cau-kinh-phi-nam` |
 | Layout | `LetterheadExport` |
-| Role | `GroupTongHopNhuCauKinhPhiNamExport` |
+| Role | `GroupTinhHinhDeXuatNhuCauExport` |
 | Entity nguồn | `DeXuatNhuCauKinhPhi` (`DuAnId` = filter only) |
 | FE | Chưa tích hợp |
 
