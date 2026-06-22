@@ -18,8 +18,8 @@ internal class QuyetDinhDieuChinhTraLaiCommandHandler : IRequestHandler<QuyetDin
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
     private readonly IUnitOfWork _unitOfWork;
@@ -28,15 +28,15 @@ internal class QuyetDinhDieuChinhTraLaiCommandHandler : IRequestHandler<QuyetDin
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(QuyetDinhDieuChinhTraLaiCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth) {
             throw new ManagedException("Tài khoản không có quyền.");
         }
@@ -57,14 +57,7 @@ internal class QuyetDinhDieuChinhTraLaiCommandHandler : IRequestHandler<QuyetDin
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate: must be ĐTr (Đã trình) to transition to TL (Trả lại)
         if (entity.TrangThaiId != trangThaiDaTrinh?.Id) {

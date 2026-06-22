@@ -14,4 +14,9 @@ public record ChuTruongLapKeHoachSearchDto : CommonSearchDto
   //  public string? SoToTrinh { get; set; }
    // public string? TrichYeu { get; set; }
     //public string? ButPhe { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }

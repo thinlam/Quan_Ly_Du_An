@@ -8,4 +8,5 @@ public record PhuLucHopDongSearchModel : CommonSearchModel, IFromDateToDate {
     public Guid? ThanhToanId { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    public int? LoaiDuAnTheoNamId { get; set; }
 }

@@ -142,7 +142,8 @@ public class NghiemThuController : AggregateRootController {
         Guid? thanhToanId = null,
         string? globalFilter = null,
         int pageIndex = 0,
-        int pageSize = 0) {
+        int pageSize = 0,
+        int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new NghiemThuGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -152,6 +153,7 @@ public class NghiemThuController : AggregateRootController {
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

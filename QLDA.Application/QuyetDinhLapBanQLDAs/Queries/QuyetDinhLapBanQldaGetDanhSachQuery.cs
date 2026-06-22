@@ -15,6 +15,11 @@ public record QuyetDinhLapBanQldaGetDanhSachQuery : AggregateRootPagination, IMa
     public string? SoQuyetDinh { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -31,9 +36,9 @@ internal class
     public async Task<PaginatedList<QuyetDinhLapBanQldaDto>> Handle(QuyetDinhLapBanQldaGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = QuyetDinhLapBanQLDA.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereIf(request.SoQuyetDinh.IsNotNullOrWhitespace(), e => e.So!.ToLower().Contains(request.SoQuyetDinh!.ToLower()))
             .WhereIf(request.TuNgay.HasValue, e => e.Ngay.HasValue && e.Ngay.Value >= request.TuNgay!.Value.ToStartOfDayUtc())

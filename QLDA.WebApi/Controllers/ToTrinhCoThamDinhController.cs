@@ -148,6 +148,7 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
             So = dto.SoQuyetDinh,
             TuNgay = dto.TuNgay,
             DenNgay = dto.DenNgay,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

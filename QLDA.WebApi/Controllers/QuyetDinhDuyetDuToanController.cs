@@ -61,7 +61,6 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            GroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan],
             Entities = files
         });
 
@@ -82,7 +81,6 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            GroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan], // Bổ sung cho giống hàm Create nếu thiếu
             Entities = files
         });
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
@@ -98,7 +96,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
     [ProducesResponseType<ResultApi<PaginatedList<QuyetDinhDuyetDuToanDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetDanhSach([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null,
-        int pageIndex = 0, int pageSize = 0) {
+        int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new QuyetDinhDuyetDuToanGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -106,6 +104,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

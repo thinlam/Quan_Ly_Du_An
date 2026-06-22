@@ -15,9 +15,8 @@ public record KeHoachLuaChonNhaThauRutGonDeleteCommandHandler : IRequestHandler<
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> KeHoachLuaChonNhaThauRutGon;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public KeHoachLuaChonNhaThauRutGonDeleteCommandHandler(IServiceProvider serviceProvider)
@@ -25,9 +24,8 @@ public record KeHoachLuaChonNhaThauRutGonDeleteCommandHandler : IRequestHandler<
         KeHoachLuaChonNhaThauRutGon = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KeHoachLuaChonNhaThauRutGon.UnitOfWork;
     }
 
@@ -37,15 +35,7 @@ public record KeHoachLuaChonNhaThauRutGonDeleteCommandHandler : IRequestHandler<
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue)
-        {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DuThao && s.Loai == PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);

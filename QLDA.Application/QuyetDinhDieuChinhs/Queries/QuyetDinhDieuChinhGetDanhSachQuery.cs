@@ -13,7 +13,8 @@ public record QuyetDinhDieuChinhGetDanhSachQuery(
     //Guid? PheDuyetEntityId = null,
     string? GlobalFilter = null,
     int Page = 1,
-    int PageSize = 20
+    int PageSize = 20,
+    int? LoaiDuAnTheoNamId = null
 ) : IRequest<PagedResultDto<QuyetDinhDieuChinhListItemDto>>;
 
 public record QuyetDinhDieuChinhListItemDto {
@@ -54,6 +55,9 @@ internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<Quyet
 
         if (request.DuAnId.HasValue) {
             query = query.Where(e => e.DuAnId == request.DuAnId.Value);
+        }
+        if (request.LoaiDuAnTheoNamId > 0) {
+            query = query.Where(e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId);
         }
         if (request.BuocId.HasValue)
         {

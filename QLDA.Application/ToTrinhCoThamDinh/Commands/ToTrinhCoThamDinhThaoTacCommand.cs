@@ -20,8 +20,8 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
     private readonly IUserProvider _userProvider;
@@ -34,8 +34,8 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
         _userProvider  = serviceProvider.GetRequiredService<IUserProvider>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<int> Handle(ToTrinhCoThamDinhThaoTacCommand request, CancellationToken cancellationToken) {
@@ -54,14 +54,7 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
             var userId = _userProvider.Info.UserID;
             var maTrangThai = entity.TrangThai.Ma;
 
-            if (entity.BuocId.HasValue) {
-                var buoc = await _duAnBuocRepo.GetQueryableSet()
-                    .Include(e => e.DuAn)
-                    .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                    .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-                if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                    throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-            }
+            await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
             // get các trạng thái được phép xử lý
             var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()

@@ -11,17 +11,15 @@ public record KetQuaTrungThauDeleteCommand(Guid Id) : IRequest<int> {
 public record KetQuaTrungThauDeleteCommandHandler : IRequestHandler<KetQuaTrungThauDeleteCommand, int> {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public KetQuaTrungThauDeleteCommandHandler(IServiceProvider serviceProvider) {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KetQuaTrungThau.UnitOfWork;
     }
 
@@ -32,15 +30,7 @@ public record KetQuaTrungThauDeleteCommandHandler : IRequestHandler<KetQuaTrungT
 
         ManagedException.ThrowIfNull(entity);// kết hoach -> goi thau -> kết quả gói thầu -> hopdong
 
-        if (entity.BuocId.HasValue)
-        {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         var hasHopDong = await KetQuaTrungThau.GetQueryableSet().AnyAsync(x =>
                          x.Id == request.Id  && x.GoiThau != null

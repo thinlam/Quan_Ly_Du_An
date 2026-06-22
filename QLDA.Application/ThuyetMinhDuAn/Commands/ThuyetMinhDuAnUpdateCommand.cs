@@ -13,8 +13,8 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
     readonly IAppSettingsProvider _settings;
@@ -25,14 +25,14 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var traLaiStt = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -44,14 +44,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         //if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != traLaiStt?.Id)

@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.KhoKhanVuongMacs.DTOs;
 
 namespace QLDA.Application.KhoKhanVuongMacs.Commands;
@@ -13,6 +14,8 @@ internal class KhoKhanVuongMacInsertCommandHandler : IRequestHandler<KhoKhanVuon
     private readonly IRepository<DanhMucLoaiVanBan, int> DanhMucLoaiVanBan;
     private readonly IRepository<DanhMucChuDauTu, int> DanhMucChuDauTu;
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<KhoKhanVuongMacInsertCommandHandler> _logger;
 
@@ -24,6 +27,8 @@ internal class KhoKhanVuongMacInsertCommandHandler : IRequestHandler<KhoKhanVuon
         DanhMucLoaiVanBan = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiVanBan, int>>();
         DanhMucChuDauTu = serviceProvider.GetRequiredService<IRepository<DanhMucChuDauTu, int>>();
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = KhoKhanVuongMac.UnitOfWork;
     }
@@ -32,6 +37,9 @@ internal class KhoKhanVuongMacInsertCommandHandler : IRequestHandler<KhoKhanVuon
         try {
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Dto.DuAnId),
                 "Không tồn tại dự án");
+
+            // Phân quyền: Owner/LanhDao/KHTC/PhongBanChinh/PhongBanPhoiHop-In-Scope
+            await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
             var entity = request.Dto.ToEntity();
 

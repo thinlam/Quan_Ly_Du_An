@@ -47,7 +47,6 @@ internal class
         }
 
         var queryable = DeXuatNhuCauKinhPhiNam.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
           //  .WhereIf(request. != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
             .WhereIf(request.TrichYeu != null, e => e.So.Contains(request.TrichYeu))

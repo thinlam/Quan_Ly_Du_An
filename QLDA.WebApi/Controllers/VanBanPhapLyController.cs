@@ -114,7 +114,7 @@ public class VanBanPhapLyController : AggregateRootController {
     [HttpGet("danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<VanBanPhapLyDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0) {
+    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new VanBanPhapLyGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -122,6 +122,7 @@ public class VanBanPhapLyController : AggregateRootController {
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

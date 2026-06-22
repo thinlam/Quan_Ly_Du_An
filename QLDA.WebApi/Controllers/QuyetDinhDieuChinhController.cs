@@ -26,14 +26,16 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
         [FromQuery] Guid? duAnId,
         [FromQuery] string? globalFilter = null,
         int page = 1,
-        int pageSize = 20) {
+        int pageSize = 20,
+        int? loaiDuAnTheoNamId = null) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhGetDanhSachQuery {
             DuAnId = duAnId,
             //PheDuyetEntityName = pheDuyetEntityName,
            // PheDuyetEntityId = pheDuyetEntityId,
             GlobalFilter = globalFilter,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
         });
         return ResultApi.Ok(result);
     }

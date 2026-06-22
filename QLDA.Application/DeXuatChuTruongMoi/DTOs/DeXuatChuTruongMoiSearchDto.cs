@@ -10,5 +10,10 @@ public record DeXuatChuTruongMoiSearchDto : CommonSearchDto
     public long? LanhDaoPhuTrachId { get; set; }
     public string? Loai { get; set; }
     public int? Nam { get; set; }
-    
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
+
 }

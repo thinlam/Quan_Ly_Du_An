@@ -18,8 +18,8 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
     private readonly IRepository<ThoaThuanGiaoViec, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
@@ -31,15 +31,15 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(ThoaThuanGiaoViecTrinhCommand request, CancellationToken cancellationToken)
     {
        // chỉ user Phòng KHTC mới dc trình
-       var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+       var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!isHcth)
             throw new ManagedException("Tài khoản không có quyền.");
 
@@ -57,14 +57,7 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy đề xuất.");
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDaChuyen?.Id)
         {

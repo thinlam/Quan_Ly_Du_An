@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using BuildingBlocks.Domain.DTOs;
 using BuildingBlocks.Domain.Providers;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,36 +8,6 @@ namespace QLDA.Tests.Unit;
 
 public class AuthorizationManagerTests
 {
-    private static AuthorizationManager CreateManager(IAuthorizationContext? ctx = null)
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton<IAuthorizationContext>(ctx ?? new StubContext());
-        var sp = services.BuildServiceProvider();
-        return new AuthorizationManager(sp);
-    }
-
-    [Fact]
-    public void RegisterProvider_ShouldAddProvider()
-    {
-        var manager = CreateManager();
-        var provider = new StubProvider(canHandle: true, executeResult: true, viewResult: true);
-
-        manager.RegisterProvider(AuthorizationResourceKeys.DuAn, provider);
-    }
-
-    [Fact]
-    public void RegisterProvider_DuplicateKey_ShouldThrow()
-    {
-        var manager = CreateManager();
-        var provider = new StubProvider(canHandle: true, executeResult: true, viewResult: true);
-        manager.RegisterProvider(AuthorizationResourceKeys.DuAn, provider);
-
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            manager.RegisterProvider(AuthorizationResourceKeys.DuAn, provider));
-
-        Assert.Contains("already registered", ex.Message);
-    }
-
     [Fact]
     public async Task CanExecuteAsync_UnregisteredResource_ShouldThrow()
     {
@@ -54,11 +23,9 @@ public class AuthorizationManagerTests
     [Fact]
     public async Task CanExecuteAsync_RegisteredProvider_ShouldDelegate()
     {
-        var manager = CreateManager();
         var provider = new StubProvider(canHandle: true, executeResult: true, viewResult: true);
+        var manager = CreateManager(provider);
         var entity = new { Id = 1 };
-
-        manager.RegisterProvider(AuthorizationResourceKeys.DuAn, provider);
 
         var result = await manager.CanExecuteAsync(AuthorizationResourceKeys.DuAn, entity, CancellationToken.None);
 
@@ -69,16 +36,38 @@ public class AuthorizationManagerTests
     [Fact]
     public async Task CanViewAsync_RegisteredProvider_ShouldDelegate()
     {
-        var manager = CreateManager();
         var provider = new StubProvider(canHandle: true, executeResult: true, viewResult: false);
+        var manager = CreateManager(provider);
         var entity = new { Id = 1 };
-
-        manager.RegisterProvider(AuthorizationResourceKeys.DuAn, provider);
 
         var result = await manager.CanViewAsync(AuthorizationResourceKeys.DuAn, entity, CancellationToken.None);
 
         Assert.False(result);
         Assert.True(provider.CanViewCalled);
+    }
+
+    [Fact]
+    public void Constructor_TwoProvidersSameKey_ShouldThrow()
+    {
+        var p1 = new StubProvider(canHandle: true, executeResult: true, viewResult: true);
+        var p2 = new StubProvider(canHandle: true, executeResult: true, viewResult: true);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => CreateManager(p1, p2));
+
+        Assert.Contains("Multiple IAuthorizationProvider instances", ex.Message);
+    }
+
+    private static AuthorizationManager CreateManager(
+        IAuthorizationProvider? provider = null,
+        IAuthorizationProvider? provider2 = null,
+        IAuthorizationContext? ctx = null)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAuthorizationContext>(ctx ?? new StubContext());
+        if (provider != null) services.AddSingleton<IAuthorizationProvider>(provider);
+        if (provider2 != null) services.AddSingleton<IAuthorizationProvider>(provider2);
+        var sp = services.BuildServiceProvider();
+        return ActivatorUtilities.CreateInstance<AuthorizationManager>(sp);
     }
 }
 
@@ -92,9 +81,11 @@ internal class StubUserProvider : IUserProvider
 internal class StubContext : IAuthorizationContext
 {
     public IUserProvider User => new StubUserProvider();
-    public bool HasGlobalBypass => false;
     public long UserId => 1;
     public long? PhongBanId => 1;
+    public bool HasKhtcBypass => false;
+    public bool IsAdminManager => false;
+    public bool HasGlobalBypass => HasKhtcBypass || IsAdminManager;
     public Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct)
         => Task.FromResult<long?>(1);
 }

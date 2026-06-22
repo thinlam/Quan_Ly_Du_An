@@ -280,16 +280,20 @@ Dự án sử dụng Materialized Path cho hierarchical structure:
 
 ## Migration Strategy
 
-Sử dụng EF Core Migrations:
+EF Core Migrations được quản lý thông qua `QLDA.Migrator` project với hỗ trợ hai providers:
+
 ```bash
-dotnet ef migrations add InitialCreate
-dotnet ef database update
+# SQL Server (default)
+dotnet run --project QLDA.Migrator
+
+# SQLite (development/testing)
+dotnet run --project QLDA.Migrator -- --provider sqlite
 ```
 
 ### Migration Files
-- Tự động generate từ code changes
-- Manual migration cho complex changes
-- Idempotent scripts
+- Migration files nằm trong `QLDA.Migrator/Migrations/`
+- Mỗi migration tạo 3 files: `<timestamp>_<name>.cs`, `.Designer.cs`, và `AppDbContextModelSnapshot.cs`
+- Không sửa các file migration sau khi tạo — immutable snapshots
 
 ## Backup và Recovery
 

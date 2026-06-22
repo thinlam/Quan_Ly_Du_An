@@ -14,31 +14,23 @@ public record KeHoachTrienKhaiHangMucInsertCommand(KeHoachTrienKhaiHangMuc entit
 internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeHoachTrienKhaiHangMucInsertCommand, KeHoachTrienKhaiHangMuc> {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
     public KeHoachTrienKhaiHangMucInsertCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<KeHoachTrienKhaiHangMuc> Handle(KeHoachTrienKhaiHangMucInsertCommand request,
         CancellationToken cancellationToken = default) {
-        if (request.entity.BuocId.HasValue)
-        {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.entity.BuocId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);

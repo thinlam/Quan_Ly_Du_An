@@ -5,14 +5,14 @@ namespace QLDA.Application.Providers;
 /// </summary>
 public interface IAppSettingsProvider {
     /// <summary>
-    /// ID phòng kế toán - đơn vị có quyền CRUD ThanhToan
+    /// ID Phòng Kế Hoạch - Tài chính - đơn vị có quyền CRUD ThanhToan
     /// </summary>
-    long PhongKeToanID { get; }
+    long PhongKHTCId { get; }
 
     /// <summary>
-    /// ID phòng Hành chính - Tổng hợp
+    /// ID Phòng Hành chính - Tổng hợp
     /// </summary>
-    long PhongHCTHID { get; }
+    long PhongHCTHId { get; }
 
     /// <summary>
     /// ID phòng Kế hoạch - Tài chính. Nhân viên thuộc phòng này có global bypass cho authorization.

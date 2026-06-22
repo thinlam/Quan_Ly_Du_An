@@ -17,6 +17,12 @@ public class ExceptionMiddleware(RequestDelegate next)
         {
             await next(context);
         }
+        catch (Exception ex) when (TryUnwrapForbidden(ex, out var forbidden))
+        {
+            // Authorization failures surface as 403 with the standard ResultApi body
+            // so callers can branch on status code while still parsing ErrorMessage.
+            await HandleException(context, HttpStatusCode.Forbidden, forbidden, forbidden.Message);
+        }
         catch (ManagedException ex)
         {
             await HandleException(context, HttpStatusCode.OK, ex, ex.Message);
@@ -44,6 +50,26 @@ public class ExceptionMiddleware(RequestDelegate next)
             }
             await HandleException(context, HttpStatusCode.BadRequest, ex, null);
         }
+    }
+
+    /// <summary>
+    /// Recognizes ForbiddenException (or a wrapper whose innermost exception is one)
+    /// so that authorization failures return 403 regardless of where they surface in
+    /// the call stack.
+    /// </summary>
+    private static bool TryUnwrapForbidden(Exception ex, out ForbiddenException forbidden)
+    {
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            if (current is ForbiddenException f)
+            {
+                forbidden = f;
+                return true;
+            }
+        }
+
+        forbidden = null!;
+        return false;
     }
 
     /// <summary>

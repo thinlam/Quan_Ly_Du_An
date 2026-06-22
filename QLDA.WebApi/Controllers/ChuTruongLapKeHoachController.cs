@@ -122,6 +122,7 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
             GlobalFilter = dto.GlobalFilter,
             TuNgay = dto.TuNgay,
             DenNgay = dto.DenNgay,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

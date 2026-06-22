@@ -48,7 +48,6 @@ internal class TheoDoiDeXuatNhuCauKinhPhiGetExportQueryHandler(IServiceProvider 
         }
 
         var queryable = _deXuatNhuCauKinhPhi.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.TrangThaiKeHoachId.HasValue, e => e.DeXuatDaTrinhKeHoachNam!.Any(x =>
                 x.DeXuatNhuCauKinhPhiNam != null

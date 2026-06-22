@@ -36,7 +36,6 @@ internal class
      
         // 1. Khởi tạo Quereryable gốc cho Đề xuất mới
         var queryableMoi = DeXuatChuTruongMoi.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.DonViPhuTrachId != null, e => e.DonViPhuTrachChinhId == request.DonViPhuTrachId)
@@ -67,7 +66,6 @@ internal class
 
         // 2. Khởi tạo Queryable gốc cho Đề xuất chuyển tiếp
         var queryableCT = DeXuatChuyenTiep.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

@@ -57,7 +57,6 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            GroupTypes = [Domain.Enums.EGroupType.BanGiaoHoSo.ToString()],
             Entities = dto.GetDanhSachTepHSBanGiao(entity.Id)
         });
 
@@ -72,7 +71,6 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            GroupTypes = [Domain.Enums.EGroupType.BanGiaoHoSo.ToString()],
             Entities = dto.GetDanhSachTepHSBanGiao(entity.Id)
         });
 
@@ -90,7 +88,6 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
         // Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
         await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            GroupTypes = [Domain.Enums.EGroupType.BienBanBanGiao.ToString()],
             Entities = bienBanEntities
         });
 

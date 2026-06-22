@@ -50,7 +50,6 @@ internal class
 
         var queryable = PhuLucHopDong.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)

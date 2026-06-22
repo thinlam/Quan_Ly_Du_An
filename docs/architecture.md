@@ -121,6 +121,10 @@ graph TB
 - **Caching**: Redis/Memory cache
 - **Security**: Encryption, hashing
 
+**Lưu ý**: Có hai Infrastructure projects trong hệ thống:
+- `QLDA.Infrastructure/` — QLDA module-specific infrastructure
+- `BuildingBlocks.Infrastructure/` — Shared infrastructure từ BuildingBlocks library (Aspose.Cells integration, DateTime provider)
+
 ### 4. Persistence Layer (Lớp Truy cập Dữ liệu)
 **Vị trí**: `QLDA.Persistence/`
 

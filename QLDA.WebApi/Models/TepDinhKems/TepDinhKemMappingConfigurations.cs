@@ -27,32 +27,66 @@ using QLDA.WebApi.Models.VanBanPhapLys;
 
 namespace QLDA.WebApi.Models.TepDinhKems;
 
-public static class TepDinhKemMappingConfigurations {
-    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, EGroupType groupType = EGroupType.None)
-        => new() {
-            Id = model.GetId(),
-            ParentId = model.ParentId,
-            GroupId = groupId.ToString(),
-            GroupType = model.GroupType ?? groupType.ToString(),
-            Type = model.Type,
-            FileName = model.FileName,
-            OriginalName = model.OriginalName,
-            Path = model.Path,
-            Size = model.Size,
-        };
+public static class TepDinhKemMappingConfigurations
+{
+    private const string KySoPrefix = "KySo_";
 
-    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
-        => new() {
+    private static string ResolveGroupType(this TepDinhKemModel model, string rawGroupType)
+    {
+        var resolved = model.GroupType ?? rawGroupType;
+
+        // File gốc (ParentId == null): giữ nguyên GroupType
+        if (model.ParentId is null)
+            return resolved;
+
+        // File con (ký số - ParentId != null): thêm prefix KySo_ nếu chưa có
+        return resolved.StartsWith(KySoPrefix, StringComparison.Ordinal)
+            ? resolved
+            : $"{KySoPrefix}{resolved}";
+    }
+
+    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, EGroupType groupType = EGroupType.None)
+        => new()
+        {
             Id = model.GetId(),
             ParentId = model.ParentId,
             GroupId = groupId.ToString(),
-            GroupType = model.GroupType ?? groupType,
+            GroupType = model.ResolveGroupType(groupType.ToString()),
             Type = model.Type,
             FileName = model.FileName,
             OriginalName = model.OriginalName,
             Path = model.Path,
             Size = model.Size,
         };
+    private static TepDinhKem ToEntity(this TepDinhKemModel model, string groupId, EGroupType groupType = EGroupType.None)
+      => new()
+      {
+          Id = model.GetId(),
+          ParentId = model.ParentId,
+          GroupId = groupId,
+          GroupType = model.GroupType ?? groupType.ToString(),
+          Type = model.Type,
+          FileName = model.FileName,
+          OriginalName = model.OriginalName,
+          Path = model.Path,
+          Size = model.Size,
+      };
+    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
+        => new()
+        {
+            Id = model.GetId(),
+            ParentId = model.ParentId,
+            GroupId = groupId.ToString(),
+            GroupType = model.ResolveGroupType(groupType),
+            Type = model.Type,
+            FileName = model.FileName,
+            OriginalName = model.OriginalName,
+            Path = model.Path,
+            Size = model.Size,
+        };
+    public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, string groupId,
+        EGroupType groupType = EGroupType.None)
+        => models.Select(m => ToEntity(m, groupId, groupType));
 
     public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, Guid groupId,
         EGroupType groupType = EGroupType.None)
@@ -63,7 +97,8 @@ public static class TepDinhKemMappingConfigurations {
         => models.Select(m => ToEntity(m, groupId, groupType));
 
     public static TepDinhKemModel ToModel(this TepDinhKem entity)
-        => new() {
+        => new()
+        {
             Id = entity.Id,
             GroupId = entity.GroupId,
             GroupType = entity.GroupType,
@@ -87,7 +122,7 @@ public static class TepDinhKemMappingConfigurations {
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this PheDuyetDuToanModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.PheDuyetDuToan).ToList() ?? [];
 
-    
+
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this KhoKhanVuongMacModel model, Guid groupId)
         => [.. new List<TepDinhKem>()
             .Union(model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.KhoKhanVuongMac).ToList() ?? [])
@@ -139,9 +174,9 @@ public static class TepDinhKemMappingConfigurations {
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiNamModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatNhuCauKinhPhiNam).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this ThuyetMinhDuAnModel model, Guid groupId)
-        => model.DanhSachTepDinhKem?.ToEntities(groupId,  EGroupType.ThuyetMinhDuAn).ToList() ?? [];
+        => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ThuyetMinhDuAn).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKemThamDinh(this ThuyetMinhDuAnModel model, Guid groupId)
-    => model.DanhSachTepThamDinh?.ToEntities(groupId, EGroupType.ThamDinhThuyetMinhDuAn).ToList() ?? []; 
+    => model.DanhSachTepThamDinh?.ToEntities(groupId, EGroupType.ThamDinhThuyetMinhDuAn).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKem(this ToTrinhThamDinhNhaThauModel model, Guid groupId)
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ToTrinhThamDinhNhaThau).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepThamDinh(this ToTrinhThamDinhNhaThauModel model, Guid groupId)

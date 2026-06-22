@@ -22,10 +22,11 @@ public class HoSoMoiThauDienTu : Entity<Guid>, IAggregateRoot {
 
     public int? TrangThaiId { get; set; }
 
+    public Guid? NhaThauId { get; set; }
     #region Navigation Properties
 
+    public ToTrinhQuyetDinh? ToTrinhQuyetDinh { get; set; }
     public DuAn? DuAn { get; set; }
-    
     public DuAnBuoc? Buoc { get; set; }
 
     public DanhMucHinhThucLuaChonNhaThau? HinhThucLuaChonNhaThau { get; set; }
@@ -35,3 +36,4 @@ public class HoSoMoiThauDienTu : Entity<Guid>, IAggregateRoot {
 
     #endregion
 }
+ 

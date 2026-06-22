@@ -5,154 +5,93 @@ using QLDA.Application.Common;
 
 namespace QLDA.Application.TepDinhKems.Commands;
 
-public record TepDinhKemBulkInsertOrUpdateCommand() : IRequest {
+/// <summary>
+/// Bulk insert/update file attachments for a logical group.
+/// Synchronizes the persisted set of <see cref="TepDinhKem"/> rows under <c>GroupId</c>
+/// (optionally narrowed by <c>GroupType</c>) with the supplied <c>Entities</c>:
+///   - Rows missing from the request are deleted (cascaded through <c>SyncCollection</c>).
+///   - Rows present in both have their mutable fields overwritten from the request.
+///   - New rows from the request are inserted.
+/// Use this when the UI sends the full desired collection for a group rather than diffs.
+/// </summary>
+public record TepDinhKemBulkInsertOrUpdateCommand() : IRequest
+{
     public required string GroupId { get; set; }
     public required List<TepDinhKem> Entities { get; set; }
-    /// <summary>
-    /// Phạm vi sync theo GroupType (cùng GroupId có thể có nhiều loại tệp, ví dụ BanGiaoHoSo + BienBanBanGiao).
-    /// Bắt buộc khi <see cref="Entities"/> rỗng nhưng cần xóa mềm theo loại; nếu null sẽ suy ra từ Entities.
-    /// </summary>
-    public List<string>? GroupTypes { get; set; }
-    public bool KySo { get; set; }
 }
 
-internal class TepDinhKemBulkInsertOrUpdateCommandHandler : IRequestHandler<TepDinhKemBulkInsertOrUpdateCommand> {
-    private readonly IRepository<TepDinhKem, Guid> _repository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<TepDinhKemBulkInsertOrUpdateCommandHandler> _logger;
-
-    public TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem, Guid> repository, IUnitOfWork unitOfWork,
-        ILogger<TepDinhKemBulkInsertOrUpdateCommandHandler> logger) {
-        _repository = repository;
-        _unitOfWork = unitOfWork;
-        _logger = logger;
-    }
+internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem, Guid> repository, IUnitOfWork unitOfWork) : IRequestHandler<TepDinhKemBulkInsertOrUpdateCommand>
+{
+    private readonly IRepository<TepDinhKem, Guid> _repository = repository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task Handle(TepDinhKemBulkInsertOrUpdateCommand request,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
+        request.Entities ??= [];
+        if (request.Entities.Count == 0)
+            return;
 
-        if (_unitOfWork.HasTransaction) {
+        if (_unitOfWork.HasTransaction)
+        {
             await InsertOrUpdateAsync(request, cancellationToken);
-        } else {
+        }
+        else
+        {
             using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
             await InsertOrUpdateAsync(request, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
     }
-    #region Private helper methods
-    /// <summary>
-    /// Xoá mềm
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task InsertOrUpdateAsync(TepDinhKemBulkInsertOrUpdateCommand request, CancellationToken cancellationToken = default) {
-        request.Entities ??= [];
-        var groupTypes = ResolveGroupTypes(request);
-        if (request.Entities.Count == 0 && groupTypes.Count == 0)
-            return;
 
-        var filesQuery = _repository.GetQueryableSet().Where(e => e.GroupId == request.GroupId);
-        if (groupTypes.Count > 0)
-            filesQuery = filesQuery.Where(e => groupTypes.Contains(e.GroupType));
+    private async Task InsertOrUpdateAsync(TepDinhKemBulkInsertOrUpdateCommand request, CancellationToken cancellationToken = default)
+    {
+        #region Build sync scope (GroupType filter)
 
-        var files = await filesQuery.ToListAsync(cancellationToken);
+        // Narrow the sync window to only the GroupType values actually present in the request.
+        // If the request omits GroupType entirely (empty/whitespace for all items), the scope
+        // is the whole group, which lets a caller wipe GroupType-typed rows by sending no
+        // GroupType-tagged entities. This is intentional and matches the contract of
+        // SyncCollection (full desired state for the requested scope).
+        var groupTypes = request.Entities
+            .Select(e => e.GroupType)
+            .Where(t => !string.IsNullOrEmpty(t))
+            .Distinct()
+            .ToList();
 
-        await SyncHelper.SyncCollection(repository: _repository, existingEntities: files, requestEntities: request.Entities, (existing, request) => {
+        #endregion
+
+        #region Load existing rows for the group
+
+        // Read the persisted rows that fall inside the sync scope. GetQueryableSet() already
+        // applies IsDeleted=false and Used=true filters, so soft-deleted rows are ignored
+        // here and will not be revived by SyncCollection.
+        var files = await _repository.GetQueryableSet()
+            .Where(e => e.GroupId == request.GroupId)
+            .WhereIf(groupTypes.Count > 0, e => groupTypes.Contains(e.GroupType))
+            .ToListAsync(cancellationToken);
+
+        #endregion
+
+        #region Reconcile persisted set with request via SyncCollection
+
+        // SyncCollection reconciles `existingEntities` (DB) with `requestEntities` (caller's
+        // desired state) using the supplied update selector:
+        //   - Entities present in DB but not in request  -> deleted (range delete via repository).
+        //   - Entities present in both                    -> update selector copies mutable fields.
+        //   - Entities present in request but not in DB  -> inserted via repository.Add.
+        // Only fields listed in the selector are touched; identity fields (Id, GroupId,
+        // GroupType) are intentionally not re-assigned to avoid breaking referential use.
+        await SyncHelper.SyncCollection(repository: _repository, existingEntities: files, requestEntities: request.Entities, (existing, request) =>
+        {
             existing.Type = request.Type;
             existing.FileName = request.FileName;
             existing.OriginalName = request.OriginalName;
             existing.Path = request.Path;
             existing.Size = request.Size;
         }, cancellationToken: cancellationToken);
-    }
-
-    private static List<string> ResolveGroupTypes(TepDinhKemBulkInsertOrUpdateCommand request) {
-        if (request.GroupTypes is { Count: > 0 })
-            return request.GroupTypes;
-
-        return request.Entities
-            .Select(e => e.GroupType)
-            .Where(t => !string.IsNullOrEmpty(t))
-            .Distinct()
-            .ToList();
-    }
-
-    /// <summary>
-    /// Xoá cứng
-    /// </summary>
-    /// <param name="request"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    private async Task InsertOrUpdateCascadeAsync(TepDinhKemBulkInsertOrUpdateCommand request, CancellationToken cancellationToken = default) {
-        /*
-         * Khi Update nếu ids trong request đã tồn tại trong db => toUpdate
-         * nếu ids không tồn tại trong database => thêm mới
-         * nếu ids tồn tại trong database => cập nhật
-         * nếu ids trong database không tồn tại trong request => xóa
-         *
-         * Trường hợp ký số là file được tạo từ KySoController có GroupType.KySo
-         * nên khi CRUD thì phải tách trường hợp của KySo ra khỏi logic
-         */
-
-        #region Không có file - xóa hết
-
-        // Nếu danh sách trống và không phải api ký số thì xóa hết
-        request.Entities ??= [];
-        if (request.Entities.Count == 0) {
-            await _repository.GetQueryableSet()
-                .Where(e => e.GroupId == request.GroupId)
-                .ExecuteDeleteAsync(cancellationToken);
-            return;
-        }
 
         #endregion
-
-        #region Có file
-
-        //danh sách id từ request
-        var requestIds = request.Entities.Select(e => e.Id).ToList();
-
-        //danh sách đã lưu từ trước - tồn tại trong db và request    
-        var existing = await _repository.GetOrderedSet()
-            .Where(e => e.GroupId == request.GroupId)
-            .ToListAsync(cancellationToken);
-        ;
-        var existingIds = existing.Select(e => e.Id).ToList();
-
-        //chưa có trong db
-        var toAdd = request.Entities
-            .Where(e => !existingIds.Contains(e.Id)).ToList();
-
-        //có trong db
-        var toUpdate = request.Entities
-            .Where(e => existingIds.Contains(e.Id)).ToList();
-
-        //không có trong db và cả request
-        var toRemove = existing
-            .Where(e => !requestIds.Contains(e.Id))
-            .ToList();
-
-        if (toAdd.Count == 0 && toUpdate.Count == 0 && toRemove.Count == 0) return;
-        if (toAdd.Count != 0) {
-            _repository.BulkInsert(toAdd);
-        }
-
-        if (toUpdate.Count != 0) {
-            _repository.BulkUpdate(toUpdate, x => new {
-                x.Type,
-                x.FileName,
-                x.OriginalName,
-                x.Path,
-                x.Size
-            });
-        }
-
-        //Trường hợp đang ký số thì request chỉ gửi file ký số thôi nếu không check !request.KySo thì nó sẽ xóa các file gốc
-        if (toRemove.Count != 0 && !request.KySo)
-            _repository.BulkDelete(toRemove);
-        #endregion
     }
-    #endregion
 }

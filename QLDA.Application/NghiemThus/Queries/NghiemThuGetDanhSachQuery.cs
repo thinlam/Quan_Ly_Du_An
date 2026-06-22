@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -10,7 +10,8 @@ using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Queries;
 
-public record NghiemThuGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<NghiemThuDto>> {
+public record NghiemThuGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<NghiemThuDto>>
+{
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid? HopDongId { get; set; }
@@ -18,43 +19,52 @@ public record NghiemThuGetDanhSachQuery : AggregateRootPagination, IMayHaveGloba
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
     public bool IsCbo { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
     NghiemThuGetDanhSachQueryHandler : IRequestHandler<NghiemThuGetDanhSachQuery,
-    PaginatedList<NghiemThuDto>> {
+    PaginatedList<NghiemThuDto>>
+{
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
-    private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _userProvider;
+    private readonly IBuocAuthorizationProvider _buocAuth;
+    private readonly IAuthorizationContext _authContext;
 
-    public NghiemThuGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
+    public NghiemThuGetDanhSachQueryHandler(IServiceProvider serviceProvider)
+    {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<PaginatedList<NghiemThuDto>> Handle(NghiemThuGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
-        var queryable = NghiemThu.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.DuAn!.IsDeleted)
+        CancellationToken cancellationToken = default)
+    {
 
+        var queryable = _buocAuth.FilterVisibleChildEntities(NghiemThu.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
+            .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereGlobalFilter(
                 request,
                 e => e.SoBienBan,
                 e => e.NoiDung
-            )
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _userProvider, e => e.BuocId);
-           
+            );
+
 
         return await queryable
-            .Select(e => new NghiemThuDto() {
+            .Select(e => new NghiemThuDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,

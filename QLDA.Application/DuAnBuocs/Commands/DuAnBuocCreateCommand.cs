@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DuAnBuocs.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAnBuocs.Commands;
 
@@ -45,6 +46,24 @@ public class DuAnBuocCreateCommandHandler(
 
         ManagedException.ThrowIf(Dto.NgayDuKienBatDau.HasValue && Dto.NgayDuKienKetThuc.HasValue && Dto.NgayDuKienBatDau > Dto.NgayDuKienKetThuc,
             "Ngày dự kiến bắt đầu phải trước ngày dự kiến kết thúc");
+
+        // Validate DanhSachPhongBanPhoiHopIds thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
+        if (Dto.DanhSachPhongBanPhoiHopIds?.Count > 0) {
+            var allowedPhongBanIds = await _duAnRepository.GetQueryableSet()
+                .Where(d => d.Id == Dto.DuAnId)
+                .SelectMany(d => d.DuAnChiuTrachNhiemXuLys!
+                    .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
+                    .Select(x => x.RightId))
+                .ToListAsync(cancellationToken);
+
+            var invalid = Dto.DanhSachPhongBanPhoiHopIds
+                .Where(id => !allowedPhongBanIds.Contains(id))
+                .ToList();
+
+            if (invalid.Count > 0)
+                throw new ManagedException(
+                    $"Các phòng ban sau không thuộc phạm vi chịu trách nhiệm xử lý của dự án: {string.Join(", ", invalid)}");
+        }
 
         return (duAnInfo, danhMucBuoc);
     }

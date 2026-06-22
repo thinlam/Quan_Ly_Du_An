@@ -1,31 +1,46 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.DuAnBuocs.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAnBuocs.Commands;
 
 /// <summary>
-/// Cập nhật bước dự án
+/// Cập nhật bước dự án.
+/// Phân quyền:
+/// - Tất cả field (TenBuoc, Ngay, ManHinh, PhongPhuTrachChinhId, DanhSachPhongBanPhoiHopIds): chỉ Owner/LanhDao/KHTC
+/// - DanhSachPhongBanPhoiHopIds: validate mọi ID phải thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
 /// </summary>
 public record DuAnBuocUpdateCommand(DuAnBuocUpdateDto Dto) : IRequest<DuAnBuoc>;
 
 public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateCommand, DuAnBuoc> {
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc;
     private readonly IRepository<DanhMucManHinh, int> DanhMucManHinh;
+    private readonly IRepository<DuAn, Guid> _duAnRepo;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _ctx;
     private readonly IUnitOfWork _unitOfWork;
 
     public DuAnBuocUpdateCommandHandler(IServiceProvider serviceProvider) {
         DuAnBuoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         DanhMucManHinh = serviceProvider.GetRequiredService<IRepository<DanhMucManHinh, int>>();
+        _duAnRepo = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _ctx = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = DuAnBuoc.UnitOfWork;
     }
 
     public async Task<DuAnBuoc> Handle(DuAnBuocUpdateCommand request, CancellationToken cancellationToken) {
         var entity = await DuAnBuoc.GetQueryableSet()
+                    .Include(e => e.DuAn)
                     .Include(e => e.DuAnBuocManHinhs)
                     .Include(e => e.DuAnBuocPhongBanPhoiHops)
                     .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
+
+        // Phân quyền: tất cả field đều yêu cầu Owner/LanhDao/KHTC
+        await _auth.EnsureCanManageStepFieldsAsync(entity.Id, _ctx, cancellationToken);
 
         entity.Update(request.Dto);
 
@@ -34,9 +49,24 @@ public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateComma
 
         // Update DuAnBuocPhongBanPhoiHops
         if (request.Dto.DanhSachPhongBanPhoiHopIds != null) {
-            // Remove existing
+            // (1) Validate IDs thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
+            var allowedPhongBanIds = await _duAnRepo.GetQueryableSet()
+                .Where(d => d.Id == entity.DuAnId)
+                .SelectMany(d => d.DuAnChiuTrachNhiemXuLys!
+                    .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
+                    .Select(x => x.RightId))
+                .ToListAsync(cancellationToken);
+
+            var invalid = request.Dto.DanhSachPhongBanPhoiHopIds
+                .Where(id => !allowedPhongBanIds.Contains(id))
+                .ToList();
+
+            if (invalid.Count > 0)
+                throw new ManagedException(
+                    $"Các phòng ban sau không thuộc phạm vi chịu trách nhiệm xử lý của dự án: {string.Join(", ", invalid)}");
+
+            // (2) Replace collection
             entity.DuAnBuocPhongBanPhoiHops?.Clear();
-            // Add new
             foreach (var phongBanId in request.Dto.DanhSachPhongBanPhoiHopIds) {
                 entity.DuAnBuocPhongBanPhoiHops!.Add(new DuAnBuocPhongBanPhoiHop {
                     LeftId = entity.Id,

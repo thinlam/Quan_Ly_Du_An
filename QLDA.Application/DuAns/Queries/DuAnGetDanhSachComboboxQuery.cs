@@ -20,7 +20,6 @@ internal class
     public async Task<object> Handle(DuAnGetDanhSachComboboxQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = DuAn.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .WhereFunc(request.DuAnId != null, q => q.OrderByDescending(e => e.Id == request.DuAnId))
             .WhereGlobalFilter(
                 request,

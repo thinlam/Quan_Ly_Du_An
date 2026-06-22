@@ -15,18 +15,16 @@ public record ToTrinhCoThamDinhDeleteCommandHandler : IRequestHandler<ToTrinhCoT
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _userProvider;
+    private readonly IAuthorizationContext _authContext;
 
     public ToTrinhCoThamDinhDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         ToTrinhCoThamDinh = serviceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ToTrinhCoThamDinh.UnitOfWork;
     }
 
@@ -42,14 +40,7 @@ public record ToTrinhCoThamDinhDeleteCommandHandler : IRequestHandler<ToTrinhCoT
 
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

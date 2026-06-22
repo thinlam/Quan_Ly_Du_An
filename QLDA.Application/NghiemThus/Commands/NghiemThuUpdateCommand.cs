@@ -12,19 +12,17 @@ public record NghiemThuUpdateCommand(NghiemThuUpdateDto Dto, List<Guid>? PhuLucH
 internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCommand, NghiemThu> {
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<HopDong, Guid> HopDong;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _userProvider;
+    private readonly IAuthorizationContext _authContext;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<NghiemThuUpdateCommandHandler>();
 
     public NghiemThuUpdateCommandHandler(IServiceProvider serviceProvider) {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _unitOfWork = NghiemThu.UnitOfWork;
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<NghiemThu> Handle(NghiemThuUpdateCommand request, CancellationToken cancellationToken = default) {
@@ -37,14 +35,7 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
         ManagedException.ThrowIfNull(entity);
 
         // Authorization check on existing entity's BuocId
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Update scalar properties only (not navigation collections)
         entity.HopDongId = request.Dto.HopDongId;

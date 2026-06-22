@@ -35,7 +35,6 @@ internal class
     public async Task<PaginatedList<DangTaiKeHoachLcntLenMangDto>> Handle(DangTaiKeHoachLcntLenMangGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = DangTaiKeHoachLcntLenMang.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .WhereIf(request.TrangThaiId.HasValue && (int)request.TrangThaiId.Value != -1, e => e.TrangThaiId == request.TrangThaiId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

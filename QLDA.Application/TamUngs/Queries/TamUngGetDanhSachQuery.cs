@@ -1,42 +1,42 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.TamUngs.Queries;
 
-public record TamUngGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<TamUngDto>> {
+public record TamUngGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<TamUngDto>>
+{
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid? HopDongId { get; set; }
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
-    TamUngGetDanhSachQueryHandler : IRequestHandler<TamUngGetDanhSachQuery,
-    PaginatedList<TamUngDto>> {
-    private readonly IRepository<TamUng, Guid> TamUng;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
-    private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
-
-    public TamUngGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
-        TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
-    }
+    TamUngGetDanhSachQueryHandler(IServiceProvider serviceProvider) : IRequestHandler<TamUngGetDanhSachQuery,
+    PaginatedList<TamUngDto>>
+{
+    private readonly IRepository<TamUng, Guid> _tamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
+    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IBuocAuthorizationProvider _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<TamUngDto>> Handle(TamUngGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
-        var queryable = TamUng.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = _buocAuth.FilterVisibleChildEntities(_tamUng.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereGlobalFilter(
@@ -44,11 +44,11 @@ internal class
                 e => e.SoPhieuChi,
                 e => e.NoiDung,
                 e => e.HopDong!.Ten
-            )
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, _user, e => e.BuocId);
+            );
 
         return await queryable
-            .Select(e => new TamUngDto() {
+            .Select(e => new TamUngDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,

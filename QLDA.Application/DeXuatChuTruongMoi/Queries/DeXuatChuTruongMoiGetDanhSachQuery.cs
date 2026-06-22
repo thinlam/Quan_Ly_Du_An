@@ -20,6 +20,7 @@ public record DeXuatChuTruongMoiQuery : AggregateRootPagination, IMayHaveGlobalF
     public long? DonViPhuTrachId { get; set; }
     public DateOnly? TuNgay { get; set; } // by NgayBatDauDuKien
     public DateOnly? DenNgay { get; set; }
+    public int? LoaiDuAnTheoNamId { get; set; }
 }
 
 internal class
@@ -32,9 +33,9 @@ internal class
     public async Task<PaginatedList<DeXuatChuTruongMoiDto>> Handle(DeXuatChuTruongMoiQuery request,  CancellationToken cancellationToken = default) {
 
         var queryable = DeXuatChuTruongMoi.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.HinhThucDauTuId != null, e => e.HinhThucDauTuId == request.HinhThucDauTuId)
             .WhereIf(request.LanhDaoPhuTrachId != null, e => e.LanhDaoPhuTrachId == request.LanhDaoPhuTrachId)
             .WhereIf(request.DonViPhuTrachId != null, e => e.DonViPhuTrachChinhId == request.DonViPhuTrachId)

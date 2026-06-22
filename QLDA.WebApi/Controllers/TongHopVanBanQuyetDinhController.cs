@@ -30,6 +30,7 @@ public class TongHopVanBanQuyetDinhController(IServiceProvider serviceProvider)
             TrichYeu = searchModel.TrichYeu,
             TuNgay = searchModel.TuNgay,
             DenNgay = searchModel.DenNgay,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
         });
 
         return ResultApi.Ok(res);

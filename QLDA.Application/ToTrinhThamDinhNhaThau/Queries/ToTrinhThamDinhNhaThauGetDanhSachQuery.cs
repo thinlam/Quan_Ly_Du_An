@@ -21,6 +21,11 @@ public record ToTrinhThamDinhNhaThauDanhSachQuery : AggregateRootPagination, IMa
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 
 }
 
@@ -46,8 +51,8 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
         }
 
         var queryable = ToTrinhThamDinhNhaThau.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.So != null, e => e.So.Contains(request.So))
             .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId)

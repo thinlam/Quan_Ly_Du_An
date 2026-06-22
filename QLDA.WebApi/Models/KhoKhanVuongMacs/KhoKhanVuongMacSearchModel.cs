@@ -5,6 +5,7 @@ public record KhoKhanVuongMacSearchModel : CommonSearchModel, IFromDateToDate {
     public int? TinhTrangId { get; set; }
     public int? MucDoKhoKhanId { get; set; }
     public int? LoaiDuAnId { get; set; }
+    public int? LoaiDuAnTheoNamId { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
     public long? LanhDaoPhuTrachId { get; set; }

@@ -124,8 +124,9 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
             LanhDaoPhuTrachId = req.LanhDaoPhuTrachId,
             DonViPhuTrachId = req.DonViPhuTrachId,
             HinhThucDauTuId = req.HinhThucDauTuId,
+            LoaiDuAnTheoNamId = req.LoaiDuAnTheoNamId,
             IsNoTracking = true,
-            
+
         });
         return ResultApi.Ok(res);
     }

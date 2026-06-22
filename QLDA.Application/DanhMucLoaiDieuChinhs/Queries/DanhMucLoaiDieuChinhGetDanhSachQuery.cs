@@ -15,7 +15,6 @@ internal class DanhMucLoaiDieuChinhGetDanhSachQueryHandler : IRequestHandler<Dan
 
     public async Task<PaginatedList<DanhMucLoaiDieuChinhDto>> Handle(DanhMucLoaiDieuChinhGetDanhSachQuery request, CancellationToken cancellationToken) {
         var query = DanhMucLoaiDieuChinh.GetQueryableSet()
-            .Where(e => !e.IsDeleted)
             .OrderBy(x => x.Stt)
             .Select(e => new DanhMucLoaiDieuChinhDto {
                 Id = e.Id,

@@ -14,18 +14,16 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
 {
     private readonly IRepository<ChuTruongLapKeHoach, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChuTruongLapKeHoachUpdateCommandHandler(IServiceProvider serviceProvider)
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
@@ -40,14 +38,7 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);// Không tìm thấy dữ liệu
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        if (request.Dto.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)

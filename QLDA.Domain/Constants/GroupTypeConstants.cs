@@ -43,6 +43,8 @@ public static class GroupTypeConstants
     public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
     public const string QuyetDinhKeHoachThueThamDinh = "QuyetDinhKeHoachThueThamDinh";
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
+    public const string HoSoMoiThauDienTu = "HoSoMoiThauDienTu";
+    public const string HoSoMoiThauDienTuChiDinh = "HoSoMoiThauDienTuChiDinh";
     
 
 }

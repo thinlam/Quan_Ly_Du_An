@@ -13,34 +13,25 @@ public record HoSoMoiThauDienTuUpdateCommand(HoSoMoiThauDienTuUpdateModel Model)
 internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiThauDienTuUpdateCommand, HoSoMoiThauDienTu> {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public HoSoMoiThauDienTuUpdateCommandHandler(IServiceProvider serviceProvider) {
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HoSoMoiThauDienTu.UnitOfWork;
     }
 
     public async Task<HoSoMoiThauDienTu> Handle(HoSoMoiThauDienTuUpdateCommand request, CancellationToken cancellationToken = default) {
        
-        var entity = await HoSoMoiThauDienTu.GetQueryableSet()
+        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ToTrinhQuyetDinh)
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         //// Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         //if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiPheDuyet?.Ma != "LEG") {
@@ -60,24 +51,44 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
         var allowEdit = currentStatus == trangThaiDuThao?.Id || currentStatus == trangThaiTra?.Id;
 
         if (allowEdit)
-        {
-            entity.DuAnId = request.Model.DuAnId;
-            entity.BuocId = request.Model.BuocId;
-            entity.HinhThucLuaChonNhaThauId = request.Model.HinhThucLuaChonNhaThauId;
-            entity.HinhThucLuaChonNhaThauId = request.Model.HinhThucLuaChonNhaThauId;
-            entity.GoiThauId = request.Model.GoiThauId;
-            entity.GiaTri = request.Model.GiaTri;
-            entity.ThoiGianThucHien = request.Model.ThoiGianThucHien;
-        }
+            entity.Update(request.Model);
         else
             entity.TrangThaiDangTai = request.Model.TrangThaiDangTai;
+        if (request.Model.ToTrinhQuyetDinh != null)
+        {
+            ToTrinhQuyetDinhDto dto = request.Model.ToTrinhQuyetDinh;
 
-        entity.Update(request.Model);
+            if (entity.ToTrinhQuyetDinh != null)
+            {
+                entity.ToTrinhQuyetDinh.NguoiKy = dto.NguoiKy;
+                entity.ToTrinhQuyetDinh.So = dto.So;
+                entity.ToTrinhQuyetDinh.Ngay = dto.Ngay;
+                entity.ToTrinhQuyetDinh.ChucVu = dto.ChucVu;
+                entity.ToTrinhQuyetDinh.TrichYeu = dto.TrichYeu;
 
-        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+                // await _chiDinhThau.UpdateAsync(entity.ToTrinhQuyetDinh, cancellationToken);
+            }
+            else
+            {
+                entity.ToTrinhQuyetDinh = new ToTrinhQuyetDinh()
+                {
+                    NguoiKy = dto.NguoiKy,
+                    So = dto.So,
+                    Ngay = dto.Ngay,
+                    ChucVu = dto.ChucVu,
+                    TrichYeu = dto.TrichYeu
+                };
+                // await _chiDinhThau.AddAsync(entity.ToTrinhQuyetDinh, cancellationToken);
+            }
+        }
+        else
+        {
+            if (entity.ToTrinhQuyetDinh != null)
+                entity.ToTrinhQuyetDinh = null;
+        }
+
         await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return entity;
     }

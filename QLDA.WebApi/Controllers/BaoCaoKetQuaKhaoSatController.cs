@@ -45,6 +45,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             GlobalFilter = dto.GlobalFilter,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
      
         return ResultApi.Ok(result);

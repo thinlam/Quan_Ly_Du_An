@@ -23,12 +23,10 @@ internal class DeXuatChuyenTiepImportRangeCommandHandler(IServiceProvider servic
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
-        serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _auth =
         serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-    private readonly IUserProvider _user =
-        serviceProvider.GetRequiredService<IUserProvider>();
+    private readonly IAuthorizationContext _authContext =
+        serviceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task Handle(
         DeXuatChuyenTiepImportRangeCommand request,
@@ -39,14 +37,8 @@ internal class DeXuatChuyenTiepImportRangeCommandHandler(IServiceProvider servic
             return;
 
         // Check step authorization for import within DuAn
-        if (importTrongDuAn && request.BuocId > 0) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.BuocId, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _user, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        if (importTrongDuAn)
+            await _auth.EnsureCanExecuteStepAsync(request.BuocId, _authContext, cancellationToken);
 
         Dictionary<string, (Guid Id, int? BuocHienTaiId)>? duAnByTen = null;
         if (!importTrongDuAn) {

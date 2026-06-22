@@ -8,13 +8,13 @@ public record DuAnBuocDeleteCommand(int Id) : IRequest;
 public record DuAnBuocDeleteCommandHandler : IRequestHandler<DuAnBuocDeleteCommand> {
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _user;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public DuAnBuocDeleteCommandHandler(IServiceProvider serviceProvider) {
         DuAnBuoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _user = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = DuAnBuoc.UnitOfWork;
     }
 
@@ -25,8 +25,8 @@ public record DuAnBuocDeleteCommandHandler : IRequestHandler<DuAnBuocDeleteComma
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        if (!await _auth.CanExecuteStepAsync(entity, _user, cancellationToken))
-            throw new ManagedException("Phòng ban không có quyền thao tác bước này");
+        if (!await _auth.CanManageStepFieldsAsync(entity, _authContext, cancellationToken))
+            throw new ManagedException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được xóa bước");
 
         entity.IsDeleted = true;
         await DuAnBuoc.UpdateAsync(entity, cancellationToken);

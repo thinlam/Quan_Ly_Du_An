@@ -150,6 +150,7 @@ public class PhuLucHopDongController(IServiceProvider serviceProvider) : Aggrega
             HopDongId = searchModel.HopDongId,
             TuNgay = searchModel.TuNgay,
             DenNgay = searchModel.DenNgay,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

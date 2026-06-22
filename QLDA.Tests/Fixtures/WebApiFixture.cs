@@ -114,13 +114,13 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Test implementation of IAppSettingsProvider with configurable PhongHCTHID
+    /// Test implementation of IAppSettingsProvider with configurable PhongHCTHId
     /// </summary>
     private class TestAppSettingsProvider : IAppSettingsProvider
     {
-        public long PhongKeToanID => 0;
-        public long PhongHCTHID => 300; // Match PhongBanId in CreateHcthClient()
-        public long PhongKHTCID => 500; // Match PhongBanId in CreateKhTcClient()
+        public long PhongKHTCId => 0;
+        public long PhongHCTHId => 300; // Match PhongBanId in CreateHcthClient()
+        public long PhongKHTCID => 219; // Match hardcoded PhongBanId=219 in Trinh commands
     }
 
     public async Task InitializeAsync()
@@ -158,6 +158,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
             Level = 0,
             Path = "",
             NgayBatDau = DateTime.UtcNow,
+            LanhDaoPhuTrachId = 1, // Match AuthedClient UserId=1 for authorization
         };
         _seedDb.Set<DuAn>().Add(duAn);
         await _seedDb.SaveChangesAsync();
@@ -280,11 +281,11 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Client with KH-TC department (PhongBanId=500) - global bypass for authorization
+    /// Client with KH-TC department (PhongBanId=219) - global bypass for authorization
     /// </summary>
     public HttpClient CreateKhTcClient()
     {
-        var token = GenerateToken(userId: 20, phongBanId: 500);
+        var token = GenerateToken(userId: 20, phongBanId: 219);
         return CreateClientWithToken(token);
     }
 
@@ -322,11 +323,11 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     }
 
     /// <summary>
-    /// Client with P.HC-TH role - PhongBanId=300 matches PhongHCTHID in test settings
+    /// Client with P.HC-TH role - PhongBanId=300 matches PhongHCTHId in test settings
     /// </summary>
     public HttpClient CreateHcthClient()
     {
-        // PhongBanID=300 matches PhongHCTHID=300 in TestAppSettingsProvider
+        // PhongBanID=300 matches PhongHCTHId=300 in TestAppSettingsProvider
         var token = GenerateToken(userId: 40, phongBanId: 300, roles: [RoleConstants.QLDA_QuanTri]);
         return CreateClientWithToken(token);
     }

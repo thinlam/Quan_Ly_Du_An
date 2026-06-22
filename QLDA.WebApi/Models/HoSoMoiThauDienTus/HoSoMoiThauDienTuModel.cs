@@ -21,5 +21,7 @@ public class HoSoMoiThauDienTuModel : IHasKey<Guid?>, IMustHaveId<Guid>,
     public string? ThoiGianThucHien { get; set; }
     public bool TrangThaiDangTai { get; set; }
     public int? TrangThaiId { get; set; }
+    public HoSoMoiThauThamDinhModel? HoSoMoiThauThamDinh { get; set; }
+    public ToTrinhQuyetDinhModel? ToTrinhQuyetDinh { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 }

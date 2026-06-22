@@ -127,15 +127,16 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
     [HttpGet("danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<DeXuatChuyenTiepDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get([FromQuery] CommonSearchDto req) {
+    public async Task<ResultApi> Get([FromQuery] CommonSearchDto req, [FromQuery] int? loaiDuAnTheoNamId = null) {
         var res = await Mediator.Send(new DeXuatChuyenTiepGetDanhSachQuery() {
             DuAnId = req.DuAnId,
             BuocId = req.BuocId,
             GlobalFilter = req.GlobalFilter,
             PageIndex = req.PageIndex,
             PageSize = req.PageSize,
-            IsNoTracking = true,    
-            
+            IsNoTracking = true,
+            LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
+
         });
         return ResultApi.Ok(res);
     }

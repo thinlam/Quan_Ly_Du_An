@@ -85,7 +85,6 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            GroupTypes = [GroupTypeConstants.ThuyetMinhDuAn],
             Entities = files
         });
 

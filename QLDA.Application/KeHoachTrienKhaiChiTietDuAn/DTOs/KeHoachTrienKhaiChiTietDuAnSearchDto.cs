@@ -15,6 +15,11 @@ public record KeHoachTrienKhaiChiTietDuAnSearchDto
     public int? DonViChuTriId { get; set; }
     public int? PageIndex { get; set; }
     public int? PageSize { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 
-    
+
 }

@@ -1,48 +1,49 @@
 using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.Authorization;
 
 namespace QLDA.Application.HopDongs.Queries;
 
-public record HopDongGetDanhSachQuery(HopDongSearchDto SearchDto) : AggregateRootPagination, IRequest<PaginatedList<HopDongDto>> {
+public record HopDongGetDanhSachQuery(HopDongSearchDto SearchDto) : AggregateRootPagination, IRequest<PaginatedList<HopDongDto>>
+{
     public bool IsNoTracking { get; set; }
 }
 
 internal class
     HopDongGetDanhSachQueryHandler : IRequestHandler<HopDongGetDanhSachQuery,
-    PaginatedList<HopDongDto>> {
+    PaginatedList<HopDongDto>>
+{
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAn, Guid> _duAn;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
-    private readonly IUserProvider _userProvider;
-    private readonly IPolicyProvider _policyProvider;
     private readonly IBuocAuthorizationProvider _buocAuth;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
-    public HopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
+    public HopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider)
+    {
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _policyProvider = serviceProvider.GetRequiredService<IPolicyProvider>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<PaginatedList<HopDongDto>> Handle(HopDongGetDanhSachQuery request,
-        CancellationToken cancellationToken = default) {
-        var queryable = HopDong.GetQueryableSet().AsNoTracking()
+        CancellationToken cancellationToken = default)
+    {
+        var queryable = _buocAuth.FilterVisibleChildEntities(_authManager.FilterVisible(HopDong.GetQueryableSet(), AuthorizationResourceKeys.DuAn), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => !e.DuAn!.IsDeleted)
             .Where(e => !e.GoiThau!.IsDeleted)
-            .ApplyDuAnChildVisibility(_duAn, _userProvider, _policyProvider, e => e.DuAnId)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _buocAuth, _userProvider, e => e.BuocId)
             .WhereIf(request.SearchDto.IsBienBan.HasValue, e => e.IsBienBan == request.SearchDto.IsBienBan)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
+            .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0,
+                e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId)
             .WhereIf(request.SearchDto.DonViThucHienId != null, e => e.DonViThucHienId == request.SearchDto.DonViThucHienId)
             .WhereIf(request.SearchDto.TamUngId != null, e => e.TamUng!.Id == request.SearchDto.TamUngId)
             .WhereIf(request.SearchDto.GoiThauId != null, e => e.GoiThauId == request.SearchDto.GoiThauId)
@@ -66,7 +67,8 @@ internal class
             );
 
         return await queryable
-            .Select(e => new HopDongDto() {
+            .Select(e => new HopDongDto()
+            {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,

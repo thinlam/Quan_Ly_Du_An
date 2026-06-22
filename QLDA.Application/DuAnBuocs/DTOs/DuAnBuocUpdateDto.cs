@@ -4,8 +4,8 @@ public class DuAnBuocUpdateDto {
     public int Id { get; set; }
     public string? TenBuoc { get; set; }
     public bool Used { get; set; }
-    public DateTimeOffset? NgayDuKienBatDau { get; set; }
-    public DateTimeOffset? NgayDuKienKetThuc { get; set; }
+    public DateOnly? NgayDuKienBatDau { get; set; }
+    public DateOnly? NgayDuKienKetThuc { get; set; }
     public List<int>? DanhSachManHinh { get; set; } = [];
     /// <summary>
     /// Phòng ban phụ trách chính - FK to DanhMucDonVi (legacy table)

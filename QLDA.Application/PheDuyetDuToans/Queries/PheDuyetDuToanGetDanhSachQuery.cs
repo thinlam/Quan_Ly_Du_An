@@ -28,7 +28,6 @@ internal class
     public async Task<PaginatedList<PheDuyetDuToanDto>> Handle(PheDuyetDuToanGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = PheDuyetDuToan.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

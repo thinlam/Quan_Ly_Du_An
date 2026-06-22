@@ -10,8 +10,8 @@ public record ThanhToanDeleteCommand(Guid Id) : IRequest;
 public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCommand> {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
@@ -19,40 +19,26 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     public ThanhToanDeleteCommandHandler(IServiceProvider serviceProvider) {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
     }
 
     public async Task Handle(ThanhToanDeleteCommand request, CancellationToken cancellationToken) {
-        ValidatePhongKeToanPermission();
         var entity = await ThanhToan.GetOrderedSet()
            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        // Phân quyền Delete: chỉ Owner + Lãnh đạo + KHTC (PhongBanChinh KHÔNG được xóa)
+        await _auth.EnsureCanManageStepFieldsAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 
         await SyncHelper.SetDeleteWithRelatedFiles(TepDinhKem, [entity.Id.ToString()], cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-    }
-
-    private void ValidatePhongKeToanPermission() {
-        ManagedException.ThrowIf(
-            _userProvider.Info.PhongBanID != _settings.PhongKeToanID,
-            "Chỉ phòng kế toán có quyền thực hiện thao tác này"
-        );
     }
 }

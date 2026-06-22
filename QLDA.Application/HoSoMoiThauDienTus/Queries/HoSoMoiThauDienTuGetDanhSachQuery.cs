@@ -24,7 +24,6 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
         CancellationToken cancellationToken = default) {
         var queryable = HoSoMoiThauDienTu.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Include(e => e.DuAn)
             .Include(e => e.Buoc)
             .Include(e => e.HinhThucLuaChonNhaThau)
@@ -38,6 +37,9 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
         // Filter by DuAnId if provided
         if (request.SearchDto.DuAnId.HasValue) {
             queryable = queryable.Where(e => e.DuAnId == request.SearchDto.DuAnId);
+        }
+        if (request.SearchDto.LoaiDuAnTheoNamId > 0) {
+            queryable = queryable.Where(e => e.DuAn!.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId);
         }
 
         // Filter by GoiThauId if provided

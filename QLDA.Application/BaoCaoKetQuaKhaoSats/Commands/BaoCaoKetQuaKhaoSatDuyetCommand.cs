@@ -16,8 +16,8 @@ internal class BaoCaoKetQuaKhaoSatDuyetCommandHandler : IRequestHandler<BaoCaoKe
     private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
@@ -27,8 +27,8 @@ internal class BaoCaoKetQuaKhaoSatDuyetCommandHandler : IRequestHandler<BaoCaoKe
         _repository = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
@@ -36,7 +36,7 @@ internal class BaoCaoKetQuaKhaoSatDuyetCommandHandler : IRequestHandler<BaoCaoKe
 
     public async Task<int> Handle(BaoCaoKetQuaKhaoSatDuyetCommand request, CancellationToken cancellationToken)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHID;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
             throw new ManagedException("Tài khoản không có quyền.");
@@ -60,14 +60,7 @@ internal class BaoCaoKetQuaKhaoSatDuyetCommandHandler : IRequestHandler<BaoCaoKe
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy báo cáo kết quả khảo sát");
 
-        if (entity.BuocId.HasValue) {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == entity.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         if (entity.TrangThaiId != trangThaiDaTrinh.Id)
         {

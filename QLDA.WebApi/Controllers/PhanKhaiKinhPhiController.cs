@@ -74,6 +74,8 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
                 NguonVonId = model.NguonVonId,
                 KinhPhiDeXuat = model.KinhPhiDeXuat,
                 KinhPhiPhanKhai = model.KinhPhiPhanKhai,
+                ThuyetMinh = model.ThuyetMinh,
+                TrichYeu = model.TrichYeu,
             }
         ), cancellationToken);
 
@@ -107,6 +109,8 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
                 NguonVonId = model.NguonVonId,
                 KinhPhiDeXuat = model.KinhPhiDeXuat,
                 KinhPhiPhanKhai = model.KinhPhiPhanKhai,
+                ThuyetMinh = model.ThuyetMinh,
+                TrichYeu = model.TrichYeu
             }
         ), cancellationToken);
 

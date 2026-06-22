@@ -17,6 +17,7 @@ public class PhanKhaiKinhPhiModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveT
     public Guid DuAnId { get; set; }
     public string? SoToTrinh { get; set; }
     public DateTimeOffset? NgayToTrinh { get; set; }
+    public string? TrichYeu { get; set; }
     public int? NguonVonId { get; set; }
     public decimal? KinhPhiDeXuat { get; set; }
     public decimal? KinhPhiPhanKhai { get; set; }

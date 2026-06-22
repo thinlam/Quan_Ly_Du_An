@@ -114,11 +114,7 @@ public static class TepDinhKemMappingConfiguration {
         }
     }
 
-    public static IEnumerable<TepDinhKem> ToEntities(
-        this List<TepDinhKemDto> dtos,
-        Guid groupId,
-        string groupType = "None"
-    )
+    public static IEnumerable<TepDinhKem> ToEntities( this List<TepDinhKemDto> dtos, Guid groupId, string groupType = "None" )
     {
         foreach (var dto in dtos)
         {

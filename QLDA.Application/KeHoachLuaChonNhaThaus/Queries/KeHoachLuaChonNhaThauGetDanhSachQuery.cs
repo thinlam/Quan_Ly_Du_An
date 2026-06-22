@@ -26,7 +26,6 @@ internal class
     public async Task<PaginatedList<KeHoachLuaChonNhaThauDto>> Handle(KeHoachLuaChonNhaThauGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = KeHoachLuaChonNhaThau.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)

@@ -11,18 +11,16 @@ public record KetQuaTrungThauInsertCommand(KetQuaTrungThauInsertDto Dto) : IRequ
 internal class KetQuaTrungThauInsertCommandHandler : IRequestHandler<KetQuaTrungThauInsertCommand, KetQuaTrungThau> {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _auth;
-    private readonly IUserProvider _userProvider;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<KetQuaTrungThauInsertCommandHandler>();
 
     public KetQuaTrungThauInsertCommandHandler(IServiceProvider serviceProvider) {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KetQuaTrungThau.UnitOfWork;
     }
 
@@ -30,15 +28,7 @@ internal class KetQuaTrungThauInsertCommandHandler : IRequestHandler<KetQuaTrung
 
         await ValidateAsync(request, cancellationToken);
 
-        if (request.Dto.BuocId.HasValue)
-        {
-            var buoc = await _duAnBuocRepo.GetQueryableSet()
-                .Include(e => e.DuAn)
-                .Include(e => e.DuAnBuocPhongBanPhoiHops)
-                .FirstOrDefaultAsync(e => e.Id == request.Dto.BuocId.Value, cancellationToken);
-            if (buoc != null && !await _auth.CanExecuteStepAsync(buoc, _userProvider, cancellationToken))
-                throw new ManagedException("Phòng ban không có quyền thao tác bước này");
-        }
+        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 

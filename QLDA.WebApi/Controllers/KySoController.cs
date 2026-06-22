@@ -16,15 +16,18 @@ namespace QLDA.WebApi.Controllers;
 /// <param name="serviceProvider"></param>
 [Tags("Ký số")]
 [Route("api/ky-so")]
-public class KySoController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
+public class KySoController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
+{
     /// <summary>Danh sách file đã ký (TepDinhKem có ParentId).</summary>
     [HttpGet("noi-dung-da-ky/danh-sach")]
     [ProducesResponseType<ResultApi<PaginatedList<TepDinhKemDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetNoiDungDaKyList(
         [FromQuery] NoiDungDaKySearchDto searchDto,
-        [FromQuery] AggregateRootPagination pagination) {
-        var res = await Mediator.Send(new NoiDungDaKyGetDanhSachQuery(searchDto) {
+        [FromQuery] AggregateRootPagination pagination)
+    {
+        var res = await Mediator.Send(new NoiDungDaKyGetDanhSachQuery(searchDto)
+        {
             PageIndex = pagination.PageIndex,
             PageSize = pagination.PageSize,
         });
@@ -42,17 +45,19 @@ public class KySoController(IServiceProvider serviceProvider) : AggregateRootCon
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create([FromBody] KySoModel model) {
+    public async Task<ResultApi> Create([FromBody] KySoModel model)
+    {
         ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
         model.DanhSachTepDinhKem ??= [];
 
         var entities = model.DanhSachTepDinhKem
-            //  .ToEntities(model.GroupId, GroupTypeConstants.KySo)
-              .ToEntities(model.GroupId, model.GroupName??GroupTypeConstants.KySo)
+              //  .ToEntities(model.GroupId, GroupTypeConstants.KySo)
+              .ToEntities(model.GroupId, model.GroupName ?? GroupTypeConstants.KySo)
             .ToList();
 
-        var count = await Mediator.Send(new NoiDungDaKyCommand {
-            GroupId  = model.GroupId.ToString(),
+        var count = await Mediator.Send(new NoiDungDaKyCommand
+        {
+            GroupId = model.GroupId.ToString(),
             Entities = entities,
         });
 

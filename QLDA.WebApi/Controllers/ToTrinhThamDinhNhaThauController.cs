@@ -160,6 +160,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             So = dto.So,
             TuNgay = dto.TuNgay,
             DenNgay = dto.DenNgay,
+            LoaiDuAnTheoNamId = dto.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

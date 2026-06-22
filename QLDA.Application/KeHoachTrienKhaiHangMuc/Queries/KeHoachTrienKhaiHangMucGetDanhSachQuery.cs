@@ -1,7 +1,7 @@
 using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Extensions;
+
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
@@ -27,6 +27,11 @@ public record KeHoachTrienKhaiHangMucDanhSachQuery : AggregateRootPagination, IM
     public string? TrichYeu { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
+    /// <summary>
+    /// Loại dự án theo năm - tài chính
+    /// </summary>
+    /// <remarks>PMIS #9609</remarks>
+    public int? LoaiDuAnTheoNamId { get; set; }
 
 }
 
@@ -39,14 +44,16 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
 
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
-    private readonly IBuocAuthorizationProvider _auth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-    private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
+    private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
 
     public async Task<PaginatedList<KeHoachTrienKhaiHangMucDto>> Handle(KeHoachTrienKhaiHangMucDanhSachQuery request,
         CancellationToken cancellationToken = default)
     {
 
-        DateTimeOffset? tuNgayDto = null;
+        try
+        {
+            DateTimeOffset? tuNgayDto = null;
         DateTimeOffset? denNgayExclusiveDto = null;
         if (request.TuNgay.HasValue)
         {
@@ -58,14 +65,15 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
             var dt = request.DenNgay.Value.ToDateTime(TimeOnly.MinValue);
             denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
         }
+      
 
-        var queryable = KeHoachTrienKhaiHangMuc.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
-            .WhereFilterBuocVisibility(_duAnBuocRepo, _auth, User, e => e.BuocId)
+       
+        var queryable = _buocAuth.FilterVisibleChildEntities(KeHoachTrienKhaiHangMuc.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
+            .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
-            .WhereIf(request.So != null, e => e.So.Contains(request.So))
-            .WhereIf(!string.IsNullOrEmpty(request.TrichYeu), e => e.TrichYeu.Contains(request.TrichYeu))
+            .WhereIf(request.So != null, e => e.So.Contains(request.So!))
+            .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(), e => e.TrichYeu!.Contains(request.TrichYeu!))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
             // .WhereIf(request.TenHangMuc != null, e => e.TenHangMuc.Contains(request.TenHangMuc))
             .WhereIf(tuNgayDto != null, e => e.NgayToTrinh >= tuNgayDto)
@@ -118,5 +126,11 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
     }
 }

@@ -33,6 +33,7 @@ internal class PhanKhaiKinhPhiInsertCommandHandler : IRequestHandler<PhanKhaiKin
             KinhPhiPhanKhai = request.Dto.KinhPhiPhanKhai,
             ThuyetMinh = request.Dto.ThuyetMinh,
             TrangThaiId = trangThaiDuThao?.Id,
+            TrichYeu    = request.Dto.TrichYeu
         };
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);

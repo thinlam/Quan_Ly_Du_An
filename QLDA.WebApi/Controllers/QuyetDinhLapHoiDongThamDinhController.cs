@@ -126,6 +126,7 @@ public class QuyetDinhLapHoiDongThamDinhController(IServiceProvider serviceProvi
             SoQuyetDinh = searchModel.SoQuyetDinh,
             TuNgay = searchModel.TuNgay,
             DenNgay = searchModel.DenNgay,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }

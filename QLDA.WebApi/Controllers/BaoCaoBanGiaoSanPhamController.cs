@@ -123,6 +123,7 @@ public class BaoCaoBanGiaoSanPhamController(IServiceProvider serviceProvider)
             NoiDung = searchModel.NoiDung,
             TuNgay = searchModel.TuNgay,
             DenNgay = searchModel.DenNgay,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
         });
         return ResultApi.Ok(res);
     }
