@@ -15,6 +15,7 @@ using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
 using QLDA.Domain.Constants;
 using QLDA.Infrastructure.Offices;
+using BuildingBlocks.CrossCutting.Offices;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoTienDos;
@@ -903,11 +904,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         var dto = await Mediator.Send(new BanGiaoHoSoPrintQuery(id));
 
-        new Aspose.Words.License().SetLicense("LicenseAsposeTotal.lic");
-
-        var doc = new Aspose.Words.Document(templatePath);
-        doc.MailMerge.UseNonMergeFields = true;
-
         var replacements = new Dictionary<string, string> {
             { "ngay", dto.NgayBanGiao.HasValue
                 ? $"ngày {dto.NgayBanGiao.Value:dd} tháng {dto.NgayBanGiao.Value:MM} năm {dto.NgayBanGiao.Value:yyyy}"
@@ -922,15 +918,9 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             { "ghiChu", dto.GhiChu ?? "" }
         };
 
-        foreach (var kvp in replacements) {
-            doc.MailMerge.Execute(new[] { kvp.Key }, new object[] { kvp.Value });
-        }
+        var bytes = _wordHelper.ExportFromTemplate(templatePath, replacements);
 
-        await using var ms = new MemoryStream();
-        doc.Save(ms, Aspose.Words.SaveFormat.Docx);
-        ms.Position = 0;
-
-        return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             GetDownloadFileName(fileNameTemplate));
     }
 

@@ -172,6 +172,8 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     public async Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
         if (ctx.HasKhtcBypass) return true;
+        // HasReadAllBypass: không tự bypass write — ownership check phía sau quyết định.
+        // NVTT_XemDuAn user khi assign Buoc sẽ match ownership → CUD được.
 
         return BuocAuthorizationHelper.CheckOwnership(buoc, ctx.UserId, ctx.PhongBanId);
     }
@@ -179,6 +181,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx)
     {
         if (ctx.HasKhtcBypass) return query;
+        if (ctx.HasReadAllBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -194,6 +197,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         Expression<Func<T, int?>> buocIdSelector) where T : class
     {
         if (ctx.HasKhtcBypass) return query;
+        if (ctx.HasReadAllBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);

@@ -27,6 +27,7 @@ public class AuthorizationContext(
     private bool? _hasKhtcBypass;
     private bool? _isAdminManager;
     private bool? _hasGlobalBypass;
+    private bool? _hasReadAllBypass;
     private readonly ConcurrentDictionary<Guid, long?> _lanhDaoCache = new();
 
     public IUserProvider User => _user;
@@ -40,6 +41,8 @@ public class AuthorizationContext(
     public bool IsAdminManager => _isAdminManager ??= ComputeIsAdminManager();
 
     public bool HasGlobalBypass => _hasGlobalBypass ??= HasKhtcBypass || IsAdminManager;
+
+    public bool HasReadAllBypass => _hasReadAllBypass ??= ComputeHasReadAllBypass();
 
     public async Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct)
     {
@@ -58,6 +61,14 @@ public class AuthorizationContext(
 
     private bool ComputeHasKhtcBypass()
         => _user.Info.PhongBanID == _settings.PhongKHTCID;
+
+    private bool ComputeHasReadAllBypass()
+    {
+        var userRoles = _user.AuthInfo.Roles ?? [];
+        if (userRoles.Count == 0) return false;
+        var readAllRoles = RoleConstants.GroupReadAll.Split(',');
+        return userRoles.Any(r => readAllRoles.Contains(r?.Trim() ?? "", StringComparer.Ordinal));
+    }
 
     private bool ComputeIsAdminManager()
     {

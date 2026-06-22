@@ -20,6 +20,25 @@ public static class RoleConstants {
     /// </summary>
     public const string QLDA_LDDV = "QLDA_LDDV";
     /// <summary>
+    /// NVTT - Bộ phận 01: được phép xem toàn bộ DuAn và Bước (read-only).
+    /// Không cấp quyền write/edit. Áp dụng cả cho child entities (HopDong,
+    /// GoiThau, VanBan...) thông qua DuAnId-based filter.
+    /// </summary>
+    public const string NVTT_BP01 = "NVTT_BP01";
+    /// <summary>
+    /// Role dùng chung cho user NVTT (Trưởng phòng xử lý, Trưởng phòng phối hợp,
+    /// Giám đốc, ...) cần xem DuAn/Buoc QLDA. Read-all + CUD khi được assign DuAn
+    /// (qua ownership filter: Lãnh đạo phụ trách / Phòng phụ trách chính / Phối hợp).
+    /// </summary>
+    public const string NVTT_XemDuAn = "NVTT_XemDuAn";
+    /// <summary>
+    /// Nhóm role có quyền xem tất cả DuAn và Bước.
+    /// Đăng ký role mới tại đây để cấp quyền read-all mà không cần sửa provider.
+    /// Write path (CanExecuteAsync, CanExecuteStepAsync) LUÔN fallback về ownership
+    /// check — user có role trong group này vẫn CUD được DuAn được assign.
+    /// </summary>
+    public const string GroupReadAll = $"{NVTT_BP01},{NVTT_XemDuAn}";
+    /// <summary>
     /// Quyền Admin hoặc Manager
     /// </summary>
     public const string GroupAdminOrManager = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV}";

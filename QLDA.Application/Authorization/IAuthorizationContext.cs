@@ -43,6 +43,14 @@ public interface IAuthorizationContext
     bool HasGlobalBypass { get; }
 
     /// <summary>
+    /// True if user holds any role in <see cref="QLDA.Domain.Constants.RoleConstants.GroupReadAll"/>
+    /// — grants read-only access to all DuAn, Bước, and child entities (HopDong, GoiThau,
+    /// VanBan...) through DuAnId-based filtering. Does NOT grant write access.
+    /// Cached, computed once per request.
+    /// </summary>
+    bool HasReadAllBypass { get; }
+
+    /// <summary>
     /// Get LanhDaoPhuTrachId for a DuAn, cached per-DuAn per request.
     /// </summary>
     Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct);
