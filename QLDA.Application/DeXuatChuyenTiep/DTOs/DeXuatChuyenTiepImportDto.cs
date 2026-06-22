@@ -6,6 +6,9 @@ public class DeXuatChuyenTiepImportDto {
     [Description("Dự án")]
     public string? TenDuAn { get; set; }
 
+    [Description("Năm")]
+    public int? NamDeXuat { get; set; }
+
     [Description("Số liệu giải ngân")]
     public long? SoLieuGiaiNgan { get; set; }
 

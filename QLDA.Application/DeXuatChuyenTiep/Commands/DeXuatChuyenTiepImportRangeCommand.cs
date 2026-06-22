@@ -63,6 +63,11 @@ internal class DeXuatChuyenTiepImportRangeCommandHandler(IServiceProvider servic
                 .ToDictionary(e => e.TenDuAn!, e => (e.Id, e.BuocHienTaiId));
         }
 
+        if (!request.Imports.Any(row => !IsEmptyRow(row)))
+            return;
+
+        ValidateNamDeXuat(request.Imports);
+
         var trangThaiDuThao = await _statusRepo
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(
@@ -97,12 +102,30 @@ internal class DeXuatChuyenTiepImportRangeCommandHandler(IServiceProvider servic
                 NhuCauKinhPhi = item.NhuCauKinhPhi,
                 KhoiLuongThucTe = item.KhoiLuongThucTe,
                 KhoiLuongDuKien = item.KhoiLuongDuKien,
-                NamDeXuat = DateTime.Now.Year,
+                NamDeXuat = item.NamDeXuat,
                 TrangThaiId = trangThaiDuThao?.Id,
             }, cancellationToken);
         }
 
         await _repo.UnitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void ValidateNamDeXuat(IReadOnlyList<DeXuatChuyenTiepImportDto> rows) {
+        for (var i = 0; i < rows.Count; i++) {
+            var item = rows[i];
+            if (IsEmptyRow(item))
+                continue;
+
+            var rowLabel = $"dòng {i + 1}";
+
+            if (!item.NamDeXuat.HasValue)
+                ManagedException.Throw(
+                    $"Trường Năm ({rowLabel}) không được để trống hoặc không parse được số nguyên.");
+
+            if (item.NamDeXuat <= 0)
+                ManagedException.Throw(
+                    $"Trường Năm ({rowLabel}) không hợp lệ. Năm phải lớn hơn 0.");
+        }
     }
 
     private static bool IsEmptyRow(DeXuatChuyenTiepImportDto row) =>

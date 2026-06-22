@@ -23,6 +23,7 @@ internal class DeXuatChuyenTiepGetDanhSachExportQueryHandler(IServiceProvider se
             .OrderBy(e => e.Index)
             .ThenBy(e => e.CreatedAt)
             .Select(e => new {
+                e.NamDeXuat,
                 e.SoLieuGiaiNgan,
                 e.UocGiaiNgan,
                 e.NhuCauKinhPhi,
@@ -33,6 +34,7 @@ internal class DeXuatChuyenTiepGetDanhSachExportQueryHandler(IServiceProvider se
 
         return rows.Select((row, index) => new DeXuatChuyenTiepExportDto {
             Stt = index + 1,
+            NamDeXuat = row.NamDeXuat,
             SoLieuGiaiNgan = row.SoLieuGiaiNgan,
             UocGiaiNgan = row.UocGiaiNgan,
             NhuCauKinhPhi = row.NhuCauKinhPhi,
