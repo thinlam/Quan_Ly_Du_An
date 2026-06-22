@@ -18,4 +18,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Properties\LicenseAsposeTotal.lic" />
+    <EmbeddedResource Include="Properties\LicenseAsposeTotal.lic" />
+  </ItemGroup>
+
 </Project>
