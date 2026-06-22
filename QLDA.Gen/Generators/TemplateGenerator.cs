@@ -141,6 +141,9 @@ public class TemplateGenerator
             case TemplateLayoutType.LetterheadExport:
                 BuildLetterheadExport(worksheet, title, columns);
                 break;
+            case TemplateLayoutType.LetterheadExportWithSummary:
+                BuildLetterheadExportWithSummary(worksheet, title, columns);
+                break;
             default:
                 throw new NotImplementedException($"Layout {layout} is not implemented.");
         }
@@ -348,6 +351,41 @@ public class TemplateGenerator
 
         WriteBlueHeaderRow(worksheet, 4, columns);
         WriteLetterheadFieldRow(worksheet, 5, columns);
+    }
+
+    private static void BuildLetterheadExportWithSummary(IXLWorksheet worksheet, string title, List<ExportColumn> columns)
+    {
+        var columnCount = columns.Count;
+        var leftEndCol = Math.Max(1, columnCount - 2);
+        var rightStartCol = leftEndCol + 1;
+
+        WriteLetterheadBlock(worksheet, 1, 2, 1, leftEndCol, LetterheadLeftText, horizontal: XLAlignmentHorizontalValues.Center);
+        WriteLetterheadBlock(worksheet, 1, 2, rightStartCol, columnCount, LetterheadRightText, horizontal: XLAlignmentHorizontalValues.Center);
+
+        var titleCell = worksheet.Cell(3, 1);
+        titleCell.Value = title.ToUpperInvariant();
+        titleCell.Style.Font.SetFontName(DefaultFont);
+        titleCell.Style.Font.SetFontSize(TitleFontSize);
+        titleCell.Style.Font.SetBold(true);
+        titleCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+        titleCell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+        titleCell.Style.Alignment.WrapText = true;
+        worksheet.Range(3, 1, 3, columnCount).Merge();
+        worksheet.Row(3).Height = 28;
+
+        var summaryCell = worksheet.Cell(4, 1);
+        summaryCell.Value =
+            "Tổng số đề xuất: $TongSoDeXuat    |    Chủ trương mới: $TongChuTruongMoi    |    Chuyển tiếp: $TongChuyenTiep";
+        summaryCell.Style.Font.SetFontName(DefaultFont);
+        summaryCell.Style.Font.SetFontSize(NormalFontSize);
+        summaryCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+        summaryCell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Center);
+        summaryCell.Style.Alignment.WrapText = true;
+        worksheet.Range(4, 1, 4, columnCount).Merge();
+        worksheet.Row(4).Height = 24;
+
+        WriteBlueHeaderRow(worksheet, 5, columns);
+        WriteLetterheadFieldRow(worksheet, 6, columns);
     }
 
     private static void WriteLetterheadBlock(

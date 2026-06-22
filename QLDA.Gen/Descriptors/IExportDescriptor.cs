@@ -88,6 +88,14 @@ public enum TemplateLayoutType
     /// Template row = R5. Used by: tong-hop-nhu-cau-kinh-phi-nam, danh-sach-de-xuat-chu-truong-chuyen-tiep.
     /// </summary>
     LetterheadExport,
+
+    /// <summary>
+    /// LetterheadExport + summary row before table headers.
+    /// R1-R2: Letterhead | R3: Title | R4: $TongSo... stats (merged)
+    /// R5: Blue headers | R6: $Field template row.
+    /// Used by: bao-cao-de-xuat-chu-truong.
+    /// </summary>
+    LetterheadExportWithSummary,
 }
 
 public interface IExportDescriptor
