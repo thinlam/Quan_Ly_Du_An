@@ -24,6 +24,7 @@ using QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
 using QLDA.WebApi.Models.TrienKhaiKeHoachLCNTs;
 using QLDA.WebApi.Models.VanBanChuTruongs;
 using QLDA.WebApi.Models.VanBanPhapLys;
+using SequentialGuid;
 
 namespace QLDA.WebApi.Models.TepDinhKems;
 
@@ -45,45 +46,74 @@ public static class TepDinhKemMappingConfigurations
             : $"{KySoPrefix}{resolved}";
     }
 
+    /// <summary>
+    /// Giữ Id khi file đã thuộc đúng GroupId + GroupType (update).
+    /// Tạo Id mới khi file được chọn/copy từ nhóm khác hoặc upload mới (insert link).
+    /// </summary>
+    private static Guid ResolveId(this TepDinhKemModel model, string targetGroupId, string resolvedGroupType)
+    {
+        if (model.Id is not { } existingId)
+            return SequentialGuidGenerator.Instance.NewGuid();
+
+        var belongsToTarget = string.Equals(model.GroupId, targetGroupId, StringComparison.OrdinalIgnoreCase)
+            && (string.IsNullOrEmpty(model.GroupType)
+                || string.Equals(model.GroupType, resolvedGroupType, StringComparison.OrdinalIgnoreCase));
+
+        return belongsToTarget ? existingId : SequentialGuidGenerator.Instance.NewGuid();
+    }
+
     private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, EGroupType groupType = EGroupType.None)
-        => new()
+    {
+        var targetGroupId = groupId.ToString();
+        var resolvedGroupType = model.ResolveGroupType(groupType.ToString());
+        return new()
         {
-            Id = model.GetId(),
+            Id = model.ResolveId(targetGroupId, resolvedGroupType),
             ParentId = model.ParentId,
-            GroupId = groupId.ToString(),
-            GroupType = model.ResolveGroupType(groupType.ToString()),
+            GroupId = targetGroupId,
+            GroupType = resolvedGroupType,
             Type = model.Type,
             FileName = model.FileName,
             OriginalName = model.OriginalName,
             Path = model.Path,
             Size = model.Size,
         };
+    }
+
     private static TepDinhKem ToEntity(this TepDinhKemModel model, string groupId, EGroupType groupType = EGroupType.None)
-      => new()
-      {
-          Id = model.GetId(),
-          ParentId = model.ParentId,
-          GroupId = groupId,
-          GroupType = model.GroupType ?? groupType.ToString(),
-          Type = model.Type,
-          FileName = model.FileName,
-          OriginalName = model.OriginalName,
-          Path = model.Path,
-          Size = model.Size,
-      };
-    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
-        => new()
+    {
+        var resolvedGroupType = model.ResolveGroupType(groupType.ToString());
+        return new()
         {
-            Id = model.GetId(),
+            Id = model.ResolveId(groupId, resolvedGroupType),
             ParentId = model.ParentId,
-            GroupId = groupId.ToString(),
-            GroupType = model.ResolveGroupType(groupType),
+            GroupId = groupId,
+            GroupType = resolvedGroupType,
             Type = model.Type,
             FileName = model.FileName,
             OriginalName = model.OriginalName,
             Path = model.Path,
             Size = model.Size,
         };
+    }
+
+    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
+    {
+        var targetGroupId = groupId.ToString();
+        var resolvedGroupType = model.ResolveGroupType(groupType);
+        return new()
+        {
+            Id = model.ResolveId(targetGroupId, resolvedGroupType),
+            ParentId = model.ParentId,
+            GroupId = targetGroupId,
+            GroupType = resolvedGroupType,
+            Type = model.Type,
+            FileName = model.FileName,
+            OriginalName = model.OriginalName,
+            Path = model.Path,
+            Size = model.Size,
+        };
+    }
     public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, string groupId,
         EGroupType groupType = EGroupType.None)
         => models.Select(m => ToEntity(m, groupId, groupType));

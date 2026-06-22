@@ -202,77 +202,21 @@ public static class HoSoMoiThauDienTuMappingConfiguration
     };
     public static List<TepDinhKem> GetDanhSachTepDinhKemBaoCaoThamDinh(
        this HoSoMoiThauThamDinhModel model, Guid groupId)
-       => model.DinhKemBaoCao?
-           .Select(m => new TepDinhKem
-           {
-               Id = m.Id ?? Guid.NewGuid(),
-               ParentId = m.ParentId,
-               GroupId = groupId.ToString(),
-               GroupType = EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
-               Type = m.Type,
-               FileName = m.FileName,
-               OriginalName = m.OriginalName,
-               Path = m.Path,
-               Size = m.Size
-           }).ToList() ?? [];
+       => model.DinhKemBaoCao?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuBaoCaoTD).ToList() ?? [];
+
     public static List<TepDinhKem> GetDanhSachTepDinhKemCamKetThamDinh(
        this HoSoMoiThauThamDinhModel model, Guid groupId)
-       => model.DinhKemCamKet?
-           .Select(m => new TepDinhKem
-           {
-               Id = m.Id ?? Guid.NewGuid(),
-               ParentId = m.ParentId,
-               GroupId = groupId.ToString(),
-               GroupType = EGroupType.HoSoMoiThauDienTuCamKetTD.ToString(),
-               Type = m.Type,
-               FileName = m.FileName,
-               OriginalName = m.OriginalName,
-               Path = m.Path,
-               Size = m.Size
-           }).ToList() ?? [];
+       => model.DinhKemCamKet?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuCamKetTD).ToList() ?? [];
+
     public static List<TepDinhKem> GetDanhSachTepDinhKemQuyetDinhThamDinh(
        this HoSoMoiThauThamDinhModel model, Guid groupId)
-       => model.DinhKemQuyetDinh?
-           .Select(m => new TepDinhKem
-           {
-               Id = m.Id ?? Guid.NewGuid(),
-               ParentId = m.ParentId,
-               GroupId = groupId.ToString(),
-               GroupType = EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
-               Type = m.Type,
-               FileName = m.FileName,
-               OriginalName = m.OriginalName,
-               Path = m.Path,
-               Size = m.Size
-           }).ToList() ?? [];
+       => model.DinhKemQuyetDinh?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhTD).ToList() ?? [];
+
     public static List<TepDinhKem> GetDanhSachTepDinhKemToTrinh(
        this ToTrinhQuyetDinhModel model, long groupId)
-       => model.DanhSachTepDinhKem?
-           .Select(m => new TepDinhKem
-           {
-               Id = m.Id ?? Guid.NewGuid(),
-               ParentId = m.ParentId,
-               GroupId = groupId.ToString(),
-               GroupType = EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
-               Type = m.Type,
-               FileName = m.FileName,
-               OriginalName = m.OriginalName,
-               Path = m.Path,
-               Size = m.Size
-           }).ToList() ?? [];
+       => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
+
     public static List<TepDinhKem> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)
-        => model.DanhSachTepDinhKem?
-            .Select(m => new TepDinhKem
-            {
-                Id = m.Id ?? Guid.NewGuid(),
-                ParentId = m.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = EGroupType.HoSoMoiThauDienTu.ToString(),
-                Type = m.Type,
-                FileName = m.FileName,
-                OriginalName = m.OriginalName,
-                Path = m.Path,
-                Size = m.Size
-            }).ToList() ?? [];
+        => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTu).ToList() ?? [];
 }

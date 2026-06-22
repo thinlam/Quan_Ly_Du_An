@@ -18,6 +18,12 @@ public record TepDinhKemBulkInsertOrUpdateCommand() : IRequest
 {
     public required string GroupId { get; set; }
     public required List<TepDinhKem> Entities { get; set; }
+
+    /// <summary>
+    /// Khi <see cref="Entities"/> rỗng, giới hạn phạm vi xóa mềm theo GroupType
+    /// (tránh xóa nhầm các loại file khác cùng GroupId).
+    /// </summary>
+    public List<string>? ScopeGroupTypes { get; set; }
 }
 
 internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem, Guid> repository, IUnitOfWork unitOfWork) : IRequestHandler<TepDinhKemBulkInsertOrUpdateCommand>
@@ -29,8 +35,6 @@ internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem
         CancellationToken cancellationToken = default)
     {
         request.Entities ??= [];
-        if (request.Entities.Count == 0)
-            return;
 
         if (_unitOfWork.HasTransaction)
         {
@@ -59,6 +63,14 @@ internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem
             .Where(t => !string.IsNullOrEmpty(t))
             .Distinct()
             .ToList();
+
+        if (groupTypes.Count == 0 && request.ScopeGroupTypes?.Count > 0)
+        {
+            groupTypes = request.ScopeGroupTypes
+                .Where(t => !string.IsNullOrEmpty(t))
+                .Distinct()
+                .ToList();
+        }
 
         #endregion
 
