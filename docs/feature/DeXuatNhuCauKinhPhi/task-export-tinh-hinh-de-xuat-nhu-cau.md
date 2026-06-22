@@ -1,4 +1,7 @@
-# Export Excel — Tổng hợp nhu cầu kinh phí năm (Tình hình đề xuất kinh phí)
+# Export Excel — Tình hình đề xuất kinh phí (theo dõi đề xuất nhu cầu)
+
+> **⚠️ Đây KHÔNG phải màn "Tổng hợp kế hoạch kinh phí năm"** (`GET /api/tong-hop-kinh-phi/danh-sach-tien-do`).  
+> Màn này: **Tình hình đề xuất kinh phí** — FE `/quan-ly-du-an/tinh-hinh-de-xuat-kinh-phi`, export `GET /api/print/tinh-hinh-de-xuat-nhu-cau`.
 
 **Ngày tạo:** June 2026  
 **Cập nhật:** June 2026  
@@ -6,17 +9,17 @@
 **Pattern tham chiếu:** `PrintController.InDanhSachXinChuTruongDauTu` (LINQ + `IExporterHelper` + Aspose)  
 **Doc export tương tự:** [`task-export-danh-muc-xin-chu-truong-dau-tu.md`](./task-export-danh-muc-xin-chu-truong-dau-tu.md)  
 **Hướng dẫn Aspose:** [`QLDA.WebApi/PrintTemplates/huong-dan.md`](../../../QLDA.WebApi/PrintTemplates/huong-dan.md)  
-**Codegen template:** [`QLDA.Gen`](../../../QLDA.Gen/) — slug `tong-hop-nhu-cau-kinh-phi-nam`
+**Codegen template:** [`QLDA.Gen`](../../../QLDA.Gen/) — slug `tinh-hinh-de-xuat-nhu-cau`
 
 ---
 
 ## 📋 Executive Summary
 
-**Tính năng:** User bấm **Xuất Excel** trên màn **Tổng hợp nhu cầu kinh phí năm** (FE: `/quan-ly-du-an/tinh-hinh-de-xuat-kinh-phi`), tải file `.xlsx` đúng dữ liệu grid (cùng filter, không phân trang).
+**Tính năng:** User bấm **Xuất Excel** trên màn **Tình hình đề xuất kinh phí** (FE: `/quan-ly-du-an/tinh-hinh-de-xuat-kinh-phi`), tải file `.xlsx` đúng dữ liệu grid (cùng filter, không phân trang).
 
 | Khía cạnh | Giá trị |
 |-----------|---------|
-| Tên nghiệp vụ / UI | Tổng hợp nhu cầu kinh phí năm / Tình hình đề xuất kinh phí |
+| Tên nghiệp vụ / UI | Tình hình đề xuất kinh phí |
 | **Entity nguồn grid/export** | `DeXuatNhuCauKinhPhi` — mỗi dòng = 1 đề xuất của 1 dự án, **có `DuAnId`** |
 | Entity kế hoạch năm (join) | `DeXuatNhuCauKinhPhiNam` — **không có `DuAnId`**; nối qua junction `DeXuatTrinhKinhPhiNam` |
 | Controller danh sách | `DeXuatNhuCauKinhPhiController` |
@@ -25,8 +28,8 @@
 | Query list | `TheoDoiDeXuatNhuCauKinhPhiQuery` |
 | Query export | `TheoDoiDeXuatNhuCauKinhPhiGetExportQuery` |
 | DTO grid | `TheoDoiDeXuatNhuCauKinhPhiDto` |
-| DTO export | `TongHopNhuCauKinhPhiNamExportDto` |
-| Template | `QLDA.WebApi/PrintTemplates/TongHopNhuCauKinhPhiNam.xlsx` |
+| DTO export | `TinhHinhDeXuatNhuCauExportDto` |
+| Template | `QLDA.WebApi/PrintTemplates/TinhHinhDeXuatNhuCau.xlsx` |
 | Phân quyền | `RoleConstants.GroupTinhHinhDeXuatNhuCauExport` |
 
 > **Không nhầm với:**
@@ -130,16 +133,16 @@ Placeholder template: `$Stt`, `$SoPhieuChuyen`, `$PhongPctTrinh`, `$PhongKhtcTon
 
 | Thành phần | Giá trị |
 |------------|---------|
-| Slug | `tong-hop-nhu-cau-kinh-phi-nam` |
-| Descriptor | `TongHopNhuCauKinhPhiNamExportDescriptor` |
+| Slug | `tinh-hinh-de-xuat-nhu-cau` |
+| Descriptor | `TinhHinhDeXuatNhuCauExportDescriptor` |
 | Layout | `TemplateLayoutType.LetterheadExport` (letterhead UBND R1–R2, title R3, header xanh `#D9E1F2` R4, `$Field` R5) |
-| Output | `QLDA.WebApi/PrintTemplates/TongHopNhuCauKinhPhiNam.xlsx` |
+| Output | `QLDA.WebApi/PrintTemplates/TinhHinhDeXuatNhuCau.xlsx` |
 
 **Regenerate template:**
 
 ```bash
 cd QLDA.Gen
-dotnet run -- tong-hop-nhu-cau-kinh-phi-nam --force e:\SER\QLDA.WebApi\PrintTemplates
+dotnet run -- tinh-hinh-de-xuat-nhu-cau --force e:\SER\QLDA.WebApi\PrintTemplates
 ```
 
 ### 0.7 Phân quyền (đã thêm)
@@ -176,19 +179,19 @@ DeXuatNhuCauKinhPhi (có DuAnId)
 
 | File | Mô tả |
 |------|-------|
-| `QLDA.Application/DeXuatNhuCauKinhPhi/DTOs/TongHopNhuCauKinhPhiNamExportDto.cs` | 5 property = placeholder template |
+| `QLDA.Application/DeXuatNhuCauKinhPhi/DTOs/TinhHinhDeXuatNhuCauExportDto.cs` | 5 property = placeholder template |
 | `QLDA.Application/DeXuatNhuCauKinhPhi/Queries/TheoDoiDeXuatNhuCauKinhPhiGetExportQuery.cs` | Query + handler export |
 | `QLDA.WebApi/Models/DeXuatNhuCauKinhPhis/TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel.cs` | Search params export |
-| `QLDA.WebApi/PrintTemplates/TongHopNhuCauKinhPhiNam.xlsx` | Template Aspose |
-| `QLDA.Gen/Descriptors/TongHopNhuCauKinhPhiNamExportDescriptor.cs` | Descriptor codegen |
+| `QLDA.WebApi/PrintTemplates/TinhHinhDeXuatNhuCau.xlsx` | Template Aspose |
+| `QLDA.Gen/Descriptors/TinhHinhDeXuatNhuCauExportDescriptor.cs` | Descriptor codegen |
 
 ### Sửa ✅
 
 | File | Thay đổi |
 |------|----------|
 | `QLDA.Domain/Constants/RoleConstants.cs` | `GroupTinhHinhDeXuatNhuCauExport` |
-| `QLDA.WebApi/Controllers/PrintController.cs` | Region `TongHopNhuCauKinhPhiNam` + `InTongHopNhuCauKinhPhiNam` |
-| `QLDA.Gen/Program.cs` | Đăng ký slug `tong-hop-nhu-cau-kinh-phi-nam` |
+| `QLDA.WebApi/Controllers/PrintController.cs` | Region `TinhHinhDeXuatNhuCau` + `InTinhHinhDeXuatNhuCau` |
+| `QLDA.Gen/Program.cs` | Đăng ký slug `tinh-hinh-de-xuat-nhu-cau` |
 | `QLDA.Gen/Descriptors/IExportDescriptor.cs` | Thêm `LetterheadExport` layout |
 | `QLDA.Gen/Generators/TemplateGenerator.cs` | `BuildLetterheadExport` |
 
@@ -222,7 +225,7 @@ Authorization: Bearer {token}
 | `hiddenColumns` | `string[]` | Ẩn cột optional |
 
 **Response:** `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`  
-**Tên file:** `TongHopNhuCauKinhPhiNam_ddMMyyyy_HHmmss.xlsx`
+**Tên file:** `TinhHinhDeXuatNhuCau_ddMMyyyy_HHmmss.xlsx`
 
 **Swagger:** Authorize JWT → `GET /api/print/tinh-hinh-de-xuat-nhu-cau` → Execute.
 
@@ -327,8 +330,8 @@ window.open(`/api/print/tinh-hinh-de-xuat-nhu-cau?${params}`, '_blank');
 |----------|---------|
 | API endpoint | `GET /api/print/tinh-hinh-de-xuat-nhu-cau` |
 | Handler | `TheoDoiDeXuatNhuCauKinhPhiGetExportQueryHandler` |
-| Template | `TongHopNhuCauKinhPhiNam.xlsx` |
-| QLDA.Gen slug | `tong-hop-nhu-cau-kinh-phi-nam` |
+| Template | `TinhHinhDeXuatNhuCau.xlsx` |
+| QLDA.Gen slug | `tinh-hinh-de-xuat-nhu-cau` |
 | Layout | `LetterheadExport` |
 | Role | `GroupTinhHinhDeXuatNhuCauExport` |
 | Entity nguồn | `DeXuatNhuCauKinhPhi` (`DuAnId` = filter only) |
@@ -343,8 +346,8 @@ window.open(`/api/print/tinh-hinh-de-xuat-nhu-cau?${params}`, '_blank');
 | `DeXuatNhuCauKinhPhiController.cs` | API `theo-doi-tinh-hinh` |
 | `TheoDoiDeXuatNhuCauKinhPhiQuery.cs` | Logic list |
 | `TheoDoiDeXuatNhuCauKinhPhiGetExportQuery.cs` | Logic export |
-| `TongHopNhuCauKinhPhiNamExportDto.cs` | DTO export |
-| `PrintController.InTongHopNhuCauKinhPhiNam` | Endpoint |
-| `TongHopNhuCauKinhPhiNamExportDescriptor.cs` | Codegen template |
+| `TinhHinhDeXuatNhuCauExportDto.cs` | DTO export |
+| `PrintController.InTinhHinhDeXuatNhuCau` | Endpoint |
+| `TinhHinhDeXuatNhuCauExportDescriptor.cs` | Codegen template |
 | `DeXuatNhuCauKinhPhi.cs` / `DeXuatNhuCauKinhPhiNam.cs` | Entity + `DuAnId` |
 | `task-export-danh-muc-xin-chu-truong-dau-tu.md` | Doc export cùng module |

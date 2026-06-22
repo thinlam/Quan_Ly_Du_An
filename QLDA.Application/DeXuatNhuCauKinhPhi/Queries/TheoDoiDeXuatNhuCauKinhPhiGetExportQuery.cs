@@ -7,7 +7,7 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 
-public record TheoDoiDeXuatNhuCauKinhPhiGetExportQuery : IMayHaveGlobalFilter, IFromDateToDate, IRequest<List<TongHopNhuCauKinhPhiNamExportDto>> {
+public record TheoDoiDeXuatNhuCauKinhPhiGetExportQuery : IMayHaveGlobalFilter, IFromDateToDate, IRequest<List<TinhHinhDeXuatNhuCauExportDto>> {
     public Guid? DuAnId { get; set; }
     public int? TrangThaiId { get; set; }
     public int? TrangThaiKeHoachId { get; set; }
@@ -20,13 +20,13 @@ public record TheoDoiDeXuatNhuCauKinhPhiGetExportQuery : IMayHaveGlobalFilter, I
 }
 
 internal class TheoDoiDeXuatNhuCauKinhPhiGetExportQueryHandler(IServiceProvider serviceProvider)
-    : IRequestHandler<TheoDoiDeXuatNhuCauKinhPhiGetExportQuery, List<TongHopNhuCauKinhPhiNamExportDto>> {
+    : IRequestHandler<TheoDoiDeXuatNhuCauKinhPhiGetExportQuery, List<TinhHinhDeXuatNhuCauExportDto>> {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> _deXuatNhuCauKinhPhi =
         serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository =
         serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
-    public async Task<List<TongHopNhuCauKinhPhiNamExportDto>> Handle(
+    public async Task<List<TinhHinhDeXuatNhuCauExportDto>> Handle(
         TheoDoiDeXuatNhuCauKinhPhiGetExportQuery request,
         CancellationToken cancellationToken = default) {
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -89,7 +89,7 @@ internal class TheoDoiDeXuatNhuCauKinhPhiGetExportQueryHandler(IServiceProvider 
             })
             .ToListAsync(cancellationToken);
 
-        return rows.Select((row, index) => new TongHopNhuCauKinhPhiNamExportDto {
+        return rows.Select((row, index) => new TinhHinhDeXuatNhuCauExportDto {
             Stt = index + 1,
             SoPhieuChuyen = row.SoPhieuChuyen,
             PhongPctTrinh = JoinLines(

@@ -237,7 +237,7 @@ dotnet run -- danh-sach-phan-khai-kinh-phi import-phan-khai-kinh-phi --force ../
 
 | Descriptor | Slug | Layout | Output |
 |------------|------|--------|--------|
-| `TongHopNhuCauKinhPhiNamExportDescriptor` | `tong-hop-nhu-cau-kinh-phi-nam` | `LetterheadExport` | `TongHopNhuCauKinhPhiNam.xlsx` |
+| `TinhHinhDeXuatNhuCauExportDescriptor` | `tinh-hinh-de-xuat-nhu-cau` | `LetterheadExport` | `TinhHinhDeXuatNhuCau.xlsx` |
 | `BaoCaoDeXuatChuTruongExportDescriptor` | `bao-cao-de-xuat-chu-truong` | `LetterheadExportWithSummary` | `BaoCaoDeXuatChuTruong.xlsx` |
 
 **Import:** Task này đã **mở rộng QLDA.Gen** (`GenerateImportTemplate`, `IImportDescriptor`, `ImportColumn`) — codegen `Import_PhanKhaiKinhPhi.xlsx`. Các template import khác (`Import_DeXuatChuTruongChuyenTiep.xlsx`, …) vẫn có thể hand-crafted.
@@ -349,7 +349,7 @@ Export danh sách Phân khai kinh phí dùng **cùng họ visual** với export 
 |---------------------|--------|---------|
 | `KetQuaPhanKhaiVonDuocDuyet.xlsx` | Hand-crafted / letterhead | Cùng nghiệp vụ UC40 |
 | `DanhSachDeXuatChuTruongChuyenTiep.xlsx` | `LetterheadExport` | Pattern codegen đã production |
-| `TongHopNhuCauKinhPhiNam.xlsx` | `LetterheadExport` | Descriptor mẫu |
+| `TinhHinhDeXuatNhuCau.xlsx` | `LetterheadExport` | Descriptor mẫu |
 
 **Cấu trúc row sau codegen (`LetterheadExport`):**
 
@@ -1075,7 +1075,7 @@ dotnet test QLDA.Tests/QLDA.Tests.csproj --filter "FullyQualifiedName~PhanKhaiKi
 
 - [`QLDA.Gen`](../../../QLDA.Gen/) — codegen template Excel (descriptor + `dotnet run`)
 - [`task-export-bao-cao-de-xuat-chu-truong.md`](../TongHopDeXuatChuTruong/task-export-bao-cao-de-xuat-chu-truong.md) — pattern QLDA.Gen `LetterheadExportWithSummary`
-- [`task-export-tong-hop-nhu-cau-kinh-phi-nam.md`](../DeXuatNhuCauKinhPhi/task-export-tong-hop-nhu-cau-kinh-phi-nam.md) — pattern QLDA.Gen `LetterheadExport`
+- [`task-export-tinh-hinh-de-xuat-nhu-cau.md`](../DeXuatNhuCauKinhPhi/task-export-tinh-hinh-de-xuat-nhu-cau.md) — pattern QLDA.Gen `LetterheadExport`
 - [`task-export-ket-qua-phan-khai-von-duoc-duyet.md`](./task-export-ket-qua-phan-khai-von-duoc-duyet.md) — export đã duyệt (khác cột, có thể dùng SP)
 - [`task-export-danh-sach-de-xuat-chu-truong-chuyen-tiep.md`](../DeXuatChuyenTiep/task-export-danh-sach-de-xuat-chu-truong-chuyen-tiep.md) — pattern export LINQ
 - [`task-import-danh-sach-de-xuat-chu-truong-chuyen-tiep.md`](../DeXuatChuyenTiep/task-import-danh-sach-de-xuat-chu-truong-chuyen-tiep.md) — pattern import + `GetTemplate` combo

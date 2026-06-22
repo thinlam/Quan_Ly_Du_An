@@ -781,7 +781,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
-    #region TongHopNhuCauKinhPhiNam
+    #region TinhHinhDeXuatNhuCau
 
     /// <summary>
     /// TinhHinhDeXuatNhuCau.xlsx — Export tổng hợp nhu cầu kinh phí năm
@@ -813,7 +813,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             DonViDeXuatId = searchModel.DonViDeXuatId,
         });
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopNhuCauKinhPhiNamExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<TinhHinhDeXuatNhuCauExportDto> {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
