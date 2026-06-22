@@ -2,12 +2,12 @@ using QLDA.Gen.Metadata;
 
 namespace QLDA.Gen.Descriptors;
 
-public class TongHopNhuCauKinhPhiNamExportDescriptor : IExportDescriptor {
-    public string EntityName => "Tổng hợp nhu cầu kinh phí năm";
-    public string TemplateFileName => "TongHopNhuCauKinhPhiNam.xlsx";
+public class TinhHinhDeXuatNhuCauExportDescriptor : IExportDescriptor {
+    public string EntityName => "Tình hình đề xuất nhu cầu";
+    public string TemplateFileName => "TinhHinhDeXuatNhuCau.xlsx";
     public string OutputPath { get; set; } = "";
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
-    public string? Title => "TỔNG HỢP NHU CẦU KINH PHÍ NĂM";
+    public string? Title => "TÌNH HÌNH ĐỀ XUẤT NHU CẦU";
 
     public List<ExportColumn> Columns { get; } =
     [

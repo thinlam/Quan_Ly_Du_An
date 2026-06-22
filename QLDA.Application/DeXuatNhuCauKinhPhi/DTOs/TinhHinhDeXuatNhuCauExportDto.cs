@@ -1,9 +1,9 @@
 namespace QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 
 /// <summary>
-/// Dòng export Excel tổng hợp nhu cầu kinh phí năm — property khớp placeholder template ($Field)
+/// Dòng export Excel tình hình đề xuất nhu cầu — property khớp placeholder template ($Field)
 /// </summary>
-public class TongHopNhuCauKinhPhiNamExportDto {
+public class TinhHinhDeXuatNhuCauExportDto {
     public int Stt { get; set; }
     public string? SoPhieuChuyen { get; set; }
     public string? PhongPctTrinh { get; set; }

@@ -70,8 +70,8 @@ class Program
 
     private static List<TemplateEntry> BuildRegistry(string basePath) =>
     [
-        new("tong-hop-nhu-cau-kinh-phi-nam",
-            g => g.GenerateTemplate(CreateDescriptor<TongHopNhuCauKinhPhiNamExportDescriptor>(basePath))),
+        new("tinh-hinh-de-xuat-nhu-cau",
+            g => g.GenerateTemplate(CreateDescriptor<TinhHinhDeXuatNhuCauExportDescriptor>(basePath))),
         new("bao-cao-de-xuat-chu-truong",
             g => g.GenerateTemplate(CreateDescriptor<BaoCaoDeXuatChuTruongExportDescriptor>(basePath))),
         new("danh-sach-phan-khai-kinh-phi",

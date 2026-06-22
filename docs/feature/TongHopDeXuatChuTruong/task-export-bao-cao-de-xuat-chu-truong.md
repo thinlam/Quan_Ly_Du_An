@@ -5,8 +5,8 @@
 **Trạng thái:** ✅ **IMPLEMENTED** (backend) — FE chưa gắn nút  
 **Effort:** ~5 giờ  
 **FE route tham chiếu:** `/quan-ly-du-an/bao-cao/de-xuat-chu-truong`  
-**Pattern tham chiếu:** `Import_DeXuatChuTruongChuyenTiep.xlsx` (letterhead) + `PrintController.InTongHopNhuCauKinhPhiNam` (codegen QLDA.Gen)  
-**Doc export tương tự:** [`task-export-tong-hop-nhu-cau-kinh-phi-nam.md`](../DeXuatNhuCauKinhPhi/task-export-tong-hop-nhu-cau-kinh-phi-nam.md)  
+**Pattern tham chiếu:** `Import_DeXuatChuTruongChuyenTiep.xlsx` (letterhead) + `PrintController.InTinhHinhDeXuatNhuCau` (codegen QLDA.Gen)  
+**Doc export tương tự:** [`task-export-tinh-hinh-de-xuat-nhu-cau.md`](../DeXuatNhuCauKinhPhi/task-export-tinh-hinh-de-xuat-nhu-cau.md)  
 **Hướng dẫn Aspose:** [`QLDA.WebApi/PrintTemplates/huong-dan.md`](../../../QLDA.WebApi/PrintTemplates/huong-dan.md)  
 **Codegen template:** [`QLDA.Gen`](../../../QLDA.Gen/)
 
@@ -128,7 +128,7 @@ Export **phải bám đúng hành vi trên** — không tự ý đổi logic sta
 **`PrintController`** — đúng convention project:
 
 - Các export LINQ + Aspose gần đây đều ở `QLDA.WebApi/Controllers/PrintController.cs`
-- Ví dụ: `InDanhSachDeXuatChuTruongChuyenTiep`, `InTongHopNhuCauKinhPhiNam`
+- Ví dụ: `InDanhSachDeXuatChuTruongChuyenTiep`, `InTinhHinhDeXuatNhuCau`
 - **Không** thêm endpoint export vào `TongHopDeXuatChuTruongController`
 
 ### 0.6 Phân quyền
@@ -247,7 +247,7 @@ Export báo cáo dùng **cùng họ visual** với import/export chủ trương 
 |----------------|-----------------|---------|
 | `Import_DeXuatChuTruongChuyenTiep.xlsx` | Hand-crafted | **Hình user gửi** — letterhead + title + header xanh |
 | `DanhSachDeXuatChuTruongChuyenTiep.xlsx` | `LetterheadExport` | Export tab tiến độ — cùng letterhead |
-| `TongHopNhuCauKinhPhiNam.xlsx` | `LetterheadExport` | Pattern codegen đã chạy production |
+| `TinhHinhDeXuatNhuCau.xlsx` | `LetterheadExport` | Pattern codegen đã chạy production |
 
 **Khác biệt so với import:** Import có **dòng hướng dẫn** (nền xám nhạt, VD: *"Chọn từ danh sách"*) — báo cáo export thay bằng **dòng tổng quan 3 chỉ số** (stats từ API).
 

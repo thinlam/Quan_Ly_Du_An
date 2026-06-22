@@ -781,17 +781,17 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
-    #region TongHopNhuCauKinhPhiNam
+    #region TinhHinhDeXuatNhuCau
 
     /// <summary>
-    /// TongHopNhuCauKinhPhiNam.xlsx — Export tổng hợp nhu cầu kinh phí năm
+    /// TinhHinhDeXuatNhuCau.xlsx — Export tổng hợp nhu cầu kinh phí năm
     /// </summary>
-    [HttpGet("api/print/tong-hop-nhu-cau-kinh-phi-nam")]
-    [Authorize(Roles = RoleConstants.GroupTongHopNhuCauKinhPhiNamExport)]
+    [HttpGet("api/print/tinh-hinh-de-xuat-nhu-cau")]
+    [Authorize(Roles = RoleConstants.GroupTinhHinhDeXuatNhuCauExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InTongHopNhuCauKinhPhiNam(
+    public async Task<IActionResult> InTinhHinhDeXuatNhuCau(
         [FromQuery] TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
-        var fileNameTemplate = "TongHopNhuCauKinhPhiNam.xlsx";
+        var fileNameTemplate = "TinhHinhDeXuatNhuCau.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
             "PrintTemplates",
@@ -813,7 +813,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             DonViDeXuatId = searchModel.DonViDeXuatId,
         });
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopNhuCauKinhPhiNamExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<TinhHinhDeXuatNhuCauExportDto> {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
