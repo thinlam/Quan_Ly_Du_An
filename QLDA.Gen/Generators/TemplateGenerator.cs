@@ -48,6 +48,25 @@ public class TemplateGenerator
         Console.WriteLine($"Generated: {descriptor.OutputPath}");
     }
 
+    public void GenerateImportTemplate(IImportDescriptor descriptor)
+    {
+        if (File.Exists(descriptor.OutputPath) && !_force)
+        {
+            Console.WriteLine($"Skipped (already exists): {descriptor.OutputPath}");
+            return;
+        }
+
+        using var workbook = new XLWorkbook();
+        var dataSheet = workbook.Worksheets.Add("Data");
+        var comboSheet = workbook.Worksheets.Add("ComboData");
+        BuildImportWorksheet(dataSheet, comboSheet, descriptor);
+
+        EnsureOutputDirectory(descriptor.OutputPath);
+        workbook.SaveAs(descriptor.OutputPath);
+        OoxmlStructureNormalizer.Normalize(descriptor.OutputPath);
+        Console.WriteLine($"Generated import: {descriptor.OutputPath}");
+    }
+
     /// <summary>
     /// Most descriptors use "Data" as the sheet name; ke-hoach-thang uses "Sheet1" to match
     /// the existing template (and the Aspose binding helper that depends on it).
@@ -720,6 +739,95 @@ public class TemplateGenerator
                 border.LeftBorderColor = XLColor.Black;
                 border.RightBorderColor = XLColor.Black;
             }
+        }
+    }
+
+    private static void BuildImportWorksheet(IXLWorksheet dataSheet, IXLWorksheet comboSheet, IImportDescriptor descriptor)
+    {
+        var columns = descriptor.Columns;
+        var columnCount = columns.Count;
+        var title = descriptor.Title ?? descriptor.EntityName.ToUpperInvariant();
+        var leftEndCol = Math.Max(1, columnCount - 2);
+        var rightStartCol = leftEndCol + 1;
+
+        WriteLetterheadBlock(dataSheet, 1, 2, 1, leftEndCol, LetterheadLeftText, XLAlignmentHorizontalValues.Center);
+        WriteLetterheadBlock(dataSheet, 1, 2, rightStartCol, columnCount, LetterheadRightText, XLAlignmentHorizontalValues.Center);
+
+        var titleCell = dataSheet.Cell(3, 1);
+        titleCell.Value = title;
+        titleCell.Style.Font.SetFontName(DefaultFont);
+        titleCell.Style.Font.SetFontSize(TitleFontSize);
+        titleCell.Style.Font.SetBold(true);
+        titleCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+        titleCell.Style.Alignment.WrapText = true;
+        dataSheet.Range(3, 1, 3, columnCount).Merge();
+        dataSheet.Row(3).Height = 28;
+
+        var hintCell = dataSheet.Cell(4, 1);
+        hintCell.Value = descriptor.HintText
+            ?? "Nhập dữ liệu vào bảng bên dưới. Cột Dự án / Nguồn vốn chọn từ danh sách.";
+        hintCell.Style.Font.SetFontName(DefaultFont);
+        hintCell.Style.Font.SetFontSize(NormalFontSize);
+        hintCell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(GrayFill));
+        hintCell.Style.Alignment.WrapText = true;
+        dataSheet.Range(4, 1, 4, columnCount).Merge();
+        dataSheet.Row(4).Height = 28;
+
+        const int headerRow = 5;
+        const int descriptionRow = 6;
+        const int dataRow = 7;
+
+        for (var i = 0; i < columns.Count; i++)
+        {
+            var col = columns[i];
+            var colIndex = i + 1;
+            dataSheet.Column(colIndex).Width = col.Width;
+
+            var headerCell = dataSheet.Cell(headerRow, colIndex);
+            headerCell.Value = col.Header;
+            headerCell.Style.Font.SetFontName(DefaultFont);
+            headerCell.Style.Font.SetBold(true);
+            headerCell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(BlueFill));
+            headerCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+            headerCell.Style.Alignment.WrapText = true;
+            ApplyThinBorder(headerCell);
+
+            var descCell = dataSheet.Cell(descriptionRow, colIndex);
+            descCell.Value = col.Description ?? string.Empty;
+            descCell.Style.Font.SetFontName(DefaultFont);
+            descCell.Style.Font.SetFontSize(NormalFontSize);
+            descCell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(GrayFill));
+            descCell.Style.Alignment.WrapText = true;
+            ApplyThinBorder(descCell);
+
+            var valueCell = dataSheet.Cell(dataRow, colIndex);
+            valueCell.Value = col.Placeholder ?? string.Empty;
+            valueCell.Style.Font.SetFontName(DefaultFont);
+            valueCell.Style.Font.SetFontSize(FieldRowFontSize);
+            valueCell.Style.Alignment.WrapText = true;
+            if (!string.IsNullOrEmpty(col.NumberFormat))
+                valueCell.Style.NumberFormat.Format = col.NumberFormat;
+            ApplyThinBorder(valueCell);
+        }
+
+        var table = dataSheet.Range(headerRow, 1, dataRow, columnCount).CreateTable(descriptor.TableName);
+        table.Theme = XLTableTheme.TableStyleMedium2;
+        table.ShowAutoFilter = false;
+
+        for (var i = 0; i < columns.Count; i++)
+        {
+            var col = columns[i];
+            if (col.ComboIndex is not int comboIndex || comboIndex <= 0)
+                continue;
+
+            var comboCol = i + 1;
+            var placeholder = "$cbo" + comboIndex;
+            var comboCell = comboSheet.Cell(1, comboCol);
+            comboCell.Value = placeholder;
+            comboCell.Style.Font.SetFontName(DefaultFont);
+            var comboTable = comboSheet.Range(1, comboCol, 2, comboCol).CreateTable($"Combo{comboIndex}");
+            comboTable.Theme = XLTableTheme.TableStyleMedium2;
+            comboTable.ShowAutoFilter = false;
         }
     }
 }
