@@ -1077,10 +1077,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
             var doc = new Aspose.Words.Document(templatePath);
             doc.MailMerge.UseNonMergeFields = true;
-
+            DateTime? localDate = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
+        
+       
             var replacements = new Dictionary<string, string> {
        { "ngay", entity.NgayToTrinh.HasValue
-           ? $"ngày {entity.NgayToTrinh.Value:dd} tháng {entity.NgayToTrinh.Value:MM} năm {entity.NgayToTrinh.Value:yyyy}"
+           ? $"ngày {localDate.Value:dd} tháng {localDate.Value:MM} năm {localDate.Value:yyyy}"
            : $"ngày  tháng  năm " },
 
        { "Ten", entity.Ten ?? "" },

@@ -18,6 +18,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
 {
     private readonly DbContext _dbContext;
     private readonly IRepository<ToTrinhPheDuyet, Guid> _repository;
+    private readonly IRepository<KeHoachLuaChonNhaThau, Guid>_keHoachRepo;
     private readonly IRepository<QuyetDinhDuyetDuToan, Guid> _quyetDinhDuyetDuToan;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
@@ -30,6 +31,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
     {
         _dbContext = dbContext;
         _repository = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
+        _keHoachRepo = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
         _quyetDinhDuyetDuToan = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuToan, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
@@ -96,7 +98,21 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
             NgayXuLy = DateTimeOffset.UtcNow
         };
         await _historyRepository.AddAsync(history);
-
+        #region 
+        // nếu là tờ trình kế hoạch lcnt  -> duyệt thì insert vào table KeHoachLuaChonNhaThau
+        if (Enum.IsDefined(typeof(KeHoachLuaChonNhaThauLoai), request.Loai))
+        {
+            var entityKeHoach = await _repository.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+            ManagedException.ThrowIfNull(entity, "Không tìm thấy kế hoạch cần cập nhật");
+            var keHoach = new KeHoachLuaChonNhaThau
+            {
+                Id = Guid.NewGuid(),
+                Ten = entityKeHoach.Ten,
+                Loai = request.Loai,
+            };
+            await _keHoachRepo.AddAsync(keHoach, cancellationToken);
+        }
+        #endregion
         // 7. Lưu thay đổi vào DB thông qua DbContext
         await _dbContext.SaveChangesAsync(cancellationToken);
 

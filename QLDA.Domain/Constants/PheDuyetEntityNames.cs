@@ -45,14 +45,18 @@ public static class PheDuyetEntityNames
     [Description("Đề xuất chủ trương chuyển tiếp")]
     public const string DeXuatChuTruongChuyenTiep = "DeXuatChuyenTiep";
 
+    [ExcludeFromTypeList]
     [Description("Đề xuất nhu cầu kinh phí")]
     public const string DeXuatNhuCauKinhPhi = "DeXuatNhuCauKinhPhi";
 
+    [ExcludeFromTypeList]
     [Description("Đề xuất kế hoạch kinh phí năm")]
     public const string DeXuatNhuCauKinhPhiNam = "DeXuatNhuCauKinhPhiNam";
-
+   
+    [ExcludeFromTypeList]
     [Description("Đề xuất")]
     public const string DeXuatMacDinhStt = "DeXuatMacDinh";// đối tượng dùng chung 
+ 
     [Description("Tờ trình có thẩm định")]
     public const string ToTrinhCoThamDinh = "ToTrinhCoThamDinh"; // đối tượng dùng chung 
 
@@ -65,6 +69,7 @@ public static class PheDuyetEntityNames
     [Description("Tờ trình phê duyệt khảo sát")]
     public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
 
+    [ExcludeFromTypeList]
     [Description("Thuyết minh dự án")]
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
 
@@ -135,4 +140,9 @@ public static class LoaiToTrinhKhongDuyetExtensions
 
         return false;
     }
+}
+// Mục đích để loại trừ các loại ko hiển thị trong quản lý phê duyệt api/phe-duyet/types
+[AttributeUsage(AttributeTargets.Field)]
+public class ExcludeFromTypeListAttribute : Attribute
+{
 }

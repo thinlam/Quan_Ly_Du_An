@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachLuaChonNhaThaus.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Domain.Constants;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThaus.Queries;
 
@@ -9,6 +11,7 @@ public record KeHoachLuaChonNhaThauGetDanhSachQuery : AggregateRootPagination, I
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string? GlobalFilter { get; set; }
+    public string? LoaiKeHoach { get; set; }
     public bool IsNoTracking { get; set; }
 }
 
@@ -33,7 +36,11 @@ internal class
                 request,
                 e => e.Ten
             );
-
+        if (!string.IsNullOrEmpty(request.LoaiKeHoach) &&
+                 Enum.TryParse<KeHoachLuaChonNhaThauLoai>(request.LoaiKeHoach, true, out var loai))
+        {
+            queryable = queryable.Where(e => e.LoaiKeHoach == loai);
+        }
         return await queryable
             .Select(e => new KeHoachLuaChonNhaThauDto() {
                 Id = e.Id,

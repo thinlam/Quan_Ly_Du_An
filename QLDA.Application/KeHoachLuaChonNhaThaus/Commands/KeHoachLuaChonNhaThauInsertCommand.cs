@@ -22,7 +22,7 @@ internal class KeHoachLuaChonNhaThauInsertCommandHandler : IRequestHandler<KeHoa
         await ValidateAsync(request, cancellationToken);
 
         var entity = request.Dto.ToEntity();
-
+        entity.LoaiKeHoach = Domain.Constants.KeHoachLuaChonNhaThauLoai.KeHoachLCNT;
         if (_unitOfWork.HasTransaction) {
             await InsertAsync(entity, cancellationToken);
         } else {
