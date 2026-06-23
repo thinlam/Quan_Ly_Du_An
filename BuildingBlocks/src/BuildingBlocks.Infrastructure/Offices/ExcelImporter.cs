@@ -10,7 +10,7 @@ public class ImporterHelper(IServiceProvider serviceProvider) : IImporterHelper
     private readonly IAsposeHelper _asposeHelper = serviceProvider.GetRequiredService<IAsposeHelper>();
     public AsposeResult GetTemplate(string templatePath, List<List<ComboData>>? comboData = null)
     {
-        _asposeHelper.EnsureCellsLicense();
+        _asposeHelper.EnsureLicense();
         var workbook = new Workbook(templatePath);
 
         if (comboData == null || comboData.Count == 0)

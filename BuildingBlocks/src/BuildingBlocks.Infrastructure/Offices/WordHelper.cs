@@ -9,7 +9,7 @@ public class WordHelper(IAsposeHelper asposeHelper) : IWordHelper
 
     /// <inheritdoc />
     public byte[] ExportFromTemplate(string templatePath, Dictionary<string, string> fieldValues) {
-        _asposeHelper.EnsureWordsLicense();
+        _asposeHelper.EnsureLicense();
 
         var doc = new Aspose.Words.Document(templatePath);
         doc.MailMerge.UseNonMergeFields = true;

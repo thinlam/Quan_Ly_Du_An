@@ -12,8 +12,5 @@
       <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Aspose.Cells" Version="20.11.0" />
-    </ItemGroup>
 
 </Project>

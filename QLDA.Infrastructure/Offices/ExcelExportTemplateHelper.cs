@@ -12,7 +12,7 @@ public static class ExcelExportTemplateHelper {
         IAsposeHelper asposeHelper,
         string sourceTemplatePath,
         Dictionary<string, string> replacements) {
-        asposeHelper.EnsureCellsLicense();
+        asposeHelper.EnsureLicense();
 
         var tempPath = Path.Combine(Path.GetTempPath(), $"qlda_export_{Guid.NewGuid():N}.xlsx");
         var workbook = new Workbook(sourceTemplatePath);
