@@ -8,6 +8,7 @@ using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 using QLDA.Application.DuAnBuocs.DTOs;
 using QLDA.Application.DuAnBuocs.Queries;
 using QLDA.Application.DuAns.DTOs;
+using QLDA.Application.DuAns.Queries;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
@@ -155,64 +156,35 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
-    #region usp_In_DanhSach_DuAn
+    #region DanhSachDuAn (Aspose export)
 
     /// <summary>
-    /// usp_In_DanhSach_DuAn - DanhSachDuAn.xlsx
+    /// DanhSachDuAn.xlsx — Export danh sách dự án ra Excel dùng Aspose.
+    /// Dữ liệu lấy qua DuAnGetDanhSachExportQuery (cùng filter set như DuAnGetDanhSachQuery).
     /// </summary>
-    /// <param name="searchDto"></param>
-    /// <returns></returns>
     [HttpGet("api/print/danh-sach-du-an")]
     public async Task<IActionResult> InDuAn([FromQuery] DuAnPrintSearchDto searchDto)
     {
         var fileNameTemplate = "DanhSachDuAn.xlsx";
-        var procedureName = "usp_In_DanhSach_DuAn";
         var templatePath = Path.Combine(
-            AppContext.BaseDirectory, // ví dụ: ...\QLDA.WebApi
-            "PrintTemplates", // chính xác tên folder trong project
+            AppContext.BaseDirectory,
+            "ExportTemplates",
             fileNameTemplate
         );
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var query = new GetStoreQuery()
-        {
-            PathTemplate = templatePath,
-            ProcName = procedureName,
-            Params = new
-            {
-                searchDto.TenDuAn,
-                searchDto.MaDuAn,
-                searchDto.ThoiGianKhoiCong,
-                searchDto.ThoiGianHoanThanh,
-                searchDto.MaNganSach,
-                searchDto.LinhVucId,
-                searchDto.NhomDuAnId,
-                searchDto.LoaiDuAnId,
-                searchDto.DonViPhuTrachChinhId,
-                searchDto.DonViPhoiHopId,
-                searchDto.LanhDaoPhuTrachId,
-                searchDto.GiaiDoanId,
-                searchDto.BuocId,
-                searchDto.NguonVonId,
-                searchDto.GlobalFilter,
-                PageIndex = 0,
-                PageSize = 0,
-                searchDto.QuyTrinhId,
-                searchDto.TrangThaiDuAnId,
-                TuNgay = searchDto.TuNgay?.ToStartOfDayUtc(),
-                DenNgay = searchDto.DenNgay?.ToEndOfDayUtc(),
-                searchDto.NamBatDau,
-                searchDto.NamDuAn,
-                searchDto.HinhThucDauTuId,
-                searchDto.LoaiDuAnTheoNamId,
-            },
-            HiddenColumns = searchDto.HiddenColumns
-        };
-        var exportResult = await Mediator.Send(query);
+        var data = await Mediator.Send(new DuAnGetDanhSachExportQuery(searchDto));
 
-        return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType)
+        var exportResult = _excelExporter.Export(new AsposeInstruction<DuAnExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchDto.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
         {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };

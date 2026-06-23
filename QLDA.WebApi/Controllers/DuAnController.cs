@@ -15,32 +15,35 @@ using QLDA.Domain.Constants;
 using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.DuAns;
 
-namespace QLDA.WebApi.Controllers {
-    [Tags("Dự án")]
-    [Route("api/du-an")]
-    public class DuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
+namespace QLDA.WebApi.Controllers
+{
+    [Tags("api/du-an/Dự án")]
+    public class DuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
+    {
         /// <summary>
         /// Chi tiết
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("{id}/chi-tiet")]
+        [HttpGet("api/du-an/{id}/chi-tiet")]
         [ProducesResponseType<ResultApi<DuAnDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-        public async Task<ResultApi> Get(Guid id) {
+        public async Task<ResultApi> Get(Guid id)
+        {
             return ResultApi.Ok(await GetDuAnWithFiles(id, default));
         }
-      
+
         /// <summary>
         /// Xóa tạm
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [Authorize(Roles = RoleConstants.GroupAdminOrManager)]
-        [HttpDelete("{id}/xoa-tam")]
+        [HttpDelete("api/du-an/{id}/xoa-tam")]
         [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-        public async Task<ResultApi> SoftDelete(Guid id) {
+        public async Task<ResultApi> SoftDelete(Guid id)
+        {
             await Mediator.Send(new DuAnDeleteCommand(id));
 
             return ResultApi.Ok(1);
@@ -53,11 +56,12 @@ namespace QLDA.WebApi.Controllers {
         /// </remarks>
         /// <param name="searchDto"></param>
         /// <returns></returns>
-        [HttpGet("danh-sach")]
+        [HttpGet("api/du-an/danh-sach")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType<ResultApi<PaginatedList<DuAnDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-        public async Task<ResultApi> Get([FromQuery] DuAnSearchDto searchDto) {
+        public async Task<ResultApi> Get([FromQuery] DuAnSearchDto searchDto)
+        {
             var res = await Mediator.Send(new DuAnGetDanhSachQuery(searchDto));
             return ResultApi.Ok(res);
         }
@@ -67,7 +71,7 @@ namespace QLDA.WebApi.Controllers {
         /// </summary>
         /// TongHopVonGiaiNganQuery(int Nam, int LoaiDuAnId)
         /// 
-        [HttpGet("von-giai-ngan")]
+        [HttpGet("api/du-an/von-giai-ngan")]
         [ProducesResponseType<ResultApi<List<BaoCaoDuAnDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         public async Task<ResultApi> GetTongHopVonGiaiNgan([FromQuery] int Nam)
@@ -76,16 +80,17 @@ namespace QLDA.WebApi.Controllers {
             return ResultApi.Ok(res);
         }
 
-        [HttpGet("bao-cao-du-toan")]
+        [HttpGet("api/du-an/bao-cao-du-toan")]
         [ProducesResponseType<ResultApi<PaginatedList<BaoCaoDuAnDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-        public async Task<ResultApi> GetBaoCaoDuToan([FromQuery] BaoCaoDuAnSearchDto searchDto) {
+        public async Task<ResultApi> GetBaoCaoDuToan([FromQuery] BaoCaoDuAnSearchDto searchDto)
+        {
             var res = await Mediator.Send(new BaoCaoDuAnGetDanhSachQuery(searchDto));
             return ResultApi.Ok(res);
         }
 
         [ResponseCache(CacheProfileName = "Combobox")]
-        [HttpGet("danh-sach-combobox")]
+        [HttpGet("api/du-an/danh-sach-combobox")]
         [ProducesResponseType<ResultApi>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         [Consumes(MediaTypeNames.Application.Json)]
@@ -93,8 +98,10 @@ namespace QLDA.WebApi.Controllers {
             string? filter,
             int pageIndex = 0,
             int pageSize = 0
-        ) {
-            var res = await Mediator.Send(new DuAnGetDanhSachComboboxQuery() {
+        )
+        {
+            var res = await Mediator.Send(new DuAnGetDanhSachComboboxQuery()
+            {
                 DuAnId = duAnId,
                 GlobalFilter = filter,
                 PageIndex = pageIndex,
@@ -102,7 +109,7 @@ namespace QLDA.WebApi.Controllers {
             });
             return ResultApi.Ok(res);
         }
-        [HttpGet("danh-sach-theo-phong-ban")]
+        [HttpGet("api/du-an/danh-sach-theo-phong-ban")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType<ResultApi<PaginatedList<DuAn>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -131,11 +138,12 @@ namespace QLDA.WebApi.Controllers {
         /// <response code="400">Request không hợp lệ</response>
         /// <response code="500">Lỗi hệ thống</response>
         /// <returns></returns>
-        [HttpGet("danh-sach-tre-han")]
+        [HttpGet("api/du-an/danh-sach-tre-han")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType<ResultApi<PaginatedList<DuAnTreHanDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-        public async Task<ResultApi> GetProjectOverdue([FromQuery] DuAnSearchOverdueDto searchDto) {
+        public async Task<ResultApi> GetProjectOverdue([FromQuery] DuAnSearchOverdueDto searchDto)
+        {
             var res = await Mediator.Send(new DuAnGetDanhSachTreHanQuery(searchDto));
             return ResultApi.Ok(res);
         }
@@ -151,7 +159,7 @@ namespace QLDA.WebApi.Controllers {
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [Authorize(Roles = RoleConstants.GroupAdminOrManager)]
-        [HttpPost("them-moi")]
+        [HttpPost("api/du-an/them-moi")]
         [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         [Consumes(MediaTypeNames.Application.Json)]
@@ -160,7 +168,8 @@ namespace QLDA.WebApi.Controllers {
             [FromServices] IUnitOfWork unitOfWork,
             CancellationToken cancellationToken = default
 
-        ) {
+        )
+        {
             using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
             var entity = await Mediator.Send(new DuAnInsertCommand(model), cancellationToken);
@@ -184,14 +193,17 @@ namespace QLDA.WebApi.Controllers {
 
             // Handle DuToan files
             List<(DuToan, List<TepDinhKem>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
-            if (duToans.Count != 0) {
+            if (duToans.Count != 0)
+            {
 
                 //Thêm dự toán
                 await Mediator.Send(new DuToanInsertRangeCommand([.. duToans.Select(e => e.Item1)]), cancellationToken);
 
                 //Thêm files
-                foreach (var (duToan, files) in duToans) {
-                    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                foreach (var (duToan, files) in duToans)
+                {
+                    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                    {
                         GroupId = duToan.Id.ToString(),
                         Entities = files,
                     }, cancellationToken);
@@ -200,16 +212,20 @@ namespace QLDA.WebApi.Controllers {
             }
 
             // Handle KeHoachVon files (KeHoachVons already created via DuAnMappings.ToEntity)
-            if (model.KeHoachVons != null && model.KeHoachVons.Count != 0 && entity.KeHoachVons != null) {
+            if (model.KeHoachVons != null && model.KeHoachVons.Count != 0 && entity.KeHoachVons != null)
+            {
                 var khvList = entity.KeHoachVons.ToList();
-                for (int i = 0; i < model.KeHoachVons.Count && i < khvList.Count; i++) {
+                for (int i = 0; i < model.KeHoachVons.Count && i < khvList.Count; i++)
+                {
                     var khvModel = model.KeHoachVons[i];
-                    if (khvModel.DanhSachTepDinhKem?.Count > 0) {
+                    if (khvModel.DanhSachTepDinhKem?.Count > 0)
+                    {
                         var khvFiles = khvModel.DanhSachTepDinhKem.ToEntities(
                             groupId: khvList[i].Id,
                             groupType: EGroupType.KeHoachVon
                         );
-                        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                        {
                             GroupId = khvList[i].Id.ToString(),
                             Entities = [.. khvFiles],
                         }, cancellationToken);
@@ -218,12 +234,14 @@ namespace QLDA.WebApi.Controllers {
             }
 
             // Handle DuAn decision files
-            if (model.DanhSachTepQuyetDinh?.Count > 0) {
+            if (model.DanhSachTepQuyetDinh?.Count > 0)
+            {
                 var decisionFiles = model.DanhSachTepQuyetDinh.ToEntities(
                     groupId: entity.Id,
                     groupType: EGroupType.QuyetDinhPheDuyetNhiemVu
                 );
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                {
                     GroupId = entity.Id.ToString(),
                     Entities = [.. decisionFiles],
                 }, cancellationToken);
@@ -245,7 +263,7 @@ namespace QLDA.WebApi.Controllers {
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [Authorize(Roles = RoleConstants.GroupAdminOrManager)]
-        [HttpPut("cap-nhat")]
+        [HttpPut("api/du-an/cap-nhat")]
         [ProducesResponseType<ResultApi<DuAnDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         [Consumes(MediaTypeNames.Application.Json)]
@@ -253,7 +271,8 @@ namespace QLDA.WebApi.Controllers {
             [FromBody] DuAnUpdateModel updateDto,
             [FromServices] IUnitOfWork unitOfWork,
             CancellationToken cancellationToken = default
-        ) {
+        )
+        {
             using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
             var entity = await Mediator.Send(new DuAnUpdateCommand(updateDto), cancellationToken);
@@ -264,26 +283,32 @@ namespace QLDA.WebApi.Controllers {
             List<(DuToan, List<TepDinhKem>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
 
             // Cập nhật dự toán và files
-            foreach (var (duToan, files) in duToans) {
+            foreach (var (duToan, files) in duToans)
+            {
                 // Thêm hoặc cập nhật files cho mỗi dự toán
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                {
                     GroupId = duToan.Id.ToString(),
                     Entities = files,
                 }, cancellationToken);
             }
 
             // Handle KeHoachVon files
-            if (updateDto.KeHoachVons != null) {
-                foreach (var khvModel in updateDto.KeHoachVons) {
+            if (updateDto.KeHoachVons != null)
+            {
+                foreach (var khvModel in updateDto.KeHoachVons)
+                {
                     var (khv, khvFiles) = khvModel.ToEntityWithFiles(entity.Id);
-                    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+                    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                    {
                         GroupId = khv.Id.ToString(),
                         Entities = khvFiles,
                     }, cancellationToken);
                 }
             }
 
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            {
                 GroupId = entity.Id.ToString(),
                 Entities = [.. updateDto.DanhSachTepQuyetDinh?.ToEntities(entity.Id, EGroupType.QuyetDinhPheDuyetNhiemVu) ?? []],
             }, cancellationToken);
@@ -298,16 +323,19 @@ namespace QLDA.WebApi.Controllers {
         /// </summary>
         /// <param name="id">Id dự án</param>
         /// <returns>Danh sách tệp đính kèm</returns>
-        [HttpGet("{id}/tat-ca-tep-dinh-kem")]
+        [HttpGet("api/du-an/{id}/tat-ca-tep-dinh-kem")]
         [ProducesResponseType<ResultApi<List<TepDinhKemDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-        public async Task<ResultApi> GetTatCaTepDinhKem(Guid id) {
+        public async Task<ResultApi> GetTatCaTepDinhKem(Guid id)
+        {
             var result = await Mediator.Send(new DuAnGetDanhSachTepDinhKemQuery { DuAnId = id });
             return ResultApi.Ok(result);
         }
 
-        private async Task<DuAnDto> GetDuAnWithFiles(Guid duAnId, CancellationToken cancellationToken) {
-            var entity = await Mediator.Send(new DuAnGetQuery() {
+        private async Task<DuAnDto> GetDuAnWithFiles(Guid duAnId, CancellationToken cancellationToken)
+        {
+            var entity = await Mediator.Send(new DuAnGetQuery()
+            {
                 Id = duAnId,
                 ThrowIfNull = true,
                 IsNoTracking = true,
@@ -318,17 +346,21 @@ namespace QLDA.WebApi.Controllers {
             }, cancellationToken);
 
             var groupIds = new List<string>();
-            if (entity.DuToans != null) {
+            if (entity.DuToans != null)
+            {
                 groupIds.AddRange(entity.DuToans.Select(dt => dt.Id.ToString()));
             }
-            if (entity.KeHoachVons != null) {
+            if (entity.KeHoachVons != null)
+            {
                 groupIds.AddRange(entity.KeHoachVons.Select(kh => kh.Id.ToString()));
             }
             groupIds.Add(entity.Id.ToString());
 
             List<TepDinhKem>? files = null;
-            if (groupIds.Count != 0) {
-                files = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
+            if (groupIds.Count != 0)
+            {
+                files = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+                {
                     GroupId = [.. groupIds]
                 }, cancellationToken);
             }
