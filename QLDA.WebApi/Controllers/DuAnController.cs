@@ -65,6 +65,17 @@ namespace QLDA.WebApi.Controllers {
         /// <summary>
         /// Báo cáo dự toán dự án
         /// </summary>
+        /// TongHopVonGiaiNganQuery(int Nam, int LoaiDuAnId)
+        /// 
+        [HttpGet("von-giai-ngan")]
+        [ProducesResponseType<ResultApi<List<BaoCaoDuAnDto>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetTongHopVonGiaiNgan([FromQuery] int Nam)
+        {
+            var res = await Mediator.Send(new TongHopVonGiaiNganQuery(Nam, 0));
+            return ResultApi.Ok(res);
+        }
+
         [HttpGet("bao-cao-du-toan")]
         [ProducesResponseType<ResultApi<PaginatedList<BaoCaoDuAnDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]

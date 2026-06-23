@@ -23,5 +23,7 @@ public class ToTrinhPheDuyetDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo, IM
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }
     public string? TenTrangThai { get; set; }
+    public string? CreatedBy { get; set; }
+    
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

@@ -8,6 +8,7 @@ namespace QLDA.Application.DuAns.DTOs;
 public class BaoCaoDuAnDto : IHasKey<Guid> {
     public Guid Id { get; set; }
     public string? TenDuAn { get; set; }
+    public string? MaDuAn { get; set; }
     public long? DonViPhuTrachChinhId { get; set; }
     public int? LoaiDuAnTheoNamId { get; set; }
     /// <summary>
@@ -21,6 +22,7 @@ public class BaoCaoDuAnDto : IHasKey<Guid> {
     public int? ThoiGianHoanThanh { get; set; }
 
     // DuToan fields - derived from first/last DuToan by NgayKyDuToan
+    public decimal? KeHoachVon { get; set; }
     public long? DuToanBanDau { get; set; }
     public long? DuToanDieuChinh { get; set; }
     public DateTimeOffset? NgayQuyetDinhPheDuyet { get; set; }
