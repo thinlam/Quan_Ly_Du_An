@@ -91,6 +91,17 @@ echo ""
 log_info "Step 1/5: Building and publishing ${MODULE}.WebApi..."
 PUBLISH_PATH="${SCRIPT_DIR}/bin/Release/net8.0/publish/${MODULE}"
 
+# Remove the entire publish folder BEFORE publishing. `dotnet publish` is additive
+# — it only writes/overwrites files, never deletes stale ones. Without this, any
+# DLL manually dropped into the folder (e.g. from an older build, a different
+# branch, or a manual copy) survives every deploy and gets shipped to the server.
+# Example bug it fixes: a stale Aspose.Words 24.x DLL sitting next to a fresh
+# 20.11.0 DLL — the 24.x one was never overwritten because nothing in the csproj
+# triggered its rebuild, and publish shipped it as-is.
+if [[ -d "$PUBLISH_PATH" ]]; then
+    log_info "Cleaning previous publish output: ${PUBLISH_PATH}"
+    rm -rf "$PUBLISH_PATH"
+fi
 mkdir -p "${SCRIPT_DIR}/bin/Release/net8.0/publish"
 
 if ! dotnet publish "$WEBAPI_PATH" --configuration Release --output "$PUBLISH_PATH"; then
