@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Properties\LicenseAsposeTotal.lic" />
-    <EmbeddedResource Include="Properties\LicenseAsposeTotal.lic" />
+    <None Remove="Offices\LicenseAsposeTotal.lic" />
+    <EmbeddedResource Include="Offices\LicenseAsposeTotal.lic" />
   </ItemGroup>
 
 </Project>
