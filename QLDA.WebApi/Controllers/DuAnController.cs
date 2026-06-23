@@ -169,6 +169,19 @@ namespace QLDA.WebApi.Controllers {
 
             await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
 
+            // Map phòng ban phụ trách chính + danh sách phòng ban phối hợp từ DuAn
+            // sang tất cả các DuAnBuoc vừa được clone (chỉ áp dụng khi thêm mới)
+            var phongBanPhoiHopIds = entity.DuAnChiuTrachNhiemXuLys?
+                .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
+                .Select(x => x.RightId)
+                .ToList() ?? [];
+
+            await Mediator.Send(new DuAnBuocMapPhongBanCommand(
+                entity.Id,
+                entity.DonViPhuTrachChinhId,
+                phongBanPhoiHopIds
+            ), cancellationToken);
+
             // Handle DuToan files
             List<(DuToan, List<TepDinhKem>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
             if (duToans.Count != 0) {

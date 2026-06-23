@@ -44,7 +44,23 @@ public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateComma
 
         entity.Update(request.Dto);
 
-        // Update PhongPhuTrachChinhId
+        // Update PhongPhuTrachChinhId (validate thuộc DuAn.DuAnChiuTrachNhiemXuLys hoặc DuAn.DonViPhuTrachChinhId)
+        if (request.Dto.PhongPhuTrachChinhId.HasValue) {
+            var allowedPhongBanIds = await _duAnRepo.GetQueryableSet()
+                .Where(d => d.Id == entity.DuAnId)
+                .Select(d => new {
+                    ChiuTrachNhiemIds = d.DuAnChiuTrachNhiemXuLys!.Select(x => x.RightId),
+                    d.DonViPhuTrachChinhId
+                })
+                .Select(d => new { All = d.ChiuTrachNhiemIds.Concat(new[] { d.DonViPhuTrachChinhId ?? 0 }) })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var allowedSet = (allowedPhongBanIds?.All ?? Enumerable.Empty<long>()).ToHashSet();
+            if (!allowedSet.Contains(request.Dto.PhongPhuTrachChinhId.Value))
+                throw new ManagedException(
+                    $"Phòng ban phụ trách chính ({request.Dto.PhongPhuTrachChinhId}) không thuộc phạm vi chịu trách nhiệm xử lý của dự án.");
+        }
+
         entity.PhongPhuTrachChinhId = request.Dto.PhongPhuTrachChinhId;
 
         // Update DuAnBuocPhongBanPhoiHops

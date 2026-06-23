@@ -38,6 +38,7 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
             .OrderBy(e => e.Buoc!.Level).ThenBy(e => e.Buoc!.Stt)
             .Include(e => e.DuAnBuocManHinhs!)
                 .ThenInclude(m => m.ManHinh)
+            .Include(e => e.DuAnBuocPhongBanPhoiHops!)
             .Include(e => e.Buoc!)
                 .ThenInclude(b => b.BuocManHinhs!)
                 .ThenInclude(m => m.ManHinh)
@@ -48,6 +49,9 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
                 ? entity.DuAnBuocManHinhs.OrderByDefault().Select(i => i.RightId).ToList()
                 : entity.Buoc?.BuocManHinhs?.OrderByDefault().Select(i => i.RightId).ToList() ?? [];
             var pv = entity.PartialView ?? entity.Buoc?.PartialView;
+            var phongBanPhoiHopIds = entity.DuAnBuocPhongBanPhoiHops?
+                .Select(p => p.RightId)
+                .ToList() ?? [];
 
             return new DuAnBuocDto() {
                 Id = entity.Id,
@@ -61,7 +65,8 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
                 BuocId = entity.BuocId,
                 TenBuoc = entity.TenBuoc ?? entity.Buoc.Ten,
                 PartialView = entity.PartialView,
-                DanhSachManHinh = manHinhs
+                DanhSachManHinh = manHinhs,
+                PhongBanPhoiHopIds = phongBanPhoiHopIds
             };
         });
 
