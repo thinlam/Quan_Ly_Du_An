@@ -987,6 +987,55 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
+    #region DeXuatNhuCauKinhPhiChuTruong
+
+    /// <summary>
+    /// DeXuatNhuCauKinhPhiChuTruong.xlsx — Export đề xuất nhu cầu kinh phí chủ trương (mới / chuyển tiếp)
+    /// </summary>
+    [HttpGet("api/print/de-xuat-nhu-cau-kinh-phi-chu-truong")]
+    [Authorize(Roles = RoleConstants.GroupDeXuatNhuCauKinhPhiChuTruongExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDeXuatNhuCauKinhPhiChuTruong(
+        [FromQuery] TongHopDeXuatNhuCauKinhPhiPrintSearchModel searchModel,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "DeXuatNhuCauKinhPhiChuTruong.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var data = await Mediator.Send(new TongHopDeXuatNhuCauKinhPhiGetExportQuery
+        {
+            DuAnId = searchModel.DuAnId,
+            BuocId = searchModel.BuocId,
+            GlobalFilter = searchModel.GlobalFilter,
+            Loai = searchModel.Loai,
+            Nam = searchModel.Nam,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
+            DonViPhuTrachId = searchModel.DonViPhuTrachId,
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopDeXuatNhuCauKinhPhiExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
     [HttpGet("api/print/bao-cao-tien-do-du-an")]
     public async Task<IActionResult> InBaoCaoTienDoDuAn([FromQuery] BaoCaoDuAnSearchDto searchModel)
     {
