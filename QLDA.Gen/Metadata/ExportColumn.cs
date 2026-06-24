@@ -1,11 +1,22 @@
 namespace QLDA.Gen.Metadata;
 
+public enum ColumnAlign {
+    Left,
+    Center,
+    Right,
+}
+
 public class ExportColumn
 {
     public string Name { get; set; } = string.Empty;
     public string Header { get; set; } = string.Empty;
     public int Width { get; set; } = 15;
     public string? NumberFormat { get; set; }
+
+    /// <summary>
+    /// Horizontal alignment for header and template ($Field) row. Default: Center.
+    /// </summary>
+    public ColumnAlign HorizontalAlign { get; set; } = ColumnAlign.Center;
 
     /// <summary>
     /// When true, the cell's alignment is set to wrap-text. Useful for multi-line content fields
@@ -31,5 +42,15 @@ public class ExportColumn
         Width = width;
         NumberFormat = numberFormat;
         WrapText = wrapText;
+    }
+
+    public ExportColumn(string name, string header, int width, string? numberFormat, bool wrapText, ColumnAlign horizontalAlign)
+    {
+        Name = name;
+        Header = header;
+        Width = width;
+        NumberFormat = numberFormat;
+        WrapText = wrapText;
+        HorizontalAlign = horizontalAlign;
     }
 }

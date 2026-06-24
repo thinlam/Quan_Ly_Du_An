@@ -36,6 +36,14 @@ public enum TemplateLayoutType
     /// Template row = R6. No blue fill.
     /// </summary>
     Standard6RowWithLetterhead,
+
+    /// <summary>
+    /// Letterhead export layout (UBND / Cộng hòa) + blue table header.
+    /// R1-R2: Letterhead (left/right merge) | R3: Report title (merged, bold, centered)
+    /// R4: Display headers (blue #D9E1F2, bold, border) | R5: $Field (template row, border, wrap).
+    /// Template row = R5.
+    /// </summary>
+    LetterheadExport,
 }
 
 public interface IExportDescriptor
