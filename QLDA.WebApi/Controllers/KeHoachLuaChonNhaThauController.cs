@@ -118,20 +118,11 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
         return ResultApi.Ok(entity.ToDto(files));
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="duAnId"></param>
-    /// <param name="buocId"></param>
-    /// <param name="globalFilter"></param>
-    /// <param name="pageIndex"></param>
-    /// <param name="pageSize"></param>
-    /// <returns></returns>
     [ProducesResponseType<ResultApi<PaginatedList<KeHoachLuaChonNhaThauDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("danh-sach-tien-do")]
     public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null,
-        int pageIndex = 0, int pageSize = 0) {
+        int pageIndex = 0, int pageSize = 0, string? Loai = null) {
         var res = await Mediator.Send(new KeHoachLuaChonNhaThauGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -139,7 +130,9 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
             PageIndex = pageIndex,
             PageSize = pageSize,
             IsNoTracking = true,
+            LoaiKeHoach = Loai
         });
         return ResultApi.Ok(res);
     }
+
 }

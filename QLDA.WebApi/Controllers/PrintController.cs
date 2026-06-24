@@ -1,21 +1,23 @@
+using BuildingBlocks.CrossCutting.Offices;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Application.DeXuatChuyenTieps.Queries;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
-using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuAnBuocs.DTOs;
 using QLDA.Application.DuAnBuocs.Queries;
+using QLDA.Application.DuAns.DTOs;
+using QLDA.Application.DuAns.Queries;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
+using QLDA.Application.ToTrinhPheDuyets.Queries;
 using QLDA.Domain.Constants;
 using QLDA.Infrastructure.Offices;
-using BuildingBlocks.CrossCutting.Offices;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoTienDos;
@@ -26,11 +28,13 @@ using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.PhuLucHopDongs;
 using QLDA.WebApi.Models.TongHopDeXuatChuTruongs;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
+using Serilog;
 
 namespace QLDA.WebApi.Controllers;
 
 [Tags("In ấn")]
-public class PrintController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
+public class PrintController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
+{
     private readonly IUserProvider _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
     private readonly IExporterHelper _excelExporter = serviceProvider.GetRequiredService<IExporterHelper>();
     private readonly IAsposeHelper _asposeHelper = serviceProvider.GetRequiredService<IAsposeHelper>();
@@ -39,7 +43,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <summary>
     /// Thêm timestamp vào tên file để tránh trùng khi tải nhiều lần
     /// </summary>
-    private static string GetDownloadFileName(string templateFileName) {
+    private static string GetDownloadFileName(string templateFileName)
+    {
         var nameWithoutExt = Path.GetFileNameWithoutExtension(templateFileName);
         var ext = Path.GetExtension(templateFileName);
         return $"{nameWithoutExt}_{DateTime.Now:ddMMyyyy_HHmmss}{ext}";
@@ -52,7 +57,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// Uses Level property for hierarchical outline, sorted by Stt
     /// </summary>
     [HttpGet("api/print/quy-trinh-trinh-du-an")]
-    public async Task<IActionResult> InQuyTrinhTrinhDuAn([FromQuery] Guid duAnId, [FromQuery] bool includeHierarchicalStt = true) {
+    public async Task<IActionResult> InQuyTrinhTrinhDuAn([FromQuery] Guid duAnId, [FromQuery] bool includeHierarchicalStt = true)
+    {
         var fileNameTemplate = "QuyTrinhTrinhDuAn.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -62,14 +68,16 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template QuyTrinhTrinhDuAn.xlsx");
 
-        var data = await Mediator.Send(new DuAnBuocGetTreeListQuery {
+        var data = await Mediator.Send(new DuAnBuocGetTreeListQuery
+        {
             DuAnId = duAnId
         });
 
         var firstRow = data.FirstOrDefault();
         ManagedException.ThrowIf(firstRow == null, "Không tìm thấy dữ liệu quy trình trình dự án");
 
-        var exportResult = _excelExporter.ExportWithOutline(new TreeOutlineInstruction<DuAnBuocStateDto> {
+        var exportResult = _excelExporter.ExportWithOutline(new TreeOutlineInstruction<DuAnBuocStateDto>
+        {
             TemplatePath = templatePath,
             Items = data,
             LevelPropertyName = "Level",
@@ -80,7 +88,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             }
         });
 
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -96,7 +105,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [HttpGet("api/print/danh-sach-tra-cuu-du-an")]
     [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> InDuAnTraCuu([FromQuery] DuAnPrintSearchDto searchDto) {
+    public async Task<IActionResult> InDuAnTraCuu([FromQuery] DuAnPrintSearchDto searchDto)
+    {
         var fileNameTemplate = "DanhSachDuAnTraCuu.xlsx";
         var procedureName = "usp_In_DanhSach_DuAn_TraCuu";
         var templatePath = Path.Combine(
@@ -107,10 +117,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 searchDto.TenDuAn,
                 searchDto.MaDuAn,
                 searchDto.ThoiGianKhoiCong,
@@ -136,68 +148,44 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
 
     #endregion
 
-    #region usp_In_DanhSach_DuAn
+    #region DanhSachDuAn (Aspose export)
 
     /// <summary>
-    /// usp_In_DanhSach_DuAn - DanhSachDuAn.xlsx
+    /// DanhSachDuAn.xlsx — Export danh sách dự án ra Excel dùng Aspose.
+    /// Dữ liệu lấy qua DuAnGetDanhSachExportQuery (cùng filter set như DuAnGetDanhSachQuery).
     /// </summary>
-    /// <param name="searchDto"></param>
-    /// <returns></returns>
     [HttpGet("api/print/danh-sach-du-an")]
-    public async Task<IActionResult> InDuAn([FromQuery] DuAnPrintSearchDto searchDto) {
+    public async Task<IActionResult> InDuAn([FromQuery] DuAnPrintSearchDto searchDto)
+    {
         var fileNameTemplate = "DanhSachDuAn.xlsx";
-        var procedureName = "usp_In_DanhSach_DuAn";
         var templatePath = Path.Combine(
-            AppContext.BaseDirectory, // ví dụ: ...\QLDA.WebApi
-            "PrintTemplates", // chính xác tên folder trong project
+            AppContext.BaseDirectory,
+            "ExportTemplates",
             fileNameTemplate
         );
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var query = new GetStoreQuery() {
-            PathTemplate = templatePath,
-            ProcName = procedureName,
-            Params = new {
-                searchDto.TenDuAn,
-                searchDto.MaDuAn,
-                searchDto.ThoiGianKhoiCong,
-                searchDto.ThoiGianHoanThanh,
-                searchDto.MaNganSach,
-                searchDto.LinhVucId,
-                searchDto.NhomDuAnId,
-                searchDto.LoaiDuAnId,
-                searchDto.DonViPhuTrachChinhId,
-                searchDto.DonViPhoiHopId,
-                searchDto.LanhDaoPhuTrachId,
-                searchDto.GiaiDoanId,
-                searchDto.BuocId,
-                searchDto.NguonVonId,
-                searchDto.GlobalFilter,
-                PageIndex = 0,
-                PageSize = 0,
-                searchDto.QuyTrinhId,
-                searchDto.TrangThaiDuAnId,
-                TuNgay = searchDto.TuNgay?.ToStartOfDayUtc(),
-                DenNgay = searchDto.DenNgay?.ToEndOfDayUtc(),
-                searchDto.NamBatDau,
-                searchDto.NamDuAn,
-                searchDto.HinhThucDauTuId,
-                searchDto.LoaiDuAnTheoNamId,
-            },
-            HiddenColumns = searchDto.HiddenColumns
-        };
-        var exportResult = await Mediator.Send(query);
+        var data = await Mediator.Send(new DuAnGetDanhSachExportQuery(searchDto));
 
-        return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<DuAnExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchDto.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -212,7 +200,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchDto"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-goi-thau")]
-    public async Task<IActionResult> InGoiThau([FromQuery] GoiThauPrintSearchDto searchDto) {
+    public async Task<IActionResult> InGoiThau([FromQuery] GoiThauPrintSearchDto searchDto)
+    {
         var fileNameTemplate = "DanhSachGoiThau.xlsx";
         var procedureName = "usp_In_DanhSach_GoiThau";
         var templatePath = Path.Combine(
@@ -223,10 +212,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 searchDto.DuAnId,
                 searchDto.BuocId,
                 searchDto.GlobalFilter,
@@ -245,7 +236,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -260,7 +252,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchDto"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-hop-dong")]
-    public async Task<IActionResult> InHopDong([FromQuery] HopDongPrintSearchDto searchDto) {
+    public async Task<IActionResult> InHopDong([FromQuery] HopDongPrintSearchDto searchDto)
+    {
         var fileNameTemplate = "DanhSachHopDong.xlsx";
         var procedureName = "usp_In_DanhSach_HopDong";
         var templatePath = Path.Combine(
@@ -271,10 +264,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 searchDto.DuAnId,
                 searchDto.BuocId,
                 searchDto.Ten,
@@ -293,7 +288,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -307,7 +303,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-phu-luc-hop-dong")]
-    public async Task<IActionResult> InPhuLucHopDong([FromQuery] PhuLucHopDongPrintSearchModel searchModel) {
+    public async Task<IActionResult> InPhuLucHopDong([FromQuery] PhuLucHopDongPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachPhuLucHopDong.xlsx";
         var procedureName = "usp_In_DanhSach_PhuLucHopDong";
         var templatePath = Path.Combine(
@@ -318,10 +315,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 searchModel.DuAnId,
                 searchModel.BuocId,
                 searchModel.Ten,
@@ -340,7 +339,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -355,7 +355,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-bao-cao-tien-do")]
-    public async Task<IActionResult> InBaoCaoTienDo([FromQuery] BaoCaoTienDoPrintSearchModel searchModel) {
+    public async Task<IActionResult> InBaoCaoTienDo([FromQuery] BaoCaoTienDoPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachBaoCaoTienDo.xlsx";
         var procedureName = "usp_In_DanhSach_BaoCaoTienDo";
         var templatePath = Path.Combine(
@@ -367,10 +368,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 NguoiBaoCaoId = _userProvider.Id,
                 searchModel.DuAnId,
                 searchModel.BuocId,
@@ -387,7 +390,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -401,7 +405,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-bao-cao-bao-hanh-san-pham")]
-    public async Task<IActionResult> InBaoCaoBaoHanhSanPham([FromQuery] BaoCaoBaoHanhSanPhamPrintSearchModel searchModel) {
+    public async Task<IActionResult> InBaoCaoBaoHanhSanPham([FromQuery] BaoCaoBaoHanhSanPhamPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachBaoCaoBaoHanhSanPham.xlsx";
         var procedureName = "usp_In_DanhSach_BaoCaoBaoHanhSanPham";
         var templatePath = Path.Combine(
@@ -413,10 +418,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 NguoiBaoCaoId = _userProvider.Id,
                 searchModel.DuAnId,
                 searchModel.BuocId,
@@ -432,7 +439,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -448,7 +456,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-bao-cao-ban-giao-san-pham")]
-    public async Task<IActionResult> InBaoCaoBanGiaoSanPham([FromQuery] BaoCaoBanGiaoSanPhamPrintSearchModel searchModel) {
+    public async Task<IActionResult> InBaoCaoBanGiaoSanPham([FromQuery] BaoCaoBanGiaoSanPhamPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachBaoCaoBanGiaoSanPham.xlsx";
         var procedureName = "usp_In_DanhSach_BaoCaoBanGiaoSanPham";
         var templatePath = Path.Combine(
@@ -460,10 +469,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 NguoiBaoCaoId = _userProvider.Id,
                 searchModel.DuAnId,
                 searchModel.BuocId,
@@ -480,7 +491,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -495,7 +507,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <param name="searchModel"></param>
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-kho-khan-vuong-mac")]
-    public async Task<IActionResult> InKhoKhanVuongMac([FromQuery] KhoKhanVuongMacPrintSearchModel searchModel) {
+    public async Task<IActionResult> InKhoKhanVuongMac([FromQuery] KhoKhanVuongMacPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachKhoKhanVuongMac.xlsx";
         var procedureName = "usp_In_DanhSach_KhoKhanVuongMac";
         var templatePath = Path.Combine(
@@ -507,10 +520,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 searchModel.DuAnId,
                 searchModel.BuocId,
                 searchModel.NoiDung,
@@ -530,7 +545,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -546,7 +562,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-tong-hop-van-ban-quyet-dinh")]
     public async Task<IActionResult>
-        InTongHopVanBanQuyetDinh([FromQuery] TongHopVanBanQuyetDinhPrintSearchModel searchModel) {
+        InTongHopVanBanQuyetDinh([FromQuery] TongHopVanBanQuyetDinhPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachTongHopVanBanQuyetDinh.xlsx";
         var procedureName = "usp_In_DanhSach_TongHopVanBanQuyetDinh";
         var templatePath = Path.Combine(
@@ -558,10 +575,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params = new {
+            Params = new
+            {
                 searchModel.DuAnId,
                 searchModel.BuocId,
                 MaELoaiVanBanQuyetDinh = searchModel.Loai?.ToString(),
@@ -578,7 +597,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -593,7 +613,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// <returns></returns>
     [HttpGet("api/print/danh-sach-tre-han-phong-ban")]
     public async Task<IActionResult>
-        InDanhSachTreHanPhongBan() {
+        InDanhSachTreHanPhongBan()
+    {
         var fileNameTemplate = "DanhSachTreHanBuocPhongBan.xlsx";
         var procedureName = "usp_In_DanhSachTreHanPhongBan";
         var templatePath = Path.Combine(
@@ -605,7 +626,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery() {
+        var query = new GetStoreQuery()
+        {
             PathTemplate = templatePath,
             ProcName = procedureName,
             Params = null,
@@ -614,7 +636,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var exportResult = await Mediator.Send(query);
 
         return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType) {
+            exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -631,7 +654,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InDanhSachPhanKhaiKinhPhi(
         [FromQuery] PhanKhaiKinhPhiPrintSearchModel searchModel,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+    {
         var fileNameTemplate = "DanhSachPhanKhaiKinhPhi.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -642,13 +666,15 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachExportQuery {
+        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachExportQuery
+        {
             DuAnId = searchModel.DuAnId,
             GlobalFilter = searchModel.GlobalFilter,
             TrangThaiId = searchModel.TrangThaiId,
         }, cancellationToken);
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiDanhSachExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiDanhSachExportDto>
+        {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
@@ -657,7 +683,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         var downloadName = $"PhanKhaiKinhPhi_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = downloadName
         };
     }
@@ -672,7 +699,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [HttpGet("api/print/ket-qua-phan-khai-von-duoc-duyet")]
     [Authorize(Roles = RoleConstants.GroupPhanKhaiKinhPhiExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InKetQuaPhanKhaiVonDuocDuyet([FromQuery] PhanKhaiKinhPhiPrintSearchModel searchModel) {
+    public async Task<IActionResult> InKetQuaPhanKhaiVonDuocDuyet([FromQuery] PhanKhaiKinhPhiPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "KetQuaPhanKhaiVonDuocDuyet.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -683,19 +711,22 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachDaDuyetExportQuery {
+        var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachDaDuyetExportQuery
+        {
             DuAnId = searchModel.DuAnId,
             GlobalFilter = searchModel.GlobalFilter,
         });
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<PhanKhaiKinhPhiExportDto>
+        {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
             AutoFitColumnsAndRows = false,
         });
 
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -711,7 +742,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [Authorize(Roles = RoleConstants.GroupDeXuatChuTruongChuyenTiepExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InDanhSachDeXuatChuTruongChuyenTiep(
-        [FromQuery] DeXuatChuyenTiepPrintSearchModel searchModel) {
+        [FromQuery] DeXuatChuyenTiepPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachDeXuatChuTruongChuyenTiep.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -722,19 +754,22 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var data = await Mediator.Send(new DeXuatChuyenTiepGetDanhSachExportQuery {
+        var data = await Mediator.Send(new DeXuatChuyenTiepGetDanhSachExportQuery
+        {
             DuAnId = searchModel.DuAnId,
             BuocId = searchModel.BuocId,
         });
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatChuyenTiepExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatChuyenTiepExportDto>
+        {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
             AutoFitColumnsAndRows = false,
         });
 
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -749,8 +784,9 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [HttpGet("api/print/danh-sach-xin-chu-truong-dau-tu")]
     [Authorize(Roles = RoleConstants.GroupXinChuTruongDauTuExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> InDanhSachXinChuTruongDauTu(
-        [FromQuery] DeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
+    public async Task<IActionResult> InDanhSachXinChuTruongDauTu(
+        [FromQuery] DeXuatNhuCauKinhPhiPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "DanhSachXinChuTruongDauTu.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -761,20 +797,23 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var data = await Mediator.Send(new DeXuatNhuCauKinhPhiGetDanhSachExportQuery {
+        var data = await Mediator.Send(new DeXuatNhuCauKinhPhiGetDanhSachExportQuery
+        {
             DuAnId = searchModel.DuAnId,
             TrangThaiId = searchModel.TrangThaiId,
             GlobalFilter = searchModel.GlobalFilter,
         });
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatNhuCauKinhPhiExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<DeXuatNhuCauKinhPhiExportDto>
+        {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
             AutoFitColumnsAndRows = false,
         });
 
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -790,7 +829,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [Authorize(Roles = RoleConstants.GroupTinhHinhDeXuatNhuCauExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InTinhHinhDeXuatNhuCau(
-        [FromQuery] TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel searchModel) {
+        [FromQuery] TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "TinhHinhDeXuatNhuCau.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -801,7 +841,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var data = await Mediator.Send(new TheoDoiDeXuatNhuCauKinhPhiGetExportQuery {
+        var data = await Mediator.Send(new TheoDoiDeXuatNhuCauKinhPhiGetExportQuery
+        {
             DuAnId = searchModel.DuAnId,
             TrangThaiId = searchModel.TrangThaiId,
             TrangThaiKeHoachId = searchModel.TrangThaiKeHoachNamId,
@@ -813,14 +854,16 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             DonViDeXuatId = searchModel.DonViDeXuatId,
         });
 
-        var exportResult = _excelExporter.Export(new AsposeInstruction<TinhHinhDeXuatNhuCauExportDto> {
+        var exportResult = _excelExporter.Export(new AsposeInstruction<TinhHinhDeXuatNhuCauExportDto>
+        {
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchModel.HiddenColumns ?? [],
             AutoFitColumnsAndRows = false,
         });
 
-        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
@@ -836,7 +879,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [Authorize(Roles = RoleConstants.GroupBaoCaoDeXuatChuTruongExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InBaoCaoDeXuatChuTruong(
-        [FromQuery] TongHopDeXuatChuTruongPrintSearchModel searchModel) {
+        [FromQuery] TongHopDeXuatChuTruongPrintSearchModel searchModel)
+    {
         var fileNameTemplate = "BaoCaoDeXuatChuTruong.xlsx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -847,7 +891,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var result = await Mediator.Send(new TongHopDeXuatChuTruongGetExportQuery {
+        var result = await Mediator.Send(new TongHopDeXuatChuTruongGetExportQuery
+        {
             DuAnId = searchModel.DuAnId,
             BuocId = searchModel.BuocId,
             GlobalFilter = searchModel.GlobalFilter,
@@ -865,19 +910,25 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 { "$TongChuyenTiep", result.TongDeXuatChuyenTiep.ToString() },
             });
 
-        try {
-            var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopDeXuatChuTruongExportDto> {
+        try
+        {
+            var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopDeXuatChuTruongExportDto>
+            {
                 TemplatePath = preparedTemplatePath,
                 Items = result.Rows,
                 HiddenColumns = searchModel.HiddenColumns ?? [],
                 AutoFitColumnsAndRows = false,
             });
 
-            return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+            {
                 FileDownloadName = GetDownloadFileName(fileNameTemplate)
             };
-        } finally {
-            if (System.IO.File.Exists(preparedTemplatePath)) {
+        }
+        finally
+        {
+            if (System.IO.File.Exists(preparedTemplatePath))
+            {
                 System.IO.File.Delete(preparedTemplatePath);
             }
         }
@@ -900,12 +951,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        
+
         var query = new GetStoreQuery()
         {
             PathTemplate = templatePath,
             ProcName = procedureName,
-            Params  = new
+            Params = new
             {
                 searchModel.LoaiDuAnTheoNamId,
                 searchModel.LoaiDuAnId,
@@ -919,7 +970,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         };
         var exportResult = await Mediator.Send(query);
 
-        return new FileContentResult(exportResult.FileBytes,    exportResult.ContentType)
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
         {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
@@ -934,7 +985,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [HttpGet("api/print/bien-ban-ban-giao-ho-so")]
     [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> InBienBanBanGiaoHoSo([FromQuery] Guid id) {
+    public async Task<IActionResult> InBienBanBanGiaoHoSo([FromQuery] Guid id)
+    {
         var fileNameTemplate = "BienBanBanGiao.docx";
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
@@ -968,5 +1020,66 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     }
 
     #endregion
+    #region Xuất tờ trình kế hoạch lcnt
+    [HttpGet("api/print/phieu-trinh-phe-duyet")]
+    [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> InPhieuTrinhPheDuyet([FromQuery] Guid id)
+    {
+        try
+        {
 
+
+            var fileNameTemplate = "PhieuTrinhPheDuyet.docx";
+            var templatePath = Path.Combine(
+                AppContext.BaseDirectory,
+                "PrintTemplates",
+                "Word",
+                fileNameTemplate
+            );
+
+            ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template PhieuTrinhPheDuyet.docx");
+
+            var entity = await Mediator.Send(new ToTrinhPheDuyetGetExportQuery()
+            {
+                Id = id,
+                ThrowIfNull = true,
+                IsNoTracking = true
+            });
+
+            var doc = new Aspose.Words.Document(templatePath);
+            doc.MailMerge.UseNonMergeFields = true;
+            DateTime? localDate = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
+        
+       
+            var replacements = new Dictionary<string, string> {
+       { "ngay", entity.NgayToTrinh.HasValue
+           ? $"ngày {localDate.Value:dd} tháng {localDate.Value:MM} năm {localDate.Value:yyyy}"
+           : $"ngày  tháng  năm " },
+
+       { "Ten", entity.Ten ?? "" },
+       { "So", entity.So ?? "" },
+
+       { "NguoiDuyet" , entity.TenLanhDaoPhuTrach != null ? entity.TenLanhDaoPhuTrach : "" },
+       { "DonViTrinh" , entity.TenDonViTrinh != null ? entity.TenDonViTrinh: "" },
+       { "TenDuAn", entity.TenDuAn ?? "" },
+       { "NgayToTrinh", entity.NgayToTrinh.HasValue
+                       ? entity.NgayToTrinh.Value.ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy")},
+       { "TrichYeu", entity.TrichYeu ?? "" }
+   };
+
+
+            var bytes = _wordHelper.ExportFromTemplate(templatePath, replacements);
+
+            return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                GetDownloadFileName(fileNameTemplate));
+
+        }
+        catch (Exception ex)
+        {
+            Log.Error("in phe duyet" + ex.Message);
+            throw;
+        }
+    }
+    #endregion
 }

@@ -3,7 +3,7 @@ namespace QLDA.Application.DuAns.DTOs;
 /// <summary>
 /// Search DTO cho print/export dự án — không phân trang
 /// </summary>
-public record DuAnPrintSearchDto {
+public record DuAnPrintSearchDto : IMayHaveGlobalFilter {
     public string? TenDuAn { get; set; }
     public string? MaDuAn { get; set; }
     public int? LinhVucId { get; set; }

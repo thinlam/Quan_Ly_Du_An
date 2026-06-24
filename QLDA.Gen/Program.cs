@@ -70,14 +70,10 @@ class Program
 
     private static List<TemplateEntry> BuildRegistry(string basePath) =>
     [
-        new("tinh-hinh-de-xuat-nhu-cau",
-            g => g.GenerateTemplate(CreateDescriptor<TinhHinhDeXuatNhuCauExportDescriptor>(basePath))),
-        new("bao-cao-de-xuat-chu-truong",
-            g => g.GenerateTemplate(CreateDescriptor<BaoCaoDeXuatChuTruongExportDescriptor>(basePath))),
-        new("danh-sach-phan-khai-kinh-phi",
-            g => g.GenerateTemplate(CreateDescriptor<DanhSachPhanKhaiKinhPhiExportDescriptor>(basePath))),
-        new("import-phan-khai-kinh-phi",
-            g => g.GenerateImportTemplate(CreateImportDescriptor<PhanKhaiKinhPhiImportDescriptor>(basePath))),
+        new("danh-sach-du-an",
+            g => g.GenerateTemplate(CreateDescriptor<DanhSachDuAnExportDescriptor>(basePath))),
+        new("danh-sach-tong-hop-van-ban-quyet-dinh",
+            g => g.GenerateTemplate(CreateDescriptor<DanhSachTongHopVanBanQuyetDinhExportDescriptor>(basePath))),
     ];
 
     private static T CreateImportDescriptor<T>(string basePath) where T : IImportDescriptor, new()

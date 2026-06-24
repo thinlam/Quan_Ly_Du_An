@@ -40,6 +40,23 @@ public record DuAnBuocDuAnUpdateStateCommandHandler : IRequestHandler<DuAnBuocDu
         // Phân quyền: tất cả field đều yêu cầu Owner/LanhDao/KHTC
         await _auth.EnsureCanManageStepFieldsAsync(entity.Id, _ctx, cancellationToken);
 
+        // Validate PhongPhuTrachChinhId (nếu có) thuộc DuAn.DuAnChiuTrachNhiemXuLys hoặc DuAn.DonViPhuTrachChinhId
+        if (request.Dto.PhongPhuTrachChinhId.HasValue) {
+            var allowedPhongBanIds = await _duAnRepo.GetQueryableSet()
+                .Where(d => d.Id == entity.DuAnId)
+                .Select(d => new {
+                    ChiuTrachNhiemIds = d.DuAnChiuTrachNhiemXuLys!.Select(x => x.RightId),
+                    d.DonViPhuTrachChinhId
+                })
+                .Select(d => new { All = d.ChiuTrachNhiemIds.Concat(new[] { d.DonViPhuTrachChinhId ?? 0 }) })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var allowedSet = (allowedPhongBanIds?.All ?? Enumerable.Empty<long>()).ToHashSet();
+            if (!allowedSet.Contains(request.Dto.PhongPhuTrachChinhId.Value))
+                throw new ManagedException(
+                    $"Phòng ban phụ trách chính ({request.Dto.PhongPhuTrachChinhId}) không thuộc phạm vi chịu trách nhiệm xử lý của dự án.");
+        }
+
         entity.UpdateState(request.Dto);
 
         // Update DanhSachPhongBanPhoiHops (nếu DTO gửi list)

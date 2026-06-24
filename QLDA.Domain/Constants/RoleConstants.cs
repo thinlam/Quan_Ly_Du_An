@@ -68,7 +68,8 @@ public static class RoleConstants {
     /// <summary>
     /// Kết xuất Excel báo cáo đề xuất chủ trương (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
     /// </summary>
+    
     public const string GroupBaoCaoDeXuatChuTruongExport =
-        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+        $"{QLDA_QuanTri},{QLDA_LDDV}";
 
 }

@@ -1,3 +1,5 @@
+using QLDA.Domain.Constants;
+
 namespace QLDA.Domain.Entities;
 
 /// <summary>
@@ -9,6 +11,7 @@ public class KeHoachLuaChonNhaThau : VanBanQuyetDinh {
     /// Tên kế hoạch lựa chọn nhà thầu
     /// </summary>
     public string? Ten { get; set; }
+    public KeHoachLuaChonNhaThauLoai? LoaiKeHoach { get; set; }
 
     #region Navigation Properties
 

@@ -9,33 +9,44 @@ public class AsposeHelper : IAsposeHelper
 {
     private static readonly Regex StartMergeRegex = new(@"^\$StartMerge\d*_(.+)$", RegexOptions.Compiled);
     private static readonly Regex EndMergeRegex = new(@"^\$EndMerge\d*_(.+)$", RegexOptions.Compiled);
-    private static bool _isCellsLicenseSet;
-    private static bool _isWordsLicenseSet;
 
-    [Obsolete("Use EnsureCellsLicense or EnsureWordsLicense")]
+    // Process-wide flag for the parameterless EnsureLicense() overload. Both Aspose.Cells
+    // and Aspose.Words license state is shared (same Total license file), so a single
+    // bool is sufficient. Thread-safety: a benign race here would call SetLicense twice,
+    // which Aspose documents as idempotent.
+    private static bool _isLicenseSet;
+
+    public void EnsureLicense() => EnsureLicense(ref _isLicenseSet);
+
     public void EnsureLicense(ref bool isLicenseSet)
     {
-        EnsureCellsLicense();
-        EnsureWordsLicense();
-        isLicenseSet = true;
-    }
+        if (isLicenseSet) return;
 
-    public void EnsureCellsLicense()
-    {
-        if (!_isCellsLicenseSet)
-        {
-            new Aspose.Cells.License().SetLicense("LicenseAsposeTotal.lic");
-            _isCellsLicenseSet = true;
-        }
-    }
+        // License is shipped as an embedded resource in THIS assembly
+        // (BuildingBlocks.Infrastructure.csproj: <EmbeddedResource Include="Offices\LicenseAsposeTotal.lic" />).
+        // Centralizing it here means every module that references BuildingBlocks.Infrastructure
+        // automatically gets the license — no per-module copy needed. Using SetLicense(Stream)
+        // also avoids any CWD/path issues (e.g. DNN module deployment runs at DNN site root).
+        const string ResourceName = "BuildingBlocks.Infrastructure.Offices.LicenseAsposeTotal.lic";
 
-    public void EnsureWordsLicense()
-    {
-        if (!_isWordsLicenseSet)
+        var licenseStream = typeof(AsposeHelper).Assembly.GetManifestResourceStream(ResourceName) ?? throw new InvalidOperationException(
+                $"Aspose license resource '{ResourceName}' not found in {typeof(AsposeHelper).Assembly.GetName().Name}. " +
+                "Ensure BuildingBlocks.Infrastructure.csproj includes " +
+                "<EmbeddedResource Include=\"Offices\\LicenseAsposeTotal.lic\" />.");
+
+        // The same Total license file works for both Aspose.Cells and Aspose.Words.
+        // Read once into memory and feed a fresh MemoryStream to each — Cells' SetLicense
+        // does not reset position, so the stream cannot be safely reused after the first call.
+        byte[] licenseBytes;
+        using (licenseStream)
         {
-            new Aspose.Words.License().SetLicense("LicenseAsposeTotal.lic");
-            _isWordsLicenseSet = true;
+            using var buffer = new MemoryStream();
+            licenseStream.CopyTo(buffer);
+            licenseBytes = buffer.ToArray();
         }
+
+        new License().SetLicense(new MemoryStream(licenseBytes));
+        new Aspose.Words.License().SetLicense(new MemoryStream(licenseBytes));
     }
 
     /// <summary>

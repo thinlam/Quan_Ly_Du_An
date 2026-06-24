@@ -13,89 +13,29 @@ public enum TemplateLayoutType
     /// <summary>
     /// R1: Title (merged all data columns) | R2: Display headers (B, S11, no fill) | R3: $Field (white fill, S11).
     /// Has STT column. Template row = R3.
-    /// Used by: thu-tien, hop-dong-can-thu-tien, hop-dong-can-xuat-hoa-don, hop-dong-sap-het-han, tien-do-ky-hop-dong.
     /// </summary>
     Standard3Row,
 
     /// <summary>
     /// R1: Title (merged) | R2: BLANK (B2:M2 merged) | R3: Display headers (B, S11) | R4: $Field (white fill, S11).
     /// Has STT column. Template row = R4.
-    /// Used by: du-an, chi-phi, xuat-hoa-don.
     /// </summary>
     Standard4RowBlank,
 
     /// <summary>
-    /// R1: Title (NO merge) | R2: $Field with gray fill (B, S14, #C8C8C8) | R3: $Field_Value.
-    /// NO STT column. Template row = R2 (serves as both header and binding).
-    /// Used by: khach-hang, nguoi-dung.
+    /// Simple letterhead: 1-row letterhead text (R1) + title (R2) + display headers (R3, bold, thin border)
+    /// + $Field template row (R4, thin border). Letterhead text is taken from <see cref="IExportDescriptor.LetterheadText"/>.
+    /// Template row = R4. No blue fill, no merged letterhead block.
     /// </summary>
-    NoStt3Row,
+    SimpleLetterheadExport,
 
     /// <summary>
-    /// R1: Title (NO merge) | R2: Display headers (B, S14, gray fill) | R3: $Field (no format) | R4: $Field_Value (no format).
-    /// NO STT column. Template row = R3.
-    /// Used by: doanh-nghiep, cong-viec, bao-cao-tong-hop/XuatHoaDon, bao-cao-tong-hop/ThuTien, bao-cao-tong-hop/TongHop.
+    /// Standard 6-row with letterhead: 2-row letterhead (R1-R2) + title (R3) + blank (R4)
+    /// + display headers (R5, bold, thin border) + $Field template row (R6, thin border).
+    /// Letterhead text taken from <see cref="IExportDescriptor.LetterheadText"/>.
+    /// Template row = R6. No blue fill.
     /// </summary>
-    NoStt4Row,
-
-    /// <summary>
-    /// Special: 3-row layout without STT but with display headers.
-    /// R1: Title (merged A1:L1 — 12 cols) | R2: Display headers (B, S11, no fill) | R3: $Field (white fill, S11).
-    /// First column is data (e.g. SoHopDong), not STT. Template row = R3.
-    /// Used by: hop-dong.
-    /// </summary>
-    HopDong3Row,
-
-    /// <summary>
-    /// Special ke-hoach-thang layout.
-    /// R1: Title (merged across the full data range; <see cref="IExportDescriptor.TitleMergeStartColumn"/>
-    /// controls whether column A is included) | R2: Display headers (B, S11, gray fill)
-    /// R3: $Field markers in every column (template row) | R4: $Field_Value in non-STT columns, A4 empty.
-    /// AsposeHelper binds every $Field marker in R3 to a dictionary key of the same name.
-    /// Used by: ke-hoach-thang.
-    /// </summary>
-    KeHoachThang,
-
-    /// <summary>
-    /// Same as Standard3Row but with thin border on rows 2 (display headers) and 3 ($Field).
-    /// R1: Title (merged) | R2: Display headers (B, default size, no fill, thin border)
-    /// R3: $Field (white fill for non-STT, S11, thin border). Has STT column.
-    /// Used by: ke-hoach-thang-danh-sach, ke-hoach-kinh-doanh-nam-danh-sach.
-    /// </summary>
-    Standard3RowWithBorder,
-
-    /// <summary>
-    /// Special 3-row layout where the template row uses $Field_Value markers instead of $Field.
-    /// R1: Title (merged A1:I1) | R2: Display headers (B, S11, gray fill) | R3: $STT + $Field_Value (no format).
-    /// Has STT column. Template row = R3.
-    /// Used by: bao-cao-tong-hop/DuAn.
-    /// </summary>
-    BaoCaoTongHopDuAn,
-
-    /// <summary>
-    /// Special 3-row layout for ke-hoach-thang-chi-tiet.
-    /// R1: Title (merged A1:LastCol). R2: Display headers (B, S14, no fill) with thin border.
-    /// R3: $Field markers (S12, STT no fill, non-STT white fill) with thin border.
-    /// Template row = R3. Borders on R2 and R3 match the existing hand-crafted template.
-    /// Used by: ke-hoach-thang-chi-tiet.
-    /// </summary>
-    KeHoachThangChiTiet,
-
-    /// <summary>
-    /// Letterhead export layout (UBND / Cộng hòa) + blue table header.
-    /// R1-R2: Letterhead (left/right merge) | R3: Report title (merged, bold, centered)
-    /// R4: Display headers (blue #D9E1F2, bold, border) | R5: $Field (template row, border, wrap).
-    /// Template row = R5. Used by: tinh-hinh-de-xuat-nhu-cau, danh-sach-de-xuat-chu-truong-chuyen-tiep.
-    /// </summary>
-    LetterheadExport,
-
-    /// <summary>
-    /// LetterheadExport + summary row before table headers.
-    /// R1-R2: Letterhead | R3: Title | R4: $TongSo... stats (merged)
-    /// R5: Blue headers | R6: $Field template row.
-    /// Used by: bao-cao-de-xuat-chu-truong.
-    /// </summary>
-    LetterheadExportWithSummary,
+    Standard6RowWithLetterhead,
 }
 
 public interface IExportDescriptor
@@ -138,6 +78,14 @@ public interface IExportDescriptor
     /// 1-based end column of the blank row merge. Default = last data column.
     /// </summary>
     int? BlankRowMergeEndColumn => null;
+
+    /// <summary>
+    /// Letterhead text used by SimpleLetterheadExport and Standard6RowWithLetterhead layouts.
+    /// The generator splits the text on "\n" and puts each line in the next letterhead row,
+    /// left-aligned, bold, Times New Roman 11pt. When null (the default), falls back to
+    /// the hardcoded "Trung tâm chuyển đổi số Tp Hồ Chí Minh" used by existing letterhead templates.
+    /// </summary>
+    string? LetterheadText => null;
 }
 
 /// <summary>

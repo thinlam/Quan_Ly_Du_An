@@ -15,7 +15,7 @@ public record ToTrinhPheDuyetDuyetCommand(Guid Id, string Loai) : IRequest<int>;
 
 internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetDuyetCommand, int> {
     private readonly DbContext _dbContext;
-    private readonly IRepository<Domain.Entities.ToTrinhPheDuyet, Guid> _repository;
+    private readonly IRepository<ToTrinhPheDuyet, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IBuocAuthorizationProvider _auth;
@@ -26,7 +26,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
 
     public ToTrinhPheDuyetDuyetCommandHandler(DbContext dbContext, IServiceProvider serviceProvider) {
         _dbContext = dbContext;
-        _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhPheDuyet, Guid>>();
+        _repository = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -89,7 +89,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-
+      
         await _historyRepository.AddAsync(history, cancellationToken);
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
