@@ -1,3 +1,4 @@
+using System.Globalization;
 using BuildingBlocks.Domain.Providers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,6 @@ using QLDA.Application.BanGiaoHoSos.DTOs;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 
-// Không implement IMayHaveGlobalFilter - không có search full-text
 // CreatedBy luôn lấy từ IUserProvider (JWT token), không cho UI truyền
 public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<PaginatedList<BanGiaoHoSoDto>>
 {
@@ -46,6 +46,8 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
         // LeftOuterJoin UserMaster và DanhMucDonVi (không FK – bảng đặc biệt)
         var users = _userMasterRepository.GetQueryableSet().AsNoTracking();
         var donVis = _danhMucDonViRepository.GetQueryableSet().AsNoTracking();
+        var keywordLower = request.SearchDto.GlobalFilter?.Trim()
+            .ToLower(CultureInfo.CurrentCulture);
         var queryable = _buocAuth.FilterVisibleChildEntities(_banGiaoRepository.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
             .Where(e => e.CreatedBy == _authContext.UserId.ToString())
             .WhereIf(request.SearchDto.TrangThai.HasValue, e => (int)e.TrangThai == request.SearchDto.TrangThai!.Value)
@@ -54,6 +56,17 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
             .LeftOuterJoin(users, e => e.CreatedBy, u => u.Id.ToString(), (e, user) => new { e, user })
             .LeftOuterJoin(donVis, x => x.e.PhongBanChuTriId, d => (long?)d.Id, (x, donViChuTri) => new { x.e, x.user, donViChuTri })
             .LeftOuterJoin(donVis, x => x.e.PhongBanNhanId, d => (long?)d.Id, (x, donViNhan) => new { x.e, x.user, x.donViChuTri, donViNhan })
+            .WhereIf(!string.IsNullOrWhiteSpace(keywordLower), x =>
+                (x.e.Ma != null && x.e.Ma.ToLower().Contains(keywordLower!))
+                || (x.e.TenHoSo != null && x.e.TenHoSo.ToLower().Contains(keywordLower!))
+                || (x.e.DuAn != null && x.e.DuAn.TenDuAn != null && x.e.DuAn.TenDuAn.ToLower().Contains(keywordLower!))
+                || (x.e.Buoc != null && x.e.Buoc.TenBuoc != null && x.e.Buoc.TenBuoc.ToLower().Contains(keywordLower!))
+                || (x.e.GhiChu != null && x.e.GhiChu.ToLower().Contains(keywordLower!))
+                || (x.donViChuTri != null && x.donViChuTri.TenDonVi != null && x.donViChuTri.TenDonVi.ToLower().Contains(keywordLower!))
+                || (x.donViNhan != null && x.donViNhan.TenDonVi != null && x.donViNhan.TenDonVi.ToLower().Contains(keywordLower!))
+                || (x.user != null && x.user.HoTen != null && x.user.HoTen.ToLower().Contains(keywordLower!))
+                || (x.e.TrangThai == ETrangThaiBanGiao.KhoiTao && "khởi tạo".Contains(keywordLower!))
+                || (x.e.TrangThai == ETrangThaiBanGiao.DaBanGiao && "đã bàn giao".Contains(keywordLower!)))
             .OrderByDescending(x => x.e.CreatedAt)
             .Select(x => new BanGiaoHoSoDto
             {
