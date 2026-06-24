@@ -72,4 +72,10 @@ public static class RoleConstants {
     public const string GroupBaoCaoDeXuatChuTruongExport =
         $"{QLDA_QuanTri},{QLDA_LDDV}";
 
+    /// <summary>
+    /// Kết xuất Excel tổng hợp nhu cầu kinh phí năm (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
+    /// </summary>
+    public const string GroupTongHopNhuCauKinhPhiNamExport =
+        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
 }

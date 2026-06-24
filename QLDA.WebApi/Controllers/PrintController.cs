@@ -3,6 +3,8 @@ using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Application.DeXuatChuyenTieps.Queries;
+using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
+using QLDA.Application.DeXuatNhuCauKinhPhiNams.Queries;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 using QLDA.Application.DuAnBuocs.DTOs;
@@ -22,6 +24,7 @@ using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
+using QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
@@ -815,6 +818,54 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
         {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region TongHopNhuCauKinhPhiNam
+
+    /// <summary>
+    /// TongHopNhuCauKinhPhiNam.xlsx — Export tổng hợp nhu cầu kinh phí năm
+    /// </summary>
+    [HttpGet("api/print/tong-hop-nhu-cau-kinh-phi-nam")]
+    [Authorize(Roles = RoleConstants.GroupTongHopNhuCauKinhPhiNamExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InTongHopNhuCauKinhPhiNam(
+        [FromQuery] DeXuatNhuCauKinhPhiNamPrintSearchModel searchModel,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "TongHopNhuCauKinhPhiNam.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var data = await Mediator.Send(new DeXuatNhuCauKinhPhiNamGetExportQuery
+        {
+            So = searchModel.So,
+            TrichYeu = searchModel.TrichYeu,
+            TuNgay = searchModel.TuNgay,
+            DenNgay = searchModel.DenNgay,
+            TrangThaiId = searchModel.TrangThaiId,
+            GlobalFilter = searchModel.GlobalFilter,
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopNhuCauKinhPhiNamExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = $"TongHopNhuCauKinhPhiNam_{DateTime.Now:yyyyMMddHHmmss}.xlsx"
         };
     }
 
