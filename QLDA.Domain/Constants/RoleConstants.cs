@@ -83,4 +83,10 @@ public static class RoleConstants {
     public const string GroupDeXuatNhuCauKinhPhiChuTruongExport =
         $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
 
+    /// <summary>
+    /// Kết xuất Excel kế hoạch triển khai hạng mục (PMIS #9469)
+    /// </summary>
+    public const string GroupKeHoachTrienKhaiHangMucExport =
+        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
 }
