@@ -1,3 +1,5 @@
+using QLDA.Domain.Constants;
+
 namespace QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 
 public class DuongDiTrangThaiToTrinhDto{

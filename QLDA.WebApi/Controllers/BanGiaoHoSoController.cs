@@ -44,7 +44,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
         var res = await _mediator.Send(new BanGiaoHoSoGetDanhSachQuery {
             SearchDto = searchDto,
             PageIndex = pagination.PageIndex,
-            PageSize = pagination.PageSize
+            PageSize = pagination.PageSize,
         });
         return ResultApi.Ok(res);
     }

@@ -103,12 +103,14 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         if (Enum.IsDefined(typeof(KeHoachLuaChonNhaThauLoai), request.Loai))
         {
             var entityKeHoach = await _repository.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
-            ManagedException.ThrowIfNull(entity, "Không tìm thấy kế hoạch cần cập nhật");
+            ManagedException.ThrowIfNull(entityKeHoach, "Không tìm thấy kế hoạch cần cập nhật");
             var keHoach = new KeHoachLuaChonNhaThau
             {
                 Id = Guid.NewGuid(),
                 Ten = entityKeHoach.Ten,
                 Loai = request.Loai,
+                DuAnId= entityKeHoach.DuAnId,
+                BuocId = entityKeHoach.BuocId
             };
             await _keHoachRepo.AddAsync(keHoach, cancellationToken);
         }

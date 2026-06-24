@@ -34,4 +34,5 @@ public class TheoDoiDeXuatNhuCauKinhPhiDto : IHasKey<Guid?>, IMustHaveId<Guid>, 
 
     public DateTimeOffset? NgayDuyetDeXuat { get; set; }
     public DateTimeOffset? NgayDuyetKeHoach { get; set; }
+    public List<TepDinhKemDto>? DanhSachTep { get; set; }
 }

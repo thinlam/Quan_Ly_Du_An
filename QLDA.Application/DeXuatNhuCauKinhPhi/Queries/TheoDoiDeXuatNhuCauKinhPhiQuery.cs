@@ -30,13 +30,13 @@ internal class
     : IRequestHandler<TheoDoiDeXuatNhuCauKinhPhiQuery, PaginatedList<TheoDoiDeXuatNhuCauKinhPhiDto>>
 {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
-   // private readonly IRepository<BuildingBlocks.Domain.Entities.UserMaster, long> _userMasterRepository =
-     // ServiceProvider.GetRequiredService<IRepository<BuildingBlocks.Domain.Entities.UserMaster, long>>();
+  
     private readonly IRepository<PheDuyet, Guid> pheDuyet = ServiceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
     private readonly IRepository<DeXuatNhuCauKinhPhiNam, Guid> keHoachNam = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhiNam, Guid>>();
-    // private readonly IRepository<TepDinhKem, Guid> TepDinhKem =   ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> TepDinhKem =   ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository = ServiceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
     private readonly IRepository<DmDonVi, long> DanhMucDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
+  //  private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> __tepDinhKemRepository = ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
 
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
@@ -131,8 +131,14 @@ internal class
                             .Where(t => t.DeXuatNhuCauKinhPhiNam != null && !t.DeXuatNhuCauKinhPhiNam.IsDeleted)
                             .Select(t => t.DeXuatNhuCauKinhPhiNam!.TrangThaiId == trangThaiDaDuyet!.Id
                             ? (t.DeXuatNhuCauKinhPhiNam!.TrangThai != null ? t.DeXuatNhuCauKinhPhiNam.TrangThai!.Ten : "--")
-                            : "--").FirstOrDefault() ?? "--"
-        })
+                            : "--").FirstOrDefault() ?? "--",
+
+            // Tệp 
+                DanhSachTep = TepDinhKem.GetQueryableSet()
+                    .Where(f => f.GroupId == x.Id.ToString() && !f.IsDeleted) //&& f.GroupType == nameof(EGroupType.BanGiaoHoSo) )
+                    .Select(f => f.ToDto()).ToList()
+    
+    })
         .PaginatedListAsync( request.Skip(), request.Take(),  cancellationToken: cancellationToken);
     }
 }

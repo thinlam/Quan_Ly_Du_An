@@ -1,4 +1,5 @@
-﻿using QLDA.Domain.Entities;
+﻿using QLDA.Domain.Constants;
+using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
 using System.ComponentModel;
 
@@ -17,22 +18,4 @@ public class DuongDiTrangThaiToTrinh :IHasKey<long>, IAggregateRoot
     public bool Used { get; set; }
     public bool? IsDeleted { get; set; }
 
-}
-
-public enum DuongDiToTrinhRoleLevel
-{
-    [Description("Bất kỳ")]
-    BatKy =0,
-    [Description("Phòng ban chủ trì")]
-    PhongBanChuTri =1,
-
-    [Description("Người dùng chỉ định")]
-    NguoiDung,
-
-    [Description("Phòng ban chỉ định")]
-    PhongBanChiDinh,
-    [Description("Người phụ trách chính")]
-    NguoiPhuTrachChinh,
-    [Description("Đơn vị chỉ định")]
-    DonVi
 }

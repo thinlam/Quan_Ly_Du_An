@@ -1149,12 +1149,12 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
             var doc = new Aspose.Words.Document(templatePath);
             doc.MailMerge.UseNonMergeFields = true;
-            DateTime? localDate = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
+            DateTime? ngayToTrinh = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
         
        
             var replacements = new Dictionary<string, string> {
        { "ngay", entity.NgayToTrinh.HasValue
-           ? $"ngày {localDate.Value:dd} tháng {localDate.Value:MM} năm {localDate.Value:yyyy}"
+           ? $"ngày {ngayToTrinh.Value:dd} tháng {ngayToTrinh.Value:MM} năm {ngayToTrinh.Value:yyyy}"
            : $"ngày  tháng  năm " },
 
        { "Ten", entity.Ten ?? "" },
@@ -1163,8 +1163,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
        { "NguoiDuyet" , entity.TenLanhDaoPhuTrach != null ? entity.TenLanhDaoPhuTrach : "" },
        { "DonViTrinh" , entity.TenDonViTrinh != null ? entity.TenDonViTrinh: "" },
        { "TenDuAn", entity.TenDuAn ?? "" },
-       { "NgayToTrinh", entity.NgayToTrinh.HasValue
-                       ? entity.NgayToTrinh.Value.ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy")},
+       { "NgayToTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
        { "TrichYeu", entity.TrichYeu ?? "" }
    };
 
