@@ -56,13 +56,6 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
     private IQueryable<KeHoachTrienKhaiHangMuc> BuildFilteredQueryable(
         KeHoachTrienKhaiHangMucGetExportQuery request)
     {
-        DateTimeOffset? tuNgayDto = null;
-        DateTimeOffset? denNgayExclusiveDto = null;
-        if (request.TuNgay.HasValue)
-            tuNgayDto = new DateTimeOffset(request.TuNgay.Value.ToDateTime(TimeOnly.MinValue));
-        if (request.DenNgay.HasValue)
-            denNgayExclusiveDto = new DateTimeOffset(request.DenNgay.Value.ToDateTime(TimeOnly.MinValue)).AddDays(1);
-
         return _buocAuth.FilterVisibleChildEntities(
                 _keHoachRepo.GetQueryableSet(),
                 _duAnBuocRepo,
@@ -77,8 +70,8 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
             .WhereIf(request.So != null, e => e.So.Contains(request.So!))
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(), e => e.TrichYeu!.Contains(request.TrichYeu!))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
-            .WhereIf(tuNgayDto != null, e => e.NgayToTrinh >= tuNgayDto)
-            .WhereIf(denNgayExclusiveDto != null, e => e.NgayToTrinh < denNgayExclusiveDto);
+            .WhereIf(request.TuNgay.HasValue, e => e.NgayToTrinh.HasValue && e.NgayToTrinh.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
+            .WhereIf(request.DenNgay.HasValue, e => e.NgayToTrinh.HasValue && e.NgayToTrinh.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
     }
 
     private static async Task<List<HangMucKeHoach>> LoadHangMucsAsync(
