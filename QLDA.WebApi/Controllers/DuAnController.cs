@@ -17,7 +17,7 @@ using QLDA.WebApi.Models.DuAns;
 
 namespace QLDA.WebApi.Controllers
 {
-    [Tags("api/du-an/Dự án")]
+    [Tags("Dự án")]
     public class DuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
     {
         /// <summary>

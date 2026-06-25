@@ -163,13 +163,13 @@ internal class DuAnBuocCloneCommandHandler : IRequestHandler<DuAnBuocCloneComman
                 e.Path.StartsWith(step.Path.EndsWith("/") ? step.Path : step.Path + "/")
             );
             if (isLeaf && request.DuAn.NgayBatDau != null) {
-                var startDate = request.DuAn.NgayBatDau;
-                var endDate = request.DuAn.NgayBatDau;
-                node.NgayDuKienBatDau = firstNode ? startDate : endDate!.Value.AddDays(1);
-                node.NgayDuKienKetThuc = node.NgayDuKienBatDau!.Value.AddDays(step.SoNgayThucHien == 0 ? 1 : step.SoNgayThucHien);
-                ;
-                endDate = node.NgayDuKienKetThuc.Value;
-                firstNode = false;
+                // TODO: TẠM TẮT - bật lại sau khi fix SoNgayThucHien → NgayDuKienKetThuc
+                // var startDate = request.DuAn.NgayBatDau;
+                // var endDate = request.DuAn.NgayBatDau;
+                // node.NgayDuKienBatDau = firstNode ? startDate : endDate!.Value.AddDays(1);
+                // node.NgayDuKienKetThuc = node.NgayDuKienBatDau!.Value.AddDays(step.SoNgayThucHien == 0 ? 1 : step.SoNgayThucHien);
+                // endDate = node.NgayDuKienKetThuc.Value;
+                // firstNode = false;
             } else {
                 node.NgayDuKienBatDau = null;
                 node.NgayDuKienKetThuc = null;
