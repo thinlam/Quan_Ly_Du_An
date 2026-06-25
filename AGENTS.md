@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **Quan_Ly_Du_An** (18000 symbols, 38060 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **QuanLyDuAn** (18293 symbols, 38244 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
@@ -25,10 +25,10 @@ This project is indexed by GitNexus as **Quan_Ly_Du_An** (18000 symbols, 38060 r
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/Quan_Ly_Du_An/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/Quan_Ly_Du_An/clusters` | All functional areas |
-| `gitnexus://repo/Quan_Ly_Du_An/processes` | All execution flows |
-| `gitnexus://repo/Quan_Ly_Du_An/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/QuanLyDuAn/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/QuanLyDuAn/clusters` | All functional areas |
+| `gitnexus://repo/QuanLyDuAn/processes` | All execution flows |
+| `gitnexus://repo/QuanLyDuAn/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 
