@@ -13,6 +13,8 @@ using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuAns.Queries;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.HopDongs.DTOs;
+using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
+using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
@@ -1180,5 +1182,60 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             throw;
         }
     }
+    #endregion
+
+    #region KeHoachTrienKhaiHangMuc
+
+    /// <summary>
+    /// KeHoachTrienKhaiHangMuc.xlsx — Export kế hoạch triển khai hạng mục theo giai đoạn (PMIS #9469)
+    /// </summary>
+    [HttpGet("api/print/ke-hoach-trien-khai-hang-muc")]
+    [Authorize(Roles = RoleConstants.GroupKeHoachTrienKhaiHangMucExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InKeHoachTrienKhaiHangMuc(
+        [FromQuery] KeHoachTrienKhaiHangMucPrintSearchDto searchDto,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "KeHoachTrienKhaiHangMuc.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "ExportTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var rows = await Mediator.Send(new KeHoachTrienKhaiHangMucGetExportQuery
+        {
+            Id = searchDto.Id,
+            DuAnId = searchDto.DuAnId,
+            BuocId = searchDto.BuocId,
+            So = searchDto.So,
+            TrichYeu = searchDto.TrichYeu,
+            TuNgay = searchDto.TuNgay,
+            DenNgay = searchDto.DenNgay,
+            GlobalFilter = searchDto.GlobalFilter,
+            TrangThaiId = searchDto.TrangThaiId,
+            LoaiDuAnTheoNamId = searchDto.LoaiDuAnTheoNamId,
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<KeHoachTrienKhaiHangMucExportItemDto>
+        {
+            TemplatePath = templatePath,
+            Items = rows,
+            HiddenColumns = searchDto.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        exportResult = KeHoachTrienKhaiHangMucExportStyler.Apply(
+            exportResult, rows, _asposeHelper, templatePath);
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = $"KeHoachTrienKhaiHangMuc_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+        };
+    }
+
     #endregion
 }
