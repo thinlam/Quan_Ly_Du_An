@@ -1155,6 +1155,99 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         };
     }
 
+    #region DanhSachBanGiaoHoSo
+
+    /// <summary>
+    /// DanhSachBanGiaoHoSo.xlsx — Export danh sách bàn giao hồ sơ (theo filter grid, không phân trang)
+    /// </summary>
+    [HttpGet("api/print/danh-sach-ban-giao-ho-so")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachBanGiaoHoSo(
+        [FromQuery] BanGiaoHoSoSearchDto searchDto,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "DanhSachBanGiaoHoSo.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var data = await Mediator.Send(new BanGiaoHoSoGetDanhSachExportQuery
+        {
+            SearchDto = searchDto
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<BanGiaoHoSoDanhSachExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region FileBanGiaoHoSo
+
+    /// <summary>
+    /// DanhSachFileBanGiaoHoSo.xlsx — Export danh sách tệp HS bàn giao của một bản ghi
+    /// </summary>
+    [HttpGet("api/print/file-ban-giao-ho-so")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InFileBanGiaoHoSo(
+        [FromQuery] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "DanhSachFileBanGiaoHoSo.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var result = await Mediator.Send(new BanGiaoHoSoGetFileExportQuery(id), cancellationToken);
+
+        var rows = new List<Dictionary<string, object?>>();
+        for (var i = 0; i < result.Files.Count; i++)
+        {
+            var file = result.Files[i];
+            rows.Add(new Dictionary<string, object?>
+            {
+                ["Level"] = i == 0 ? 1 : 2,
+                ["TenDuAn"] = i == 0 ? result.TenDuAn : null,
+                ["TenFile"] = file.TenFile,
+                ["ThoiGianDinhKem"] = file.ThoiGianDinhKem.LocalDateTime.ToString("dd/MM/yyyy"),
+            });
+        }
+
+        var exportResult = _excelExporter.ExportMultiLevelHierarchical(new MultiLevelHierarchicalInstruction
+        {
+            TemplatePath = templatePath,
+            Rows = rows,
+            RootLevel = 1,
+            MergedColumnIndices = [0, 1],
+            SttPropertyName = "Stt",
+            SttColumnIndex = 0,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
     #region In_BienBanBanGiao_HoSo
 
     /// <summary>

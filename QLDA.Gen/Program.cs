@@ -82,6 +82,10 @@ class Program
             g => g.GenerateTemplate(CreateDescriptor<KeHoachTrienKhaiHangMucExportDescriptor>(basePath))),
         new("tinh-hinh-thuc-hien-dau-thau",
             g => g.GenerateTemplate(CreateDescriptor<TinhHinhThucHienDauThauExportDescriptor>(basePath))),
+        new("danh-sach-ban-giao-ho-so",
+            g => g.GenerateTemplate(CreateDescriptor<DanhSachBanGiaoHoSoExportDescriptor>(basePath))),
+        new("danh-sach-file-ban-giao-ho-so",
+            g => g.GenerateTemplate(CreateDescriptor<DanhSachFileBanGiaoHoSoExportDescriptor>(basePath))),
     ];
 
     private static T CreateImportDescriptor<T>(string basePath) where T : IImportDescriptor, new()
