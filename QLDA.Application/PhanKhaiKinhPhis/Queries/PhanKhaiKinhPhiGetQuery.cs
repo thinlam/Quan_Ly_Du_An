@@ -17,6 +17,7 @@ internal class PhanKhaiKinhPhiGetQueryHandler(IServiceProvider serviceProvider)
         var queryable = _repo.GetOrderedSet()
             .Include(e => e.TrangThai)
             .Include(e => e.NguonVon)
+            .Include(e => e.DuAn)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

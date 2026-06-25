@@ -8,6 +8,7 @@ public class PhanKhaiKinhPhiDanhSachExportDto {
     public string? TenDuAn { get; set; }
     public long? TongMucDauTu { get; set; }
     public string? SoToTrinh { get; set; }
+    public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayToTrinh { get; set; }
     public decimal? KinhPhiDeXuat { get; set; }
     public decimal? KinhPhiPhanKhai { get; set; }

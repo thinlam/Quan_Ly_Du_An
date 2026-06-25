@@ -1470,7 +1470,65 @@ public async Task<IActionResult> InPhieuTrinhPhanKhaiKinhPhi([FromQuery] Guid id
         throw;
     }
 }
- #endregion
+    [HttpGet("api/print/phieu-trinh-giao-nhiem-vu-phan-khai-kinh-phi")]
+    [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> InPhieuTrinhGiaoNhiemVuPhanKhai([FromQuery] Guid id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var fileNameTemplate = "PhieuTrinhGiaoNhiemVu.docx";
+            var templatePath = Path.Combine(
+                AppContext.BaseDirectory,
+                "PrintTemplates",
+                "Word",
+                fileNameTemplate
+            );
+
+            ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template PhieuTrinhGiaoNhiemVu.docx");
+
+            var entity = await Mediator.Send(new PhanKhaiKinhPhiGetQuery
+            {
+                Id = id,
+                IsNoTracking= false
+
+            }, cancellationToken);
+            var doc = new Aspose.Words.Document(templatePath);
+            doc.MailMerge.UseNonMergeFields = true;
+            DateTime? ngayToTrinh = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
+            var culture = new CultureInfo("vi-VN");
+            var replacements = new Dictionary<string, string> {
+            { "ngay", entity.NgayToTrinh.HasValue
+                ? $"ngày {ngayToTrinh.Value:dd} tháng {ngayToTrinh.Value:MM} năm {ngayToTrinh.Value:yyyy}"
+                : $"ngày  tháng  năm " },
+
+
+            { "So", entity.SoToTrinh ?? "" },
+            { "TenDuAn", entity.DuAn?.TenDuAn ?? "" },
+            { "KinhPhiPhanKhai", entity.KinhPhiPhanKhai?.ToString("N0", culture) ?? "0"},
+            { "TenNguonVon", entity.NguonVon?.Ten ?? ""},
+            { "KinhPhiDeXuat", entity.KinhPhiDeXuat?.ToString("N0", culture) ?? "0"},
+            { "TongMucDauTu", entity.DuAn?.TongMucDauTu?.ToString("N0", culture) ?? "0"},
+            { "NgayToTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
+            { "TrichYeu", entity.TrichYeu ?? "" },
+            { "ThuyetMinh", entity.ThuyetMinh ?? "" }
+        };
+
+
+            var bytes = _wordHelper.ExportFromTemplate(templatePath, replacements);
+
+            return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                GetDownloadFileName(fileNameTemplate));
+
+        }
+        catch (Exception ex)
+        {
+            Log.Error("in phe duyet" + ex.Message);
+            throw;
+        }
+    }
+    
+    #endregion
 
 
 
