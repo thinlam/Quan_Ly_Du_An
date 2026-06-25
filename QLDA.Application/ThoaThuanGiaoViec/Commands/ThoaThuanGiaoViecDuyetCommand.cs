@@ -42,9 +42,9 @@ internal class ThoaThuanGiaoViecDuyetCommandHandler : IRequestHandler<ThoaThuanG
         }
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaTrinh && s.Loai == PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaTrinh && s.Loai == PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaDuyet && s.Loai == PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaDuyet && s.Loai == PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");

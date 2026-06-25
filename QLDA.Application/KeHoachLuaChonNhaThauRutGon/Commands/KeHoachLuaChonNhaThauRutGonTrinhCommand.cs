@@ -42,8 +42,8 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
             .ToDictionary(x => x.Ma!, x => x);
 
-        var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DaTrinh);
-        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.KeHoachLuaChonNhaThauRutGon.DaChuyen);
+        var trangThaiDaTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaTrinh);
+        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaChuyen);
 
        // thực tế k dùng/ k có tờ trình -> ko vào quản lý phê duyệt, chỉ cần đổi trạng thái của entity
 

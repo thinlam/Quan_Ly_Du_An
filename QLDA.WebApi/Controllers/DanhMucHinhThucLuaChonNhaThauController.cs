@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using QLDA.Application.DmHinhThucLuaChonNhaThaus.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DanhMucHinhThucLuaChonNhaThaus;
 
@@ -44,16 +45,16 @@ namespace QLDA.WebApi.Controllers {
             return ResultApi.Ok(res);
         }
 
-        [ProducesResponseType<ResultApi<List<DanhMucDto<int>>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi<List<DanhMucHinhThucLuaChonNhaThau>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         [HttpGet("danh-sach")]
-        public async Task<ResultApi> Get([FromQuery] List<long>? ids = null, bool getAll = false) {
-            var res = await Mediator.Send(new DanhMucGetDanhSachQuery() {
-                DanhMuc = EDanhMuc.DanhMucHinhThucLuaChonNhaThau,
-                PageIndex = 0,
-                PageSize = 0,
-                Ids = ids, GetAll = getAll,
-            }) as PaginatedList<DanhMucDto<int>>;
+        public async Task<ResultApi> Get([FromQuery]bool getAll = false) {
+            var res = await Mediator.Send(new DmHinhThucLuaChonNhaThauGetDanhSachQuery() {
+           // var res = await Mediator.Send(new DanhMucGetDanhSachQuery() {
+          //      DanhMuc = EDanhMuc.DanhMucHinhThucLuaChonNhaThau,
+            //    Ids = ids,
+                GetAll = getAll,
+            }) ;
             return ResultApi.Ok(res == null ? [] :res.Data);
         }
 

@@ -9,7 +9,7 @@ public class HoSoMoiThauDienTu : Entity<Guid>, IAggregateRoot {
     public Guid? DuAnId { get; set; }
 
     public int? BuocId { get; set; }
-
+    public bool? ThamDinh { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }
 
     public Guid? GoiThauId { get; set; }

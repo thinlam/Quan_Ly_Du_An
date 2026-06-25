@@ -6,6 +6,7 @@ namespace QLDA.Application.HoSoMoiThauDienTus.DTOs;
 public class HoSoMoiThauDienTuInsertDto : IMayHaveTepDinhKemDto {
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
+    public bool? ThamDinh { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }
     public Guid? GoiThauId { get; set; }
     public long? GiaTri { get; set; }

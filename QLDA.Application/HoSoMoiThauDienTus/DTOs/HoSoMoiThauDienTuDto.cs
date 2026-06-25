@@ -6,6 +6,8 @@ public class HoSoMoiThauDienTuDto {
     public Guid Id { get; set; }
     public Guid? DuAnId { get; set; }
     public string? TenDuAn { get; set; }
+    
+    public bool? ThamDinh { get; set; }
     public int? BuocId { get; set; }
     public string? TenBuoc { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }

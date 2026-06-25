@@ -39,7 +39,7 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
     public async Task<int> Handle(ThoaThuanGiaoViecTrinhCommand request, CancellationToken cancellationToken)
     {
        // chỉ user Phòng KHTC mới dc trình
-       var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
+       var isHcth = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
         if (!isHcth)
             throw new ManagedException("Tài khoản không có quyền.");
 
@@ -48,8 +48,8 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
             .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
             .ToDictionary(x => x.Ma!, x => x);
 
-        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaChuyen);
-        var trangThaiTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaTrinh);
+        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaChuyen);
+        var trangThaiTrinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaTrinh);
         ManagedException.ThrowIfNull(trangThaiTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
         var entity = await _repository.GetQueryableSet()

@@ -82,11 +82,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             PheDuyetEntityNames.QuyetDinhDieuChinh,// xem lại dữ liệu
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc,
         };
-        if (request.Type != null && !validTypes.Contains(request.Type))
-        {
-            return new PaginatedList<PheDuyetListItemDto>([], 0, request.Skip(), request.Take());
-        }
-
+ 
         var items = new List<PheDuyetListItemDto>();
         items.AddRange(await GetPheDuyetAll(request, cancellationToken));
 
@@ -231,42 +227,50 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         // Nếu "là phòng KHTC" thì nên dùng dấu "==" nhé. Mình sửa lại thành == để đúng logic tên biến "isKHTC".
         bool isKHTC = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
 
-        var pheDuyetQuery = _PheDuyetRepo.GetQueryableSet().AsNoTracking().Where(e => !e.IsDeleted && e.EntityName == request.Type);
+        var pheDuyetQuery = _PheDuyetRepo.GetQueryableSet().AsNoTracking()
+            .Where(e => !e.IsDeleted )
+            .WhereIf(!string.IsNullOrEmpty(request.Type),e => e.EntityName == request.Type);
         var duAnQuery = _duAnRepo.GetQueryableSet().AsNoTracking();
         var pheDuyetHisQuery = _historyRepo.GetQueryableSet().AsNoTracking().Where(e => !e.IsDeleted && e.EntityName == request.Type && e.TrangThai.Ma== "ĐTr");
         var duAnBuocQuery = _duAnBuocRepo.GetQueryableSet().AsNoTracking();
-
+       
+        // 1. Viết câu lệnh Query cơ bản (Chưa có WHERE lọc quyền)
         var query = from e in pheDuyetQuery
                     join da in duAnQuery on e.DuAnId equals da.Id
 
-                    // Left join với DuAnBuoc
                     join b in duAnBuocQuery on e.BuocId equals b.Id into buocGroup
                     from b in buocGroup.DefaultIfEmpty()
 
-                        // Điều kiện lọc theo quyền: Phòng KHTC hoặc Lãnh đạo phụ trách của Dự án
-                    where isKHTC || da.LanhDaoPhuTrachId == userId
+                    select new { e, da, b }; // Tạm thời select ra anonymous object để filter tiếp
 
-                    select new PheDuyetListItemDto
-                    {
-                        Id = e.Id,
-                        Type = request.Type,
-                        EntityId= e.EntityId.ToString(),
-                        EntityName = e.EntityName,
-                        DuAnId = e.DuAnId,
-                        TenDuAn = da != null ? da.TenDuAn : null,
-                        TenBuoc = b != null ? b.TenBuoc : null,
-                        TrichYeu = e.NoiDung,
-                        TrangThaiId = e.TrangThaiId,
-                        MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                        TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-                        NguoiDuyetId = e.TrangThai != null && e.TrangThai.Ma == "ĐD" ?  e.NguoiXuLyId : 0,
-                        NguoiTrinhId = e.NguoiTrinhId, 
-                        NgayXuLyMoiNhat = e.UpdatedAt // Hoặc lấy từ bảng lịch sử nếu cần thiết
-                    };
+        // 2. Tách biệt logic kiểm tra quyền bằng IF-ELSE của C#
+        if (!isKHTC)
+        {
+            // Nếu KHÔNG PHẢI phòng KHTC thì mới ép Database chạy điều kiện lọc theo UserId
+            query = query.Where(x => x.da.LanhDaoPhuTrachId == userId);
+        }
 
-        var items = await query.ToListAsync(cancellationToken);
+        // 3. Cuối cùng mới Select ra DTO chuẩn
+        var finalQuery = query.Select(x => new PheDuyetListItemDto
+        {
+            Id = x.e.Id,
+            Type = request.Type,
+            EntityId = x.e.EntityId.ToString(),
+            EntityName = x.e.EntityName,
+            DuAnId = x.e.DuAnId,
+            TenDuAn = x.da != null ? x.da.TenDuAn : null,
+            TenBuoc = x.b != null ? x.b.TenBuoc : null,
+            TrichYeu = x.e.NoiDung,
+            TrangThaiId = x.e.TrangThaiId,
+            MaTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG" ? x.e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+            TenTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG" ? x.e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+            NguoiDuyetId = x.e.TrangThai != null && x.e.TrangThai.Ma == "ĐD" ? x.e.NguoiXuLyId : 0,
+            NguoiTrinhId = x.e.NguoiTrinhId,
+            NgayXuLyMoiNhat = x.e.UpdatedAt
+        }).OrderByDescending(x => x.Id); // Hoặc theo cột mong muốn thay cho p.Index nếu cần
 
-        return items;
+        return await finalQuery.ToListAsync(cancellationToken);
+
     }
     
     private async Task<List<PheDuyetListItemDto>> GetPheDuyetAll2(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken)

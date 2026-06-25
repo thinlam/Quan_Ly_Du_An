@@ -28,12 +28,12 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         });
         var filesToTrinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
-            GroupId = [entity.ToTrinh.Id.ToString()],
+            GroupId = [entity.ToTrinh!= null ? entity.ToTrinh?.Id.ToString() :""],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         });
         var filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
-            GroupId = [entity.QuyetDinh.Id.ToString()],
+            GroupId = [entity.QuyetDinh != null ? entity.QuyetDinh?.Id.ToString() :""],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         });
         var fileCamKets = await Mediator.Send(new GetDanhSachTepDinhKemQuery

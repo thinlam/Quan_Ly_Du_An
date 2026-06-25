@@ -56,6 +56,7 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
                  TenDuAn = e.DuAn.TenDuAn,
                  TenBuoc = e.Buoc.TenBuoc,
                  HinhThucLuaChonNhaThauId = e.HinhThucLuaChonNhaThauId,
+                 ThamDinh = e.ThamDinh??false,
                  TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau.Ten,
                  GoiThauId = e.GoiThauId,
                  TenGoiThau = e.GoiThau.Ten,

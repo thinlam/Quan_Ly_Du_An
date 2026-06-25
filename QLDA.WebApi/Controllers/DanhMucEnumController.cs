@@ -37,6 +37,8 @@ namespace QLDA.WebApi.Controllers {
             List<EnumsExtensions.EnumDto> result = [];
             result = enumName switch {
                 nameof(EDanhMuc) => EnumsExtensions.EnumAll<EDanhMuc>(),
+
+                nameof(ELoaiDeXuatKeHoachLCNT) => EnumsExtensions.EnumAll<ELoaiDeXuatKeHoachLCNT>(),
                 nameof(ELoaiVanBanQuyetDinh) => EnumsExtensions.EnumAll<EnumLoaiVanBanQuyetDinh>(), //nameof(ELoaiVanBanQuyetDinh) table name cho store procedure query - EnumLoaiVanBanQuyetDinh cho code first
                 nameof(ETrangThaiMoiThau) => EnumsExtensions.EnumAll<ETrangThaiMoiThau>(),
                 nameof(EChiuTrachNhiemXuLy) => EnumsExtensions.EnumAll<EChiuTrachNhiemXuLy>(),
