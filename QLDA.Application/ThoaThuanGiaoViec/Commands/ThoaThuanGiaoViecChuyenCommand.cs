@@ -35,13 +35,13 @@ internal class ThoaThuanGiaoViecChuyenCommandHandler : IRequestHandler<ThoaThuan
 
     public async Task<int> Handle(ThoaThuanGiaoViecChuyenCommand request, CancellationToken cancellationToken)
     {
-        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);
+        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
         var statusDict = statuses
             .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
             .ToDictionary(x => x.Ma!, x => x);
 
-        var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DuThao);
-        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ThoaThuanGiaoViec.DaChuyen);
+        var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DuThao);
+        var trangThaiDaChuyen = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaChuyen);
         ManagedException.ThrowIfNull(trangThaiDaChuyen, "Không tìm thấy trạng thái 'Đã chuyển'");
 
         var entity = await _repository.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);

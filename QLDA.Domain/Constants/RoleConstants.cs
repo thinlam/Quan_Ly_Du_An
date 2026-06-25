@@ -89,4 +89,10 @@ public static class RoleConstants {
     public const string GroupKeHoachTrienKhaiHangMucExport =
         $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
 
+    /// <summary>
+    /// Kết xuất Excel báo cáo tình hình thực hiện đấu thầu (Issue #103)
+    /// </summary>
+    public const string GroupTinhHinhThucHienDauThauExport =
+        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
 }

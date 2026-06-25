@@ -27,7 +27,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
 
     public async Task<HoSoMoiThauDienTu> Handle(HoSoMoiThauDienTuUpdateCommand request, CancellationToken cancellationToken = default) {
        
-        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ToTrinh)
+        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ToTrinh).Include(e => e.QuyetDinh)
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 

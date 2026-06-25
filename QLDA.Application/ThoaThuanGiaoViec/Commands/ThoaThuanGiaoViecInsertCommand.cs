@@ -32,9 +32,9 @@ internal class ThoaThuanGiaoViecInsertCommandHandler : IRequestHandler<ThoaThuan
 
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
 
-
+        request.Dto.TrangThaiId = trangThaiDuThao.Id;
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(request.Dto, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
