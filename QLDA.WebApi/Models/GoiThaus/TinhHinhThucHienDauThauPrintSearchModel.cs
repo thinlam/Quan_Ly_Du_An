@@ -6,7 +6,8 @@ namespace QLDA.WebApi.Models.GoiThaus;
 public record TinhHinhThucHienDauThauPrintSearchModel
 {
     /// <summary>
-    /// Tab: 1 / 2 / 3. Null hoặc 0 = xuất 3 sheet (mỗi tab một sheet).
+    /// Tab loại (<see cref="QLDA.Domain.Enums.TinhHinhThucHienDauThauLoai"/>).
+    /// Null hoặc 0 (TatCa) = xuất 3 sheet (mỗi tab một sheet).
     /// </summary>
     public int? Loai { get; set; }
     public List<string>? HiddenColumns { get; set; }

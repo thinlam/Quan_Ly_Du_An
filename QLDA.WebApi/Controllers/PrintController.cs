@@ -929,13 +929,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #region TinhHinhThucHienDauThau
 
-    private static readonly (int Loai, string SheetTitle)[] TinhHinhThucHienDauThauSheetTabs =
-    [
-        (1, "Chưa có kết quả"),
-        (2, "Có kết quả"),
-        (3, "Đã lên hợp đồng"),
-    ];
-
     /// <summary>
     /// TinhHinhThucHienDauThau.xlsx — Export báo cáo tình hình thực hiện đấu thầu (Issue #103)
     /// </summary>
@@ -955,39 +948,34 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        ManagedException.ThrowIf(searchModel.Loai is int loai && loai is not (0 or 1 or 2 or 3),
-            "Loại tab không hợp lệ. Chỉ chấp nhận giá trị 1 (Chưa có kết quả), 2 (Có kết quả), 3 (Đã lên hợp đồng), hoặc bỏ trống để xuất cả 3 tab.");
+
+        var result = await Mediator.Send(new GoiThauGetTinhHinhDauThauPrintQuery
+        {
+            Loai = searchModel.Loai,
+        }, cancellationToken);
 
         var hiddenColumns = searchModel.HiddenColumns ?? [];
 
         AsposeResult exportResult;
-        if (searchModel.Loai is null or 0)
+        if (result.IsMultiSheet)
         {
-            var sheets = new List<SheetInstruction>(TinhHinhThucHienDauThauSheetTabs.Length);
-            foreach (var tab in TinhHinhThucHienDauThauSheetTabs)
-            {
-                var rows = await Mediator.Send(new GoiThauGetTinhHinhDauThauExportQuery { Loai = tab.Loai }, cancellationToken);
-                sheets.Add(new SheetInstruction
-                {
-                    Title = tab.SheetTitle,
-                    Items = ExporterHelper.ConvertToDictionaryList(rows),
-                    HiddenColumns = hiddenColumns,
-                });
-            }
-
             exportResult = _excelExporter.ExportDynamicMultiSheet(new DynamicMultiSheetInstruction
             {
                 TemplatePath = templatePath,
-                Sheets = sheets,
+                Sheets = result.Sheets.Select(sheet => new SheetInstruction
+                {
+                    Title = sheet.Title,
+                    Items = ExporterHelper.ConvertToDictionaryList(sheet.Items),
+                    HiddenColumns = hiddenColumns,
+                }).ToList(),
             });
         }
         else
         {
-            var data = await Mediator.Send(new GoiThauGetTinhHinhDauThauExportQuery { Loai = searchModel.Loai }, cancellationToken);
             exportResult = _excelExporter.Export(new AsposeInstruction<TinhHinhThucHienDauThauExportDto>
             {
                 TemplatePath = templatePath,
-                Items = data,
+                Items = result.Items,
                 HiddenColumns = hiddenColumns,
                 AutoFitColumnsAndRows = false,
             });
