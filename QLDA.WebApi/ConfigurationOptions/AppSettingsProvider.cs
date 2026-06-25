@@ -12,5 +12,5 @@ public class AppSettingsProvider : IAppSettingsProvider {
 
     public long PhongKHTCId => _settings.PhongKHTCId;
     public long PhongHCTHId => _settings.PhongHCTHId;
-    public long PhongKHTCID => _settings.PhongKHTCID;
+    public long PhongKHTCID => _settings.PhongKHTCId;
 }

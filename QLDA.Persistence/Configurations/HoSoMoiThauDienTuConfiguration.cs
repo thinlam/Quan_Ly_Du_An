@@ -5,14 +5,14 @@ namespace QLDA.Persistence.Configurations;
 
 public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoiThauDienTu>
 {
-    public override void Configure (EntityTypeBuilder<HoSoMoiThauDienTu> builder)
+    public override void Configure(EntityTypeBuilder<HoSoMoiThauDienTu> builder)
     {
         builder.ToTable("HoSoMoiThauDienTu");
 
         builder.ConfigureForBase();
 
         builder.Property(e => e.ThoiGianThucHien).HasMaxLength(200);
-        
+
 
         builder.HasOne(e => e.DuAn)
             .WithMany()
@@ -23,7 +23,7 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
             .WithMany()
             .HasForeignKey(e => e.BuocId)
             .OnDelete(DeleteBehavior.SetNull);
-        
+
         builder.HasOne(e => e.HinhThucLuaChonNhaThau)
             .WithMany()
             .HasForeignKey(e => e.HinhThucLuaChonNhaThauId)
@@ -39,9 +39,14 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(e => e.ToTrinhQuyetDinh)
-            .WithOne(c => c.HoSoMoiThauDienTu)
-            .HasForeignKey<ToTrinhQuyetDinh>(c => c.HoSoMoiThauId) 
-            .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(e => e.ToTrinh)
+            .WithOne()
+            .HasForeignKey<ToTrinhQuyetDinh>(
+            x => x.HoSoMoiThauToTrinhId);
+
+          builder.HasOne(e => e.QuyetDinh)
+                .WithOne()
+                .HasForeignKey<ToTrinhQuyetDinh>(
+                    x => x.HoSoMoiThauQuyetDinhId);
     }
 }

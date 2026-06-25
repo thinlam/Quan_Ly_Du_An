@@ -10,7 +10,9 @@ public static class HoSoMoiThauDienTuMappingConfiguration
 
     public static HoSoMoiThauDienTuModel ToModel(
         this HoSoMoiThauDienTu entity,
-        List<TepDinhKem>? files = null, List<TepDinhKem>? filesCamKet= null, List<TepDinhKem>? filesThamDinh = null, List<TepDinhKem>? fileBaoCao = null, List<TepDinhKem>? filesToTrinhQuyetDinh = null) => new()
+        List<TepDinhKem>? files = null, List<TepDinhKem>? filesCamKet= null, List<TepDinhKem>? filesThamDinh = null
+        , List<TepDinhKem>? fileBaoCao = null, List<TepDinhKem>? filesToTrinh = null
+        , List<TepDinhKem>? filesQuyetDinh = null) => new()
         {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
@@ -61,15 +63,36 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                     Type = f.Type,
                 }).ToList()
             }: null,
-            ToTrinhQuyetDinh = entity.ToTrinhQuyetDinh!= null? new ToTrinhQuyetDinhModel()
+            ToTrinh = entity.ToTrinh!= null? new ToTrinhQuyetDinhModel()
             {
-                Id= entity.ToTrinhQuyetDinh.Id,
-                So= entity.ToTrinhQuyetDinh.So,
-                Ngay = entity.ToTrinhQuyetDinh.Ngay,
-                NguoiKy = entity.ToTrinhQuyetDinh.NguoiKy,
-                ChucVu = entity.ToTrinhQuyetDinh.ChucVu,
-                TrichYeu = entity.ToTrinhQuyetDinh.TrichYeu,
-                DanhSachTepDinhKem = filesToTrinhQuyetDinh?.Select(f => new TepDinhKemModel
+                Id= entity.ToTrinh.Id,
+                So= entity.ToTrinh.So,
+                Ngay = entity.ToTrinh.Ngay,
+                NguoiKy = entity.ToTrinh.NguoiKy,
+                ChucVu = entity.ToTrinh.ChucVu,
+                TrichYeu = entity.ToTrinh.TrichYeu,
+                DanhSachTepDinhKem = filesToTrinh?.Select(f => new TepDinhKemModel
+                {
+                    Id = f.Id,
+                    ParentId = f.ParentId,
+                    GroupId = f.GroupId,
+                    GroupType = f.GroupType,
+                    FileName = f.FileName,
+                    OriginalName = f.OriginalName,
+                    Path = f.Path,
+                    Size = f.Size,
+                    Type = f.Type,
+                }).ToList()
+            } : null,
+            QuyetDinh = entity.QuyetDinh != null ? new ToTrinhQuyetDinhModel()
+            {
+                Id = entity.QuyetDinh.Id,
+                So = entity.QuyetDinh.So,
+                Ngay = entity.QuyetDinh.Ngay,
+                NguoiKy = entity.QuyetDinh.NguoiKy,
+                ChucVu = entity.QuyetDinh.ChucVu,
+                TrichYeu = entity.QuyetDinh.TrichYeu,
+                DanhSachTepDinhKem = filesQuyetDinh?.Select(f => new TepDinhKemModel
                 {
                     Id = f.Id,
                     ParentId = f.ParentId,
@@ -143,14 +166,14 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                     Type = m.Type,
                 }).ToList()
             },
-            ToTrinhQuyetDinh = new ToTrinhQuyetDinhDto()
+            ToTrinh = new ToTrinhQuyetDinhDto()
             {
-                So = model.ToTrinhQuyetDinh.So,
-                TrichYeu = model.ToTrinhQuyetDinh.TrichYeu,
-                Ngay = model.ToTrinhQuyetDinh.Ngay,
-                NguoiKy = model.ToTrinhQuyetDinh.NguoiKy,
-                ChucVu = model.ToTrinhQuyetDinh.ChucVu,
-                DanhSachTepDinhKem = model.ToTrinhQuyetDinh?.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
+                So = model.ToTrinh.So,
+                TrichYeu = model.ToTrinh.TrichYeu,
+                Ngay = model.ToTrinh.Ngay,
+                NguoiKy = model.ToTrinh.NguoiKy,
+                ChucVu = model.ToTrinh.ChucVu,
+                DanhSachTepDinhKem = model.ToTrinh?.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
                 {
                     Id = m.Id,
                     ParentId = m.ParentId,
@@ -161,6 +184,24 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                     Type = m.Type,
                 }).ToList()
             },
+           QuyetDinh  = new ToTrinhQuyetDinhDto()
+             {
+                 So = model.QuyetDinh.So,
+                 TrichYeu = model.QuyetDinh.TrichYeu,
+                 Ngay = model.QuyetDinh.Ngay,
+                 NguoiKy = model.QuyetDinh.NguoiKy,
+                 ChucVu = model.QuyetDinh.ChucVu,
+                 DanhSachTepDinhKem = model.QuyetDinh?.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
+                 {
+                     Id = m.Id,
+                     ParentId = m.ParentId,
+                     FileName = m.FileName,
+                     OriginalName = m.OriginalName,
+                     Path = m.Path,
+                     Size = m.Size,
+                     Type = m.Type,
+                 }).ToList()
+             },
             DanhSachTepDinhKem = model.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
             {
                 Id = m.Id,
@@ -191,13 +232,21 @@ public static class HoSoMoiThauDienTuMappingConfiguration
         ThoiGianThucHien = model.ThoiGianThucHien,
         TrangThaiDangTai = model.TrangThaiDangTai,
         TrangThaiId = model.TrangThaiId,
-        ToTrinhQuyetDinh = new ToTrinhQuyetDinhDto()
+        ToTrinh = new ToTrinhQuyetDinhDto()
         {
-            So = model.ToTrinhQuyetDinh.So,
-            TrichYeu = model.ToTrinhQuyetDinh.TrichYeu,
-            Ngay = model.ToTrinhQuyetDinh.Ngay,
-            NguoiKy = model.ToTrinhQuyetDinh.NguoiKy,
-            ChucVu = model.ToTrinhQuyetDinh.ChucVu,
+            So = model.ToTrinh.So,
+            TrichYeu = model.ToTrinh.TrichYeu,
+            Ngay = model.ToTrinh.Ngay,
+            NguoiKy = model.ToTrinh.NguoiKy,
+            ChucVu = model.ToTrinh.ChucVu,
+        },
+        QuyetDinh = new ToTrinhQuyetDinhDto()
+        {
+            So = model.QuyetDinh.So,
+            TrichYeu = model.QuyetDinh.TrichYeu,
+            Ngay = model.QuyetDinh.Ngay,
+            NguoiKy = model.QuyetDinh.NguoiKy,
+            ChucVu = model.QuyetDinh.ChucVu,
         }
     };
     public static List<TepDinhKem> GetDanhSachTepDinhKemBaoCaoThamDinh(
@@ -215,6 +264,9 @@ public static class HoSoMoiThauDienTuMappingConfiguration
     public static List<TepDinhKem> GetDanhSachTepDinhKemToTrinh(
        this ToTrinhQuyetDinhModel model, long groupId)
        => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
+    public static List<TepDinhKem> GetDanhSachTepDinhKemQuyetDinh(
+      this ToTrinhQuyetDinhModel model, long groupId)
+      => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
 
     public static List<TepDinhKem> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)

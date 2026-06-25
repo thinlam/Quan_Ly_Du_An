@@ -10,6 +10,7 @@ using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.ChuTruongLapKeHoachs;
 using QLDA.WebApi.Models.TepDinhKems;
+using System.Data;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
@@ -81,21 +82,22 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Update(
         [FromBody] ChuTruongLapKeHoachModel model,
-        [FromServices] IUnitOfWork unitOfWork,
+        [FromServices] IUnitOfWork _unitOfWork,
         CancellationToken cancellationToken = default)
     {
+        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         var entity = model.ToEntity();
 
         await Mediator.Send(new ChuTruongLapKeHoachUpdateCommand(entity));
         
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhQuyetDinh) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ChuTruongLapKeHoach) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
             Entities = files
         }, cancellationToken);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = model.GetDanhSachTep(entity.Id).ToList();
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
@@ -104,6 +106,7 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
             Entities = danhSachTepDinhKem,
         });
 
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
 

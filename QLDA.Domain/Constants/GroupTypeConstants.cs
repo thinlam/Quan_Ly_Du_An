@@ -29,6 +29,7 @@ public static class GroupTypeConstants
     public const string ThuyetMinhDuAnThamDinh = "ThuyetMinhDuAnThamDinh";
     public const string QuyetDinhDieuChinh = "QuyetDinhDieuChinh";
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    public const string ToTrinhPheDuyet = "ToTrinhPheDuyet";
     public const string PheDuyetKetQuaGoiThauDuAn = "PheDuyetKetQuaGoiThauDuAn";
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
     public const string NoiDungThamDinhNhaThau = "NoiDungToTrinhThamDinhNhaThau";
@@ -45,6 +46,7 @@ public static class GroupTypeConstants
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
     public const string HoSoMoiThauDienTu = "HoSoMoiThauDienTu";
     public const string HoSoMoiThauDienTuChiDinh = "HoSoMoiThauDienTuChiDinh";
-    
+    public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";
 
+    
 }

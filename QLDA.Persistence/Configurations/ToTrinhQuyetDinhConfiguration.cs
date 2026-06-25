@@ -12,7 +12,12 @@ public class ChiDinhThauConfiguration : AggregateRootConfiguration<ToTrinhQuyetD
 
         builder.ConfigureForBase();
 
-        builder.Property(e => e.HoSoMoiThauId).IsRequired();
+        builder.HasOne<HoSoMoiThauDienTu>()
+        .WithOne(e => e.ToTrinh)
+        .HasForeignKey<ToTrinhQuyetDinh>(e => e.HoSoMoiThauToTrinhId);
 
+        builder.HasOne<HoSoMoiThauDienTu>()
+            .WithOne(e => e.QuyetDinh)
+            .HasForeignKey<ToTrinhQuyetDinh>(e => e.HoSoMoiThauQuyetDinhId);
     }
 }

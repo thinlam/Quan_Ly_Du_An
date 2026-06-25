@@ -7,9 +7,11 @@ public static class HoSoMoiThauDienTuMappings
 {
     public static HoSoMoiThauDienTu ToEntity(this HoSoMoiThauDienTuInsertDto dto)
     {
+        var id = GuidExtensions.GetSequentialGuidId();
+
         var entity = new HoSoMoiThauDienTu()
         {
-            Id = GuidExtensions.GetSequentialGuidId(),
+            Id = id,
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             HinhThucLuaChonNhaThauId = dto.HinhThucLuaChonNhaThauId,
@@ -21,19 +23,34 @@ public static class HoSoMoiThauDienTuMappings
             NhaThauId = dto.HoSoMoiThauThamDinh.NhaThauId,
 
         };
-        if (dto.ToTrinhQuyetDinh == null)
-            entity.ToTrinhQuyetDinh = null;
+        if (dto.ToTrinh == null || string.IsNullOrEmpty(dto.ToTrinh.So))
+            entity.ToTrinh = null;
         else
         {
 
-            entity.ToTrinhQuyetDinh = new ToTrinhQuyetDinh
+            entity.ToTrinh = new ToTrinhQuyetDinh
             {
-                Id = dto.ToTrinhQuyetDinh.Id,
-                NguoiKy = dto.ToTrinhQuyetDinh.NguoiKy,
-                Ngay = dto.ToTrinhQuyetDinh.Ngay,
-                So = dto.ToTrinhQuyetDinh.So,
-                ChucVu = dto.ToTrinhQuyetDinh.ChucVu,
-                TrichYeu = dto.ToTrinhQuyetDinh.TrichYeu
+                Id = dto.ToTrinh.Id,
+                NguoiKy = dto.ToTrinh.NguoiKy,
+                Ngay = dto.ToTrinh.Ngay,
+                So = dto.ToTrinh.So,
+                ChucVu = dto.ToTrinh.ChucVu,
+                TrichYeu = dto.ToTrinh.TrichYeu
+            };
+        }
+        if (dto.QuyetDinh == null || string.IsNullOrEmpty(dto.QuyetDinh.So))
+            entity.QuyetDinh = null;
+        else
+        {
+
+            entity.QuyetDinh = new ToTrinhQuyetDinh
+            {
+                Id = dto.QuyetDinh.Id,
+                NguoiKy = dto.QuyetDinh.NguoiKy,
+                Ngay = dto.QuyetDinh.Ngay,
+                So = dto.QuyetDinh.So,
+                ChucVu = dto.QuyetDinh.ChucVu,
+                TrichYeu = dto.QuyetDinh.TrichYeu
             };
         }
 

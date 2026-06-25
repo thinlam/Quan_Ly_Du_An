@@ -32,7 +32,9 @@ public class TheoDoiDeXuatNhuCauKinhPhiDto : IHasKey<Guid?>, IMustHaveId<Guid>, 
     public string? TenTrangThaiKeHoachNam { get; set; } // if()đã trình / ---
     public string? TenTrangThaiBanGiamDoc { get; set; } // phía ban GD đã duyệt/trả
 
+    public DeXuatNhuCauKinhPhiNam? KeHoachNam { get; set; }
     public DateTimeOffset? NgayDuyetDeXuat { get; set; }
     public DateTimeOffset? NgayDuyetKeHoach { get; set; }
-    public List<TepDinhKemDto>? DanhSachTep { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepToTrinh { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepKeHoachNam { get; set; }
 }

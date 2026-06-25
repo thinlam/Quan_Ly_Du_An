@@ -85,15 +85,8 @@ public static class TrangThaiPheDuyetCodes
         public const string DuThao = "DT";
         public const string DaTrinh = "ĐTr";
     }
-    public static class ThoaThuanGiaoViec
-    {
-        public const string DuThao = "DT";
-        public const string DaChuyen = "ĐC";
-        public const string DaTrinh = "ĐTr";
-        public const string DaDuyet = "ĐD";
-        public const string TuChoi = "TC";
-    }
-    public static class KeHoachLuaChonNhaThauRutGon
+
+    public static class TrangThaiPhongKHTCPhuTrach
     {
         public const string DuThao = "DT";
         public const string DaChuyen = "ĐC";

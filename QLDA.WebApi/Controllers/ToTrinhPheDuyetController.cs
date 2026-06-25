@@ -60,7 +60,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhPheDuyet theo Loai
         //tạo contanst LoaiToTrinhPheDuyet
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhQuyetDinh) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

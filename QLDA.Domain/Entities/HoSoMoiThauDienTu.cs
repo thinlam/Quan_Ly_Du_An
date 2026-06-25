@@ -25,7 +25,8 @@ public class HoSoMoiThauDienTu : Entity<Guid>, IAggregateRoot {
     public Guid? NhaThauId { get; set; }
     #region Navigation Properties
 
-    public ToTrinhQuyetDinh? ToTrinhQuyetDinh { get; set; }
+    public ToTrinhQuyetDinh? QuyetDinh { get; set; }
+    public ToTrinhQuyetDinh? ToTrinh { get; set; }
     public DuAn? DuAn { get; set; }
     public DuAnBuoc? Buoc { get; set; }
 

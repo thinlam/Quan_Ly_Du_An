@@ -13,14 +13,14 @@ public class ToTrinhQuyetDinh : IAggregateRoot, IHasKey<long>
 {
 
     public long Id { get; set; }
-    public Guid HoSoMoiThauId { get; set; }
+    public Guid? HoSoMoiThauToTrinhId { get; set; }
+
+    public Guid? HoSoMoiThauQuyetDinhId { get; set; }
     public string? So { get; set; }
     public DateTimeOffset? Ngay { get; set; }
     public string? TrichYeu { get; set; }
     public string? NguoiKy { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public int? ChucVu { get; set; }
-    #region Navigation Properties
-    public HoSoMoiThauDienTu? HoSoMoiThauDienTu { get; set; }
-    #endregion
+
 }

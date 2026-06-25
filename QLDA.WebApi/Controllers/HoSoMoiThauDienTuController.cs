@@ -28,7 +28,12 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         });
         var filesToTrinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
-            GroupId = [entity.ToTrinhQuyetDinh.Id.ToString()],
+            GroupId = [entity.ToTrinh.Id.ToString()],
+            EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
+        });
+        var filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
+        {
+            GroupId = [entity.QuyetDinh.Id.ToString()],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         });
         var fileCamKets = await Mediator.Send(new GetDanhSachTepDinhKemQuery
@@ -47,7 +52,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()]
         });
-        return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh));
+        return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh, filesQuyetDinh));
     }
 
     [HttpGet("danh-sach")]
@@ -70,8 +75,8 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return ResultApi.Ok(entity.Id);
-        //if(model.ToTrinhQuyetDinh)
-        //if (model.ToTrinhQuyetDinh != null && model.ToTrinhQuyetDinh.DanhSachTepDinhKem?.Count > 0)
+        //if(model.ToTrinh)
+        //if (model.ToTrinh != null && model.ToTrinh.DanhSachTepDinhKem?.Count > 0)
         //{
         //    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         //    {
@@ -91,8 +96,8 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         //});
         //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         //{
-        //    GroupId = entity.ToTrinhQuyetDinh.Id.ToString(),
-        //    Entities = model.ToTrinhQuyetDinh.GetDanhSachTepDinhKemToTrinh(entity.ToTrinhQuyetDinh.Id)
+        //    GroupId = entity.ToTrinh.Id.ToString(),
+        //    Entities = model.ToTrinh.GetDanhSachTepDinhKemToTrinh(entity.ToTrinh.Id)
         //});
         //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         //{
@@ -131,16 +136,24 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             EGroupType.HoSoMoiThauDienTu.ToString(),
             cancellationToken);
 
-        if (entity.ToTrinhQuyetDinh != null)
+        if (entity.ToTrinh != null)
         {
-            var toTrinhId = entity.ToTrinhQuyetDinh.Id;
+            var toTrinhId = entity.ToTrinh.Id;
             await SyncTepDinhKemAsync(
                 toTrinhId.ToString(),
-                model.ToTrinhQuyetDinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId) ?? [],
+                model.ToTrinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId) ?? [],
                 EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
                 cancellationToken);
         }
-
+        if (entity.QuyetDinh != null)
+        {
+            var quyetDinhId  = entity.QuyetDinh.Id;
+            await SyncTepDinhKemAsync(
+                quyetDinhId.ToString(),
+                model.QuyetDinh?.GetDanhSachTepDinhKemToTrinh(quyetDinhId) ?? [],
+                EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
+                cancellationToken);
+        }
         if (model.HoSoMoiThauThamDinh != null)
         {
             await SyncTepDinhKemAsync(

@@ -5,6 +5,8 @@ namespace QLDA.Application.QuanLyPheDuyet.DTOs;
 /// </summary>
 public class PheDuyetListItemDto {
     public Guid Id { get; set; }
+    public string EntityId { get; set; } = default!;
+    public string EntityName { get; set; } = default!;
     public string Type { get; set; } = default!;
     public Guid? DuAnId { get; set; }
     public string? TenDuAn { get; set; }
@@ -13,6 +15,8 @@ public class PheDuyetListItemDto {
     public string? SoVanBan { get; set; }
     public string? TrichYeu { get; set; }
     public string? NguoiKy { get; set; }
+    public long? NguoiDuyetId { get; set; }
+    public long? NguoiTrinhId { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }

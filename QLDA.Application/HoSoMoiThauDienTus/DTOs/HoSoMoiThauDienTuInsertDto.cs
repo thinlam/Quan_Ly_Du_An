@@ -13,7 +13,8 @@ public class HoSoMoiThauDienTuInsertDto : IMayHaveTepDinhKemDto {
     public bool TrangThaiDangTai { get; set; }
     public int? TrangThaiId { get; set; }
     public HoSoMoiThauThamDinhDto? HoSoMoiThauThamDinh { get; set; }
-    public ToTrinhQuyetDinhDto? ToTrinhQuyetDinh { get; set; }
+    public ToTrinhQuyetDinhDto? ToTrinh { get; set; }
+    public ToTrinhQuyetDinhDto? QuyetDinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
 public class HoSoMoiThauThamDinhDto

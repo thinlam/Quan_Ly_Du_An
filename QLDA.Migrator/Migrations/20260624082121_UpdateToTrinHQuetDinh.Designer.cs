@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260624082121_UpdateToTrinHQuetDinh")]
+    partial class UpdateToTrinHQuetDinh
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6201,7 +6204,7 @@ namespace QLDA.Migrator.Migrations
                     b.ToTable("HopDong", (string)null);
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThauRutGon", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.TrangThaiPhongKHTCPhuTrach", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -9352,7 +9355,7 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("LoaiHopDong");
                 });
 
-            modelBuilder.Entity("QLDA.Domain.Entities.KeHoachLuaChonNhaThauRutGon", b =>
+            modelBuilder.Entity("QLDA.Domain.Entities.TrangThaiPhongKHTCPhuTrach", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DuAn", "DuAn")
                         .WithMany()

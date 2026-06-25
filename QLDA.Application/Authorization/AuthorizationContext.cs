@@ -60,7 +60,7 @@ public class AuthorizationContext(
     }
 
     private bool ComputeHasKhtcBypass()
-        => _user.Info.PhongBanID == _settings.PhongKHTCID;
+        => _user.Info.PhongBanID == _settings.PhongKHTCId;
 
     private bool ComputeHasReadAllBypass()
     {

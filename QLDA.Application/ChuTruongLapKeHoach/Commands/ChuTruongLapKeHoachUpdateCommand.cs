@@ -30,8 +30,10 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
     public async Task<ChuTruongLapKeHoach> Handle(ChuTruongLapKeHoachUpdateCommand request, CancellationToken cancellationToken = default)
     {
         // Auto-assign Dự thảo status
-        var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        var trangThaiDuyet = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        var trangThaiDaTrinh = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
             .Include(e => e.TrangThai)
@@ -42,17 +44,23 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
 
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThai?.Ma != "LEG")
+        //   throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
+        if ( entity.TrangThaiId == trangThaiDaTrinh.Id  || entity.TrangThaiId == trangThaiDuyet.Id ) //chưa duyệt cứ cho upd
         {
-            throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
+            entity.ButPhe = request.Dto.ButPhe;
         }
-
-        using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
-        await _repo.AddAsync(entity, cancellationToken);
+        else
+        {
+            entity.DuAnId = request.Dto.Id;
+            entity.BuocId = request.Dto?.BuocId;
+            entity.SoToTrinh = request.Dto?.SoToTrinh;
+            entity.NgayToTrinh = request.Dto?.NgayToTrinh;
+            entity.TrichYeu = request.Dto?.TrichYeu;
+            entity.LoaiDeXuat = request.Dto?.LoaiDeXuat;
+        }
+          
+        await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return entity;
     }
