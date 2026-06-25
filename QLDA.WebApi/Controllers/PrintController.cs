@@ -1,4 +1,5 @@
 using BuildingBlocks.CrossCutting.Offices;
+using BuildingBlocks.Infrastructure.Offices;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
@@ -12,6 +13,7 @@ using QLDA.Application.DuAnBuocs.Queries;
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuAns.Queries;
 using QLDA.Application.GoiThaus.DTOs;
+using QLDA.Application.GoiThaus.Queries;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
@@ -28,6 +30,7 @@ using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
+using QLDA.WebApi.Models.GoiThaus;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.PhuLucHopDongs;
@@ -923,6 +926,80 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
+    #region TinhHinhThucHienDauThau
+
+    private static readonly (int Loai, string SheetTitle)[] TinhHinhThucHienDauThauSheetTabs =
+    [
+        (1, "Chưa có kết quả"),
+        (2, "Có kết quả"),
+        (3, "Đã lên hợp đồng"),
+    ];
+
+    /// <summary>
+    /// TinhHinhThucHienDauThau.xlsx — Export báo cáo tình hình thực hiện đấu thầu (Issue #103)
+    /// </summary>
+    [HttpGet("api/print/tinh-hinh-thuc-hien-dau-thau")]
+    [Authorize(Roles = RoleConstants.GroupTinhHinhThucHienDauThauExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InTinhHinhThucHienDauThau(
+        [FromQuery] TinhHinhThucHienDauThauPrintSearchModel searchModel,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "TinhHinhThucHienDauThau.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+        ManagedException.ThrowIf(searchModel.Loai is int loai && loai is not (0 or 1 or 2 or 3),
+            "Loại tab không hợp lệ. Chỉ chấp nhận giá trị 1 (Chưa có kết quả), 2 (Có kết quả), 3 (Đã lên hợp đồng), hoặc bỏ trống để xuất cả 3 tab.");
+
+        var hiddenColumns = searchModel.HiddenColumns ?? [];
+
+        AsposeResult exportResult;
+        if (searchModel.Loai is null or 0)
+        {
+            var sheets = new List<SheetInstruction>(TinhHinhThucHienDauThauSheetTabs.Length);
+            foreach (var tab in TinhHinhThucHienDauThauSheetTabs)
+            {
+                var rows = await Mediator.Send(new GoiThauGetTinhHinhDauThauExportQuery { Loai = tab.Loai }, cancellationToken);
+                sheets.Add(new SheetInstruction
+                {
+                    Title = tab.SheetTitle,
+                    Items = ExporterHelper.ConvertToDictionaryList(rows),
+                    HiddenColumns = hiddenColumns,
+                });
+            }
+
+            exportResult = _excelExporter.ExportDynamicMultiSheet(new DynamicMultiSheetInstruction
+            {
+                TemplatePath = templatePath,
+                Sheets = sheets,
+            });
+        }
+        else
+        {
+            var data = await Mediator.Send(new GoiThauGetTinhHinhDauThauExportQuery { Loai = searchModel.Loai }, cancellationToken);
+            exportResult = _excelExporter.Export(new AsposeInstruction<TinhHinhThucHienDauThauExportDto>
+            {
+                TemplatePath = templatePath,
+                Items = data,
+                HiddenColumns = hiddenColumns,
+                AutoFitColumnsAndRows = false,
+            });
+        }
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
     #region BaoCaoDeXuatChuTruong
 
     /// <summary>
@@ -1077,6 +1154,99 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };
     }
+
+    #region DanhSachBanGiaoHoSo
+
+    /// <summary>
+    /// DanhSachBanGiaoHoSo.xlsx — Export danh sách bàn giao hồ sơ (theo filter grid, không phân trang)
+    /// </summary>
+    [HttpGet("api/print/danh-sach-ban-giao-ho-so")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachBanGiaoHoSo(
+        [FromQuery] BanGiaoHoSoSearchDto searchDto,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "DanhSachBanGiaoHoSo.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var data = await Mediator.Send(new BanGiaoHoSoGetDanhSachExportQuery
+        {
+            SearchDto = searchDto
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<BanGiaoHoSoDanhSachExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region FileBanGiaoHoSo
+
+    /// <summary>
+    /// DanhSachFileBanGiaoHoSo.xlsx — Export danh sách tệp HS bàn giao của một bản ghi
+    /// </summary>
+    [HttpGet("api/print/file-ban-giao-ho-so")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InFileBanGiaoHoSo(
+        [FromQuery] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "DanhSachFileBanGiaoHoSo.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var result = await Mediator.Send(new BanGiaoHoSoGetFileExportQuery(id), cancellationToken);
+
+        var rows = new List<Dictionary<string, object?>>();
+        for (var i = 0; i < result.Files.Count; i++)
+        {
+            var file = result.Files[i];
+            rows.Add(new Dictionary<string, object?>
+            {
+                ["Level"] = i == 0 ? 1 : 2,
+                ["TenDuAn"] = i == 0 ? result.TenDuAn : null,
+                ["TenFile"] = file.TenFile,
+                ["ThoiGianDinhKem"] = file.ThoiGianDinhKem.LocalDateTime.ToString("dd/MM/yyyy"),
+            });
+        }
+
+        var exportResult = _excelExporter.ExportMultiLevelHierarchical(new MultiLevelHierarchicalInstruction
+        {
+            TemplatePath = templatePath,
+            Rows = rows,
+            RootLevel = 1,
+            MergedColumnIndices = [0, 1],
+            SttPropertyName = "Stt",
+            SttColumnIndex = 0,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
 
     #region In_BienBanBanGiao_HoSo
 
