@@ -949,10 +949,9 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
-        var result = await Mediator.Send(new GoiThauGetTinhHinhDauThauPrintQuery
-        {
-            Loai = searchModel.Loai,
-        }, cancellationToken);
+        var result = await Mediator.Send(
+            GoiThauGetTinhHinhDauThauPrintQuery.Create(searchModel.Loai),
+            cancellationToken);
 
         var hiddenColumns = searchModel.HiddenColumns ?? [];
 
