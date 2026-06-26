@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.PhanKhaiKinhPhis;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -203,21 +204,30 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
                 Id = e.Id.ToString(),
             }).ToListAsync(cancellationToken);
 
-        var danhSachNguonVon = await duAnQuery
-            .SelectMany(e => e.DuAnNguonVons!)
-            .Where(dnv => dnv.NguonVon != null)
-            .Select(dnv => new {
-                ParentId = dnv.LeftId,
-                Id = dnv.RightId,
-                Name = dnv.NguonVon!.Ten ?? string.Empty,
-            })
-            .Distinct()
-            .Select(x => new ComboData {
-                Name = x.Name,
-                Id = x.Id.ToString(),
-                ParentId = x.ParentId.ToString(),
-            })
+        var duAns = await duAnQuery
+            .Include(e => e.DuAnNguonVons!)
+            .ThenInclude(dnv => dnv.NguonVon)
             .ToListAsync(cancellationToken);
+
+        var nguonVonItems = duAns
+            .SelectMany(e => (e.DuAnNguonVons ?? [])
+                .Where(dnv => dnv.NguonVon != null)
+                .Select(dnv => new {
+                    TenDuAn = e.TenDuAn ?? string.Empty,
+                    TenNguonVon = dnv.NguonVon!.Ten ?? string.Empty,
+                    NguonVonId = dnv.RightId,
+                }))
+            .Distinct()
+            .OrderBy(x => x.TenDuAn)
+            .ThenBy(x => x.TenNguonVon)
+            .ToList();
+
+        var danhSachNguonVon = nguonVonItems
+            .Select(x => new ComboData {
+                Name = PhanKhaiKinhPhiImportDisplay.Format(x.TenNguonVon, x.TenDuAn),
+                Id = x.NguonVonId.ToString(),
+            })
+            .ToList();
 
         List<List<ComboData>> comboData = [danhSachDuAn, danhSachNguonVon];
 
