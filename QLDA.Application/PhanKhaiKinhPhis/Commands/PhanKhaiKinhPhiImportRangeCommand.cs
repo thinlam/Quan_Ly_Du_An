@@ -14,8 +14,6 @@ internal class PhanKhaiKinhPhiImportRangeCommandHandler(IServiceProvider service
         serviceProvider.GetRequiredService<IRepository<PhanKhaiKinhPhi, Guid>>();
     private readonly IRepository<DuAn, Guid> _duAnRepo =
         serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-    private readonly IRepository<DanhMucNguonVon, int> _nguonVonRepo =
-        serviceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
@@ -34,12 +32,6 @@ internal class PhanKhaiKinhPhiImportRangeCommandHandler(IServiceProvider service
             .Distinct()
             .ToList();
 
-        var tenNguonVons = rows
-            .Where(r => !string.IsNullOrWhiteSpace(r.TenNguonVon))
-            .Select(r => r.TenNguonVon!)
-            .Distinct()
-            .ToList();
-
         var duAnDict = await _duAnRepo.GetQueryableSet()
             .Where(e => tenDuAns.Contains(e.TenDuAn!))
             .Select(e => new { e.TenDuAn, e.Id })
@@ -48,13 +40,21 @@ internal class PhanKhaiKinhPhiImportRangeCommandHandler(IServiceProvider service
             .DistinctBy(e => e.TenDuAn)
             .ToDictionary(e => e.TenDuAn!, e => e.Id);
 
-        var nguonVonDict = await _nguonVonRepo.GetQueryableSet()
-            .Where(e => tenNguonVons.Contains(e.Ten!))
-            .Select(e => new { e.Ten, e.Id })
+        var nguonVonByDuAnAndTen = await _duAnRepo.GetQueryableSet()
+            .Where(e => tenDuAns.Contains(e.TenDuAn!))
+            .Include(e => e.DuAnNguonVons!)
+            .ThenInclude(dnv => dnv.NguonVon)
             .ToListAsync(cancellationToken);
-        var nguonVonByTen = nguonVonDict
-            .DistinctBy(e => e.Ten)
-            .ToDictionary(e => e.Ten!, e => e.Id);
+        var nguonVonLookup = nguonVonByDuAnAndTen
+            .SelectMany(e => (e.DuAnNguonVons ?? [])
+                .Where(dnv => dnv.NguonVon?.Ten != null)
+                .Select(dnv => new {
+                    TenDuAn = e.TenDuAn!,
+                    TenNguonVon = dnv.NguonVon!.Ten!,
+                    NguonVonId = dnv.RightId,
+                }))
+            .DistinctBy(x => (x.TenDuAn, x.TenNguonVon))
+            .ToDictionary(x => (x.TenDuAn, x.TenNguonVon), x => x.NguonVonId);
 
         var trangThaiDuThao = await _statusRepo
             .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -84,7 +84,23 @@ internal class PhanKhaiKinhPhiImportRangeCommandHandler(IServiceProvider service
 
             int? nguonVonId = null;
             if (!string.IsNullOrWhiteSpace(item.TenNguonVon)) {
-                if (!nguonVonByTen.TryGetValue(item.TenNguonVon, out var nvId)) {
+                var (tenNguonVon, tenDuAnFromDisplay) =
+                    PhanKhaiKinhPhiImportDisplay.Parse(item.TenNguonVon);
+
+                if (tenDuAnFromDisplay == null) {
+                    result.Errors.Add($"{rowLabel}: Không tìm thấy nguồn vốn");
+                    result.ErrorCount++;
+                    continue;
+                }
+
+                if (!string.Equals(tenDuAnFromDisplay, item.TenDuAn, StringComparison.Ordinal)) {
+                    result.Errors.Add($"{rowLabel}: Nguồn vốn không thuộc dự án đã chọn");
+                    result.ErrorCount++;
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(tenNguonVon)
+                    || !nguonVonLookup.TryGetValue((item.TenDuAn, tenNguonVon), out var nvId)) {
                     result.Errors.Add($"{rowLabel}: Không tìm thấy nguồn vốn");
                     result.ErrorCount++;
                     continue;

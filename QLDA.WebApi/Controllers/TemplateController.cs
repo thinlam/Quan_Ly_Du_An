@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.PhanKhaiKinhPhis;
+using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.WebApi.Controllers;
@@ -23,6 +25,9 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
 
     private readonly IRepository<DanhMucNguonVon, int> NguonVon =
         serviceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
+
+    private readonly IRepository<DanhMucTrangThaiDuAn, int> TrangThaiDuAn =
+        serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiDuAn, int>>();
 
     private readonly IRepository<KeHoachLuaChonNhaThau, Guid> KeHoachLuaChonNhaThau =
         serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
@@ -176,7 +181,22 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
 
         var duAnQuery = DuAn.GetQueryableSet().Where(e => !e.IsDeleted);
         if (duAnId.HasValue)
+        {
             duAnQuery = duAnQuery.Where(e => e.Id == duAnId.Value);
+        }
+        else
+        {
+            var trangThaiHoanThanh = await TrangThaiDuAn
+                .GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+                .FirstOrDefaultAsync(
+                    s => s.Ma == DanhMucTrangThaiDuAnCodes.HoanThanh,
+                    cancellationToken);
+
+            if (trangThaiHoanThanh != null)
+            {
+                duAnQuery = duAnQuery.Where(e => e.TrangThaiDuAnId != trangThaiHoanThanh.Id);
+            }
+        }
 
         var danhSachDuAn = await duAnQuery
             .Select(e => new ComboData {
@@ -184,11 +204,30 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
                 Id = e.Id.ToString(),
             }).ToListAsync(cancellationToken);
 
-        var danhSachNguonVon = await NguonVon.GetQueryableSet().Where(e => !e.IsDeleted)
-            .Select(e => new ComboData {
-                Name = e.Ten ?? string.Empty,
-                Id = e.Id.ToString(),
-            }).ToListAsync(cancellationToken);
+        var duAns = await duAnQuery
+            .Include(e => e.DuAnNguonVons!)
+            .ThenInclude(dnv => dnv.NguonVon)
+            .ToListAsync(cancellationToken);
+
+        var nguonVonItems = duAns
+            .SelectMany(e => (e.DuAnNguonVons ?? [])
+                .Where(dnv => dnv.NguonVon != null)
+                .Select(dnv => new {
+                    TenDuAn = e.TenDuAn ?? string.Empty,
+                    TenNguonVon = dnv.NguonVon!.Ten ?? string.Empty,
+                    NguonVonId = dnv.RightId,
+                }))
+            .Distinct()
+            .OrderBy(x => x.TenDuAn)
+            .ThenBy(x => x.TenNguonVon)
+            .ToList();
+
+        var danhSachNguonVon = nguonVonItems
+            .Select(x => new ComboData {
+                Name = PhanKhaiKinhPhiImportDisplay.Format(x.TenNguonVon, x.TenDuAn),
+                Id = x.NguonVonId.ToString(),
+            })
+            .ToList();
 
         List<List<ComboData>> comboData = [danhSachDuAn, danhSachNguonVon];
 

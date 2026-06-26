@@ -1,31 +1,73 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.GoiThaus.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.GoiThaus.Queries;
 
-public record GoiThauGetTinhHinhDauThauExportQuery : IRequest<List<TinhHinhThucHienDauThauExportDto>>
-{
-    /// <summary>
-    /// Tab filter: 1 / 2 / 3. Null hoặc 0 = PrintController xuất 3 sheet (mỗi tab một sheet).
-    /// </summary>
-    public int? Loai { get; set; }
-}
+public record GoiThauGetTinhHinhDauThauPrintQuery(
+    TinhHinhThucHienDauThauPrintSearchDto SearchDto)
+    : IRequest<TinhHinhThucHienDauThauPrintResultDto>;
 
-internal class GoiThauGetTinhHinhDauThauExportQueryHandler(IServiceProvider serviceProvider)
-    : IRequestHandler<GoiThauGetTinhHinhDauThauExportQuery, List<TinhHinhThucHienDauThauExportDto>>
+internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider serviceProvider)
+    : IRequestHandler<GoiThauGetTinhHinhDauThauPrintQuery, TinhHinhThucHienDauThauPrintResultDto>
 {
+    private static readonly (TinhHinhThucHienDauThauLoai Loai, string Title)[] SheetTabs =
+    [
+        (TinhHinhThucHienDauThauLoai.ChuaCoKetQua, "Chưa có kết quả"),
+        (TinhHinhThucHienDauThauLoai.CoKetQua, "Có kết quả"),
+        (TinhHinhThucHienDauThauLoai.DaLenHopDong, "Đã lên hợp đồng"),
+    ];
+
     private readonly IRepository<GoiThau, Guid> _goiThau =
         serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuoc =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
 
-    public async Task<List<TinhHinhThucHienDauThauExportDto>> Handle(
-        GoiThauGetTinhHinhDauThauExportQuery request,
+    public async Task<TinhHinhThucHienDauThauPrintResultDto> Handle(
+        GoiThauGetTinhHinhDauThauPrintQuery request,
         CancellationToken cancellationToken = default)
     {
-        ManagedException.ThrowIf(request.Loai is int loai && loai is not (0 or 1 or 2 or 3),
+        var loaiValue = request.SearchDto.Loai ?? 0;
+
+        ManagedException.ThrowIf(
+            !Enum.IsDefined(typeof(TinhHinhThucHienDauThauLoai), loaiValue),
             "Loại tab không hợp lệ. Chỉ chấp nhận giá trị 1 (Chưa có kết quả), 2 (Có kết quả), 3 (Đã lên hợp đồng), hoặc bỏ trống để xuất cả 3 tab.");
 
+        var loai = (TinhHinhThucHienDauThauLoai)loaiValue;
+
+        if (loai is TinhHinhThucHienDauThauLoai.TatCa)
+        {
+            var sheets = new List<TinhHinhThucHienDauThauSheetDto>(SheetTabs.Length);
+            foreach (var tab in SheetTabs)
+            {
+                var items = await GetExportItemsAsync(tab.Loai, cancellationToken);
+                sheets.Add(new TinhHinhThucHienDauThauSheetDto
+                {
+                    Title = tab.Title,
+                    Items = items,
+                });
+            }
+
+            return new TinhHinhThucHienDauThauPrintResultDto
+            {
+                IsMultiSheet = true,
+                Sheets = sheets,
+            };
+        }
+
+        var data = await GetExportItemsAsync(loai, cancellationToken);
+
+        return new TinhHinhThucHienDauThauPrintResultDto
+        {
+            IsMultiSheet = false,
+            Items = data,
+        };
+    }
+
+    private async Task<List<TinhHinhThucHienDauThauExportDto>> GetExportItemsAsync(
+        TinhHinhThucHienDauThauLoai loai,
+        CancellationToken cancellationToken)
+    {
         var duAnBuocQuery = _duAnBuoc.GetQueryableSet().AsNoTracking();
 
         var queryable = _goiThau.GetOrderedSet()
@@ -33,12 +75,12 @@ internal class GoiThauGetTinhHinhDauThauExportQueryHandler(IServiceProvider serv
             .Include(e => e.HopDong)
             .AsQueryable();
 
-        queryable = request.Loai switch
+        queryable = loai switch
         {
-            1 => queryable.Where(e => e.KetQuaTrungThau == null && e.HopDong == null),
-            2 => queryable.Where(e => e.KetQuaTrungThau != null && e.HopDong == null),
-            3 => queryable.Where(e => e.KetQuaTrungThau != null && e.HopDong != null),
-            _ => queryable
+            TinhHinhThucHienDauThauLoai.ChuaCoKetQua => queryable.Where(e => e.KetQuaTrungThau == null && e.HopDong == null),
+            TinhHinhThucHienDauThauLoai.CoKetQua => queryable.Where(e => e.KetQuaTrungThau != null && e.HopDong == null),
+            TinhHinhThucHienDauThauLoai.DaLenHopDong => queryable.Where(e => e.KetQuaTrungThau != null && e.HopDong != null),
+            _ => queryable.Where(_ => false),
         };
 
         var rows = await queryable
