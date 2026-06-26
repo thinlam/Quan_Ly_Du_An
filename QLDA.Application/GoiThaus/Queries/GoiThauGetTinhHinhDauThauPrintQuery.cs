@@ -4,27 +4,9 @@ using QLDA.Domain.Enums;
 
 namespace QLDA.Application.GoiThaus.Queries;
 
-public record GoiThauGetTinhHinhDauThauPrintQuery : IRequest<TinhHinhThucHienDauThauPrintResultDto>
-{
-    public TinhHinhThucHienDauThauLoai Loai { get; init; } = TinhHinhThucHienDauThauLoai.TatCa;
-
-    public static GoiThauGetTinhHinhDauThauPrintQuery Create(int? loai)
-    {
-        if (loai is null)
-        {
-            return new GoiThauGetTinhHinhDauThauPrintQuery();
-        }
-
-        ManagedException.ThrowIf(
-            !Enum.IsDefined(typeof(TinhHinhThucHienDauThauLoai), loai.Value),
-            "Loại tab không hợp lệ. Chỉ chấp nhận giá trị 1 (Chưa có kết quả), 2 (Có kết quả), 3 (Đã lên hợp đồng), hoặc bỏ trống để xuất cả 3 tab.");
-
-        return new GoiThauGetTinhHinhDauThauPrintQuery
-        {
-            Loai = (TinhHinhThucHienDauThauLoai)loai.Value,
-        };
-    }
-}
+public record GoiThauGetTinhHinhDauThauPrintQuery(
+    TinhHinhThucHienDauThauPrintSearchDto SearchDto)
+    : IRequest<TinhHinhThucHienDauThauPrintResultDto>;
 
 internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider serviceProvider)
     : IRequestHandler<GoiThauGetTinhHinhDauThauPrintQuery, TinhHinhThucHienDauThauPrintResultDto>
@@ -45,7 +27,15 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
         GoiThauGetTinhHinhDauThauPrintQuery request,
         CancellationToken cancellationToken = default)
     {
-        if (request.Loai is TinhHinhThucHienDauThauLoai.TatCa)
+        var loaiValue = request.SearchDto.Loai ?? 0;
+
+        ManagedException.ThrowIf(
+            !Enum.IsDefined(typeof(TinhHinhThucHienDauThauLoai), loaiValue),
+            "Loại tab không hợp lệ. Chỉ chấp nhận giá trị 1 (Chưa có kết quả), 2 (Có kết quả), 3 (Đã lên hợp đồng), hoặc bỏ trống để xuất cả 3 tab.");
+
+        var loai = (TinhHinhThucHienDauThauLoai)loaiValue;
+
+        if (loai is TinhHinhThucHienDauThauLoai.TatCa)
         {
             var sheets = new List<TinhHinhThucHienDauThauSheetDto>(SheetTabs.Length);
             foreach (var tab in SheetTabs)
@@ -65,7 +55,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
             };
         }
 
-        var data = await GetExportItemsAsync(request.Loai, cancellationToken);
+        var data = await GetExportItemsAsync(loai, cancellationToken);
 
         return new TinhHinhThucHienDauThauPrintResultDto
         {
@@ -90,7 +80,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
             TinhHinhThucHienDauThauLoai.ChuaCoKetQua => queryable.Where(e => e.KetQuaTrungThau == null && e.HopDong == null),
             TinhHinhThucHienDauThauLoai.CoKetQua => queryable.Where(e => e.KetQuaTrungThau != null && e.HopDong == null),
             TinhHinhThucHienDauThauLoai.DaLenHopDong => queryable.Where(e => e.KetQuaTrungThau != null && e.HopDong != null),
-            _ => throw new ManagedException("Loại tab không hợp lệ cho export dữ liệu."),
+            _ => queryable.Where(_ => false),
         };
 
         var rows = await queryable

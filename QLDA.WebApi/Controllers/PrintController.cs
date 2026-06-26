@@ -30,7 +30,6 @@ using QLDA.WebApi.Models.BaoCaoTienDos;
 using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
-using QLDA.WebApi.Models.GoiThaus;
 using QLDA.WebApi.Models.KhoKhanVuongMacs;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.PhuLucHopDongs;
@@ -936,7 +935,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     [Authorize(Roles = RoleConstants.GroupTinhHinhThucHienDauThauExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InTinhHinhThucHienDauThau(
-        [FromQuery] TinhHinhThucHienDauThauPrintSearchModel searchModel,
+        [FromQuery] TinhHinhThucHienDauThauPrintSearchDto searchDto,
         CancellationToken cancellationToken = default)
     {
         var fileNameTemplate = "TinhHinhThucHienDauThau.xlsx";
@@ -950,10 +949,10 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
 
         var result = await Mediator.Send(
-            GoiThauGetTinhHinhDauThauPrintQuery.Create(searchModel.Loai),
+            new GoiThauGetTinhHinhDauThauPrintQuery(searchDto),
             cancellationToken);
 
-        var hiddenColumns = searchModel.HiddenColumns ?? [];
+        var hiddenColumns = searchDto.HiddenColumns ?? [];
 
         AsposeResult exportResult;
         if (result.IsMultiSheet)
