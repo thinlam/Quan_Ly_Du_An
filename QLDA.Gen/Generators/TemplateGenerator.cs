@@ -516,6 +516,8 @@ public class TemplateGenerator
             ?? "Nhập dữ liệu vào bảng bên dưới. Cột Dự án / Nguồn vốn chọn từ danh sách.";
         hintCell.Style.Font.SetFontName(DefaultFont);
         hintCell.Style.Font.SetFontSize(NormalFontSize);
+        hintCell.Style.Font.SetItalic(true);
+        hintCell.Style.Font.SetFontColor(XLColor.FromHtml("#0000FF"));
         hintCell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(GrayFill));
         hintCell.Style.Alignment.WrapText = true;
         dataSheet.Range(4, 1, 4, columnCount).Merge();
@@ -536,7 +538,7 @@ public class TemplateGenerator
             headerCell.Style.Font.SetFontName(DefaultFont);
             headerCell.Style.Font.SetBold(true);
             headerCell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(BlueFill));
-            headerCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+            headerCell.Style.Alignment.SetHorizontal(ToHorizontalAlignment(col.HorizontalAlign));
             headerCell.Style.Alignment.WrapText = true;
             ApplyThinBorder(headerCell);
 
@@ -544,6 +546,10 @@ public class TemplateGenerator
             descCell.Value = col.Description ?? string.Empty;
             descCell.Style.Font.SetFontName(DefaultFont);
             descCell.Style.Font.SetFontSize(NormalFontSize);
+            descCell.Style.Font.SetItalic(true);
+            descCell.Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Left);
+            var descColor = col.Required ? "#C00000" : (col.DescriptionFontColor ?? "#0000FF");
+            descCell.Style.Font.SetFontColor(XLColor.FromHtml(descColor));
             descCell.Style.Fill.SetBackgroundColor(XLColor.FromHtml(GrayFill));
             descCell.Style.Alignment.WrapText = true;
             ApplyThinBorder(descCell);
@@ -552,7 +558,8 @@ public class TemplateGenerator
             valueCell.Value = col.Placeholder ?? string.Empty;
             valueCell.Style.Font.SetFontName(DefaultFont);
             valueCell.Style.Font.SetFontSize(FieldRowFontSize);
-            valueCell.Style.Alignment.WrapText = true;
+            valueCell.Style.Alignment.SetHorizontal(ToHorizontalAlignment(col.HorizontalAlign));
+            valueCell.Style.Alignment.WrapText = col.WrapText;
             if (!string.IsNullOrEmpty(col.NumberFormat))
                 valueCell.Style.NumberFormat.Format = col.NumberFormat;
             ApplyThinBorder(valueCell);

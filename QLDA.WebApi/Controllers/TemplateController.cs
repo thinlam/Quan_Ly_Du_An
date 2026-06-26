@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.PhanKhaiKinhPhis;
+using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
 
@@ -236,6 +237,28 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
         return new FileContentResult(importResult.FileBytes,
             importResult.ContentType) {
             FileDownloadName = fileNameTemplate
+        };
+    }
+
+    [HttpGet("import-ke-hoach-trien-khai-hang-muc")]
+    [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<FileContentResult> GetImportKeHoachTrienKhaiHangMuc(
+        CancellationToken cancellationToken = default) {
+        const string fileNameTemplate = "Import_KeHoachTrienKhaiHangMuc.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate);
+
+        var comboData = await Mediator.Send(
+            new KeHoachTrienKhaiHangMucGetImportTemplateQuery(),
+            cancellationToken);
+
+        var importResult = _excelImporter.GetTemplate(templatePath, comboData);
+
+        return new FileContentResult(importResult.FileBytes, importResult.ContentType) {
+            FileDownloadName = fileNameTemplate,
         };
     }
 }

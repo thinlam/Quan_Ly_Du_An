@@ -60,7 +60,12 @@ public class AsposeHelper : IAsposeHelper
                 return cell.StringValue ?? string.Empty;
 
             case CellValueType.IsNumeric:
+            {
+                var style = cell.GetStyle();
+                if (style.IsDateTime)
+                    return cell.DateTimeValue.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
                 return cell.DoubleValue.ToString(CultureInfo.InvariantCulture);
+            }
 
             case CellValueType.IsBool:
                 return cell.BoolValue.ToString();

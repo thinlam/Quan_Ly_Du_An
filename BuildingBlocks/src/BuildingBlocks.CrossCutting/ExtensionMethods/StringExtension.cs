@@ -106,6 +106,8 @@ public static class StringExtension
             if (DateTime.TryParseExact(cellValue, formats, culture, dateTimeStyle,
                     out var dateVal))
                 return dateVal;
+            if (TryParseExcelOADate(cellValue, out var oaDate))
+                return oaDate;
             return propertyType == typeof(DateTime) ? DateTime.MinValue : null;
         }
 
@@ -114,7 +116,18 @@ public static class StringExtension
             if (DateTimeOffset.TryParseExact(cellValue, formats, culture, dateTimeStyle,
                     out var dateVal))
                 return dateVal;
+            if (TryParseExcelOADate(cellValue, out var oaDate))
+                return new DateTimeOffset(oaDate, TimeSpan.Zero);
             return propertyType == typeof(DateTimeOffset) ? DateTimeOffset.MinValue : null;
+        }
+
+        if (propertyType == typeof(DateOnly) || propertyType == typeof(DateOnly?))
+        {
+            if (DateOnly.TryParseExact(cellValue, formats, culture, dateTimeStyle, out var dateVal))
+                return dateVal;
+            if (TryParseExcelOADate(cellValue, out var oaDate))
+                return DateOnly.FromDateTime(oaDate);
+            return propertyType == typeof(DateOnly) ? default : null;
         }
 
         return GetDefaultValue(propertyType);
@@ -125,4 +138,24 @@ public static class StringExtension
     /// </summary>
     private static object? GetDefaultValue(Type t)
         => t.IsValueType ? Activator.CreateInstance(t) : null;
+
+    /// <summary>
+    /// Excel lưu ngày dưới dạng serial (OADate); Aspose đọc IsNumeric thành chuỗi số.
+    /// </summary>
+    private static bool TryParseExcelOADate(string cellValue, out DateTime date)
+    {
+        date = default;
+        if (!double.TryParse(cellValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var oa))
+            return false;
+
+        try
+        {
+            date = DateTime.FromOADate(oa);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
 }
