@@ -4,7 +4,8 @@ using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.GoiThaus.DTOs;
 
-public class GoiThauDto : IHasKey<Guid>, IMayHaveTepDinhKemDto, ITienDo {
+public class GoiThauDto : IHasKey<Guid>, IMayHaveTepDinhKemDto, ITienDo
+{
     public Guid Id { get; set; }
     public Guid DuAnId { get; set; }
     public Guid? KetQuaTrungThauId { get; set; }
@@ -13,6 +14,8 @@ public class GoiThauDto : IHasKey<Guid>, IMayHaveTepDinhKemDto, ITienDo {
     public string? Ten { get; set; }
     public bool DaDuyet { get; set; } = true;
     public long? GiaTri { get; set; }
+
+    public int? LoaiCongViecId { get; set; }
     public int? LoaiHopDongId { get; set; }
     public int? NguonVonId { get; set; }
     public string? ThoiGianHopDong { get; set; }

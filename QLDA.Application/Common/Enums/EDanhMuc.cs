@@ -2,7 +2,8 @@ using System.ComponentModel;
 
 namespace QLDA.Application.Common.Enums;
 
-public enum EDanhMuc {
+public enum EDanhMuc
+{
     [Description("Đường đi")] DmDuong,
     [Description("Phường xã")] DmPhuongXa,
     [Description("Quận huyện")] DmQuanHuyen,
@@ -38,4 +39,5 @@ public enum EDanhMuc {
     [Description("Trạng thái phê duyệt nội dung")] DanhMucTrangThaiPheDuyet,
     [Description("Danh mục Phương án thiết kế")] DanhMucPhuongAnThietKe,
     [Description("Danh mục tình hình xử lý")] DanhMucTinhHinhXuLy,
+    [Description("Danh mục loại công việc")] DanhMucLoaiCongViec,
 }

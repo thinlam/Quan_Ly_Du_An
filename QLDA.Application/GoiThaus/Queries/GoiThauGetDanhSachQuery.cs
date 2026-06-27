@@ -72,6 +72,7 @@ internal class
                 GiaTri = e.GiaTri,
                 DaDuyet = e.DaDuyet,
                 NguonVonId = e.NguonVonId,
+                LoaiCongViecId = e.LoaiCongViecId,
                 LoaiHopDongId = e.LoaiHopDongId,
                 TuyChonMuaThem = e.TuyChonMuaThem,
                 ThoiGianHopDong = e.ThoiGianHopDong,

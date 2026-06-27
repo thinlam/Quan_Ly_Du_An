@@ -13,6 +13,7 @@ public static class GoiThauMappings {
             Ten = dto.Ten,
             GiaTri = dto.GiaTri,
             NguonVonId = dto.NguonVonId,
+            LoaiCongViecId = dto.LoaiCongViecId,
             HinhThucLuaChonNhaThauId = dto.HinhThucLuaChonNhaThauId,
             PhuongThucLuaChonNhaThauId = dto.PhuongThucLuaChonNhaThauId,
             ThoiGianLuaNhaThau = dto.ThoiGianLuaNhaThau,
@@ -37,6 +38,7 @@ public static class GoiThauMappings {
             HinhThucLuaChonNhaThauId = dto.HinhThucLuaChonNhaThauId,
             PhuongThucLuaChonNhaThauId = dto.PhuongThucLuaChonNhaThauId,
             ThoiGianLuaNhaThau = dto.ThoiGianLuaNhaThau,
+            LoaiCongViecId = dto.LoaiCongViecId,
             LoaiHopDongId = dto.LoaiHopDongId,
             ThoiGianHopDong = dto.ThoiGianHopDong,
             TomTatCongViecChinhGoiThau = dto.TomTatCongViecChinhGoiThau,
@@ -56,6 +58,7 @@ public static class GoiThauMappings {
             Ten = entity.Ten,
             GiaTri = entity.GiaTri,
             NguonVonId = entity.NguonVonId,
+            LoaiCongViecId = entity.LoaiCongViecId,
             HinhThucLuaChonNhaThauId = entity.HinhThucLuaChonNhaThauId,
             PhuongThucLuaChonNhaThauId = entity.PhuongThucLuaChonNhaThauId,
             ThoiGianLuaNhaThau = entity.ThoiGianLuaNhaThau,
@@ -80,6 +83,7 @@ public static class GoiThauMappings {
         entity.HinhThucLuaChonNhaThauId = dto.HinhThucLuaChonNhaThauId;
         entity.PhuongThucLuaChonNhaThauId = dto.PhuongThucLuaChonNhaThauId;
         entity.ThoiGianLuaNhaThau = dto.ThoiGianLuaNhaThau;
+        entity.LoaiCongViecId = dto.LoaiCongViecId;
         entity.LoaiHopDongId = dto.LoaiHopDongId;
         entity.ThoiGianHopDong = dto.ThoiGianHopDong;
         entity.TomTatCongViecChinhGoiThau = dto.TomTatCongViecChinhGoiThau;
