@@ -17,6 +17,8 @@ using QLDA.Application.GoiThaus.Queries;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
+using QLDA.Application.KhoKhanVuongMacs.DTOs;
+using QLDA.Application.KhoKhanVuongMacs.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
@@ -507,53 +509,54 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
-    #region usp_In_DanhSach_KhoKhanVuongMac
+    #region DanhSachKhoKhanVuongMac
 
     /// <summary>
-    /// usp_In_DanhSach_KhoKhanVuongMac - DanhSachKhoKhanVuongMac.xlsx
+    /// DanhSachKhoKhanVuongMac.xlsx — Export danh sách khó khăn vướng mắc (filter giống danh-sach-tien-do)
     /// </summary>
-    /// <param name="searchModel"></param>
-    /// <returns></returns>
     [HttpGet("api/print/danh-sach-kho-khan-vuong-mac")]
-    public async Task<IActionResult> InKhoKhanVuongMac([FromQuery] KhoKhanVuongMacPrintSearchModel searchModel)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InKhoKhanVuongMac(
+        [FromQuery] KhoKhanVuongMacPrintSearchModel searchModel,
+        CancellationToken cancellationToken = default)
     {
         var fileNameTemplate = "DanhSachKhoKhanVuongMac.xlsx";
-        var procedureName = "usp_In_DanhSach_KhoKhanVuongMac";
         var templatePath = Path.Combine(
-            AppContext.BaseDirectory, // ví dụ: ...\QLDA.WebApi
-            "PrintTemplates", // chính xác tên folder trong project
+            AppContext.BaseDirectory,
+            "PrintTemplates",
             fileNameTemplate
         );
 
-        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
-
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath),
+            "Không tìm thấy file template DanhSachKhoKhanVuongMac.xlsx");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery()
-        {
-            PathTemplate = templatePath,
-            ProcName = procedureName,
-            Params = new
-            {
-                searchModel.DuAnId,
-                searchModel.BuocId,
-                searchModel.NoiDung,
-                searchModel.TinhTrangId,
-                searchModel.MucDoKhoKhanId,
-                searchModel.LoaiDuAnId,
-                searchModel.LanhDaoPhuTrachId,
-                TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
-                DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
-                searchModel.GlobalFilter,
-                searchModel.LoaiDuAnTheoNamId,
-                PageIndex = 0,
-                PageSize = 0,
-            },
-            HiddenColumns = searchModel.HiddenColumns
-        };
-        var exportResult = await Mediator.Send(query);
 
-        return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType)
+        var data = await Mediator.Send(new KhoKhanVuongMacGetDanhSachExportQuery
+        {
+            DuAnId = searchModel.DuAnId,
+            BuocId = searchModel.BuocId,
+            GlobalFilter = searchModel.GlobalFilter,
+            NoiDung = searchModel.NoiDung,
+            TinhTrangId = searchModel.TinhTrangId,
+            MucDoKhoKhanId = searchModel.MucDoKhoKhanId,
+            LoaiDuAnId = searchModel.LoaiDuAnId,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
+            LanhDaoPhuTrachId = searchModel.LanhDaoPhuTrachId,
+            DonViPhuTrachChinhId = searchModel.DonViPhuTrachChinhId,
+            DonViPhoiHopId = searchModel.DonViPhoiHopId,
+            TuNgay = searchModel.TuNgay,
+            DenNgay = searchModel.DenNgay,
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<KhoKhanVuongMacExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
         {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };

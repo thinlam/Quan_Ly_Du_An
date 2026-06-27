@@ -14,6 +14,8 @@ public record KhoKhanVuongMacPrintSearchModel {
     public int? LoaiDuAnId { get; set; }
     public int? LoaiDuAnTheoNamId { get; set; }
     public long? LanhDaoPhuTrachId { get; set; }
+    public long? DonViPhuTrachChinhId { get; set; }
+    public long? DonViPhoiHopId { get; set; }
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
 }
