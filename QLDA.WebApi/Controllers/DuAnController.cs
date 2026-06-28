@@ -109,6 +109,19 @@ namespace QLDA.WebApi.Controllers
             });
             return ResultApi.Ok(res);
         }
+        /// <summary>
+        /// Theo dõi dự án theo phòng được phân công — 4 panel thống kê + danh sách phân trang
+        /// </summary>
+        [HttpGet("api/du-an/theo-doi-du-an-phong-phan-cong")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<ResultApi<TheoDoiDuAnPhongPhanCongResultDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetTheoDoiDuAnPhongPhanCong([FromQuery] TheoDoiDuAnPhongPhanCongSearchDto searchDto)
+        {
+            var res = await Mediator.Send(new TheoDoiDuAnPhongPhanCongQuery(searchDto));
+            return ResultApi.Ok(res);
+        }
+
         [HttpGet("api/du-an/danh-sach-theo-phong-ban")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType<ResultApi<PaginatedList<DuAn>>>(StatusCodes.Status200OK)]
