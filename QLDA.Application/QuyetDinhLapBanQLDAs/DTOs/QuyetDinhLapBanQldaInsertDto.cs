@@ -9,6 +9,9 @@ public class QuyetDinhLapBanQldaInsertDto : IMayHaveTepDinhKemDto, ITienDo {
     public int? BuocId { get; set; }
     public string? SoQuyetDinh { get; set; }
     public DateTimeOffset? NgayQuyetDinh { get; set; }
+    public string? SoDuThao { get; set; }
+    public string? TrichYeuDuThao { get; set; }
+
     public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public string? NguoiKy { get; set; }

@@ -10,6 +10,9 @@ public class QuyetDinhLapBanQldaUpdateDto : IMayHaveTepDinhKemDto {
     public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public string? NguoiKy { get; set; }
+   
+    public string? SoDuThao { get; set; }
+    public string? TrichYeuDuThao { get; set; }
 
     public List<ThanhVienBanQldaDto>? DanhSachThanhVien { get; set; } = [];
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }

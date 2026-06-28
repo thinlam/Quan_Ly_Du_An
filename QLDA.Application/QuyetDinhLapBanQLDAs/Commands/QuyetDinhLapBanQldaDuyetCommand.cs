@@ -1,21 +1,22 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Providers;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
+using BuildingBlocks.Domain.Providers;
+using global::QLDA.Application.Authorization;
+using global::QLDA.Application.Providers;
+using global::QLDA.Domain.Constants;
+using Microsoft.EntityFrameworkCore;
 
-namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
-/// <summary>
-/// Duyệt phân khai kinh phí - LDDV role
-/// </summary>
-public record ToTrinhPheDuyetDuyetCommand(Guid Id, string Loai) : IRequest<int>;
+namespace QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 
-internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetDuyetCommand, int> {
+
+public record QuyetDinhLapBanQldaDuyetCommand(Guid Id) : IRequest<int>;
+
+internal class QuyetDinhLapBanQldaDuyetCommandHandler : IRequestHandler<QuyetDinhLapBanQldaDuyetCommand, int>
+{
     private readonly DbContext _dbContext;
-    private readonly IRepository<ToTrinhPheDuyet, Guid> _repository;
+    private readonly IRepository<QuyetDinhLapBanQLDA, Guid> _repository; 
+    private readonly IRepository<VanBanQuyetDinh, Guid> _vanBanQuyetDinh; 
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IBuocAuthorizationProvider _auth;
@@ -24,9 +25,11 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
 
-    public ToTrinhPheDuyetDuyetCommandHandler(DbContext dbContext, IServiceProvider serviceProvider) {
+    public QuyetDinhLapBanQldaDuyetCommandHandler(DbContext dbContext, IServiceProvider serviceProvider)
+    {
         _dbContext = dbContext;
-        _repository = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
+        _vanBanQuyetDinh = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
+        _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapBanQLDA, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -36,17 +39,15 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(ToTrinhPheDuyetDuyetCommand request, CancellationToken cancellationToken) {
+    public async Task<int> Handle(QuyetDinhLapBanQldaDuyetCommand request, CancellationToken cancellationToken)
+    {
         var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
         {
             throw new ManagedException("Tài khoản không có quyền.");
         }
 
-        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
-
-        var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
-        var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
+        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var statusDict = statuses
             .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
             .ToDictionary(x => x.Ma!, x => x);
@@ -57,21 +58,18 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
-        string table = request.Loai;
-        if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))
-            table = "ToTrinhPheDuyet";// hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
+      
+        var entity = await _repository.GetQueryableSet()
+        .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        var entityType = _dbContext.Model.GetEntityTypes()
-                .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
-
-        var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật");
 
 
-    //    await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        //await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh.Id)
+        {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
@@ -79,9 +77,10 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         entity.TrangThaiId = trangThaiDaDuyet.Id;
 
         // Create history record
-        var history = new PheDuyetHistory {
+        var history = new PheDuyetHistory
+        {
             Id = Guid.NewGuid(),
-            EntityName = request.Loai,// get Loai from request.Loai if needed
+            EntityName = PheDuyetEntityNames.QuyetDinhLapBanQLDA,// get Loai from request.Loai if needed
             EntityId = request.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
@@ -89,8 +88,22 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-      
+
         await _historyRepository.AddAsync(history, cancellationToken);
+        //save to VanBanQuyetDinh
+        var vb = new VanBanQuyetDinh
+        {
+            Id = Guid.NewGuid(),
+            So = entity.So,
+            TrichYeu = entity.TrichYeu,
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
+            Loai = PheDuyetEntityNames.QuyetDinhLapBanQLDA,
+            NgayKy = entity.NgayKy,
+            NguoiKy = entity.NguoiKy
+        };
+
+        await _vanBanQuyetDinh.AddAsync(vb, cancellationToken);
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

@@ -12,6 +12,7 @@ using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PheDuyetDuToans.Commands;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
+using QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 using QLDA.Application.ThoaThuanGiaoViecs.Commands;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
@@ -61,6 +62,7 @@ internal class PheDuyetDispatchTraLaiCommandHandler : IRequestHandler<PheDuyetDi
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach, request.NoiDung),
+            PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaTraLaiCommand(request.Id, request.NoiDung),
 
             PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTraLaiCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
 

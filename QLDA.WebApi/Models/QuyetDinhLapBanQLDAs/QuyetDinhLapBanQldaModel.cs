@@ -20,6 +20,8 @@ public class QuyetDinhLapBanQldaModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayH
     public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public string? NguoiKy { get; set; }
+    public string? SoDuThao { get; set; }
+    public string? TrichYeuDuThao { get; set; }
 
     public List<ThanhVienBanQldaModel>? DanhSachThanhVien { get; set; } = [];
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }

@@ -12,9 +12,9 @@ namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 /// <summary>
 /// Trình quyết định điều chỉnh - chỉ phòng KH-TC (PhongBanId = 219)
 /// </summary>
-public record ToTrinhPheDuyetTrinhCommand(Guid Id, string Loai, string? NoiDung = null) : IRequest<int>;
-
-internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDuyetTrinhCommand, int>
+public record ToTrinhKhongDuyetCommand(Guid Id, string Loai, string? NoiDung = null) : IRequest<int>;
+// chu thich: Các tờ trình gọi api này thì ko cần duyệt. Trình là tính duyệt
+internal class ToTrinhKhongDuyetCommandHandler : IRequestHandler<ToTrinhKhongDuyetCommand, int>
 {
     private readonly DbContext _dbContext;
     private readonly IRepository<ToTrinhPheDuyet, Guid> _repository;
@@ -27,7 +27,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ToTrinhPheDuyetTrinhCommandHandler(DbContext dbContext, IServiceProvider serviceProvider)
+    public ToTrinhKhongDuyetCommandHandler(DbContext dbContext, IServiceProvider serviceProvider)
     {
         _dbContext = dbContext;
         _repository = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
@@ -41,9 +41,13 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(ToTrinhPheDuyetTrinhCommand request, CancellationToken cancellationToken)
+    public async Task<int> Handle(ToTrinhKhongDuyetCommand request, CancellationToken cancellationToken)
     {
-        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+        // entity này có 2 loại trạng thái là trạng thái đề xuất mặc định và trạng thái tờ trình ko cần duyệt( trình là xong)
+
+       // bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai); allway true
+        var loaiPheDuyet =PheDuyetEntityNames.ToTrinhKhongDuyet;
+        var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
         var statusDict = statuses.ToDictionary(x => x.Ma);
 
         var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
@@ -73,7 +77,7 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         // Validate: must be DT (Dự thảo) or TL (Trả lại) to transition to ĐTr (Đã trình)
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
         {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là dự thảo hoặc trả lại!");
+            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc Trả lại!");
         }
 
         // 5. Cập nhật TrangThaiId (Dù là Model nào cũng chỉ tốn đúng 1 dòng này)
@@ -93,7 +97,23 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
             NgayXuLy = DateTimeOffset.UtcNow
         };
         await _historyRepository.AddAsync(history);
-      
+        #region 
+        // nếu là tờ trình kế hoạch lcnt  -> duyệt thì insert vào table KeHoachLuaChonNhaThau
+        if (Enum.IsDefined(typeof(KeHoachLuaChonNhaThauLoai), request.Loai))
+        {
+            var entityKeHoach = await _repository.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+            ManagedException.ThrowIfNull(entityKeHoach, "Không tìm thấy kế hoạch cần cập nhật");
+            var keHoach = new KeHoachLuaChonNhaThau
+            {
+                Id = Guid.NewGuid(),
+                Ten = entityKeHoach.Ten,
+                Loai = request.Loai,
+                DuAnId= entityKeHoach.DuAnId,
+                BuocId = entityKeHoach.BuocId
+            };
+            await _keHoachRepo.AddAsync(keHoach, cancellationToken);
+        }
+        #endregion
         // 7. Lưu thay đổi vào DB thông qua DbContext
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -101,32 +121,8 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
 
 
 
-
-
-
     }
 
 
-    /// <summary>
-    /// Kiểm tra xem một chuỗi có khớp với Description nào trong Enum không
-    /// </summary>
-    public static bool InToTrinhPheDuyet(string? loai)
-    {
-        if (string.IsNullOrWhiteSpace(loai)) return false;
-
-        // Duyệt qua tất cả các phần tử của Enum và đọc Description của từng thằng
-        foreach (ToTrinhEntityNames enumValue in Enum.GetValues(typeof(ToTrinhEntityNames)))
-        {
-            var fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
-            var attribute = fieldInfo?.GetCustomAttribute<DescriptionAttribute>();
-
-            // So sánh chuỗi truyền vào với Description (không phân biệt hoa thường)
-            if (attribute != null && string.Equals(attribute.Description, loai, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+  
 }

@@ -114,7 +114,10 @@ public static class PheDuyetEntityNames
     public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
     [Description("Quyết định duyệt dự toán")] //issue #9478
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
-
+    [Description("Quyết định lập ban quản lý dự án ")] //issue #9636
+    public const string QuyetDinhLapBanQLDA = "QuyetDinhLapBanQLDA";
+   
+   
 }
 public static class LoaiToTrinhKhongDuyetExtensions
 {

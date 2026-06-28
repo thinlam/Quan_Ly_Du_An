@@ -15,6 +15,7 @@ public static class ToTrinhPheDuyetMappings {
             NgayToTrinh = entity.NgayToTrinh,
             TrichYeu = entity.TrichYeu,
             So = entity.So,
+            Ten = entity.Ten,
             Loai = entity.Loai,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),

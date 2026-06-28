@@ -19,6 +19,7 @@ using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
+using QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
@@ -60,15 +61,17 @@ internal class PheDuyetDispatchTrinhCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue, request.NoiDung),
-           
-            PheDuyetEntityNames.KHLCNTDuToanSanCo => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanSanCo, request.NoiDung),
-            PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng, request.NoiDung),
-            PheDuyetEntityNames.KeHoachTongTheLCNT => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachTongTheLCNT, request.NoiDung),
-            PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu, request.NoiDung),
+           // chỉ trình k cần duyệt
+            PheDuyetEntityNames.KHLCNTDuToanSanCo => new ToTrinhKhongDuyetCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanSanCo, request.NoiDung),
+            PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng => new ToTrinhKhongDuyetCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng, request.NoiDung),
+            PheDuyetEntityNames.KeHoachTongTheLCNT => new ToTrinhKhongDuyetCommand(request.Id, PheDuyetEntityNames.KeHoachTongTheLCNT, request.NoiDung),
+            PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu => new ToTrinhKhongDuyetCommand(request.Id, PheDuyetEntityNames.KeHoachLCNTChuanBiDauTu, request.NoiDung),
           
             PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaTrinhCommand(request.Id, request.NoiDung),
 
+            
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };

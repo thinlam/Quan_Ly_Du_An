@@ -14,6 +14,8 @@ public static class QuyetDinhLapBanQldaMappingConfiguration {
             TrichYeu = entity.TrichYeu,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy,
+            SoDuThao = entity.SoDuThao,
+            TrichYeuDuThao = entity.TrichYeuDuThao,
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 // .Where(o => o.GroupType == nameof(EGroupType.QuyetDinhLapBanQLDA))
                 .Select(o => o.ToModel()).ToList(),
@@ -33,6 +35,8 @@ public static class QuyetDinhLapBanQldaMappingConfiguration {
             TrichYeu = model.TrichYeu,
             NgayKy = model.NgayKy,
             NguoiKy = model.NguoiKy,
+            SoDuThao = model.SoDuThao,
+            TrichYeuDuThao = model.TrichYeuDuThao,
             ThanhViens = [.. model.DanhSachThanhVien.Select(e => e.ToEntity())],
         };
     }
@@ -43,6 +47,8 @@ public static class QuyetDinhLapBanQldaMappingConfiguration {
         entity.So = model.SoQuyetDinh; //Số quyết định
         entity.Ngay = model.NgayQuyetDinh; //Ngày quyết định
         entity.TrichYeu = model.TrichYeu;
+        entity.SoDuThao = model.SoDuThao;
+        entity.TrichYeuDuThao = model.TrichYeuDuThao;
         entity.NgayKy = model.NgayKy;
         entity.NguoiKy = model.NguoiKy;
         entity.ThanhViens = model.DanhSachThanhVien?.Select(e => e.ToEntity()).ToList() ?? [];

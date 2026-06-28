@@ -15,8 +15,7 @@ public static class LoaiVanBanQuyetDinhConst {
     /// <summary>
     /// Quyết định duyệt KHLCNT
     /// </summary>
-    private const string QuyetDinhDuyetKHLCNT = "QUYETDINHDUYETKHLCNT";
-
+    public const string QuyetDinhDuyetKHLCNT = "QUYETDINHDUYETKHLCNT";
     /// <summary>
     /// Quyết định duyệt quyết toán
     /// </summary>
@@ -25,7 +24,7 @@ public static class LoaiVanBanQuyetDinhConst {
     /// <summary>
     /// Quyết định lập Ban QLDA
     /// </summary>
-    private const string QuyetDinhLapBanQLDA = "QUYETDINHTLBANQLDUAN";
+    public const string QuyetDinhLapBanQLDA = "QUYETDINHTLBANQLDUAN";
 
     /// <summary>
     /// Quyết định lập Bên mời thầu

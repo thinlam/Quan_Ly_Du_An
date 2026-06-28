@@ -1,6 +1,8 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Common;
+using QLDA.Domain.Constants;
+using System.Data;
 
 namespace QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 
@@ -12,6 +14,7 @@ internal class
     private readonly IRepository<QuyetDinhLapBanQLDA, Guid> QuyetDinhLapBanQLDA;
     private readonly IRepository<ThanhVienBanQLDA, int> ThanhVienBanQLDA;
     private readonly IRepository<DuAn, Guid> DuAn;
+    private readonly IRepository<DanhMucTrangThaiPheDuyet, int> StatusRepo;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
     private readonly IUnitOfWork UnitOfWork;
     private readonly ILogger<QuyetDinhLapBanQldaInsertOrUpdateCommandHandler> Logger;
@@ -21,6 +24,7 @@ internal class
         QuyetDinhLapBanQLDA = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapBanQLDA, Guid>>();
         ThanhVienBanQLDA = serviceProvider.GetRequiredService<IRepository<ThanhVienBanQLDA, int>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        StatusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
         Logger = logger;
         UnitOfWork = QuyetDinhLapBanQLDA.UnitOfWork;
@@ -31,6 +35,14 @@ internal class
         try {
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");
+
+            var statuses = await StatusRepo.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+            var statusDict = statuses
+                .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+                .ToDictionary(x => x.Ma!, x => x);
+
+            var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
+            request.Entity.TrangThaiId = trangThaiDuThao?.Id??0;
 
             using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 var isExist = QuyetDinhLapBanQLDA.GetQueryableSet().Any(o => o.Id == request.Entity.Id);
