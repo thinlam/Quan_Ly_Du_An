@@ -29,7 +29,7 @@ internal class
     public async Task Handle(QuyetDinhDuyetKHLCNTInsertOrUpdateCommand request,
         CancellationToken cancellationToken = default) {
         try {
-            ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
+            ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.VanBanQuyetDinh.DuAnId),
                 "Không tồn tại dự án");
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {

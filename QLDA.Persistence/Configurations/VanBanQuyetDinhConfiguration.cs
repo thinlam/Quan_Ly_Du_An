@@ -20,6 +20,7 @@ public class VanBanQuyetDinhConfiguration : AggregateRootConfiguration<VanBanQuy
                 fromDb => fromDb
             );
 
+       // builder.Property(e => e.CoQuanQuyetDinh).HasMaxLength(1000);
         builder.Property(e => e.NgayKy)
             .HasConversion(
                 toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,

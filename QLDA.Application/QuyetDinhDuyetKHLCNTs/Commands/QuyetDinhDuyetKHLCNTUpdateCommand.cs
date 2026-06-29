@@ -1,7 +1,8 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Common.Constants;
 using QLDA.Application.QuyetDinhDuyetKHLCNTs.DTOs;
+using System.Data;
 
 namespace QLDA.Application.QuyetDinhDuyetKHLCNTs.Commands;
 
@@ -28,6 +29,7 @@ internal class QuyetDinhDuyetKHLCNTUpdateCommandHandler : IRequestHandler<QuyetD
     public async Task<QuyetDinhDuyetKHLCNT> Handle(QuyetDinhDuyetKHLCNTUpdateCommand request, CancellationToken cancellationToken = default) {
         try {
             var entity = request.Dto.ToEntity();
+            entity.VanBanQuyetDinh.Loai = LoaiVanBanQuyetDinhConst.QuyetDinhDuyetKHLCNT;
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetKHLCNT.UpdateAsync(entity, cancellationToken);

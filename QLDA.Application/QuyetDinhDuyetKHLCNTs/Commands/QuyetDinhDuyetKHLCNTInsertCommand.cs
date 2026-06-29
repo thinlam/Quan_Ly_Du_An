@@ -1,7 +1,10 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Common.Constants;
+using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.QuyetDinhDuyetKHLCNTs.DTOs;
+using QLDA.Domain.Constants;
+using System.Data;
 
 namespace QLDA.Application.QuyetDinhDuyetKHLCNTs.Commands;
 
@@ -18,7 +21,6 @@ internal class QuyetDinhDuyetKHLCNTInsertCommandHandler : IRequestHandler<QuyetD
     public QuyetDinhDuyetKHLCNTInsertCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhDuyetKHLCNTInsertCommandHandler> logger) {
         QuyetDinhDuyetKHLCNT = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetKHLCNT, Guid>>();
-        KeHoachLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
         _logger = logger;
@@ -31,7 +33,18 @@ internal class QuyetDinhDuyetKHLCNTInsertCommandHandler : IRequestHandler<QuyetD
                 "Không tồn tại dự án");
 
             var entity = request.Dto.ToEntity();
-
+            // 2. Khởi tạo đồng thời bản ghi cha VanBanQuyetDinh từ thông tin request
+            entity.VanBanQuyetDinh = new VanBanQuyetDinh
+            {
+                Id = Guid.NewGuid(),
+                DuAnId = request.Dto.DuAnId,
+                BuocId = request.Dto.BuocId,
+                So = request.Dto.SoQuyetDinh, 
+                Ngay = request.Dto.NgayQuyetDinh,
+                TrichYeu = request.Dto.TrichYeu,
+                CoQuanQuyetDinh = request.Dto.CoQuanQuyetDinh,
+                Loai = LoaiVanBanQuyetDinhConst.QuyetDinhDuyetKHLCNT
+            };//
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetKHLCNT.AddAsync(entity, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
