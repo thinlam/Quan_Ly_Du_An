@@ -33,14 +33,12 @@ internal class TheoDoiDuAnPhongPhanCongQueryHandler(
         var search = request.SearchDto;
         var hoanThanhId = await ResolveHoanThanhIdAsync(cancellationToken);
         var namHienTai = dateTimeProvider.OffsetUtcNow.Year;
-        var donViPhuTrachChinhId = ResolveDonViPhuTrachChinhId(search.DonViPhuTrachChinhId);
 
         var root = authManager.FilterVisible(duAn.GetQueryableSet(), AuthorizationResourceKeys.DuAn);
 
         var counters = await BuildQuery(
                 root,
                 search,
-                donViPhuTrachChinhId,
                 namHienTai,
                 hoanThanhId,
                 ETheoDoiDuAnPhongPhanCongLoai.TatCa)
@@ -58,7 +56,6 @@ internal class TheoDoiDuAnPhongPhanCongQueryHandler(
                 BuildQuery(
                     root,
                     search,
-                    donViPhuTrachChinhId,
                     namHienTai,
                     hoanThanhId,
                     search.Loai)
@@ -88,26 +85,21 @@ internal class TheoDoiDuAnPhongPhanCongQueryHandler(
         return hoanThanh!.Id;
     }
 
-    private long? ResolveDonViPhuTrachChinhId(long? donViPhuTrachChinhId)
-    {
-        if (donViPhuTrachChinhId is > 0)
-            return donViPhuTrachChinhId;
-
-        var phongBanId = userProvider.Info.PhongBanID;
-        return phongBanId > 0 ? phongBanId : donViPhuTrachChinhId;
-    }
-
-    private static IQueryable<DuAn> BuildQuery(
+    private IQueryable<DuAn> BuildQuery(
         IQueryable<DuAn> query,
         TheoDoiDuAnPhongPhanCongSearchDto search,
-        long? donViPhuTrachChinhId,
         int namHienTai,
         int hoanThanhId,
         ETheoDoiDuAnPhongPhanCongLoai loai)
     {
         query = query
             .AsNoTracking()
-            .WhereIf(donViPhuTrachChinhId is > 0, e => e.DonViPhuTrachChinhId == donViPhuTrachChinhId)
+            .WhereFunc(search.DonViPhuTrachChinhId.HasValue, q => q
+                .WhereIf(search.DonViPhuTrachChinhId > 0, e => e.DonViPhuTrachChinhId == search.DonViPhuTrachChinhId)
+                .WhereIf(search.DonViPhuTrachChinhId == -1, e => e.DonViPhuTrachChinhId == null))
+            .WhereFunc(search.LanhDaoPhuTrachId.HasValue, q => q
+                .WhereIf(search.LanhDaoPhuTrachId > 0, e => e.LanhDaoPhuTrachId == search.LanhDaoPhuTrachId)
+                .WhereIf(search.LanhDaoPhuTrachId == -1, e => e.LanhDaoPhuTrachId == null))
             .WhereIf(search.TenDuAn.IsNotNullOrWhitespace(),
                 e => e.TenDuAn!.ToLower().Contains(search.TenDuAn!.ToLower()))
             .WhereIf(search.MaDuAn.IsNotNullOrWhitespace(),
@@ -117,6 +109,13 @@ internal class TheoDoiDuAnPhongPhanCongQueryHandler(
                      && ((e.ThoiGianHoanThanh == null && e.ThoiGianKhoiCong == search.NamDuAn)
                          || search.NamDuAn <= e.ThoiGianHoanThanh))
             .WhereGlobalFilter(search, e => e.TenDuAn, e => e.MaDuAn);
+
+        if (!search.DonViPhuTrachChinhId.HasValue && !search.LanhDaoPhuTrachId.HasValue)
+        {
+            var phongBanId = userProvider.Info.PhongBanID;
+            if (phongBanId > 0)
+                query = query.Where(e => e.DonViPhuTrachChinhId == phongBanId);
+        }
 
         return loai switch
         {
