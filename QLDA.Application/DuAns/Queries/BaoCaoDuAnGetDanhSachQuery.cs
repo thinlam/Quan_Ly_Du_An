@@ -94,7 +94,7 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
 
         return new PaginatedList<BaoCaoDuAnDto>(
             result, totalCount,
-            search.PageIndex,
+            search.Skip(),
             search.PageSize);
     }
 

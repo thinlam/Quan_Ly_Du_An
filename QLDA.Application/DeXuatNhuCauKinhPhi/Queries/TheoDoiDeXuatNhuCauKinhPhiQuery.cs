@@ -199,11 +199,10 @@ internal class
         //   public PaginatedList(IReadOnlyCollection<T> items, int count, int pageNumber, int pageSize)
         //    .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
         return new PaginatedList<TheoDoiDeXuatNhuCauKinhPhiDto>(
-    items,
-    pagedData.TotalRows,
-    pagedData.PageNumber,
-    request.Take()
-); 
+            items,
+            pagedData.TotalRows,
+            request.Skip(),
+            request.Take()); 
     //    return new PaginatedList<TheoDoiDeXuatNhuCauKinhPhiDto>(
     //items,
     //pagedData.TotalRows,
