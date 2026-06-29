@@ -116,6 +116,10 @@ internal class TheoDoiDuAnPhongPhanCongQueryHandler(
                 e => search.NamDuAn >= e.ThoiGianKhoiCong
                      && ((e.ThoiGianHoanThanh == null && e.ThoiGianKhoiCong == search.NamDuAn)
                          || search.NamDuAn <= e.ThoiGianHoanThanh))
+            .WhereFunc(search.LanhDaoPhuTrachId.HasValue, q => q
+                .WhereIf(search.LanhDaoPhuTrachId > 0, e => e.LanhDaoPhuTrachId == search.LanhDaoPhuTrachId)
+                .WhereIf(search.LanhDaoPhuTrachId == -1, e => e.LanhDaoPhuTrachId == null))
+            .WhereIf(search.TrangThaiDuAnId > 0, e => e.TrangThaiDuAnId == search.TrangThaiDuAnId)
             .WhereGlobalFilter(search, e => e.TenDuAn, e => e.MaDuAn);
 
         return loai switch

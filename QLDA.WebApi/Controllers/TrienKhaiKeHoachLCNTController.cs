@@ -109,27 +109,33 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Update([FromBody] TrienKhaiKeHoachLCNTModel model, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default)
     {
-        using var tx = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken); 
+        using var tx = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken);
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTUpdateCommand(model.ToEntity()), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.TrienKhaiKeHoachLCNT) ?? []];
+        var danhSachTepChinh = model.GetDanhSachTep(entity.Id).ToList();
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            Entities = danhSachTepChinh,
+            ScopeGroupTypes = [GroupTypeConstants.TrienKhaiKeHoachLCNT]
         }, cancellationToken);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        var danhSachTepDinhKem = model.GetDanhSachTep(entity.Id);
-
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        foreach (var dv in model.DonViTuVans ?? [])
         {
-            GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
-        });
+            var dvId = dv.Id ?? dv.GetId();
+            var files = dv.GetDanhSachTep(dvId).ToList();
+            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            {
+                GroupId = dvId.ToString(),
+                Entities = files,
+                ScopeGroupTypes = [GroupTypeConstants.DonViTuVan]
+            }, cancellationToken);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
+        return ResultApi.Ok(entity.ToDto(danhSachTepChinh));
     }
 
     [ProducesResponseType<ResultApi<PaginatedList<TrienKhaiKeHoachLCNTDto>>>(StatusCodes.Status200OK)]

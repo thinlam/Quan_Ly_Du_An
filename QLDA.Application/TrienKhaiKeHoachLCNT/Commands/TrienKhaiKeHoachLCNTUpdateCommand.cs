@@ -40,8 +40,6 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
-            .Include(e => e.DonViTuVans)
-            .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
@@ -53,8 +51,8 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
         entity.DuAnId = request.Dto.DuAnId;
         entity.NgayTrinh = request.Dto.NgayTrinh;
         entity.TrichYeu = request.Dto.TrichYeu;
-        entity.So = request.Dto.TrichYeu;
-        
+        entity.So = request.Dto.So;
+
         entity.NoiDung = request.Dto.NoiDung;
         entity.YeuCau = request.Dto.YeuCau;
         entity.GiaTri = request.Dto.GiaTri;
@@ -62,9 +60,11 @@ internal class TrienKhaiKeHoachLCNTUpdateCommandHandler : IRequestHandler<TrienK
         entity.HinhThucLCNT = request.Dto.HinhThucLCNT;
         entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
         entity.ThoiGianThucHien = request.Dto.ThoiGianThucHien;
-        
-        entity.DonViTuVans = request.Dto.DonViTuVans;
-        await _repo.UpdateAsync(entity, cancellationToken);
+
+        var dbContext = _unitOfWork as DbContext
+            ?? throw new InvalidOperationException("UnitOfWork must be a DbContext.");
+        await dbContext.SyncDonViTuVanAsync(entity.Id, request.Dto.DonViTuVans, cancellationToken);
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return entity;

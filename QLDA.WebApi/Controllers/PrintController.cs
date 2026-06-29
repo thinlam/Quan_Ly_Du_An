@@ -681,6 +681,9 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         {
             DuAnId = searchModel.DuAnId,
             GlobalFilter = searchModel.GlobalFilter,
+            TenDuAn = searchModel.TenDuAn,
+            DonViPhuTrachChinhId = searchModel.DonViPhuTrachChinhId,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
             TrangThaiId = searchModel.TrangThaiId,
         }, cancellationToken);
 

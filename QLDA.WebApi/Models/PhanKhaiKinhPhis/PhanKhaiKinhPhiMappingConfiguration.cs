@@ -1,9 +1,25 @@
+using QLDA.Application.PhanKhaiKinhPhis.DTOs;
+using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.PhanKhaiKinhPhis;
 
 public static class PhanKhaiKinhPhiMappingConfiguration {
+    public static PhanKhaiKinhPhiSearchDto ToSearchDto(this PhanKhaiKinhPhiSearchModel model) => new() {
+        DuAnId = model.DuAnId,
+        GlobalFilter = model.GlobalFilter,
+        TenDuAn = model.TenDuAn,
+        DonViPhuTrachChinhId = model.DonViPhuTrachChinhId,
+        LoaiDuAnTheoNamId = model.LoaiDuAnTheoNamId,
+        TrangThaiId = model.TrangThaiId,
+        PageIndex = model.PageIndex,
+        PageSize = model.PageSize,
+    };
+
+    public static PhanKhaiKinhPhiGetDanhSachQuery ToQuery(this PhanKhaiKinhPhiSearchModel model)
+        => new(model.ToSearchDto()) { IsNoTracking = true };
+
     public static PhanKhaiKinhPhiModel ToModel(this PhanKhaiKinhPhi entity) => new() {
         Id = entity.Id,
         DuAnId = entity.DuAnId,
