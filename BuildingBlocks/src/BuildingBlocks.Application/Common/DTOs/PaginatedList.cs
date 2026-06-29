@@ -29,10 +29,12 @@ public class PaginatedList<T>
     {
     }
 
-    public PaginatedList(IReadOnlyCollection<T> items, int count, int pageNumber, int pageSize)
+    /// <param name="skip">Offset bản ghi (từ <see cref="AggregateRootPagination.Skip"/>).</param>
+    /// <param name="pageSize">Số bản ghi mỗi trang.</param>
+    public PaginatedList(IReadOnlyCollection<T> items, int count, int skip, int pageSize)
     {
-        PageNumber = pageNumber;
-        TotalPages = pageNumber > 0 && pageSize > 0 ? (int)Math.Ceiling(count / (double)pageSize) : 1;
+        PageNumber = pageSize > 0 ? skip / pageSize + 1 : 1;
+        TotalPages = pageSize > 0 ? (int)Math.Ceiling(count / (double)pageSize) : 1;
         TotalRows = count;
         Data = [.. items];
     }

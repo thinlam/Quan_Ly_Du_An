@@ -10,7 +10,7 @@ using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.PhuLucHopDongs.Queries;
 
-public record PhuLucHopDongGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<List<PhuLucHopDongDto>>, IFromDateToDate
+public record PhuLucHopDongGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobalFilter, IRequest<PaginatedList<PhuLucHopDongDto>>, IFromDateToDate
 {
     public Guid? DuAnId { get; set; }
     public int? BuocId { get; set; }
@@ -33,7 +33,7 @@ public record PhuLucHopDongGetDanhSachQuery : AggregateRootPagination, IMayHaveG
 
 internal class
     PhuLucHopDongGetDanhSachQueryHandler : IRequestHandler<PhuLucHopDongGetDanhSachQuery,
-    List<PhuLucHopDongDto>>
+    PaginatedList<PhuLucHopDongDto>>
 {
     private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
@@ -50,7 +50,7 @@ internal class
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
-    public async Task<List<PhuLucHopDongDto>> Handle(PhuLucHopDongGetDanhSachQuery request,
+    public async Task<PaginatedList<PhuLucHopDongDto>> Handle(PhuLucHopDongGetDanhSachQuery request,
         CancellationToken cancellationToken = default)
     {
         var queryable = _buocAuth.FilterVisibleChildEntities(PhuLucHopDong.GetQueryableSet().AsNoTracking(), _duAnBuocRepo, _authContext, e => e.BuocId)
@@ -88,7 +88,6 @@ internal class
                 HopDongId = e.HopDongId,
                 GiaTri = e.GiaTri,
                 NgayDuKienKetThuc = e.NgayDuKienKetThuc
-            }).ToListAsync(cancellationToken);
-        //   .PaginatedListAsync(request.Skip(), request.Take(), : cancellationToken);
+            }).PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
     }
 }
