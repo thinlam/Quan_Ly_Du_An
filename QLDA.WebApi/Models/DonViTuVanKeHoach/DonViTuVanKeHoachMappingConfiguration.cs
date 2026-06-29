@@ -13,12 +13,15 @@ public static class DonViTuVanKeHoachMappingConfiguration {
         };
 
 
-    public static DonViTuVanKeHoach ToEntity(this DonViTuVanKeHoachModel model)
+    public static DonViTuVanKeHoach ToEntity(this DonViTuVanKeHoachModel model, Guid keHoachId)
         => new() {
-            Id = model.GetId(),
-            KeHoachId = model.KeHoachId,    
-            TenDonVi = model.TenDonVi   
+            Id = model.Id ?? model.GetId(),
+            KeHoachId = keHoachId,
+            TenDonVi = model.TenDonVi
         };
+
+    public static DonViTuVanKeHoach ToEntity(this DonViTuVanKeHoachModel model)
+        => model.ToEntity(model.KeHoachId);
 
   
 }
