@@ -1,3 +1,4 @@
+using QLDA.Application.Common.Constants;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -110,21 +111,30 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
         */
         #endregion
 
-        return await query
-            .Select(e => new TongHopVanBanQuyetDinhDto {
-                Id = e.Id,
-                DuAnId = e.DuAnId,
-                BuocId = e.BuocId,
-                So = e.So,
-                Ngay = e.Ngay ?? e.NgayKy,
-                TrichYeu = e.TrichYeu,
-                TableName = e.Loai,
-                Loai = e.Loai!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
-                DanhSachTepDinhKem = TepDinhKem.GetOrderedSet()
-                    .Where(f => f.GroupId == e.Id.ToString())
-                    .Select(f => f.ToDto()).ToList()
-            })
-            .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
-
+        var paginatedList = await query
+    .Select(e => new TongHopVanBanQuyetDinhDto
+    {
+        Id = e.Id,
+        DuAnId = e.DuAnId,
+        BuocId = e.BuocId,
+        So = e.So,
+        Ngay = e.Ngay ?? e.NgayKy,
+        TrichYeu = e.TrichYeu,
+        TableName = e.Loai, // Đảm bảo trường này nhận giá trị từ DB
+        Loai = e.Loai!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
+        DanhSachTepDinhKem = TepDinhKem.GetOrderedSet()
+            .Where(f => f.GroupId == e.Id.ToString())
+            .Select(f => f.ToDto()).ToList()
+    })
+    .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
+        // Bước 2: Duyệt qua danh sách đã có trong bộ nhớ để gán thuộc tính PartialView
+        foreach (var item in paginatedList.Data) // Giả sử PaginatedList có thuộc tính .Items chứa danh sách dữ liệu
+        {
+            if (LoaiVanBanQuyetDinhConst.Dictionary.TryGetValue(item.TableName ?? string.Empty, out var value))
+            {
+                item.PartialView = value;
+            }
+        };
+        return paginatedList;
     }
 }

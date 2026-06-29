@@ -34,17 +34,17 @@ internal class QuyetDinhDuyetKHLCNTInsertCommandHandler : IRequestHandler<QuyetD
 
             var entity = request.Dto.ToEntity();
             // 2. Khởi tạo đồng thời bản ghi cha VanBanQuyetDinh từ thông tin request
-            entity.VanBanQuyetDinh = new VanBanQuyetDinh
-            {
-                Id = Guid.NewGuid(),
-                DuAnId = request.Dto.DuAnId,
-                BuocId = request.Dto.BuocId,
-                So = request.Dto.SoQuyetDinh, 
-                Ngay = request.Dto.NgayQuyetDinh,
-                TrichYeu = request.Dto.TrichYeu,
-                CoQuanQuyetDinh = request.Dto.CoQuanQuyetDinh,
-                Loai = LoaiVanBanQuyetDinhConst.QuyetDinhDuyetKHLCNT
-            };//
+            //entity.VanBanQuyetDinh = new VanBanQuyetDinh
+            //{
+            //    Id = Guid.NewGuid(),
+            //    DuAnId = request.Dto.DuAnId,
+            //    BuocId = request.Dto.BuocId,
+            //    So = request.Dto.SoQuyetDinh, 
+            //    Ngay = request.Dto.NgayQuyetDinh,
+            //    TrichYeu = request.Dto.TrichYeu,
+            //    CoQuanQuyetDinh = request.Dto.CoQuanQuyetDinh,
+            //    Loai = LoaiVanBanQuyetDinhConst.QuyetDinhDuyetKHLCNT
+            //};//
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetKHLCNT.AddAsync(entity, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

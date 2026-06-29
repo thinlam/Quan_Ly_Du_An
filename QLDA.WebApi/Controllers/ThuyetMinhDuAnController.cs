@@ -81,11 +81,19 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
        
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
             entity.Id, GroupTypeConstants.ThuyetMinhDuAn) ?? []];
-
+        
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
             Entities = files
+        });
+        List<TepDinhKem> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
+            entity.Id, GroupTypeConstants.ThuyetMinhDuAnThamDinh) ?? []];
+        
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = filesThamDinh
         });
 
         return ResultApi.Ok(entity.Id);

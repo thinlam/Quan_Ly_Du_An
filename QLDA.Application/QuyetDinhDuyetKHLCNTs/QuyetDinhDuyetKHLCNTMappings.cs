@@ -1,3 +1,4 @@
+using QLDA.Application.Common.Constants;
 using QLDA.Application.QuyetDinhDuyetKHLCNTs.DTOs;
 
 namespace QLDA.Application.QuyetDinhDuyetKHLCNTs;
@@ -6,12 +7,15 @@ public static class QuyetDinhDuyetKHLCNTMappings
 {
     public static QuyetDinhDuyetKHLCNT ToEntity(this QuyetDinhDuyetKHLCNTInsertDto dto)
     {
+        var id = Guid.NewGuid();
         return new QuyetDinhDuyetKHLCNT
         {
-            Id = Guid.NewGuid(),
+            Id = id,
             KeHoachLuaChonNhaThauId = dto.KeHoachLuaChonNhaThauId,
+            
             VanBanQuyetDinh = new VanBanQuyetDinh
             {
+                Id = id,
                 DuAnId = dto.DuAnId,
                 BuocId = dto.BuocId,
                 So = dto.SoQuyetDinh,
@@ -19,7 +23,8 @@ public static class QuyetDinhDuyetKHLCNTMappings
                 CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
                 TrichYeu = dto.TrichYeu,
                 NgayKy = dto.NgayKy,
-                NguoiKy = dto.NguoiKy
+                NguoiKy = dto.NguoiKy,
+                Loai = LoaiVanBanQuyetDinhConst.QuyetDinhDuyetKHLCNT
             }
         };
     }
@@ -32,8 +37,11 @@ public static class QuyetDinhDuyetKHLCNTMappings
             KeHoachLuaChonNhaThauId = dto.KeHoachLuaChonNhaThauId,
             VanBanQuyetDinh = new VanBanQuyetDinh
             {
+                Id = dto.Id,
                 So = dto.SoQuyetDinh,
                 Ngay = dto.NgayQuyetDinh,
+                DuAnId = dto.DuAnId,
+                BuocId = dto.BuocId,
                 CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
                 TrichYeu = dto.TrichYeu,
                 NgayKy = dto.NgayKy,

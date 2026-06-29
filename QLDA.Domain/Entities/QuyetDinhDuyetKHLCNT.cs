@@ -12,11 +12,10 @@ public class QuyetDinhDuyetKHLCNT :  Entity<Guid>, IAggregateRoot
     /// </summary>
 
     // Thêm khóa ngoại rõ ràng sang bảng văn bản
-    public Guid? QuyetDinhId { get; set; }
     #region Navigation Properties
 
     public KeHoachLuaChonNhaThau? KeHoachLuaChonNhaThau { get; set; }
     public VanBanQuyetDinh VanBanQuyetDinh { get; set; }
 
     #endregion
-}
+}   

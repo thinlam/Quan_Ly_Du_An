@@ -13,9 +13,8 @@ public class QuyetDinhDuyetKHLCNTConfiguration : AggregateRootConfiguration<Quye
 
         builder.HasOne(e => e.VanBanQuyetDinh)
        .WithMany()
-       .HasForeignKey(e => e.QuyetDinhId)
+       .HasForeignKey(e => e.Id)
        .OnDelete(DeleteBehavior.Restrict);
-
 
     }
 }

@@ -51,7 +51,7 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
         }
         else
         {
-            entity.DuAnId = request.Dto.Id;
+            entity.DuAnId = request.Dto.DuAnId;
             entity.BuocId = request.Dto?.BuocId;
             entity.SoToTrinh = request.Dto?.SoToTrinh;
             entity.NgayToTrinh = request.Dto?.NgayToTrinh;

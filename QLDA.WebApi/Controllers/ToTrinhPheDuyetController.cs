@@ -1,3 +1,4 @@
+using Azure.Core;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -80,8 +81,12 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
-
+        var entity = new ToTrinhPheDuyet();
+        if(LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai)) 
+            entity =  await Mediator.Send(new ToTrinhKhongDuyetUpdateCommand(dto), cancellationToken);
+        else
+            entity = await Mediator.Send(new ToTrinhKhongDuyetUpdateCommand(dto), cancellationToken);
+        
         List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhQuyetDinh) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {

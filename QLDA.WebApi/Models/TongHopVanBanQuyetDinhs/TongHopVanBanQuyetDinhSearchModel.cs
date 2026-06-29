@@ -6,4 +6,5 @@ public record TongHopVanBanQuyetDinhSearchModel : CommonSearchModel, IFromDateTo
     public DateOnly? TuNgay { get; set; }
     public DateOnly? DenNgay { get; set; }
     public int? LoaiDuAnTheoNamId { get; set; }
+    public string? CoQuanQuyetDinh { get; set; }
 }

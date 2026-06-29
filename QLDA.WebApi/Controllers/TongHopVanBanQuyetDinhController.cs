@@ -26,6 +26,7 @@ public class TongHopVanBanQuyetDinhController(IServiceProvider serviceProvider)
             PageIndex = searchModel.PageIndex,
             GlobalFilter = searchModel.GlobalFilter,
 
+            CoQuanQuyetDinh = searchModel.CoQuanQuyetDinh,
             Loai = searchModel.Loai,
             TrichYeu = searchModel.TrichYeu,
             TuNgay = searchModel.TuNgay,

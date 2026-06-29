@@ -19,7 +19,8 @@ public class TongHopVanBanQuyetDinhDto : IHasKey<Guid>, IMayHaveTepDinhKemDto {
     public string? Loai { get; set; }
     public string? CoQuanQuyetDinh { get; set; }
     [JsonIgnore] public string? TableName { get; set; }
-    public string? PartialView => LoaiVanBanQuyetDinhConst.Dictionary.TryGetValue(TableName ?? string.Empty, out var value) ? value : string.Empty;
+    public string? PartialView { get; set; } 
+    // public string? PartialView => LoaiVanBanQuyetDinhConst.Dictionary.TryGetValue(TableName ?? string.Empty, out var value) ? value : string.Empty;
     public DateTimeOffset? Ngay { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
@@ -41,7 +42,7 @@ public class VanBanQuyetDinhDto : IHasKey<Guid>, IMayHaveTepDinhKemDto
     public string? NguoiKy { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     [JsonIgnore] public string? TableName { get; set; }
-    public string? PartialView => LoaiVanBanQuyetDinhConst.Dictionary.TryGetValue(TableName ?? string.Empty, out var value) ? value : string.Empty;
+    public string? PartialView { get; set; }// => LoaiVanBanQuyetDinhConst.Dictionary.TryGetValue(TableName ?? string.Empty, out var value) ? value : string.Empty;
     public DateTimeOffset? Ngay { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

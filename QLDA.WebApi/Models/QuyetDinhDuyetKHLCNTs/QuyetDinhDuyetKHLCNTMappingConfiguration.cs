@@ -29,12 +29,15 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
 
 
     public static QuyetDinhDuyetKHLCNT ToEntity(this QuyetDinhDuyetKHLCNTModel model)
-        => new()
+    {
+        var id = model.GetId();
+        return new QuyetDinhDuyetKHLCNT()
         {
-            Id = model.GetId(),
+            Id = id,
             KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId,
             VanBanQuyetDinh = new VanBanQuyetDinh()
             {
+                Id = id,
                 DuAnId = model.VanBanQuyetDinh.DuAnId,
                 BuocId = model.VanBanQuyetDinh.BuocId,
                 So = model.VanBanQuyetDinh.So,
@@ -43,13 +46,16 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
                 TrichYeu = model.VanBanQuyetDinh.TrichYeu,
                 NgayKy = model.VanBanQuyetDinh.NgayKy,
                 NguoiKy = model.VanBanQuyetDinh.NguoiKy,
+                Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
             }
         };
+    }
 
     public static void Update(this QuyetDinhDuyetKHLCNT entity, QuyetDinhDuyetKHLCNTModel model)
     {
         entity.VanBanQuyetDinh = new VanBanQuyetDinh()
         {
+            Id = entity.Id,
             DuAnId = model.VanBanQuyetDinh.DuAnId,
             BuocId = model.VanBanQuyetDinh.BuocId,
             So = model.VanBanQuyetDinh.So,
@@ -58,6 +64,7 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
             TrichYeu = model.VanBanQuyetDinh.TrichYeu,
             NgayKy = model.VanBanQuyetDinh.NgayKy,
             NguoiKy = model.VanBanQuyetDinh.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
         };
         entity.KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId;
 

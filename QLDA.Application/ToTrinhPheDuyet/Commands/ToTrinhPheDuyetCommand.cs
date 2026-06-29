@@ -59,7 +59,7 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc trả lại");
         }
-
+        
         // Update status to Đã trình
         entity.TrangThaiId = trangThaiDaTrinh.Id;
         //1 QuyetDinhKeHoachThue

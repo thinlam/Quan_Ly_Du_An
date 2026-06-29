@@ -5,6 +5,8 @@ namespace QLDA.Application.QuyetDinhDuyetKHLCNTs.DTOs;
 
 public class QuyetDinhDuyetKHLCNTUpdateDto : IMayHaveTepDinhKemDto {
     public Guid Id { get; set; }
+    public Guid DuAnId { get; set; }
+    public int? BuocId { get; set; }
     public Guid? KeHoachLuaChonNhaThauId { get; set; }
     public string? SoQuyetDinh { get; set; }
     public DateTimeOffset? NgayQuyetDinh { get; set; }

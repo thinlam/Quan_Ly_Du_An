@@ -19,7 +19,7 @@ internal class QuyetDinhDuyetKHLCNTGetQueryHandler(IServiceProvider serviceProvi
 
     public async Task<QuyetDinhDuyetKHLCNT> Handle(QuyetDinhDuyetKHLCNTGetQuery request,
         CancellationToken cancellationToken = default) {
-        var queryable = QuyetDinhDuyetKHLCNT.GetOrderedSet()
+        var queryable = QuyetDinhDuyetKHLCNT.GetOrderedSet().Include(e=> e.VanBanQuyetDinh)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)
