@@ -221,6 +221,7 @@ public class ExceptionMiddleware(RequestDelegate next)
         if (exception is ManagedException { Errors: not null } managedEx)
         {
             var err = ResultApi.Fail(string.Join(",", managedEx.Errors.SelectMany(e => e.Value)));
+            err.StatusCode = (int)statusCode;
             _logger.Error(string.Join(",", managedEx.Errors.SelectMany(e => e.Value)));
             await context.Response.WriteAsJsonAsync(err);
         }
@@ -228,6 +229,7 @@ public class ExceptionMiddleware(RequestDelegate next)
         {
             var errorMessage = customMessage ?? ErrorMessageConstants.InternalServerError;
             var err = ResultApi.Fail(errorMessage);
+            err.StatusCode = (int)statusCode;
             _logger.Error(exception, "An error occurred with custom message: {CustomMessage}. Full details: {ExceptionMessage}",
                 errorMessage, exception.Message);
             await context.Response.WriteAsJsonAsync(err);
