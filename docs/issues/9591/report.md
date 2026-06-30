@@ -57,7 +57,7 @@ User tùy chỉnh qua DuAnBuocController
 | # | Tác nhân | Cơ chế xác định |
 |---|----------|-----------------|
 | 1 | **BGĐ / Lãnh đạo cấp cao** | `UserID == DuAn.LanhDaoPhuTrachId` |
-| 2 | **Phòng KH-TC** | `PhongBanID == PhongKHTCID` |
+| 2 | **Phòng KH-TC** | `PhongBanID == PhongKHTCId` *(trước là `PhongKHTCID` uppercase, đã gộp về 1)* |
 | 3 | **Phòng Kế toán** | `PhongBanID == PhongKeToanID` |
 | 4 | **Phòng HC-TH** | `PhongBanID == PhongHCTHID` |
 | 5 | **Trưởng phòng phụ trách chính** | `QLDA_LDDV` + `PhongBanID == DuAn.DonViPhuTrachChinhId` |

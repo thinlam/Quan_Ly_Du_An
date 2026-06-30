@@ -1,7 +1,7 @@
 ---
 title: "Tích hợp Hệ thống Phân quyền QLDA theo Phòng ban"
-version: 1.0
-date: 2026-06-16
+version: 1.1
+date: 2026-06-29
 audience: developer
 status: stable
 related_issues: [9591, 9584]
@@ -87,7 +87,7 @@ Hệ thống QLDA (Quản lý Dự án) cung cấp cơ chế **phân quyền 2 t
 
 | Component | Project | File | Vai trò |
 |-----------|---------|------|---------|
-| `IAppSettingsProvider` | `QLDA.Application` | `Providers/IAppSettingsProvider.cs` | Đọc config `PhongKHTCID`, `PhongKHTCId`, `PhongHCTHId` |
+| `IAppSettingsProvider` | `QLDA.Application` | `Providers/IAppSettingsProvider.cs` | Đọc config `PhongKHTCId`, `PhongHCTHId` |
 | `IPolicyProvider` | `QLDA.Application` | `Providers/IPolicyProvider.cs` | Check permission key + cache |
 | `BuocAuthorizationProvider` | `QLDA.Application` | `Authorization/Providers/BuocAuthorizationProvider.cs` | Check quyền thao tác bước |
 | `VisibilityFilterExtensions` | `QLDA.Application` | `Common/Extensions/VisibilityFilterExtensions.cs` | Extension filter IQueryable |
@@ -95,7 +95,7 @@ Hệ thống QLDA (Quản lý Dự án) cung cấp cơ chế **phân quyền 2 t
 | `PermissionConstants` | `QLDA.Domain` | `Constants/PermissionConstants.cs` | Permission keys + default mapping |
 | `CauHinhVaiTroQuyen` | `QLDA.Persistence` | `Configurations/CauHinhVaiTroQuyenConfiguration.cs` | Seed role-permission toggle |
 | `GetUserByRoleNameQuery` | `QLDA.Application` | `UserMasters/Queries/GetUserByRoleNameQuery.cs` | Load user theo role (cho dropdown Lãnh đạo) |
-| `AppSettings` | `QLDA.WebApi` | `ConfigurationOptions/AppSettings.cs` | Config `PhongKHTCID`, `PhongKHTCId`, `PhongHCTHId` |
+| `AppSettings` | `QLDA.WebApi` | `ConfigurationOptions/AppSettings.cs` | Config `PhongKHTCId`, `PhongHCTHId` |
 
 ### 3.2. Sơ đồ kiến trúc
 
@@ -172,7 +172,7 @@ sequenceDiagram
     alt HasGlobalBypass
         Auth-->>Med: true
     else Need filter
-        Auth->>Auth: Check PhongBanID == PhongKHTCID
+        Auth->>Auth: Check PhongBanID == PhongKHTCId
         Auth-->>Med: false
     end
     Med->>Handler: Handle request
@@ -200,19 +200,18 @@ sequenceDiagram
 
 ## 5. Bước 1 — Xác định tác nhân
 
-### 5.1. 9 tác nhân (chốt)
+### 5.1. Tác nhân (chốt)
 
 | # | Tác nhân | Cơ chế xác định | Quyền |
 |---|----------|-----------------|-------|
 | 1 | **BGĐ / Lãnh đạo cấp cao** | `UserID == DuAn.LanhDaoPhuTrachId` | Xem/Sửa/Xóa/Phê duyệt dự án được gán |
-| 2 | **Phòng KH-TC** (mọi role) | `PhongBanID == PhongKHTCID` | Global bypass — full quyền |
-| 3 | **Phòng Kế Hoạch - Tài chính (KT)** | `PhongBanID == PhongKHTCId` | CRUD ThanhToan |
-| 4 | **Phòng HC-TH** | `PhongBanID == PhongHCTHId` | Tùy module |
-| 5 | **Trưởng phòng phụ trách chính** | `QLDA_LDDV` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | CRUD all trong phòng, phân công, phê duyệt |
-| 6 | **Chuyên viên phòng phụ trách chính** | `QLDA_ChuyenVien` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | CRUD chỉ bản ghi được phân công |
-| 7 | **Trưởng phòng phối hợp** | `QLDA_LDDV` + `PhongBanID` ∈ `DonViPhoiHop` | Xem dự án, CRUD màn hình trong bước |
-| 8 | **Chuyên viên phòng phối hợp** | `QLDA_ChuyenVien` + `PhongBanID` ∈ `DonViPhoiHop` | Xem dự án, CRUD theo phân công trong bước |
-| 9 | **Admin / Quản trị** | `QLDA_TatCa` hoặc `QLDA_QuanTri` | Full quyền |
+| 2 | **Phòng KH-TC** (mọi role) | `PhongBanID == PhongKHTCId` (tương đương `HasKhtcBypass`) | Global bypass — full quyền, bao gồm CRUD ThanhToan |
+| 3 | **Phòng HC-TH** | `PhongBanID == PhongHCTHId` | Tùy module |
+| 4 | **Trưởng phòng phụ trách chính** | `QLDA_LDDV` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | CRUD all trong phòng, phân công, phê duyệt |
+| 5 | **Chuyên viên phòng phụ trách chính** | `QLDA_ChuyenVien` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | CRUD chỉ bản ghi được phân công |
+| 6 | **Trưởng phòng phối hợp** | `QLDA_LDDV` + `PhongBanID` ∈ `DonViPhoiHop` | Xem dự án, CRUD màn hình trong bước |
+| 7 | **Chuyên viên phòng phối hợp** | `QLDA_ChuyenVien` + `PhongBanID` ∈ `DonViPhoiHop` | Xem dự án, CRUD theo phân công trong bước |
+| 8 | **Admin / Quản trị** | `QLDA_TatCa` hoặc `QLDA_QuanTri` | Full quyền (qua `HasAdminCatalog`) |
 
 ### 5.2. Role mapping (chốt)
 
@@ -236,14 +235,16 @@ var hasRoleChuyenVien = userProvider.AuthInfo?.HasRole(RoleConstants.QLDA_Chuyen
 var hasRoleTatCa = userProvider.AuthInfo?.HasRole(RoleConstants.QLDA_TatCa) ?? false;
 
 // Phân loại tác nhân
-var isKHTP = phongBanId == appSettings.PhongKHTCID;
-var isHCTH = phongBanId == appSettings.PhongHCTHId;
-var isKHTC = phongBanId == appSettings.PhongKHTCId;
+// Department-based bypass: kiểm tra qua HasKhtcBypass (PhongKHTCId), không cần biến riêng.
+var hasKhtcBypass = phongBanId == appSettings.PhongKHTCId;
+var isHcth = phongBanId == appSettings.PhongHCTHId;
 var isLanhDaoPhuTrach = duAn.LanhDaoPhuTrachId == userId;
 var isPhuTrachChinh = duAn.DonViPhuTrachChinhId == phongBanId;
 var isPhoiHop = duAn.DuAnChiuTrachNhiemXuLys?.Any(x =>
     x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop) ?? false;
 ```
+
+> **Lưu ý:** Trong provider thực tế (`DuAnAuthorizationProvider`, `BuocAuthorizationProvider`) đã dùng sẵn `IAuthorizationContext.HasKhtcBypass` / `HasAdminCatalog` / `HasReadAllBypass` — handler không cần tính lại các cờ này. Code trên chỉ mang tính tham chiếu cho logic nghiệp vụ.
 
 ---
 
@@ -254,7 +255,7 @@ var isPhoiHop = duAn.DuAnChiuTrachNhiemXuLys?.Any(x =>
 ```csharp
 public bool HasGlobalBypass(IUserProvider user)
 {
-    if (user.Info.PhongBanID == settings.PhongKHTCID)
+    if (user.Info.PhongBanID == settings.PhongKHTCId)
         return true;
 
     if (policy.CanViewAll(user, PermissionConstants.DuAn_XemTatCa))
@@ -268,7 +269,7 @@ public bool HasGlobalBypass(IUserProvider user)
 
 | Điều kiện | Ý nghĩa |
 |-----------|----------|
-| `user.PhongBanID == PhongKHTCID` | User thuộc phòng KH-TC |
+| `user.PhongBanID == PhongKHTCId` | User thuộc phòng KH-TC |
 | `policy.CanViewAll("DuAn.XemTatCa")` | Có permission `DuAn.XemTatCa` (role `QLDA_TatCa`, `QLDA_QuanTri`, `QLDA_LDDV` mặc định) |
 
 ### 6.3. Ý nghĩa
@@ -288,6 +289,151 @@ if (authProvider.HasGlobalBypass(user))
     return await _repository.GetQueryableSet().ToListAsync(cancellationToken);
 }
 ```
+
+### 6.5. `HasAdminCatalog` — mở rộng bypass cho `QLDA_QuanTri` / `QLDA_TatCa`
+
+> **Thêm từ version 1.1** — Bổ sung để `QLDA_QuanTri` (và `QLDA_TatCa`) ở **mọi phòng ban** (kể cả ngoài Phòng KHTC) được bypass ownership filter read+write trên DuAn/Buoc, tương đương PhongKHTC.
+
+#### 6.5.1. Bối cảnh
+
+Trước version 1.1, hai provider (`DuAnAuthorizationProvider`, `BuocAuthorizationProvider`) chỉ check `HasKhtcBypass` (`PhongBanID == PhongKHTCId`) ở các điểm bypass ownership. `QLDA_QuanTri` đã có `IsAdminManager = true` (qua `GroupAdminOrManager`) nhưng provider không dùng flag này → bất đối xứng với controller-level `[Authorize(Roles=GroupAdminOrManager)]` (70+ chỗ).
+
+#### 6.5.2. Các flag trong `AuthorizationContext`
+
+| Flag | Logic | Bypass read+write? |
+|------|-------|---------------------|
+| `HasKhtcBypass` | `PhongBanID == PhongKHTCId` (department) | ✅ |
+| `HasAdminCatalog` | `HasKhtcBypass` ∪ `Role ∈ GroupAdminCatalog` | ✅ |
+| `HasReadAllBypass` | `Role ∈ GroupReadAll` (NVTT_BP01, NVTT_XemDuAn) | ❌ read-only |
+| `IsAdminManager` | `Role ∈ GroupAdminOrManager` ∪ `DuAn_XemTatCa` policy | (không provider nào dùng) |
+| `HasGlobalBypass` | `HasKhtcBypass ∥ IsAdminManager` | (legacy — không provider nào dùng) |
+
+#### 6.5.3. `GroupAdminCatalog` (mới)
+
+```csharp
+// QLDA.Domain/Constants/RoleConstants.cs
+public const string GroupAdminCatalog = $"{QLDA_TatCa},{QLDA_QuanTri}";
+```
+
+| Role | Quyền |
+|------|-------|
+| `QLDA_TatCa` | Admin hệ thống — toàn quyền |
+| `QLDA_QuanTri` | Quản trị — toàn quyền (kể cả ngoài PhongKHTC) |
+| ~~`QLDA_LDDV`~~ | **KHÔNG** trong `GroupAdminCatalog` — vẫn phải qua ownership filter (chỉ bypass khi là Lãnh đạo phụ trách DuAn đó) |
+
+#### 6.5.4. Provider wiring (cập nhật 2026-06-29)
+
+| Provider | Method | Flag cũ | Flag mới |
+|----------|--------|---------|----------|
+| `DuAnAuthorizationProvider` | `CanExecuteAsync` | `HasKhtcBypass` | `HasAdminCatalog` |
+| `DuAnAuthorizationProvider` | `CanViewAsync` | `HasKhtcBypass` | `HasAdminCatalog` |
+| `DuAnAuthorizationProvider` | `Filter<T>` | `HasKhtcBypass` | `HasAdminCatalog` |
+| `BuocAuthorizationProvider` | `CanExecuteStepAsync` | `HasKhtcBypass` | `HasAdminCatalog` |
+| `BuocAuthorizationProvider` | `FilterVisibleSteps` | `HasKhtcBypass` | `HasAdminCatalog` |
+| `BuocAuthorizationProvider` | `FilterVisibleChildEntities` | `HasKhtcBypass` | `HasAdminCatalog` |
+| `BuocAuthorizationProvider` | `CanManageStepFieldsAsync` | `HasKhtcBypass` | `HasAdminCatalog` |
+
+`CanExecuteThanhToanAsync` tự động hưởng vì gọi `CanManageStepFieldsAsync` bên trong.
+
+#### 6.5.5. Behavior matrix
+
+| User | Trước v1.1 | Sau v1.1 |
+|------|------------|----------|
+| `QLDA_QuanTri` (ngoài PhongKHTC) | Ownership check | **Bypass** |
+| `QLDA_TatCa` (ngoài PhongKHTC) | Ownership check | **Bypass** |
+| PhongKHTC (mọi role) | Bypass | Bypass (giữ) |
+| `QLDA_LDDV` (không phụ trách DuAn) | Ownership check | Ownership check (giữ) |
+| `QLDA_ChuyenVien` | Ownership check | Ownership check (giữ) |
+
+#### 6.5.6. Sử dụng trong code
+
+Provider tự động consume `HasAdminCatalog` qua `IAuthorizationContext` — caller không cần đổi code:
+
+```csharp
+// Handler vẫn gọi như cũ — provider đã wire sẵn
+public async Task<bool> CanExecuteAsync(DuAn duAn, IAuthorizationContext ctx, CancellationToken ct)
+{
+    if (ctx.HasAdminCatalog) return true;  // PhongKHTC ∪ {QLDA_TatCa, QLDA_QuanTri}
+    // ...
+}
+```
+
+#### 6.5.7. Khi nào cần cập nhật?
+
+| Tình huống | Cần thêm role vào `GroupAdminCatalog`? |
+|------------|----------------------------------------|
+| Role mới có toàn quyền catalog (admin hệ thống) | ✅ Thêm vào `GroupAdminCatalog` |
+| Role chỉ cần bypass **read** | ❌ Dùng `GroupReadAll` |
+| Role chỉ cần bypass khi **sở hữu** | ❌ Để qua ownership filter (không đụng) |
+
+#### 6.5.8. Files tham chiếu
+
+- `QLDA.Domain/Constants/RoleConstants.cs` — constant `GroupAdminCatalog`.
+- `QLDA.Application/Authorization/IAuthorizationContext.cs` — interface property `HasAdminCatalog`.
+- `QLDA.Application/Authorization/AuthorizationContext.cs` — compute method `ComputeHasAdminCatalog`.
+- `QLDA.Application/Authorization/Providers/DuAnAuthorizationProvider.cs` — 3 dòng wire.
+- `QLDA.Application/Authorization/Providers/BuocAuthorizationProvider.cs` — 4 dòng wire.
+
+### 6.6. `HasReadAllBypass` — read-only access cho `NVTT_BP01` / `NVTT_XemDuAn`
+
+> **Thêm từ version 1.1** — Mở rộng để 2 role NVTT (Bộ phận 01 NVTT + NVTT user xem DuAn) được **xem tất cả** DuAn/Buoc và child entities mà **không cần qua ownership filter**.
+
+#### 6.6.1. Hai role NVTT
+
+| Role | Ý nghĩa |
+|------|---------|
+| `NVTT_BP01` | Bộ phận 01 NVTT — toàn quyền xem mọi dự án trong hệ thống QLDA (read-only) |
+| `NVTT_XemDuAn` | User NVTT (Trưởng phòng xử lý, Trưởng phòng phối hợp, Giám đốc...) cần xem DuAn/Buoc QLDA |
+
+Hai role này nằm trong group `GroupReadAll`:
+
+```csharp
+// QLDA.Domain/Constants/RoleConstants.cs
+public const string GroupReadAll = $"{NVTT_BP01},{NVTT_XemDuAn}";
+```
+
+#### 6.6.2. Cờ `HasReadAllBypass`
+
+| Mục | Giá trị |
+|-----|---------|
+| **Flag** | `IAuthorizationContext.HasReadAllBypass` |
+| **Logic** | `Role ∈ GroupReadAll` (cached `??=`, computed once per request) |
+| **Bypass read?** | ✅ — `Filter<T>`, `CanViewAsync`, `FilterVisibleSteps`, `FilterVisibleChildEntities` đều return query gốc |
+| **Bypass write?** | ❌ — `HasReadAllBypass` KHÔNG tự bypass write. Write path (`CanExecuteAsync`, `CanExecuteStepAsync`) luôn fallback về ownership check |
+| **Side effect tích cực** | NVTT user khi được assign DuAn/Buoc vẫn CUD được (qua ownership: Lãnh đạo phụ trách / Phòng phụ trách chính / Phối hợp) |
+
+#### 6.6.3. Behavior matrix
+
+| User | Read DuAn | Write DuAn được assign | Write DuAn không assign |
+|------|-----------|------------------------|------------------------|
+| `NVTT_BP01` (xem all) | ✅ (toàn bộ) | ✅ (nếu match ownership) | ❌ |
+| `NVTT_XemDuAn` (xem all) | ✅ (toàn bộ) | ✅ (nếu match ownership) | ❌ |
+| `QLDA_QuanTri` (không trong GroupReadAll) | ❌ (qua ownership) | ✅ | ✅ (qua `HasAdminCatalog`) |
+| `QLDA_ChuyenVien` (không trong GroupReadAll) | ❌ (qua ownership) | ✅ (nếu match ownership) | ❌ |
+
+#### 6.6.4. So sánh 3 flag
+
+| Flag | Bypass read | Bypass write | Ai match |
+|------|-------------|--------------|----------|
+| `HasKhtcBypass` | ✅ | ✅ | Phòng KH-TC |
+| `HasAdminCatalog` | ✅ | ✅ | Phòng KH-TC ∪ `QLDA_TatCa` ∪ `QLDA_QuanTri` |
+| `HasReadAllBypass` | ✅ | ❌ | `NVTT_BP01` ∪ `NVTT_XemDuAn` |
+
+#### 6.6.5. Files tham chiếu
+
+- `QLDA.Domain/Constants/RoleConstants.cs` — constants `NVTT_BP01`, `NVTT_XemDuAn`, `GroupReadAll`.
+- `QLDA.Application/Authorization/IAuthorizationContext.cs` — property `HasReadAllBypass`.
+- `QLDA.Application/Authorization/AuthorizationContext.cs` — compute method `ComputeHasReadAllBypass`.
+- `QLDA.Application/Authorization/Providers/DuAnAuthorizationProvider.cs` — check `HasReadAllBypass` trong `CanViewAsync` (line 49) và `Filter<T>` (line 57).
+- `QLDA.Application/Authorization/Providers/BuocAuthorizationProvider.cs` — check `HasReadAllBypass` trong `FilterVisibleSteps` và `FilterVisibleChildEntities`.
+
+#### 6.6.6. Khi nào cần thêm role vào `GroupReadAll`?
+
+| Tình huống | Thêm vào `GroupReadAll`? |
+|------------|--------------------------|
+| Role cần xem toàn bộ DuAn/Buoc để phối hợp xử lý (NVTT hoặc tương đương) | ✅ |
+| Role cần xem **và** CRUD tất cả | ❌ Dùng `GroupAdminCatalog` (HasAdminCatalog) |
+| Role chỉ cần xem DuAn trong phòng mình | ❌ Để qua ownership filter |
 
 ---
 
@@ -655,8 +801,7 @@ public class UserByRoleDto
     "AllowedHosts": "*",
     "Jwt": { ... },
     "PhongKHTCId": 219,
-    "PhongHCTHId": 300,
-    "PhongKHTCID": 500
+    "PhongHCTHId": 300
 }
 ```
 
@@ -761,7 +906,7 @@ flowchart TD
     CheckAuth -->|Fail| Deny1[403 Forbidden]
     CheckAuth -->|Pass| GlobalBypass{Global Bypass?}
 
-    GlobalBypass -->|Yes<br/>PhongBanID == PhongKHTCID<br/>HOẶC XemTatCa| ReturnAll[Trả về tất cả]
+    GlobalBypass -->|Yes<br/>PhongBanID == PhongKHTCId<br/>HOẶC XemTatCa| ReturnAll[Trả về tất cả]
 
     GlobalBypass -->|No| EntityType{Loại entity?}
 
@@ -838,7 +983,7 @@ stateDiagram-v2
 
     Authenticated --> GlobalBypassCheck: Mỗi request
 
-    GlobalBypassCheck --> FullAccess: PhongKHTCID HOẶC XemTatCa
+    GlobalBypassCheck --> FullAccess: PhongKHTCId HOẶC XemTatCa
     GlobalBypassCheck --> Filtered: Ngược lại
 
     state Filtered {
@@ -1086,7 +1231,7 @@ Hiện tại `DonViTheoDoi` chỉ tồn tại trong enum, **chưa có junction e
 | ❌ Anti-pattern | ✅ Cách đúng |
 |----------------|-------------|
 | `[Authorize(Roles = "QLDA_ChuyenVien")]` cho mọi action | Check `BuocAuthorizationProvider` thay vì chỉ check role |
-| Hard-code `user.PhongBanID == 500` | Dùng `appSettings.PhongKHTCID` |
+| Hard-code `user.PhongBanID == 500` | Dùng `appSettings.PhongKHTCId` |
 | Skip filter cho "user quan trọng" | Dùng `HasGlobalBypass` |
 | Query full table rồi filter trong C# | Filter IQueryable ở DB |
 | Throw exception cho Read permission | Return empty result |
@@ -1279,6 +1424,13 @@ public static class PermissionConstants
 - Issue 9591: `docs/issues/9591/report.md`
 - Issue 9584: `docs/issues/9584/report.md`
 - Code: `QLDA.Application/Authorization/Providers/BuocAuthorizationProvider.cs`
+- Code: `QLDA.Application/Authorization/Providers/DuAnAuthorizationProvider.cs`
+- Code: `QLDA.Application/Authorization/AuthorizationContext.cs`
+- Code: `QLDA.Application/Authorization/IAuthorizationContext.cs`
 - Code: `QLDA.Application/Common/Extensions/VisibilityFilterExtensions.cs`
 - Config: `QLDA.WebApi/ConfigurationOptions/AppSettings.cs`
 - Constants: `QLDA.Domain/Constants/RoleConstants.cs`, `QLDA.Domain/Constants/PermissionConstants.cs`
+
+**Lịch sử thay đổi:**
+- **v1.1 (2026-06-29)** — Thêm section 6.5 (`HasAdminCatalog`) + 6.6 (`HasReadAllBypass` cho NVTT_BP01/NVTT_XemDuAn). Gộp actor trùng cơ chế trong section 5.1 (9→8 actor). Bỏ các biến check phòng riêng trong code 5.3, dùng `HasKhtcBypass` thay thế. Gộp `PhongKHTCID` về `PhongKHTCId` trong toàn bộ docs.
+- **v1.0 (2026-06-16)** — Phiên bản đầu tiên.
