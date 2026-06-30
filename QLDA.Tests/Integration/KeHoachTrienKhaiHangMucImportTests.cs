@@ -39,7 +39,7 @@ public class KeHoachTrienKhaiHangMucImportTests(WebApiFixture fixture) {
     }
 
     [Fact]
-    public async Task Import_MissingDuAnId_ReturnsFailResult() {
+    public async Task Import_FileOnly_DoesNotRequireDuAnIdOrBuocIdInForm() {
         var templatePath = Path.Combine(
             AppContext.BaseDirectory,
             "PrintTemplates",
@@ -54,13 +54,11 @@ public class KeHoachTrienKhaiHangMucImportTests(WebApiFixture fixture) {
         fileContent.Headers.ContentType = new MediaTypeHeaderValue(
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         content.Add(fileContent, "file", "Import_KeHoachTrienKhaiHangMuc.xlsx");
-        content.Add(new StringContent("1"), "buocId");
 
         var response = await AuthedClient.PostAsync("/api/import/ke-hoach-trien-khai-hang-muc", content);
         var body = await response.Content.ReadFromJsonAsync<ResultApi>();
 
         body.Should().NotBeNull();
-        body!.Result.Should().BeFalse();
-        body.ErrorMessage.Should().Contain("duAnId");
+        body!.ErrorMessage.Should().NotContain("Thiếu duAnId hoặc buocId");
     }
 }

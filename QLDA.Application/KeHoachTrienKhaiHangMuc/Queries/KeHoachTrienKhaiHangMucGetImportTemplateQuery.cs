@@ -18,6 +18,8 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
         serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
+    private readonly IRepository<DanhMucBuoc, int> _danhMucBuocRepo =
+        serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
     private readonly IRepository<DmDonVi, long> _donViRepo =
         serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<UserMaster, long> _userRepo =
@@ -30,8 +32,10 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
     public async Task<List<List<ComboData>>> Handle(
         KeHoachTrienKhaiHangMucGetImportTemplateQuery request,
         CancellationToken cancellationToken = default) {
-        var danhSachDuAn = await _authManager
-            .FilterVisible(_duAnRepo.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
+        var visibleDuAn = _authManager
+            .FilterVisible(_duAnRepo.GetQueryableSet(), AuthorizationResourceKeys.DuAn);
+
+        var danhSachDuAn = await visibleDuAn
             .AsNoTracking()
             .WhereIf(request.DuAnId.HasValue, e => e.Id == request.DuAnId!.Value)
             .OrderBy(e => e.TenDuAn)
@@ -41,13 +45,13 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             })
             .ToListAsync(cancellationToken);
 
-        var danhSachGiaiDoan = await _giaiDoanRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Select(e => new ComboData {
-                Name = e.Ten ?? string.Empty,
-                Id = e.Id.ToString(),
-            })
-            .ToListAsync(cancellationToken);
+        var danhSachGiaiDoan = await KeHoachTrienKhaiHangMucImportGiaiDoanHelper.LoadGiaiDoanComboAsync(
+            _duAnRepo,
+            _danhMucBuocRepo,
+            _giaiDoanRepo,
+            visibleDuAn,
+            request.DuAnId,
+            cancellationToken);
 
         var danhSachDonVi = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
@@ -72,6 +76,6 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             })
             .ToListAsync(cancellationToken);
 
-        return [danhSachDuAn, danhSachGiaiDoan, danhSachDonVi, danhSachCanBo];
+        return [danhSachDuAn, danhSachGiaiDoan, danhSachDonVi, danhSachCanBo, danhSachDonVi, danhSachCanBo];
     }
 }

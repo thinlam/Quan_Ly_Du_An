@@ -22,6 +22,8 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
+    private readonly IRepository<DanhMucBuoc, int> _danhMucBuocRepo =
+        serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
     private readonly IRepository<DmDonVi, long> _donViRepo =
         serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<UserMaster, long> _userRepo =
@@ -44,8 +46,6 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         if (rows.Count == 0)
             return result;
 
-        await _auth.EnsureCanExecuteStepAsync(request.BuocId, _authContext, cancellationToken);
-
         var tenDuAns = rows
             .Where(r => !string.IsNullOrWhiteSpace(r.TenDuAn))
             .Select(r => r.TenDuAn!.Trim())
@@ -58,16 +58,17 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             .Select(e => new { e.TenDuAn, e.Id })
             .ToListAsync(cancellationToken))
             .GroupBy(e => e.TenDuAn!.Trim(), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(
+                g => g.Key,
+                g => g.First().Id,
+                StringComparer.OrdinalIgnoreCase);
 
-        var giaiDoanByTen = await _giaiDoanRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Where(e => e.Ten != null)
-            .Select(e => new { e.Ten, e.Id })
-            .ToListAsync(cancellationToken);
-        var giaiDoanLookup = giaiDoanByTen
-            .GroupBy(e => e.Ten!.Trim(), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
+        var giaiDoanByDuAn = await KeHoachTrienKhaiHangMucImportGiaiDoanHelper.LoadGiaiDoanLookupByDuAnAsync(
+            _duAnRepo,
+            _danhMucBuocRepo,
+            _giaiDoanRepo,
+            duAnByTen.Values,
+            cancellationToken);
 
         var donViRows = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
@@ -113,18 +114,22 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
                 continue;
             }
 
+            // Màn tiến độ: FE gửi buocId. Import ngoài: không gửi → BuocId null.
+            int? buocId = request.BuocId > 0 ? request.BuocId : null;
+
             if (string.IsNullOrWhiteSpace(item.TenHangMuc)) {
                 AddError(result, item, rowLabel, "Tên hạng mục bắt buộc");
                 continue;
             }
 
-            if (string.IsNullOrWhiteSpace(item.TenGiaiDoan)) {
-                AddError(result, item, rowLabel, "Giai đoạn bắt buộc");
-                continue;
-            }
-
-            if (!giaiDoanLookup.TryGetValue(item.TenGiaiDoan.Trim(), out var giaiDoanId)) {
-                AddError(result, item, rowLabel, "Không tìm thấy giai đoạn");
+            if (!KeHoachTrienKhaiHangMucImportGiaiDoanHelper.TryResolveGiaiDoanId(
+                    item.TenGiaiDoan,
+                    item.TenDuAn,
+                    duAnId,
+                    giaiDoanByDuAn,
+                    out var giaiDoanId,
+                    out var giaiDoanError)) {
+                AddError(result, item, rowLabel, giaiDoanError ?? "Không tìm thấy giai đoạn");
                 continue;
             }
 
@@ -166,6 +171,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             validRows.Add(new ValidatedImportRow(
                 item,
                 duAnId,
+                buocId,
                 giaiDoanId,
                 donViChuTriId,
                 chuTriUser.Id,
@@ -176,12 +182,14 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         if (validRows.Count == 0)
             return result;
 
-        var groups = validRows.GroupBy(r => r.DuAnId);
+        var groups = validRows.GroupBy(r => (r.DuAnId, r.BuocId));
 
         foreach (var group in groups) {
+            await _auth.EnsureCanExecuteStepAsync(group.Key.BuocId, _authContext, cancellationToken);
+
             var parent = new KeHoachTrienKhaiHangMuc {
-                DuAnId = group.Key,
-                BuocId = request.BuocId,
+                DuAnId = group.Key.DuAnId,
+                BuocId = group.Key.BuocId,
                 So = string.Empty,
                 NgayToTrinh = null,
                 TrichYeu = null,
@@ -348,6 +356,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
     private sealed record ValidatedImportRow(
         KeHoachTrienKhaiHangMucImportDto Source,
         Guid DuAnId,
+        int? BuocId,
         int GiaiDoanId,
         long DonViChuTriId,
         long CanBoChuTriId,
