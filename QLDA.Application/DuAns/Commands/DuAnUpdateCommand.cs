@@ -1,5 +1,7 @@
 using System.Data;
+using BuildingBlocks.CrossCutting.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Application.DuToans.DTOs;
@@ -14,6 +16,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
     private readonly IRepository<DuToan, Guid> DuToan;
     private readonly IRepository<KeHoachVon, Guid> KeHoachVon;
     private readonly IRepository<DanhMucNguonVon, int> DanhMucNguonVon;
+    private readonly IAuthorizationManager _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<DuAnUpdateCommandHandler>();
 
@@ -22,6 +25,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         DuToan = serviceProvider.GetRequiredService<IRepository<DuToan, Guid>>();
         KeHoachVon = serviceProvider.GetRequiredService<IRepository<KeHoachVon, Guid>>();
         DanhMucNguonVon = serviceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
+        _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _unitOfWork = DuAn.UnitOfWork;
     }
 
@@ -35,6 +39,11 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
             .Include(e => e.KeHoachVons)
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
+
+        // Ownership: chỉ Lãnh đạo phụ trách / Người tạo / Phòng ban phụ trách chính /
+        // Phòng ban phối hợp (thuộc DuAnChiuTrachNhiemXuLys, Loai=DonViPhoiHop) mới được chỉnh sửa.
+        if (!await _auth.CanExecuteAsync(AuthorizationResourceKeys.DuAn, entity, cancellationToken))
+            throw new ForbiddenException("User không có quyền chỉnh sửa dự án này");
 
         // Store the original ParentId to check if it changed
         var originalParentId = entity.ParentId;

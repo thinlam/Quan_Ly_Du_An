@@ -25,8 +25,8 @@ Layer 1: JWT Role (Login)          Layer 2: Permission Toggle (Runtime)
 │ QLDA_QuanTri         │           │ (VaiTro, QuyenId, KichHoat) │
 │ QLDA_LDDV            │           │                              │
 │ QLDA_ChuyenVien      │           │ ↓ PolicyProvider cache       │
-│ PhongKHTCID          │           │ ↓ VisibilityFilterExtensions │
-│ PhongHCTHID          │           │                              │
+│ PhongKHTCId          │           │ ↓ VisibilityFilterExtensions │
+│ PhongHCTHId          │           │                              │
 └─────────────────────┘           └──────────────────────────────┘
 ```
 
@@ -52,7 +52,7 @@ DmDonVi (cây phân cấp, DonViCapChaId)
 | # | Tác nhân | Cơ chế xác định | Quyền |
 |---|----------|-----------------|-------|
 | 1 | **BGĐ / Lãnh đạo cấp cao** | `UserID == DuAn.LanhDaoPhuTrachId` (dropdown từ `sp_GetUsersByRoleName('QLDA_LDDV')`) | Xem/Sửa/Xóa/Phê duyệt dự án được gán |
-| 2 | **Phòng KH-TC** (mọi role) | `PhongBanID == PhongKHTCID` | Global bypass — full quyền |
+| 2 | **Phòng KH-TC** (mọi role) | `PhongBanID == PhongKHTCId` | Global bypass — full quyền |
 | 3 | **Phòng Kế toán** | `PhongBanID == PhongKeToanID` | CRUD ThanhToan |
 | 4 | **Phòng HC-TH** | `PhongBanID == PhongHCTHID` | Tùy module (xem tất cả + một số quyền đặc thù) |
 | 5 | **Trưởng phòng phụ trách chính** | `QLDA_LDDV` + `PhongBanID == DuAn.DonViPhuTrachChinhId` | Xem tất cả dự án phòng, CRUD all, phân công, phê duyệt |
@@ -97,7 +97,7 @@ DmDonVi (cây phân cấp, DonViCapChaId)
 
 | Phòng | Config key | File |
 |-------|-----------|------|
-| KH-TC | `PhongKHTCID` | `QLDA.WebApi/ConfigurationOptions/AppSettings.cs:18` |
+| KH-TC | `PhongKHTCId` | `QLDA.WebApi/ConfigurationOptions/AppSettings.cs:11` *(trước là `PhongKHTCID` uppercase, đã gộp về 1)* |
 | Kế toán | `PhongKeToanID` | `QLDA.WebApi/ConfigurationOptions/AppSettings.cs:14` |
 | HC-TH | `PhongHCTHID` | `QLDA.WebApi/ConfigurationOptions/AppSettings.cs:16` |
 
@@ -147,7 +147,7 @@ BuocAuthorizationProvider.CanExecuteStepAsync() + FilterVisibleSteps()
 | `Application/Authorization/Providers/BuocAuthorizationProvider.cs` | Bước-level + DuAn-level authorization |
 | `Application/UserMasters/Queries/GetUserByRoleNameQuery.cs` | Load user theo role cho dropdown Lãnh đạo |
 | `WebApi/Controllers/CauHinhVaiTroQuyenController.cs` | API config quyền runtime |
-| `WebApi/ConfigurationOptions/AppSettings.cs` | Config PhongKHTCID, PhongKeToanID, PhongHCTHID |
+| `WebApi/ConfigurationOptions/AppSettings.cs` | Config PhongKHTCId, PhongKeToanID, PhongHCTHId |
 | `Application/Providers/IAppSettingsProvider.cs` | Interface đọc config phòng ID |
 | `Application/Common/DTOs/UserInfo.cs` | UserInfo.PhongBanID (từ JWT claim) |
 

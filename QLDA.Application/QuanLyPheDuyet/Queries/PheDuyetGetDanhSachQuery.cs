@@ -225,9 +225,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private async Task<List<PheDuyetListItemDto>> GetPheDuyetAll(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken)
     {
         var userId = _userProvider.Info.UserID;
-        // Lưu ý: Tên biến hoặc logic phòng KHTC của bạn đang ghi là "!= _settings.PhongKHTCId" 
-        // Nếu "là phòng KHTC" thì nên dùng dấu "==" nhé. Mình sửa lại thành == để đúng logic tên biến "isKHTC".
-        bool isKHTC = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
+        // Dùng HasKhtcBypass từ IAuthorizationContext (cached per request) thay cho check trực tiếp PhongBanID.
 
         var pheDuyetQuery = _PheDuyetRepo.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted )
@@ -235,7 +233,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         var duAnQuery = _duAnRepo.GetQueryableSet().AsNoTracking();
         var pheDuyetHisQuery = _historyRepo.GetQueryableSet().AsNoTracking().Where(e => !e.IsDeleted && e.EntityName == request.Type && e.TrangThai.Ma== "ĐTr");
         var duAnBuocQuery = _duAnBuocRepo.GetQueryableSet().AsNoTracking();
-       
+
         // 1. Viết câu lệnh Query cơ bản (Chưa có WHERE lọc quyền)
         var query = from e in pheDuyetQuery
                     join da in duAnQuery on e.DuAnId equals da.Id
@@ -246,7 +244,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                     select new { e, da, b }; // Tạm thời select ra anonymous object để filter tiếp
 
         // 2. Tách biệt logic kiểm tra quyền bằng IF-ELSE của C#
-        if (!isKHTC)
+        if (!_authContext.HasKhtcBypass)
         {
             // Nếu KHÔNG PHẢI phòng KHTC thì mới ép Database chạy điều kiện lọc theo UserId
             query = query.Where(x => x.da.LanhDaoPhuTrachId == userId);
@@ -279,7 +277,6 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private async Task<List<PheDuyetListItemDto>> GetPheDuyetAll2(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken)
     {
         // _duAnRepo join _PheDuyetRepo by DuAn.Id = PheDuyet.DuAnId -> get All PheDuyet has LanhDaoPhuTrachId = _userProvider.Info.UserId
-        bool isKHTC = _userProvider.Info.PhongBanID != _settings.PhongKHTCId;
         var historyData = await _PheDuyetRepo.GetQueryableSet()
             .Where(h => h.EntityName == request.Type)
 

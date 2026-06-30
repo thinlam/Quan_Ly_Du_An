@@ -51,6 +51,17 @@ public interface IAuthorizationContext
     bool HasReadAllBypass { get; }
 
     /// <summary>
+    /// True khi user thuộc <see cref="QLDA.Domain.Constants.RoleConstants.GroupAdminCatalog"/>
+    /// (QLDA_TatCa, QLDA_QuanTri) HOẶC thuộc Phòng KHTC. Bypass ownership check trên
+    /// DuAn/Buoc (cả read và write). Tương đương HasKhtcBypass về mặt bypass filter,
+    /// nhưng dựa trên role chứ không chỉ dựa trên phòng ban.
+    /// KHÁC <see cref="HasGlobalBypass"/> ở chỗ KHÔNG bao gồm QLDA_LDDV — Lãnh đạo
+    /// đơn vị vẫn phải qua ownership filter (chỉ bypass khi là Lãnh đạo phụ trách DuAn).
+    /// Cached, computed once per request.
+    /// </summary>
+    bool HasAdminCatalog { get; }
+
+    /// <summary>
     /// Get LanhDaoPhuTrachId for a DuAn, cached per-DuAn per request.
     /// </summary>
     Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct);
