@@ -74,8 +74,8 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create( [FromBody] TrienKhaiKeHoachLCNTModel dto, [FromServices] IUnitOfWork unitOfWork,  CancellationToken cancellationToken = default)
     {
-        var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
-        await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
+        var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId), cancellationToken);
+        await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTInsertCommand(dto.ToEntity()), cancellationToken);
         var danhSachTepDinhKem = dto.GetDanhSachTep(entity.Id).ToList();
@@ -84,7 +84,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         {
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepDinhKem
-        });
+        }, cancellationToken);
        
         var danhSachFileKetQua = new List<TepDinhKem>();
         foreach (var dv in dto.DonViTuVans)
@@ -96,7 +96,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             {
                 GroupId = id.ToString(),
                 Entities = danhSachFileKetQua
-            });
+            }, cancellationToken);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
