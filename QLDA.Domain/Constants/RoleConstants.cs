@@ -42,6 +42,15 @@ public static class RoleConstants {
     /// Quyền Admin hoặc Manager
     /// </summary>
     public const string GroupAdminOrManager = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV}";
+    /// <summary>
+    /// Nhóm role có toàn quyền catalog — tương đương PhongKHTC về mặt bypass
+    /// ownership filter ở DuAn/Buoc (cả read và write). Khác GroupAdminOrManager
+    /// ở chỗ KHÔNG bao gồm QLDA_LDDV (giữ ownership cho Lãnh đạo đơn vị —
+    /// họ chỉ bypass khi là Lãnh đạo phụ trách DuAn đó).
+    /// Đăng ký role mới tại đây để cấp quyền catalog admin mà không cần sửa
+    /// AuthorizationContext/Provider.
+    /// </summary>
+    public const string GroupAdminCatalog = $"{QLDA_TatCa},{QLDA_QuanTri}";
 
     /// <summary>
     /// Kết xuất Excel kết quả phân khai vốn được duyệt (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)

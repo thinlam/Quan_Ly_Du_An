@@ -13,9 +13,4 @@ public interface IAppSettingsProvider {
     /// ID Phòng Hành chính - Tổng hợp
     /// </summary>
     long PhongHCTHId { get; }
-
-    /// <summary>
-    /// ID phòng Kế hoạch - Tài chính. Nhân viên thuộc phòng này có global bypass cho authorization.
-    /// </summary>
-    long PhongKHTCID { get; }
 }

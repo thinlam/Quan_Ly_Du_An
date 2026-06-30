@@ -87,6 +87,7 @@ internal class StubContext : IAuthorizationContext
     public bool IsAdminManager => false;
     public bool HasGlobalBypass => HasKhtcBypass || IsAdminManager;
     public bool HasReadAllBypass => false;
+    public bool HasAdminCatalog => false;
     public Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct)
         => Task.FromResult<long?>(1);
 }

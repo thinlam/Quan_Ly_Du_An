@@ -28,6 +28,7 @@ public class AuthorizationContext(
     private bool? _isAdminManager;
     private bool? _hasGlobalBypass;
     private bool? _hasReadAllBypass;
+    private bool? _hasAdminCatalog;
     private readonly ConcurrentDictionary<Guid, long?> _lanhDaoCache = new();
 
     public IUserProvider User => _user;
@@ -43,6 +44,8 @@ public class AuthorizationContext(
     public bool HasGlobalBypass => _hasGlobalBypass ??= HasKhtcBypass || IsAdminManager;
 
     public bool HasReadAllBypass => _hasReadAllBypass ??= ComputeHasReadAllBypass();
+
+    public bool HasAdminCatalog => _hasAdminCatalog ??= ComputeHasAdminCatalog();
 
     public async Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct)
     {
@@ -61,6 +64,20 @@ public class AuthorizationContext(
 
     private bool ComputeHasKhtcBypass()
         => _user.Info.PhongBanID == _settings.PhongKHTCId;
+
+    private bool ComputeHasAdminCatalog()
+    {
+        // PhongKHTC department luôn có quyền catalog admin.
+        // if (ComputeHasKhtcBypass()) return true;
+
+        // Role thuộc GroupAdminCatalog (QLDA_TatCa, QLDA_QuanTri).
+        // Tách riêng khỏi GroupAdminOrManager để KHÔNG bao gồm QLDA_LDDV —
+        // Lãnh đạo đơn vị vẫn phải qua ownership filter.
+        var roles = _user.AuthInfo.Roles ?? [];
+        if (roles.Count == 0) return false;
+        var adminCatalogRoles = RoleConstants.GroupAdminCatalog.Split(',');
+        return roles.Any(r => adminCatalogRoles.Contains(r?.Trim() ?? "", StringComparer.Ordinal));
+    }
 
     private bool ComputeHasReadAllBypass()
     {
