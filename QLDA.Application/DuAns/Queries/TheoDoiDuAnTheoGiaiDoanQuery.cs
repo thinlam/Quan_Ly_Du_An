@@ -110,6 +110,16 @@ internal class TheoDoiDuAnTheoGiaiDoanQueryHandler(
                 e => search.NamDuAn >= e.ThoiGianKhoiCong
                      && ((e.ThoiGianHoanThanh == null && e.ThoiGianKhoiCong == search.NamDuAn)
                          || search.NamDuAn <= e.ThoiGianHoanThanh))
+            .WhereIf(search.LoaiDuAnId > 0, e => e.LoaiDuAnId == search.LoaiDuAnId)
+            .WhereFunc(search.DonViPhuTrachChinhId.HasValue, q => q
+                .WhereIf(search.DonViPhuTrachChinhId > 0, e => e.DonViPhuTrachChinhId == search.DonViPhuTrachChinhId)
+                .WhereIf(search.DonViPhuTrachChinhId == -1, e => e.DonViPhuTrachChinhId == null))
+            .WhereIf(search.ThoiGianKhoiCong > 0, e => e.ThoiGianKhoiCong == search.ThoiGianKhoiCong)
+            .WhereIf(search.ThoiGianHoanThanh > 0, e => e.ThoiGianHoanThanh == search.ThoiGianHoanThanh)
+            .WhereIf(search.TrangThaiDuAnId > 0, e => e.TrangThaiDuAnId == search.TrangThaiDuAnId)
+            .WhereIf(
+                search.LinhVucId.HasValue && search.LinhVucId.Value > 0,
+                e => e.LinhVucId == search.LinhVucId!.Value)
             .WhereGlobalFilter(search, e => e.TenDuAn, e => e.MaDuAn);
 
         return loai switch

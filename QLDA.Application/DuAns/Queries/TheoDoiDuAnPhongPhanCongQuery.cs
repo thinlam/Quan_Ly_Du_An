@@ -104,13 +104,12 @@ internal class TheoDoiDuAnPhongPhanCongQueryHandler(
                 e => e.TenDuAn!.ToLower().Contains(search.TenDuAn!.ToLower()))
             .WhereIf(search.MaDuAn.IsNotNullOrWhitespace(),
                 e => e.MaDuAn!.ToLower().Contains(search.MaDuAn!.ToLower()))
+            .WhereIf(search.ThoiGianKhoiCong > 0, e => e.ThoiGianKhoiCong == search.ThoiGianKhoiCong)
+            .WhereIf(search.ThoiGianHoanThanh > 0, e => e.ThoiGianHoanThanh == search.ThoiGianHoanThanh)
             .WhereIf(search.NamDuAn > 0,
                 e => search.NamDuAn >= e.ThoiGianKhoiCong
                      && ((e.ThoiGianHoanThanh == null && e.ThoiGianKhoiCong == search.NamDuAn)
                          || search.NamDuAn <= e.ThoiGianHoanThanh))
-            .WhereFunc(search.LanhDaoPhuTrachId.HasValue, q => q
-                .WhereIf(search.LanhDaoPhuTrachId > 0, e => e.LanhDaoPhuTrachId == search.LanhDaoPhuTrachId)
-                .WhereIf(search.LanhDaoPhuTrachId == -1, e => e.LanhDaoPhuTrachId == null))
             .WhereIf(search.TrangThaiDuAnId > 0, e => e.TrangThaiDuAnId == search.TrangThaiDuAnId)
             .WhereGlobalFilter(search, e => e.TenDuAn, e => e.MaDuAn);
 

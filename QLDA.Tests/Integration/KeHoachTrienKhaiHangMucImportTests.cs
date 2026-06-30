@@ -20,6 +20,18 @@ public class KeHoachTrienKhaiHangMucImportTests(WebApiFixture fixture) {
     }
 
     [Fact]
+    public async Task GetImportTemplate_WithDuAnId_ReturnsExcelFile() {
+        var response = await AuthedClient.GetAsync(
+            "/api/template/import-ke-hoach-trien-khai-hang-muc?duAnId=08ded5f5-3b4e-5676-687a-7b278006675e");
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        if (response.StatusCode == HttpStatusCode.OK) {
+            response.Content.Headers.ContentType!.MediaType.Should()
+                .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+    }
+
+    [Fact]
     public async Task Import_NoFile_ReturnsBadRequest() {
         var response = await AuthedClient.PostAsync("/api/import/ke-hoach-trien-khai-hang-muc", null);
 

@@ -18,8 +18,12 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
     : IRequestHandler<KeHoachTrienKhaiHangMucImportRangeCommand, KeHoachTrienKhaiHangMucImportResultDto> {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _repo =
         serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
+    private readonly IRepository<DuAn, Guid> _duAnRepo =
+        serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
+    private readonly IRepository<DmDonVi, long> _donViRepo =
+        serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<UserMaster, long> _userRepo =
         serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo =
@@ -42,6 +46,20 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
 
         await _auth.EnsureCanExecuteStepAsync(request.BuocId, _authContext, cancellationToken);
 
+        var tenDuAns = rows
+            .Where(r => !string.IsNullOrWhiteSpace(r.TenDuAn))
+            .Select(r => r.TenDuAn!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var duAnByTen = (await _duAnRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(e => e.TenDuAn != null && tenDuAns.Contains(e.TenDuAn))
+            .Select(e => new { e.TenDuAn, e.Id })
+            .ToListAsync(cancellationToken))
+            .GroupBy(e => e.TenDuAn!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
+
         var giaiDoanByTen = await _giaiDoanRepo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => e.Ten != null)
@@ -50,6 +68,12 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         var giaiDoanLookup = giaiDoanByTen
             .GroupBy(e => e.Ten!.Trim(), StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First().Id, StringComparer.OrdinalIgnoreCase);
+
+        var donViRows = await _donViRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(e => e.TenDonVi != null && e.TenDonVi != "")
+            .Select(e => new DonViImportLookup(e.Id, e.TenDonVi!))
+            .ToListAsync(cancellationToken);
 
         var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var usersInDonVi = await _userRepo.GetQueryableSet()
@@ -74,6 +98,21 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
                 ? $"Dòng {item.ExcelRowNumber}"
                 : "Dòng";
 
+            if (string.IsNullOrWhiteSpace(item.TenDuAn)) {
+                AddError(result, item, rowLabel, "Dự án bắt buộc");
+                continue;
+            }
+
+            if (!duAnByTen.TryGetValue(item.TenDuAn.Trim(), out var duAnId)) {
+                AddError(result, item, rowLabel, "Không tìm thấy dự án");
+                continue;
+            }
+
+            if (request.DuAnId != Guid.Empty && request.DuAnId != duAnId) {
+                AddError(result, item, rowLabel, "Dự án trên Excel không khớp dự án đang import");
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(item.TenHangMuc)) {
                 AddError(result, item, rowLabel, "Tên hạng mục bắt buộc");
                 continue;
@@ -89,6 +128,21 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
                 continue;
             }
 
+            if (string.IsNullOrWhiteSpace(item.TenDonViChuTri)) {
+                AddError(result, item, rowLabel, "Đơn vị chủ trì bắt buộc");
+                continue;
+            }
+
+            if (!TryResolveDonVi(item.TenDonViChuTri, donViRows, out var donViChuTriId, out var dvError)) {
+                AddError(result, item, rowLabel, dvError ?? "Không tìm thấy đơn vị chủ trì");
+                continue;
+            }
+
+            if (!TryResolveDonViMulti(item.TenDonViPhoiHop, donViRows, out var donViPhoiHopIds, out var dvPhError)) {
+                AddError(result, item, rowLabel, dvPhError ?? "Không tìm thấy đơn vị phối hợp");
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(item.TenCanBoChuTri)) {
                 AddError(result, item, rowLabel, "Cán bộ chủ trì bắt buộc");
                 continue;
@@ -99,21 +153,8 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
                 continue;
             }
 
-            List<long>? canBoPhoiHopIds = null;
-            List<long>? donViPhoiHopIds = null;
-            if (!string.IsNullOrWhiteSpace(item.TenCanBoPhoiHop)) {
-                if (!TryResolveUser(item.TenCanBoPhoiHop, usersInDonVi, out var phoiHopUser, out var phoiHopError)) {
-                    AddError(result, item, rowLabel, phoiHopError ?? "Không tìm thấy cán bộ phối hợp");
-                    continue;
-                }
-
-                canBoPhoiHopIds = [phoiHopUser.Id];
-                if (phoiHopUser.DonViId is > 0)
-                    donViPhoiHopIds = [phoiHopUser.DonViId.Value];
-            }
-
-            if (string.IsNullOrWhiteSpace(item.So)) {
-                AddError(result, item, rowLabel, "Tờ trình bắt buộc");
+            if (!TryResolveUsersMulti(item.TenCanBoPhoiHop, usersInDonVi, out var canBoPhoiHopIds, out var cbPhError)) {
+                AddError(result, item, rowLabel, cbPhError ?? "Không tìm thấy cán bộ phối hợp");
                 continue;
             }
 
@@ -124,28 +165,26 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
 
             validRows.Add(new ValidatedImportRow(
                 item,
+                duAnId,
                 giaiDoanId,
+                donViChuTriId,
                 chuTriUser.Id,
-                chuTriUser.DonViId is > 0 ? chuTriUser.DonViId : null,
-                canBoPhoiHopIds,
-                donViPhoiHopIds));
+                donViPhoiHopIds,
+                canBoPhoiHopIds));
         }
 
         if (validRows.Count == 0)
             return result;
 
-        var groups = validRows.GroupBy(r => new ParentKey(
-            r.Source.So!.Trim(),
-            r.Source.NgayTrinh,
-            r.Source.TrichYeu?.Trim() ?? string.Empty));
+        var groups = validRows.GroupBy(r => r.DuAnId);
 
         foreach (var group in groups) {
             var parent = new KeHoachTrienKhaiHangMuc {
-                DuAnId = request.DuAnId,
+                DuAnId = group.Key,
                 BuocId = request.BuocId,
-                So = group.Key.So,
-                NgayToTrinh = group.Key.NgayTrinh,
-                TrichYeu = string.IsNullOrEmpty(group.Key.TrichYeu) ? null : group.Key.TrichYeu,
+                So = string.Empty,
+                NgayToTrinh = null,
+                TrichYeu = null,
                 TrangThaiId = trangThaiDuThao?.Id,
                 DanhSachHangMuc = [],
             };
@@ -184,6 +223,62 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         result.ErrorCount++;
     }
 
+    private static List<string> SplitMulti(string? raw) =>
+        string.IsNullOrWhiteSpace(raw)
+            ? []
+            : raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(s => s.Length > 0)
+                .ToList();
+
+    private static bool TryResolveDonVi(
+        string tenDonVi,
+        List<DonViImportLookup> donVis,
+        out long donViId,
+        out string? error) {
+        donViId = default;
+        error = null;
+
+        var trimmed = tenDonVi.Trim();
+        var matches = donVis
+            .Where(d => string.Equals(d.TenDonVi.Trim(), trimmed, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (matches.Count == 0) {
+            error = "Không tìm thấy đơn vị";
+            return false;
+        }
+
+        if (matches.Count > 1) {
+            error = "Đơn vị không xác định (trùng tên)";
+            return false;
+        }
+
+        donViId = matches[0].Id;
+        return true;
+    }
+
+    private static bool TryResolveDonViMulti(
+        string? raw,
+        List<DonViImportLookup> donVis,
+        out List<long>? ids,
+        out string? error) {
+        ids = null;
+        error = null;
+        var tokens = SplitMulti(raw);
+        if (tokens.Count == 0)
+            return true;
+
+        var resolved = new List<long>();
+        foreach (var token in tokens) {
+            if (!TryResolveDonVi(token, donVis, out var id, out error))
+                return false;
+            resolved.Add(id);
+        }
+
+        ids = resolved;
+        return true;
+    }
+
     private static bool TryResolveUser(
         string tenCanBo,
         List<UserImportLookup> usersInDonVi,
@@ -211,28 +306,51 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         return true;
     }
 
+    private static bool TryResolveUsersMulti(
+        string? raw,
+        List<UserImportLookup> usersInDonVi,
+        out List<long>? ids,
+        out string? error) {
+        ids = null;
+        error = null;
+        var tokens = SplitMulti(raw);
+        if (tokens.Count == 0)
+            return true;
+
+        var resolved = new List<long>();
+        foreach (var token in tokens) {
+            if (!TryResolveUser(token, usersInDonVi, out var user, out error))
+                return false;
+            resolved.Add(user.Id);
+        }
+
+        ids = resolved;
+        return true;
+    }
+
     private static bool IsEmptyRow(KeHoachTrienKhaiHangMucImportDto row) =>
-        string.IsNullOrWhiteSpace(row.TenHangMuc)
+        string.IsNullOrWhiteSpace(row.TenDuAn)
+        && string.IsNullOrWhiteSpace(row.TenHangMuc)
         && string.IsNullOrWhiteSpace(row.TenGiaiDoan)
+        && string.IsNullOrWhiteSpace(row.TenDonViChuTri)
+        && string.IsNullOrWhiteSpace(row.TenDonViPhoiHop)
         && string.IsNullOrWhiteSpace(row.TenCanBoChuTri)
         && string.IsNullOrWhiteSpace(row.TenCanBoPhoiHop)
         && !row.NgayBatDau.HasValue
         && !row.NgayKetThuc.HasValue
         && !row.KinhPhi.HasValue
-        && !row.ThoiHan.HasValue
-        && string.IsNullOrWhiteSpace(row.So)
-        && !row.NgayTrinh.HasValue
-        && string.IsNullOrWhiteSpace(row.TrichYeu);
+        && !row.ThoiHan.HasValue;
+
+    private sealed record DonViImportLookup(long Id, string TenDonVi);
 
     private sealed record UserImportLookup(long Id, string HoTen, long? DonViId);
 
-    private sealed record ParentKey(string So, DateTimeOffset? NgayTrinh, string TrichYeu);
-
     private sealed record ValidatedImportRow(
         KeHoachTrienKhaiHangMucImportDto Source,
+        Guid DuAnId,
         int GiaiDoanId,
+        long DonViChuTriId,
         long CanBoChuTriId,
-        long? DonViChuTriId,
-        List<long>? CanBoPhoiHopIds,
-        List<long>? DonViPhoiHopIds);
+        List<long>? DonViPhoiHopIds,
+        List<long>? CanBoPhoiHopIds);
 }
