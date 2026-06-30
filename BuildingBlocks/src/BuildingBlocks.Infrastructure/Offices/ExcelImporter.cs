@@ -8,7 +8,10 @@ namespace BuildingBlocks.Infrastructure.Offices;
 public class ImporterHelper(IServiceProvider serviceProvider) : IImporterHelper
 {
     private readonly IAsposeHelper _asposeHelper = serviceProvider.GetRequiredService<IAsposeHelper>();
-    public AsposeResult GetTemplate(string templatePath, List<List<ComboData>>? comboData = null)
+    public AsposeResult GetTemplate(
+        string templatePath,
+        List<List<ComboData>>? comboData = null,
+        IReadOnlySet<int>? multiValueComboIndices = null)
     {
         _asposeHelper.EnsureLicense();
         var workbook = new Workbook(templatePath);
@@ -134,6 +137,11 @@ public class ImporterHelper(IServiceProvider serviceProvider) : IImporterHelper
             validation.Type = ValidationType.List;
             validation.InCellDropDown = true;
             validation.Formula1 = rangeFormula;
+            if (multiValueComboIndices?.Contains(i + 1) == true) {
+                validation.AlertStyle = ValidationAlertType.Warning;
+                validation.ErrorTitle = "Nhiều giá trị";
+                validation.ErrorMessage = "Chọn từ danh sách hoặc nhập nhiều giá trị cách nhau dấu phẩy (vd: Phòng A, Phòng B).";
+            }
         }
 
         return new AsposeResult()

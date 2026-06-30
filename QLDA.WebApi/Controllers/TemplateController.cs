@@ -256,7 +256,10 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             new KeHoachTrienKhaiHangMucGetImportTemplateQuery(duAnId),
             cancellationToken);
 
-        var importResult = _excelImporter.GetTemplate(templatePath, comboData);
+        var importResult = _excelImporter.GetTemplate(
+            templatePath,
+            comboData,
+            multiValueComboIndices: new HashSet<int> { 5, 6 });
 
         return new FileContentResult(importResult.FileBytes, importResult.ContentType) {
             FileDownloadName = fileNameTemplate,

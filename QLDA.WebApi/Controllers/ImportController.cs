@@ -135,9 +135,6 @@ public class ImportController(IServiceProvider serviceProvider) : AggregateRootC
         _ = Guid.TryParse(formFile["duAnId"].FirstOrDefault(), out var duAnId);
         _ = int.TryParse(formFile["buocId"].FirstOrDefault(), out var buocId);
 
-        if (duAnId == Guid.Empty || buocId <= 0)
-            return ResultApi.Fail("Thiếu duAnId hoặc buocId");
-
         var rows = _excelImporter.ReadDataFromExcel<KeHoachTrienKhaiHangMucImportDto>(file.OpenReadStream());
 
         if (rows.Count == 0)
