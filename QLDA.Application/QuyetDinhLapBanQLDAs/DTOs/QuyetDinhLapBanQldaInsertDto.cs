@@ -12,6 +12,7 @@ public class QuyetDinhLapBanQldaInsertDto : IMayHaveTepDinhKemDto, ITienDo {
     public string? SoDuThao { get; set; }
     public string? TrichYeuDuThao { get; set; }
 
+    public string? CoQuanQuyetDinh { get; set; }
     public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public string? NguoiKy { get; set; }

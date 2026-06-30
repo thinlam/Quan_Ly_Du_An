@@ -12,6 +12,7 @@ public static class VanBanPhapLyMappings {
             Ngay = dto.NgayVanBan,
             TrichYeu = dto.TrichYeu,
             NgayKy = dto.NgayKy,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NguoiKy = dto.NguoiKy,
             LoaiVanBanId = dto.LoaiVanBanId,
             ChucVuId = dto.ChucVuId
@@ -27,6 +28,7 @@ public static class VanBanPhapLyMappings {
             NgayKy = dto.NgayKy,
             NguoiKy = dto.NguoiKy,
             LoaiVanBanId = dto.LoaiVanBanId,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             ChucVuId = dto.ChucVuId
         };
     }
@@ -39,6 +41,7 @@ public static class VanBanPhapLyMappings {
             SoVanBan = entity.So,
             NgayVanBan = entity.Ngay,
             TrichYeu = entity.TrichYeu,
+            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy,
             LoaiVanBanId = entity.LoaiVanBanId,

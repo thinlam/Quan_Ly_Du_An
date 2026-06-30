@@ -12,6 +12,7 @@ public class QuyetDinhLapBanQldaDto : IHasKey<Guid?>,  IMayHaveTepDinhKemDto {
     public DateTimeOffset? NgayQuyetDinh { get; set; }
     public string? TrichYeu { get; set; }
     public string? NguoiKy { get; set; }
+    public string? CoQuanQuyetDinh { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     
     public string? SoDuThao { get; set; }

@@ -11,6 +11,7 @@ public static class QuyetDinhLapBanQldaMappings {
             So = dto.SoQuyetDinh,
             Ngay = dto.NgayQuyetDinh,
             TrichYeu = dto.TrichYeu,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NgayKy = dto.NgayKy,
             NguoiKy = dto.NguoiKy
         };
@@ -32,6 +33,7 @@ public static class QuyetDinhLapBanQldaMappings {
             Id = dto.Id,
             So = dto.SoQuyetDinh,
             Ngay = dto.NgayQuyetDinh,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             TrichYeu = dto.TrichYeu,
             NgayKy = dto.NgayKy,
             NguoiKy = dto.NguoiKy
@@ -55,6 +57,7 @@ public static class QuyetDinhLapBanQldaMappings {
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             SoQuyetDinh = entity.So,
+            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
             NgayQuyetDinh = entity.Ngay,
             TrichYeu = entity.TrichYeu,
             NgayKy = entity.NgayKy,
