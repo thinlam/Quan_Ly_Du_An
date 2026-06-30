@@ -14,6 +14,12 @@ public record TheoDoiDuAnPhongPhanCongSearchDto : CommonSearchDto
     /// <summary>Filter năm dự án — logic NamDuAn (#9121)</summary>
     public int? NamDuAn { get; set; }
 
+    /// <summary>Năm khởi công — logic giống DuAnSearchDto / DuAnGetDanhSachQuery</summary>
+    public int? ThoiGianKhoiCong { get; set; }
+
+    /// <summary>Năm hoàn thành — logic giống DuAnSearchDto / DuAnGetDanhSachQuery</summary>
+    public int? ThoiGianHoanThanh { get; set; }
+
     /// <summary>Tên dự án (contains)</summary>
     public string? TenDuAn { get; set; }
 
