@@ -5,12 +5,23 @@ namespace QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 
 public class KeHoachTrienKhaiHangMucImportDto {
     [Required]
+    [Description("Dự án")]
+    public string? TenDuAn { get; set; }
+
+    [Required]
     [Description("Tên hạng mục")]
     public string? TenHangMuc { get; set; }
 
     [Required]
     [Description("Giai đoạn")]
     public string? TenGiaiDoan { get; set; }
+
+    [Required]
+    [Description("Đơn vị chủ trì")]
+    public string? TenDonViChuTri { get; set; }
+
+    [Description("Đơn vị phối hợp")]
+    public string? TenDonViPhoiHop { get; set; }
 
     [Required]
     [Description("Cán bộ chủ trì")]
@@ -30,16 +41,6 @@ public class KeHoachTrienKhaiHangMucImportDto {
 
     [Description("Thời hạn hoàn thành")]
     public DateOnly? ThoiHan { get; set; }
-
-    [Required]
-    [Description("Tờ trình")]
-    public string? So { get; set; }
-
-    [Description("Ngày trình")]
-    public DateTimeOffset? NgayTrinh { get; set; }
-
-    [Description("Trích yếu")]
-    public string? TrichYeu { get; set; }
 
     public int ExcelRowNumber { get; set; }
 

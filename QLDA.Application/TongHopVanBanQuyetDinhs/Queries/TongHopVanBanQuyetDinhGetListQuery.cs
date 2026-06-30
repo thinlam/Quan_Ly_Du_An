@@ -1,3 +1,4 @@
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Constants;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
@@ -34,13 +35,14 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
     private readonly IRepository<VanBanPhapLy, Guid> VanBanPhapLy = ServiceProvider.GetRequiredService<IRepository<VanBanPhapLy, Guid>>();
 
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IAuthorizationManager _authManager = ServiceProvider.GetRequiredService<IAuthorizationManager>();
 
     public async Task<PaginatedList<TongHopVanBanQuyetDinhDto>> Handle(TongHopVanBanQuyetDinhGetListQuery request,
         CancellationToken cancellationToken) {
 
         #region Concat() => Union all (không loại bỏ trùng) / Union() => loại bỏ trùng
 
-        var query = VanBanQuyetDinh.GetQueryableSet()
+        var query = _authManager.FilterVisible(VanBanQuyetDinh.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
                 .WhereIf(request.Loai.HasValue, e => e.Loai == request.Loai.ToString())
                 .WhereIf(request.DuAnId.HasValue, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)

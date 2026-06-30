@@ -9,18 +9,25 @@ public class KeHoachTrienKhaiHangMucImportDescriptor : IImportDescriptor {
     public string OutputPath { get; set; } = "";
     public string? Title => "MẪU IMPORT KẾ HOẠCH TRIỂN KHAI HẠNG MỤC";
     public string? HintText =>
-        "Nhập dữ liệu vào bảng bên dưới. Giai đoạn / Cán bộ chọn từ danh sách. Ngày nhập dd/MM/yyyy.";
+        "Nhập dữ liệu vào bảng bên dưới. Dự án / Giai đoạn / Đơn vị / Cán bộ chọn từ danh sách. "
+        + "Đơn vị phối hợp và Cán bộ phối hợp: nhập nhiều giá trị, cách nhau dấu phẩy. Ngày nhập dd/MM/yyyy.";
 
     public List<ImportColumn> Columns { get; } =
     [
+        new() { Header = "Dự án", Description = "Chọn từ danh sách", Placeholder = "$cbo1", ComboIndex = 1, Width = 40,
+            HorizontalAlign = ColumnAlign.Left, WrapText = true, Required = true },
         new() { Header = "Tên hạng mục", Description = "Bắt buộc", Width = 40,
             HorizontalAlign = ColumnAlign.Left, WrapText = true, Required = true },
-        new() { Header = "Giai đoạn", Description = "Chọn từ danh mục", Placeholder = "$cbo1", ComboIndex = 1, Width = 22,
+        new() { Header = "Giai đoạn", Description = "Chọn từ danh mục", Placeholder = "$cbo2", ComboIndex = 2, Width = 22,
             HorizontalAlign = ColumnAlign.Left, Required = true },
-        new() { Header = "Cán bộ chủ trì", Description = "Chọn từ danh sách đơn vị", Placeholder = "$cbo2", ComboIndex = 2, Width = 28,
+        new() { Header = "Đơn vị chủ trì", Description = "Chọn từ danh sách", Placeholder = "$cbo3", ComboIndex = 3, Width = 28,
             HorizontalAlign = ColumnAlign.Left, WrapText = true, Required = true },
-        new() { Header = "Cán bộ phối hợp", Description = "Tùy chọn — cùng danh sách đơn vị", Placeholder = "$cbo3", ComboIndex = 3, Width = 28,
-            HorizontalAlign = ColumnAlign.Left, WrapText = true, Required = true},
+        new() { Header = "Đơn vị phối hợp", Description = "Tùy chọn — nhiều giá trị, cách nhau dấu phẩy", Width = 32,
+            HorizontalAlign = ColumnAlign.Left, WrapText = true },
+        new() { Header = "Cán bộ chủ trì", Description = "Chọn từ danh sách", Placeholder = "$cbo4", ComboIndex = 4, Width = 28,
+            HorizontalAlign = ColumnAlign.Left, WrapText = true, Required = true },
+        new() { Header = "Cán bộ phối hợp", Description = "Tùy chọn — nhiều giá trị, cách nhau dấu phẩy", Width = 32,
+            HorizontalAlign = ColumnAlign.Left, WrapText = true },
         new() { Header = "Ngày bắt đầu", Description = "dd/MM/yyyy", NumberFormat = "dd/MM/yyyy", Width = 16,
             HorizontalAlign = ColumnAlign.Center },
         new() { Header = "Ngày kết thúc", Description = "dd/MM/yyyy", NumberFormat = "dd/MM/yyyy", Width = 16,
@@ -29,11 +36,5 @@ public class KeHoachTrienKhaiHangMucImportDescriptor : IImportDescriptor {
             HorizontalAlign = ColumnAlign.Right },
         new() { Header = "Thời hạn hoàn thành", Description = "dd/MM/yyyy", NumberFormat = "dd/MM/yyyy", Width = 16,
             HorizontalAlign = ColumnAlign.Center },
-        new() { Header = "Tờ trình", Description = "Bắt buộc", Width = 18,
-            HorizontalAlign = ColumnAlign.Left, Required = true },
-        new() { Header = "Ngày trình", Description = "dd/MM/yyyy", NumberFormat = "dd/MM/yyyy", Width = 16,
-            HorizontalAlign = ColumnAlign.Center },
-        new() { Header = "Trích yếu", Description = "Tùy chọn", Width = 35,
-            HorizontalAlign = ColumnAlign.Left, WrapText = true },
     ];
 }

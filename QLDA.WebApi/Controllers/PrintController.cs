@@ -23,6 +23,8 @@ using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
+using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
+using QLDA.Application.TongHopVanBanQuyetDinhs.Queries;
 using QLDA.Application.ToTrinhPheDuyets.Queries;
 using QLDA.Domain.Constants;
 using QLDA.Infrastructure.Offices;
@@ -564,51 +566,52 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
-    #region usp_In_DanhSach_TongHopVanBanQuyetDinh
+    #region DanhSachTongHopVanBanQuyetDinh
 
     /// <summary>
-    /// usp_In_DanhSach_TongHopVanBanQuyetDinh - DanhSachTongHopVanBanQuyetDinh.xlsx
+    /// DanhSachTongHopVanBanQuyetDinh.xlsx — Export tổng hợp văn bản quyết định (filter giống danh-sach-day-du)
     /// </summary>
-    /// <param name="searchModel"></param>
-    /// <returns></returns>
     [HttpGet("api/print/danh-sach-tong-hop-van-ban-quyet-dinh")]
-    public async Task<IActionResult>
-        InTongHopVanBanQuyetDinh([FromQuery] TongHopVanBanQuyetDinhPrintSearchModel searchModel)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InTongHopVanBanQuyetDinh(
+        [FromQuery] TongHopVanBanQuyetDinhPrintSearchModel searchModel,
+        CancellationToken cancellationToken = default)
     {
         var fileNameTemplate = "DanhSachTongHopVanBanQuyetDinh.xlsx";
-        var procedureName = "usp_In_DanhSach_TongHopVanBanQuyetDinh";
         var templatePath = Path.Combine(
-            AppContext.BaseDirectory, // ví dụ: ...\QLDA.WebApi
-            "PrintTemplates", // chính xác tên folder trong project
+            AppContext.BaseDirectory,
+            "PrintTemplates",
             fileNameTemplate
         );
 
-        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
-
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath),
+            "Không tìm thấy file template DanhSachTongHopVanBanQuyetDinh.xlsx");
         ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
-        var query = new GetStoreQuery()
-        {
-            PathTemplate = templatePath,
-            ProcName = procedureName,
-            Params = new
-            {
-                searchModel.DuAnId,
-                searchModel.BuocId,
-                MaELoaiVanBanQuyetDinh = searchModel.Loai?.ToString(),
-                searchModel.TrichYeu,
-                TuNgay = searchModel.TuNgay?.ToStartOfDayUtc(),
-                DenNgay = searchModel.DenNgay?.ToEndOfDayUtc(),
-                searchModel.GlobalFilter,
-                searchModel.LoaiDuAnTheoNamId,
-                PageIndex = 0,
-                PageSize = 0,
-            },
-            HiddenColumns = searchModel.HiddenColumns
-        };
-        var exportResult = await Mediator.Send(query);
 
-        return new FileContentResult(exportResult.FileBytes,
-            exportResult.ContentType)
+        var data = await Mediator.Send(new TongHopVanBanQuyetDinhGetListExportQuery
+        {
+            DuAnId = searchModel.DuAnId,
+            BuocId = searchModel.BuocId,
+            PageIndex = searchModel.PageIndex,
+            PageSize = searchModel.PageSize,
+            GlobalFilter = searchModel.GlobalFilter,
+            Loai = searchModel.Loai,
+            TrichYeu = searchModel.TrichYeu,
+            TuNgay = searchModel.TuNgay,
+            DenNgay = searchModel.DenNgay,
+            LoaiDuAnTheoNamId = searchModel.LoaiDuAnTheoNamId,
+            CoQuanQuyetDinh = searchModel.CoQuanQuyetDinh,
+        }, cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<TongHopVanBanQuyetDinhExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchModel.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
         {
             FileDownloadName = GetDownloadFileName(fileNameTemplate)
         };

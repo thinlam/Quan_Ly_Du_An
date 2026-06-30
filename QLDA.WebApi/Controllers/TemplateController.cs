@@ -244,6 +244,7 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
     [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<FileContentResult> GetImportKeHoachTrienKhaiHangMuc(
+        [FromQuery] Guid? duAnId = null,
         CancellationToken cancellationToken = default) {
         const string fileNameTemplate = "Import_KeHoachTrienKhaiHangMuc.xlsx";
         var templatePath = Path.Combine(
@@ -252,7 +253,7 @@ public class TemplateController(IServiceProvider serviceProvider) : AggregateRoo
             fileNameTemplate);
 
         var comboData = await Mediator.Send(
-            new KeHoachTrienKhaiHangMucGetImportTemplateQuery(),
+            new KeHoachTrienKhaiHangMucGetImportTemplateQuery(duAnId),
             cancellationToken);
 
         var importResult = _excelImporter.GetTemplate(templatePath, comboData);
