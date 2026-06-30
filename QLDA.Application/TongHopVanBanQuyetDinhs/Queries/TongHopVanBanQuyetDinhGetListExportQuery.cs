@@ -54,11 +54,8 @@ internal class TongHopVanBanQuyetDinhGetListExportQueryHandler(IServiceProvider 
             .OrderByDescending(e => e.Ngay ?? e.NgayKy)
             .ThenByDescending(e => e.CreatedAt);
 
-        var paged = request.PageSize > 0
-            ? ordered.Skip(request.Skip()).Take(request.Take())
-            : ordered;
-
-        var rows = await paged
+      
+        var rows = await ordered
             .Select(e => new
             {
                 TenDuAn = e.DuAn!.TenDuAn,
@@ -77,8 +74,8 @@ internal class TongHopVanBanQuyetDinhGetListExportQueryHandler(IServiceProvider 
             TenDuAn = row.TenDuAn,
             So = row.So,
             Ngay = row.Ngay,
-            Loai = row.LoaiRaw!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
             TrichYeu = row.TrichYeu,
+            Loai = row.LoaiRaw!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
         }).ToList();
     }
 }

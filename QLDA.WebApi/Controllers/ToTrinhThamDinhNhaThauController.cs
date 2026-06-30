@@ -41,7 +41,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             EGroupTypes = [GroupTypeConstants.NoiDungThamDinhNhaThau]
         });
         var nhaThauModel = entity.NhaThaus.Select(o => o.ToModel()).ToList();
-        foreach (var item in nhaThauModel)
+        /*foreach (var item in nhaThauModel)
         {
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
@@ -49,12 +49,30 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
                 EGroupTypes = [GroupTypeConstants.KetQuaThamDinhNhaThau]
             });
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
-        }
+        }*/
+        var ids = nhaThauModel.Select(x => x.Id.ToString()).ToList();
 
+            var allFiles = await Mediator.Send(new GetDanhSachTepDinhKemQuery
+            {
+                GroupId = ids,
+                EGroupTypes = [GroupTypeConstants.KetQuaThamDinhNhaThau]
+            });
+        var lookup = allFiles.GroupBy(x => x.GroupId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+        foreach (var item in nhaThauModel)
+        {
+            if (lookup.TryGetValue(item.Id.ToString(), out var files))
+            {
+                item.DanhSachTepDinhKem = files
+                    .Select(x => x.ToModel())
+                    .ToList();
+            }
+        }
 
         return ResultApi.Ok(entity.ToModel(nhaThauModel: nhaThauModel, // Hoặc kết quả xử lý danh sách nhà thầu của bạn
     danhSachTepDinhKem: danhSachTepDinhKem.ToList(),
     danhSachTepThamDinh: danhSachTepThamDinh.ToList()
+ //   danhSachKetQuaThamDinhNhaThau: item.ToList()
     // nhaThauModel, danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()
     ));
     }

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
+using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
@@ -33,9 +34,11 @@ public record ToTrinhCoThamDinhDeleteCommandHandler : IRequestHandler<ToTrinhCoT
         var entity = await ToTrinhCoThamDinh.GetOrderedSet()
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao && s.Loai == PheDuyetEntityNames.QuyetDinhKeHoachThue, cancellationToken);
-
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id)
+         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao && s.Loai == PheDuyetEntityNames.ToTrinhCoThamDinh, cancellationToken);
+        var trangThaiTra = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.TraLai && s.Loai == PheDuyetEntityNames.ToTrinhCoThamDinh, cancellationToken);
+       // Log.Information();
+        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTra?.Id)
             throw new ManagedException("Tờ trình đang ở trạng thái không thể xóa!");
 
         ManagedException.ThrowIfNull(entity);

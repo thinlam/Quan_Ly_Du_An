@@ -4,6 +4,7 @@ using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.Providers;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Queries;
@@ -37,6 +38,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private readonly IBuocAuthorizationProvider _buocAuth;
     private readonly IAuthorizationContext _authContext;
     private readonly IAppSettingsProvider _settings;
+    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepo;
 
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
@@ -53,6 +55,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         _quyetDinhDieuChinhRepo = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _tepDinhKemRepo = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
@@ -259,15 +262,18 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             EntityName = x.e.EntityName,
             DuAnId = x.e.DuAnId,
             TenDuAn = x.da != null ? x.da.TenDuAn : null,
-            TenBuoc = x.da != null ? x.da.BuocHienTai.TenBuoc : (x.b.TenBuoc??""),
-            //TenGiaiDoan = x.b != null ? x.b. .GiaiDoan?.Ten : null,
+            TenBuoc = x.da != null && x.da.BuocHienTai != null ? x.da.BuocHienTai.TenBuoc : (x.b.TenBuoc ?? ""),
+            TenGiaiDoan =  x.b.Buoc != null && x.b.Buoc.GiaiDoan != null ? x.b.Buoc.GiaiDoan.Ten : "", 
             TrichYeu = x.e.NoiDung,
             TrangThaiId = x.e.TrangThaiId,
             MaTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG" ? x.e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
             TenTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG" ? x.e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             NguoiDuyetId = x.e.TrangThai != null && x.e.TrangThai.Ma == "ĐD" ? x.e.NguoiXuLyId : 0,
             NguoiTrinhId = x.e.NguoiTrinhId,
-            NgayXuLyMoiNhat = x.e.UpdatedAt
+            NgayXuLyMoiNhat = x.e.UpdatedAt,
+            DanhSachTepDinhKem = _tepDinhKemRepo.GetQueryableSet()
+                    .Where(i => i.GroupId == x.e.EntityId.ToString())
+                    .Select(i => i.ToDto()).ToList(),
         }).OrderByDescending(x => x.Id); // Hoặc theo cột mong muốn thay cho p.Index nếu cần
 
         return await finalQuery.ToListAsync(cancellationToken);

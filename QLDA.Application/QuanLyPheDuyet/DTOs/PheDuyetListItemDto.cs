@@ -1,3 +1,5 @@
+using QLDA.Application.TepDinhKems.DTOs;
+
 namespace QLDA.Application.QuanLyPheDuyet.DTOs;
 
 /// <summary>
@@ -17,6 +19,7 @@ public class PheDuyetListItemDto {
     public string? NguoiKy { get; set; }
     public long? NguoiDuyetId { get; set; }
     public long? NguoiTrinhId { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }

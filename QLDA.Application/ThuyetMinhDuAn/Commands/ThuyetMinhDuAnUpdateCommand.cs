@@ -32,7 +32,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
+        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var traLaiStt = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
