@@ -10,7 +10,7 @@ namespace QLDA.Application.DuAnBuocs.Commands;
 /// Cập nhật trạng thái bước dự án + cho phép cập nhật PhongPhuTrachChinhId, DanhSachPhongBanPhoiHopIds.
 /// Phân quyền:
 /// - Tất cả field (TrangThaiId, NgayDuKien, NgayThucTe, GhiChu, TrachNhiemThucHien, IsKetThuc, PhongPhuTrachChinhId, DanhSachPhongBanPhoiHopIds):
-///   chỉ Owner (CreatedBy) + Lãnh đạo phụ trách (DuAn.LanhDaoPhuTrachId) + HasKhtcBypass (Phòng KHTC).
+///   chỉ Owner (CreatedBy) + Lãnh đạo phụ trách (DuAn.LanhDaoPhuTrachId) + HasAdminCatalog (Phòng KHTC / QLDA_QuanTri / QLDA_TatCa).
 /// - DanhSachPhongBanPhoiHopIds: validate mọi ID phải thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop).
 /// </summary>
 public record DuAnBuocDuAnUpdateStateCommand(DuAnBuocDuAnUpdateStateDto Dto) : IRequest<DuAnBuoc>;

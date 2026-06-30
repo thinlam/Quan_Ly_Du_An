@@ -20,8 +20,6 @@ public record TheoDoiDuAnPhongPhanCongSearchDto : CommonSearchDto
     /// <summary>Mã dự án (contains)</summary>
     public string? MaDuAn { get; set; }
 
-    /// <summary>Lãnh đạo phụ trách — UserMaster.Id. Gửi -1 để lọc dự án chưa gán.</summary>
-    public long? LanhDaoPhuTrachId { get; set; }
 
     /// <summary>Trạng thái dự án — DanhMucTrangThaiDuAn (KHÔNG phải trạng thái phê duyệt)</summary>
     public int? TrangThaiDuAnId { get; set; }
