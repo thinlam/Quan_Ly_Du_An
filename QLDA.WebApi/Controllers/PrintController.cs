@@ -49,6 +49,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     private readonly IExporterHelper _excelExporter = serviceProvider.GetRequiredService<IExporterHelper>();
     private readonly IAsposeHelper _asposeHelper = serviceProvider.GetRequiredService<IAsposeHelper>();
     private readonly IWordHelper _wordHelper = serviceProvider.GetRequiredService<IWordHelper>();
+    private readonly KeHoachTrienKhaiHangMucWordExporter _keHoachWordExporter =
+        serviceProvider.GetRequiredService<KeHoachTrienKhaiHangMucWordExporter>();
 
     /// <summary>
     /// Thêm timestamp vào tên file để tránh trùng khi tải nhiều lần
@@ -1398,6 +1400,37 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         {
             FileDownloadName = $"KeHoachTrienKhaiHangMuc_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
         };
+    }
+
+    /// <summary>
+    /// PhieuTrinhKeHoachTrienKhaiHangMuc.docx — Xuất phiếu trình kế hoạch triển khai hạng mục (PMIS #9469)
+    /// </summary>
+    [HttpGet("api/print/phieu-trinh-ke-hoach-trien-khai-hang-muc")]
+    [Authorize(Roles = RoleConstants.GroupKeHoachTrienKhaiHangMucExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> InPhieuTrinhKeHoachTrienKhaiHangMuc(
+        [FromQuery] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "PhieuTrinhKeHoachTrienKhaiHangMuc.docx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            "Word",
+            fileNameTemplate);
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var dto = await Mediator.Send(
+            new KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery { Id = id },
+            cancellationToken);
+
+        var bytes = _keHoachWordExporter.Export(templatePath, dto);
+
+        return File(bytes,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            GetDownloadFileName(fileNameTemplate));
     }
 
     #endregion
