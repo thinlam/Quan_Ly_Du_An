@@ -31,14 +31,12 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
     public async Task<PaginatedList<ThuyetMinhDuAnDto>> Handle(ThuyetMinhDuAnGetDanhSachQuery request,
         CancellationToken cancellationToken = default)
     {
-        bool dieuKienThayTatCa = false;
+     //   bool dieuKienThayTatCa = false;
         var queryable = _buocAuth.FilterVisibleChildEntities(_thuyetMinhDuAn.GetQueryableSet(), _duAnBuocRepo, _authContext, e => e.BuocId)
-            .WhereIf(_authContext.UserId > 0 && !dieuKienThayTatCa, e => e.CreatedBy == _authContext.UserId.ToString(), e => dieuKienThayTatCa)
+            //.WhereIf(_authContext.UserId > 0 && !dieuKienThayTatCa, e => e.CreatedBy == _authContext.UserId.ToString(), e => dieuKienThayTatCa)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
-        // .WhereIf(request.TuNgay.HasValue, e => e.CreatedAt.HasValue && e.CreatedAt.Value >= request.TuNgay!.Value.ToStartOfDayUtc())
-        //  .WhereIf(request.DenNgay.HasValue, e => e.NgayBatDauDuKien.HasValue && e.NgayBatDauDuKien.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
 
         return await queryable
             .Select(e => new ThuyetMinhDuAnDto()

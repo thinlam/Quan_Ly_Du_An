@@ -140,6 +140,18 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             GroupId = entity.Id.ToString(),
             Entities = danhSachFileThamDinh
         });
+        var danhSachFileKetQua = new List<TepDinhKem>();
+        foreach (var nhaThaus in model.DanhSachNhaThaus)
+        {
+            var id = nhaThaus.GetId();
+            danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
+
+            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            {
+                GroupId = id.ToString(),
+                Entities = danhSachFileKetQua
+            });
+        }
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList(), danhSachFileThamDinh.ToList()));
     }

@@ -60,21 +60,24 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
             entity.NgayToTrinh = request.Dto.NgayTrinh;
             entity.TrichYeu = request.Dto.TrichYeu;
 
-          //  entity.SyncHangMuc(request.Dto.HangMucTrienKhai);
-            await SyncHelper.SyncCollection(_hangMucKeHoach, entity.DanhSachHangMuc, [.. request.Dto.HangMucTrienKhai?.Select(e => e.ToEntity(entity.Id)) ?? []], (existing, request) =>
-            {
-                existing.TenHangMuc = request.TenHangMuc;
-                existing.GiaiDoanId = request.GiaiDoanId;
-                existing.TenHangMuc = request.TenHangMuc;
-                existing.KinhPhi = request.KinhPhi;
-                existing.NgayBatDau = request.NgayBatDau;
-                existing.NgayKetThuc = request.NgayKetThuc;
-                existing.ThoiHan = request.ThoiHan;
-                existing.CanBoChuTriId = request.CanBoChuTriId;
-                existing.CanBoPhoiHopIds = request.CanBoPhoiHopIds;
-                existing.DonViChuTriId = request.DonViChuTriId;
-                existing.DonViPhoiHopIds = request.DonViPhoiHopIds;
-            }, cancellationToken);
+            //  entity.SyncHangMuc(request.Dto.HangMucTrienKhai);
+            if (request.Dto.HangMucTrienKhai == null || request.Dto.HangMucTrienKhai.Count == 0)
+                entity.DanhSachHangMuc = null;
+            else
+                await SyncHelper.SyncCollection(_hangMucKeHoach, entity.DanhSachHangMuc, [.. request.Dto.HangMucTrienKhai?.Select(e => e.ToEntity(entity.Id)) ?? []], (existing, request) =>
+                {
+                    existing.TenHangMuc = request.TenHangMuc;
+                    existing.GiaiDoanId = request.GiaiDoanId;
+                    existing.TenHangMuc = request.TenHangMuc;
+                    existing.KinhPhi = request.KinhPhi;
+                    existing.NgayBatDau = request.NgayBatDau;
+                    existing.NgayKetThuc = request.NgayKetThuc;
+                    existing.ThoiHan = request.ThoiHan;
+                    existing.CanBoChuTriId = request.CanBoChuTriId;
+                    existing.CanBoPhoiHopIds = request.CanBoPhoiHopIds;
+                    existing.DonViChuTriId = request.DonViChuTriId;
+                    existing.DonViPhoiHopIds = request.DonViPhoiHopIds;
+                }, cancellationToken);
 
             if (_unitOfWork.HasTransaction)
             {
