@@ -54,7 +54,7 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThaiThamDinh = e.TrangThaiThamDinhId != null ? e.TrangThaiThamDinh.Ten : string.Empty,
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == GroupTypeConstants.ThuyetMinhDuAnThamDinh)
+                    .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == GroupTypeConstants.ThuyetMinhDuAn)
                     .Select(i => i.ToDto()).ToList(),
                 DanhSachTepThamDinh = _tepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == GroupTypeConstants.ThuyetMinhDuAnThamDinh)

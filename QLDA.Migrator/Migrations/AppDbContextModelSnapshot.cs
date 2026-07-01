@@ -8586,7 +8586,8 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("CoQuanQuyetDinh")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()

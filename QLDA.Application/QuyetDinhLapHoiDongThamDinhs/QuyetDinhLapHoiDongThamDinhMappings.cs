@@ -1,4 +1,5 @@
 using QLDA.Application.QuyetDinhLapHoiDongThamDinhs.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.QuyetDinhLapHoiDongThamDinhs;
 
@@ -9,12 +10,13 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh,
+            Ngay = dto.NgayQuyetDinh??dto.NgayKy,//chi co ngay ky
             TrichYeu = dto.TrichYeu,
             CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NoiDung = dto.NoiDung,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString(),
         };
     }
 
@@ -22,12 +24,13 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
         return new QuyetDinhLapHoiDongThamDinh {
             Id = dto.Id,
             So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh,
+            Ngay = dto.NgayQuyetDinh ?? dto.NgayKy,
             TrichYeu = dto.TrichYeu,
             NoiDung = dto.NoiDung,
             CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString(),
         };
     }
 

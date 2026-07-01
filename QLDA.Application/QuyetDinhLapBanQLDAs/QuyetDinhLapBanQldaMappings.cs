@@ -1,4 +1,5 @@
 using QLDA.Application.QuyetDinhLapBanQLDAs.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.QuyetDinhLapBanQLDAs;
 
@@ -13,7 +14,9 @@ public static class QuyetDinhLapBanQldaMappings {
             TrichYeu = dto.TrichYeu,
             CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapBanQLDA.ToString(),
+
         };
 
         if (dto.DanhSachThanhVien != null) {
@@ -36,7 +39,8 @@ public static class QuyetDinhLapBanQldaMappings {
             CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             TrichYeu = dto.TrichYeu,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapBanQLDA.ToString(),
         };
 
         if (dto.DanhSachThanhVien != null) {

@@ -11,7 +11,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappingConfiguration {
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId == 0 ? null : entity.BuocId,
             SoQuyetDinh = entity.So, //Số quyết định
-            NgayQuyetDinh = entity.Ngay, //Ngày quyết định
+            NgayQuyetDinh = entity.Ngay ?? entity.NgayKy, //Ngày quyết định
             TrichYeu = entity.TrichYeu,
             CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
             NgayKy = entity.NgayKy,
@@ -29,12 +29,13 @@ public static class QuyetDinhLapHoiDongThamDinhMappingConfiguration {
             DuAnId = model.DuAnId,
             BuocId = model.BuocId == 0 ? null : model.BuocId,
             So = model.SoQuyetDinh, //Số quyết định
-            Ngay = model.NgayQuyetDinh, //Ngày quyết định
+            Ngay = model.NgayQuyetDinh ?? model.NgayKy, //Ngày quyết định
             TrichYeu = model.TrichYeu,
             CoQuanQuyetDinh = model.CoQuanQuyetDinh,
             NgayKy = model.NgayKy,
             NguoiKy = model.NguoiKy,
             NoiDung = model.NoiDung,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString(),
         };
 
 
@@ -42,11 +43,12 @@ public static class QuyetDinhLapHoiDongThamDinhMappingConfiguration {
         entity.DuAnId = model.DuAnId;
         entity.BuocId = model.BuocId == 0 ? null : model.BuocId;
         entity.So = model.SoQuyetDinh; //Số quyết định
-        entity.Ngay = model.NgayQuyetDinh; //Ngày quyết định
+        entity.Ngay = model.NgayQuyetDinh??model.NgayKy; //Ngày quyết định
         entity.TrichYeu = model.TrichYeu;
         entity.CoQuanQuyetDinh = model.CoQuanQuyetDinh;
         entity.NgayKy = model.NgayKy;
         entity.NguoiKy = model.NguoiKy;
         entity.NoiDung = model.NoiDung;
+        entity.Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString();
     }
 }

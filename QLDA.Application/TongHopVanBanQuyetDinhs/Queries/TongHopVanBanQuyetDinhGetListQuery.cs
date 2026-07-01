@@ -122,6 +122,7 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
         So = e.So,
         Ngay = e.Ngay ?? e.NgayKy,
         TrichYeu = e.TrichYeu,
+        CoQuanQuyetDinh = e.CoQuanQuyetDinh,
         TableName = e.Loai, // Đảm bảo trường này nhận giá trị từ DB
         Loai = e.Loai!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
         DanhSachTepDinhKem = TepDinhKem.GetOrderedSet()

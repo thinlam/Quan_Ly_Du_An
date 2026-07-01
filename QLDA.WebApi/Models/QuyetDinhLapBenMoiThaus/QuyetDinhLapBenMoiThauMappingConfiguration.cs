@@ -38,6 +38,7 @@ public static class QuyetDinhLapBenMoiThauMappingConfiguration
             NgayKy = model.NgayKy,
             NguoiKy = model.NguoiKy,
             NoiDung = model.NoiDung,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapBenMoiThau.ToString(),
         };
 
 
@@ -52,5 +53,7 @@ public static class QuyetDinhLapBenMoiThauMappingConfiguration
         entity.NgayKy = model.NgayKy;
         entity.NguoiKy = model.NguoiKy;
         entity.NoiDung = model.NoiDung;
+        entity.Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapBenMoiThau.ToString();
+
     }
 }
