@@ -21,6 +21,8 @@ internal class TrienKhaiKeHoachLCNTGetQueryHandler(IServiceProvider serviceProvi
         CancellationToken cancellationToken = default) {
         var queryable = TrienKhaiKeHoachLCNT.GetOrderedSet()
             .Include(e => e.DonViTuVans)
+            .Include(e => e.DmHinhThucLCNT)
+            .Include(e => e.GoiThau)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

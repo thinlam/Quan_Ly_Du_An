@@ -26,6 +26,8 @@ using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
 using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
 using QLDA.Application.TongHopVanBanQuyetDinhs.Queries;
 using QLDA.Application.ToTrinhPheDuyets.Queries;
+using QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
+using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Infrastructure.Offices;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
@@ -41,6 +43,9 @@ using QLDA.WebApi.Models.TongHopDeXuatChuTruongs;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 using Serilog;
 using System.Globalization;
+using QLDA.Domain.Interfaces;
+using System.Text.RegularExpressions;
+
 
 namespace QLDA.WebApi.Controllers;
 
@@ -1558,5 +1563,56 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     #endregion
 
 
+    #region Xuat To Trinh Ke Hoach Lua Chon Nha Thau  iss 9471
 
+    [HttpGet("api/print/trien-khai-ke-hoach-lua-chon-nha-thau")]
+    [Authorize(Roles = RoleConstants.GroupKeHoachTrienKhaiHangMucExport)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InTrienKhaiKeHoachLuaChonNhaThau(
+        [FromQuery] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "ToTrinhTrienKhaiKeHoachLuaChonNhaThau.docx";
+        var templatePath = Path.Combine(
+             AppContext.BaseDirectory,
+             "PrintTemplates",
+             "Word",
+             fileNameTemplate
+         );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+        ManagedException.ThrowIf(_userProvider.Id == 0, "Vui lòng đăng nhập");
+
+        var rows = await Mediator.Send(new TrienKhaiKeHoachLCNTGetQuery
+        {
+            Id = id,
+
+        }, cancellationToken);
+
+        var doc = new Aspose.Words.Document(templatePath);
+        doc.MailMerge.UseNonMergeFields = true;
+        DateTime? ngayToTrinh = rows.NgayTrinh.ToOffset(TimeSpan.FromHours(7)).Date;
+        var culture = new CultureInfo("vi-VN");
+        var replacements = new Dictionary<string, string> {
+            { "TenGoiThau", rows?.GoiThau?.Ten},
+            { "NgayTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
+            { "So", rows.So},
+            { "GiaTri", rows.GiaTri?.ToString("N0", culture) ?? "0" },
+            { "NoiDung", rows?.NoiDung },
+            { "YeuCau", rows?.YeuCau },
+            { "ThoiGianThucHien", rows?.ThoiGianThucHien },
+            { "TenHinhThucLCNT", rows?.DmHinhThucLCNT?.Ten??"" },
+
+        };
+
+
+        var bytes = _wordHelper.ExportFromTemplate(templatePath, replacements);
+
+        return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            GetDownloadFileName(fileNameTemplate));
+
+
+    }
+
+    #endregion
 }
