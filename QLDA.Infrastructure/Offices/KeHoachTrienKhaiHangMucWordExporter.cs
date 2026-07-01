@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Globalization;
 using Aspose.Words;
+using Aspose.Words.Replacing;
 using Aspose.Words.Tables;
 using BuildingBlocks.CrossCutting.Exceptions;
 using BuildingBlocks.CrossCutting.Offices;
@@ -230,18 +231,18 @@ public class KeHoachTrienKhaiHangMucWordExporter(IAsposeHelper asposeHelper)
 
     private static void FillHeaderFields(Document doc, KeHoachTrienKhaiHangMucPhieuTrinhPrintDto dto)
     {
-        doc.MailMerge.UseNonMergeFields = true;
-
         var replacements = new Dictionary<string, string>
         {
-            { "So", dto.So },
-            { "NgayLap", FormatNgayLap(dto.NgayToTrinh) },
-            { "DuAn", dto.DuAnDisplay },
-            { "TrichYeu", dto.TrichYeu ?? string.Empty },
+            ["<So>"] = dto.So ?? string.Empty,
+            ["<NgayLap>"] = FormatNgayLap(dto.NgayToTrinh),
+            ["<DuAn>"] = dto.DuAnDisplay ?? string.Empty,
+            ["<TrichYeu>"] = dto.TrichYeu ?? string.Empty,
         };
 
-        foreach (var (key, value) in replacements)
-            doc.MailMerge.Execute([key], [value]);
+        var options = new FindReplaceOptions(FindReplaceDirection.Forward);
+
+        foreach (var (placeholder, value) in replacements)
+            doc.Range.Replace(placeholder, value, options);
     }
 
     private static void FillHangMucTable(Document doc, IReadOnlyList<KeHoachTrienKhaiHangMucExportItemDto> rows)

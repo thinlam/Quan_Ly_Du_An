@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common.Interfaces;
+using QLDA.Application.KeHoachTrienKhaiHangMucs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
@@ -50,7 +51,12 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
 
         ManagedException.ThrowIf(hangMucs.Count == 0, "Không có dữ liệu để xuất");
 
-        return await MapToExportRowsAsync(hangMucs, cancellationToken);
+        return await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
+            hangMucs,
+            _giaiDoanRepo,
+            _donViRepo,
+            _userRepo,
+            cancellationToken);
     }
 
     private IQueryable<KeHoachTrienKhaiHangMuc> BuildFilteredQueryable(
@@ -105,64 +111,5 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
         return keHoachs
             .SelectMany(k => k.DanhSachHangMuc ?? [])
             .ToList();
-    }
-
-    private async Task<List<KeHoachTrienKhaiHangMucExportItemDto>> MapToExportRowsAsync(
-        List<HangMucKeHoach> hangMucs,
-        CancellationToken cancellationToken)
-    {
-        var giaiDoanIds = hangMucs
-            .Where(h => h.GiaiDoanId.HasValue)
-            .Select(h => h.GiaiDoanId!.Value)
-            .Distinct()
-            .ToList();
-
-        var giaiDoans = giaiDoanIds.Count == 0
-            ? []
-            : await _giaiDoanRepo.GetQueryableSet()
-                .AsNoTracking()
-                .Where(g => giaiDoanIds.Contains(g.Id))
-                .ToListAsync(cancellationToken);
-
-        var donViIds = hangMucs
-            .SelectMany(h => Enumerable.Empty<long?>()
-                .Append(h.DonViChuTriId)
-                .Concat((h.DonViPhoiHopIds ?? []).Select(id => (long?)id)))
-            .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
-
-        var donVis = donViIds.Count == 0
-            ? []
-            : await _donViRepo.GetQueryableSet()
-                .AsNoTracking()
-                .Where(d => donViIds.Contains(d.Id))
-                .Select(d => new { d.Id, d.TenDonVi })
-                .ToListAsync(cancellationToken);
-
-        var userIds = hangMucs
-            .SelectMany(h => Enumerable.Empty<long?>()
-                .Append(h.CanBoChuTriId)
-                .Concat((h.CanBoPhoiHopIds ?? []).Select(id => (long?)id)))
-            .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
-
-        var users = userIds.Count == 0
-            ? []
-            : await _userRepo.GetQueryableSet()
-                .AsNoTracking()
-                .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.HoTen })
-                .ToListAsync(cancellationToken);
-
-        return KeHoachTrienKhaiHangMucExportMapper.ToExportRows(
-            hangMucs,
-            giaiDoans.ToDictionary(g => g.Id, g => g.Ten ?? string.Empty),
-            giaiDoans.ToDictionary(g => g.Id, g => g.Stt ?? int.MaxValue - 1),
-            donVis.ToDictionary(d => d.Id, d => d.TenDonVi ?? string.Empty),
-            users.ToDictionary(u => u.Id, u => u.HoTen ?? string.Empty));
     }
 }
