@@ -73,19 +73,32 @@ public record DanhMucDonViGetDanhSachQueryHandler(IServiceProvider ServiceProvid
                 }
         }
 
+        var currentDonViId = request.ChiLayPhongBanThuocDonVi
+            ? TryGetCurrentDonViId(_userProvider)
+            : null;
+
         var query = DanhMucDonVi.GetQueryableSet().AsNoTracking()
             .Where(e => e.Used == true)
             .WhereIf(request.Cap > 0, e => e.Cap == request.Cap)
             .WhereIf(request.CapDonViIds != null, e => request.CapDonViIds!.Contains(e.CapDonViId))
-            .WhereIf(duAnDonViIds != null, e => duAnDonViIds!.Contains(e.Id));
-
-        if (request.ChiLayPhongBanThuocDonVi) {
-            var donViId = DmDonViPhongBanScope.TryGetCurrentDonViId(_userProvider);
-            query = DmDonViPhongBanScope.FilterPhongBanThuocDonVi(query, donViId);
-        }
-
+            .WhereIf(duAnDonViIds != null, e => duAnDonViIds!.Contains(e.Id))
+            .WhereFunc(request.ChiLayPhongBanThuocDonVi, q => q
+                .Where(e => e.DonViCapChaId != null)
+                .WhereIf(currentDonViId > 0, e => e.DonViCapChaId == currentDonViId));
 
         return await query
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
+    }
+
+    private static long? TryGetCurrentDonViId(IUserProvider userProvider) {
+        if (userProvider.Id <= 0)
+            return null;
+
+        try {
+            var donViId = userProvider.Info.DonViID;
+            return donViId > 0 ? donViId : null;
+        } catch (UnauthorizedAccessException) {
+            return null;
+        }
     }
 }
