@@ -14,7 +14,7 @@ public class KeHoachTrienKhaiHangMucPhieuTrinhPrintTests(WebApiFixture fixture)
     private HttpClient AuthedClient => fixture.CreateAuthenticatedClient();
 
     [Fact]
-    public async Task Print_WithValidId_ReturnsDocxOrManagedError()
+    public async Task Print_WithValidId_ReturnsDocx()
     {
         var response = await AuthedClient.GetAsync(
             $"/api/print/phieu-trinh-ke-hoach-trien-khai-hang-muc?id={TestKeHoachId}");
@@ -22,16 +22,6 @@ public class KeHoachTrienKhaiHangMucPhieuTrinhPrintTests(WebApiFixture fixture)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
-
-        if (contentType.Contains("json", StringComparison.OrdinalIgnoreCase))
-        {
-            var body = await response.Content.ReadFromJsonAsync<ResultApi>();
-            body.Should().NotBeNull();
-            body!.Result.Should().BeFalse();
-            body.ErrorMessage.Should().NotBeNullOrWhiteSpace();
-            return;
-        }
-
         contentType.Should()
             .Be("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 

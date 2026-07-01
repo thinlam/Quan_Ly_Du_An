@@ -16,9 +16,6 @@ public record KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery : IRequest<KeHoachT
 internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServiceProvider serviceProvider)
     : IRequestHandler<KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery, KeHoachTrienKhaiHangMucPhieuTrinhPrintDto>
 {
-    private const string NoHangMucMessage =
-        "Kế hoạch triển khai không có hạng mục công việc để xuất phiếu trình";
-
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _keHoachRepo =
         serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
@@ -31,6 +28,8 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
         serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     private readonly IBuocAuthorizationProvider _buocAuth =
         serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationManager _authManager =
+        serviceProvider.GetRequiredService<IAuthorizationManager>();
     private readonly IAuthorizationContext _authContext =
         serviceProvider.GetRequiredService<IAuthorizationContext>();
 
@@ -38,29 +37,21 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
         KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery request,
         CancellationToken cancellationToken = default)
     {
-        var keHoach = await _buocAuth.FilterVisibleChildEntities(
-                _keHoachRepo.GetQueryableSet(),
-                _duAnBuocRepo,
-                _authContext,
-                e => e.BuocId)
-            .AsNoTracking()
-            .Include(e => e.DuAn)
-            .Include(e => e.DanhSachHangMuc)
-            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        var keHoach = await LoadKeHoachForPrintAsync(request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(keHoach, "Không tìm thấy dữ liệu");
 
+        // Cùng cách load với GetExportQuery / GetQuery: Include navigation (không lọc IsDeleted trên child).
         var hangMucs = keHoach.DanhSachHangMuc?.ToList() ?? [];
-        ManagedException.ThrowIf(hangMucs.Count == 0, NoHangMucMessage);
 
-        var rows = await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
-            hangMucs,
-            _giaiDoanRepo,
-            _donViRepo,
-            _userRepo,
-            cancellationToken);
-
-        ManagedException.ThrowIf(rows.Count == 0, NoHangMucMessage);
+        var rows = hangMucs.Count == 0
+            ? []
+            : await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
+                hangMucs,
+                _giaiDoanRepo,
+                _donViRepo,
+                _userRepo,
+                cancellationToken);
 
         return new KeHoachTrienKhaiHangMucPhieuTrinhPrintDto
         {
@@ -72,6 +63,32 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
             DuAnDisplay = BuildDuAnDisplay(keHoach.DuAn?.MaDuAn, keHoach.DuAn?.TenDuAn),
             Rows = rows,
         };
+    }
+
+    private async Task<KeHoachTrienKhaiHangMuc?> LoadKeHoachForPrintAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var keHoach = await _buocAuth.FilterVisibleChildEntities(
+                _keHoachRepo.GetQueryableSet(),
+                _duAnBuocRepo,
+                _authContext,
+                e => e.BuocId)
+            .AsNoTracking()
+            .Include(e => e.DuAn)
+            .Include(e => e.DanhSachHangMuc)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        if (keHoach != null)
+            return keHoach;
+
+        return await _authManager.FilterVisible(
+                _keHoachRepo.GetQueryableSet(),
+                AuthorizationResourceKeys.DuAn)
+            .AsNoTracking()
+            .Include(e => e.DuAn)
+            .Include(e => e.DanhSachHangMuc)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
     private static string BuildDuAnDisplay(string? maDuAn, string? tenDuAn)
