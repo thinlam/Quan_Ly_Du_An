@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
+using QLDA.Application.DanhMucDonVis;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
@@ -70,13 +71,13 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             duAnByTen.Values,
             cancellationToken);
 
-        var donViRows = await _donViRepo.GetQueryableSet()
+        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
+        var donViRows = await DmDonViPhongBanScope
+            .FilterPhongBanThuocDonVi(_donViRepo.GetQueryableSet(), donViId)
             .AsNoTracking()
             .Where(e => e.TenDonVi != null && e.TenDonVi != "")
             .Select(e => new DonViImportLookup(e.Id, e.TenDonVi!))
             .ToListAsync(cancellationToken);
-
-        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var usersInDonVi = await _userRepo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => e.LaDonViChinh == true)

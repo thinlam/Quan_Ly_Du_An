@@ -3,6 +3,7 @@ using BuildingBlocks.Domain.Entities;
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
+using QLDA.Application.DanhMucDonVis;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
@@ -53,7 +54,9 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             request.DuAnId,
             cancellationToken);
 
-        var danhSachDonVi = await _donViRepo.GetQueryableSet()
+        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
+        var danhSachDonVi = await DmDonViPhongBanScope
+            .FilterPhongBanThuocDonVi(_donViRepo.GetQueryableSet(), donViId)
             .AsNoTracking()
             .Where(e => e.TenDonVi != null && e.TenDonVi != "")
             .OrderBy(e => e.TenDonVi)
@@ -62,8 +65,6 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
                 Id = e.Id.ToString(),
             })
             .ToListAsync(cancellationToken);
-
-        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var danhSachCanBo = await _userRepo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => e.LaDonViChinh == true)
