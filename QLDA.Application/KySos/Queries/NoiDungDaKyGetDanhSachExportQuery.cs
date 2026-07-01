@@ -3,17 +3,16 @@ using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DuAns.Services;
 using QLDA.Application.KySos.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
 
 namespace QLDA.Application.KySos.Queries;
 
-public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto)
-    : AggregateRootPagination, IRequest<PaginatedList<TepDinhKemDto>>;
+public record NoiDungDaKyGetDanhSachExportQuery(NoiDungDaKySearchDto SearchDto)
+    : IRequest<List<NoiDungDaKyExportDto>>;
 
-internal class NoiDungDaKyGetDanhSachQueryHandler(
+internal class NoiDungDaKyGetDanhSachExportQueryHandler(
     IServiceProvider serviceProvider)
-    : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>>
+    : IRequestHandler<NoiDungDaKyGetDanhSachExportQuery, List<NoiDungDaKyExportDto>>
 {
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository =
         serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
@@ -24,8 +23,8 @@ internal class NoiDungDaKyGetDanhSachQueryHandler(
     private readonly IDateTimeProvider _clock =
         serviceProvider.GetRequiredService<IDateTimeProvider>();
 
-    public async Task<PaginatedList<TepDinhKemDto>> Handle(
-        NoiDungDaKyGetDanhSachQuery request,
+    public async Task<List<NoiDungDaKyExportDto>> Handle(
+        NoiDungDaKyGetDanhSachExportQuery request,
         CancellationToken cancellationToken = default)
     {
         var search = request.SearchDto;
@@ -36,25 +35,16 @@ internal class NoiDungDaKyGetDanhSachQueryHandler(
             .AsNoTracking()
             .ApplyFiltersAsync(search, users, _duAnResolver, _clock, cancellationToken);
 
-        var dtos = rows.Select(x => new TepDinhKemDto
-        {
-            Id = x.E.Id,
-            ParentId = x.E.ParentId,
-            GroupId = x.E.GroupId,
-            GroupType = x.E.GroupType,
-            Type = x.E.Type,
-            FileName = x.E.FileName,
-            OriginalName = x.E.OriginalName,
-            Path = x.E.Path,
-            Size = x.E.Size,
-            TenNguoiTao = x.User?.HoTen,
-            CreatedBy = x.E.CreatedBy,
-            CreatedAt = x.E.CreatedAt,
-            UpdatedBy = x.E.UpdatedBy,
-            UpdatedAt = x.E.UpdatedAt,
-        }).ToList();
+        ManagedException.ThrowIf(rows.Count == 0, "Không có dữ liệu để xuất");
 
-        return PaginatedList<TepDinhKemDto>.Create(
-            dtos, request.Skip(), request.Take());
+        return rows.Select((row, index) => new NoiDungDaKyExportDto
+        {
+            Stt = index + 1,
+            TenFile = row.E.FileName,
+            TenGoc = row.E.OriginalName,
+            LoaiFile = row.E.Type,
+            DungLuong = NoiDungDaKyQueryableExtensions.FormatDungLuong(row.E.Size),
+            NguoiTao = row.User?.HoTen,
+        }).ToList();
     }
 }

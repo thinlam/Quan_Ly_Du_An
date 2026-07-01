@@ -19,6 +19,8 @@ using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 using QLDA.Application.KhoKhanVuongMacs.DTOs;
 using QLDA.Application.KhoKhanVuongMacs.Queries;
+using QLDA.Application.KySos.DTOs;
+using QLDA.Application.KySos.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
@@ -1185,6 +1187,46 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         {
             TemplatePath = templatePath,
             Items = data,
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType)
+        {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region DanhSachNoiDungDaKy
+
+    /// <summary>
+    /// DanhSachNoiDungDaKy.xlsx — Export danh sách nội dung đã ký (theo filter grid, không phân trang)
+    /// </summary>
+    [HttpGet("api/print/danh-sach-noi-dung-da-ky")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachNoiDungDaKy(
+        [FromQuery] NoiDungDaKySearchDto searchDto,
+        CancellationToken cancellationToken = default)
+    {
+        var fileNameTemplate = "DanhSachNoiDungDaKy.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var data = await Mediator.Send(
+            new NoiDungDaKyGetDanhSachExportQuery(searchDto),
+            cancellationToken);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<NoiDungDaKyExportDto>
+        {
+            TemplatePath = templatePath,
+            Items = data,
+            HiddenColumns = searchDto.HiddenColumns ?? [],
             AutoFitColumnsAndRows = false,
         });
 
