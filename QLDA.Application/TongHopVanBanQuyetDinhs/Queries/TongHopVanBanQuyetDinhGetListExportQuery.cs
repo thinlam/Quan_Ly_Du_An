@@ -8,7 +8,7 @@ using QLDA.Domain.Enums;
 namespace QLDA.Application.TongHopVanBanQuyetDinhs.Queries;
 
 public record TongHopVanBanQuyetDinhGetListExportQuery
-    : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate,
+    : IMayHaveGlobalFilter, IFromDateToDate,
       IRequest<List<TongHopVanBanQuyetDinhExportDto>>
 {
     public Guid? DuAnId { get; set; }
@@ -50,12 +50,9 @@ internal class TongHopVanBanQuyetDinhGetListExportQueryHandler(IServiceProvider 
                 e => e.Ngay.HasValue && e.Ngay.Value <= request.DenNgay!.Value.ToEndOfDayUtc())
             .WhereGlobalFilter(request, e => e.So, e => e.TrichYeu, e => e.DuAn!.TenDuAn);
 
-        var ordered = queryable
+        var rows = await queryable
             .OrderByDescending(e => e.Ngay ?? e.NgayKy)
-            .ThenByDescending(e => e.CreatedAt);
-
-      
-        var rows = await ordered
+            .ThenByDescending(e => e.CreatedAt)
             .Select(e => new
             {
                 TenDuAn = e.DuAn!.TenDuAn,

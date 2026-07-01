@@ -29,7 +29,7 @@ internal static class KeHoachTrienKhaiHangMucImportGiaiDoanHelper {
 
     public static async Task<List<ComboData>> LoadGiaiDoanComboAsync(
         IRepository<DuAn, Guid> duAnRepo,
-        IRepository<DanhMucBuoc, int> danhMucBuocRepo,
+        IRepository<DuAnBuoc, int> duAnBuocRepo,
         IRepository<DanhMucGiaiDoan, int> giaiDoanRepo,
         IQueryable<DuAn> visibleDuAnQuery,
         Guid? duAnId,
@@ -40,64 +40,47 @@ internal static class KeHoachTrienKhaiHangMucImportGiaiDoanHelper {
 
         var duAnRows = await duAnQuery
             .Where(e => e.TenDuAn != null && e.TenDuAn != "")
-            .Select(e => new { e.Id, e.TenDuAn, e.QuyTrinhId })
+            .Select(e => new { e.Id, e.TenDuAn })
             .ToListAsync(cancellationToken);
 
         if (duAnRows.Count == 0)
             return [];
 
-        var quyTrinhIds = duAnRows.Select(e => e.QuyTrinhId).Distinct().ToList();
-
-        var giaiDoanTheoQuyTrinh = await danhMucBuocRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Where(b => quyTrinhIds.Contains(b.QuyTrinhId) && b.GiaiDoanId != null)
-            .Select(b => new { b.QuyTrinhId, b.GiaiDoanId })
-            .Distinct()
-            .ToListAsync(cancellationToken);
-
-        var giaiDoanIds = giaiDoanTheoQuyTrinh
-            .Where(x => x.GiaiDoanId.HasValue)
-            .Select(x => x.GiaiDoanId!.Value)
-            .Distinct()
-            .ToList();
-
-        var giaiDoanTenById = await giaiDoanRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Where(g => giaiDoanIds.Contains(g.Id) && g.Ten != null && g.Ten != "")
-            .Select(g => new { g.Id, g.Ten })
-            .ToDictionaryAsync(g => g.Id, g => g.Ten!, cancellationToken);
+        var duAnIds = duAnRows.Select(e => e.Id).ToList();
+        var phasesByDuAn = await LoadRootPhasesByDuAnAsync(
+            duAnBuocRepo,
+            giaiDoanRepo,
+            duAnIds,
+            cancellationToken);
 
         var combos = new List<ComboData>();
+        var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var duAn in duAnRows.OrderBy(e => e.TenDuAn, StringComparer.OrdinalIgnoreCase)) {
-            var phaseIds = giaiDoanTheoQuyTrinh
-                .Where(x => x.QuyTrinhId == duAn.QuyTrinhId && x.GiaiDoanId.HasValue)
-                .Select(x => x.GiaiDoanId!.Value)
-                .Distinct();
+            if (!phasesByDuAn.TryGetValue(duAn.Id, out var phases))
+                continue;
 
-            foreach (var phaseId in phaseIds.OrderBy(id => id)) {
-                if (!giaiDoanTenById.TryGetValue(phaseId, out var tenGiaiDoan))
+            foreach (var phase in phases) {
+                var name = duAnId.HasValue
+                    ? phase.DisplayName
+                    : FormatDisplayName(phase.DisplayName, duAn.TenDuAn!);
+
+                if (!seenNames.Add(name))
                     continue;
 
                 combos.Add(new ComboData {
-                    Id = phaseId.ToString(),
-                    Name = duAnId.HasValue
-                        ? tenGiaiDoan
-                        : FormatDisplayName(tenGiaiDoan, duAn.TenDuAn!),
+                    Id = phase.GiaiDoanId.ToString(),
+                    Name = name,
                 });
             }
         }
 
-        return combos
-            .GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(g => g.First())
-            .OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return combos;
     }
 
     public static async Task<Dictionary<Guid, Dictionary<string, int>>> LoadGiaiDoanLookupByDuAnAsync(
         IRepository<DuAn, Guid> duAnRepo,
-        IRepository<DanhMucBuoc, int> danhMucBuocRepo,
+        IRepository<DuAnBuoc, int> duAnBuocRepo,
         IRepository<DanhMucGiaiDoan, int> giaiDoanRepo,
         IEnumerable<Guid> duAnIds,
         CancellationToken cancellationToken) {
@@ -105,47 +88,27 @@ internal static class KeHoachTrienKhaiHangMucImportGiaiDoanHelper {
         if (idList.Count == 0)
             return [];
 
-        var duAnRows = await duAnRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Where(e => idList.Contains(e.Id))
-            .Select(e => new { e.Id, e.QuyTrinhId })
-            .ToListAsync(cancellationToken);
-
-        var quyTrinhIds = duAnRows.Select(e => e.QuyTrinhId).Distinct().ToList();
-
-        var giaiDoanTheoQuyTrinh = await danhMucBuocRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Where(b => quyTrinhIds.Contains(b.QuyTrinhId) && b.GiaiDoanId != null)
-            .Select(b => new { b.QuyTrinhId, b.GiaiDoanId })
-            .Distinct()
-            .ToListAsync(cancellationToken);
-
-        var giaiDoanIds = giaiDoanTheoQuyTrinh
-            .Where(x => x.GiaiDoanId.HasValue)
-            .Select(x => x.GiaiDoanId!.Value)
-            .Distinct()
-            .ToList();
-
-        var giaiDoanTenById = await giaiDoanRepo.GetQueryableSet()
-            .AsNoTracking()
-            .Where(g => giaiDoanIds.Contains(g.Id) && g.Ten != null && g.Ten != "")
-            .Select(g => new { g.Id, g.Ten })
-            .ToDictionaryAsync(g => g.Id, g => g.Ten!, cancellationToken);
+        var phasesByDuAn = await LoadRootPhasesByDuAnAsync(
+            duAnBuocRepo,
+            giaiDoanRepo,
+            idList,
+            cancellationToken);
 
         var result = new Dictionary<Guid, Dictionary<string, int>>();
 
-        foreach (var duAn in duAnRows) {
-            var byTen = giaiDoanTheoQuyTrinh
-                .Where(x => x.QuyTrinhId == duAn.QuyTrinhId && x.GiaiDoanId.HasValue)
-                .Select(x => x.GiaiDoanId!.Value)
-                .Distinct()
-                .Where(giaiDoanTenById.ContainsKey)
-                .GroupBy(
-                    id => giaiDoanTenById[id].Trim(),
-                    StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        foreach (var (projectId, phases) in phasesByDuAn) {
+            var byTen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            result[duAn.Id] = byTen;
+            foreach (var phase in phases) {
+                RegisterLookupName(byTen, phase.DisplayName, phase.GiaiDoanId);
+
+                if (!string.IsNullOrWhiteSpace(phase.GiaiDoanTen)
+                    && !string.Equals(phase.GiaiDoanTen, phase.DisplayName, StringComparison.OrdinalIgnoreCase)) {
+                    RegisterLookupName(byTen, phase.GiaiDoanTen, phase.GiaiDoanId);
+                }
+            }
+
+            result[projectId] = byTen;
         }
 
         return result;
@@ -184,4 +147,68 @@ internal static class KeHoachTrienKhaiHangMucImportGiaiDoanHelper {
 
         return true;
     }
+
+    private static async Task<Dictionary<Guid, List<ProjectPhaseLookup>>> LoadRootPhasesByDuAnAsync(
+        IRepository<DuAnBuoc, int> duAnBuocRepo,
+        IRepository<DanhMucGiaiDoan, int> giaiDoanRepo,
+        IReadOnlyCollection<Guid> duAnIds,
+        CancellationToken cancellationToken) {
+        var phaseRows = await duAnBuocRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(dab => duAnIds.Contains(dab.DuAnId))
+            .Where(dab => dab.Buoc != null && dab.Buoc.GiaiDoanId != null)
+            .Where(dab => dab.Buoc!.ParentId == null || dab.Buoc.ParentId == 0)
+            .Select(dab => new {
+                dab.DuAnId,
+                GiaiDoanId = dab.Buoc!.GiaiDoanId!.Value,
+                DisplayName = dab.Buoc.Ten ?? dab.TenBuoc ?? string.Empty,
+                SortOrder = dab.Buoc.Stt ?? int.MaxValue - 1,
+            })
+            .ToListAsync(cancellationToken);
+
+        if (phaseRows.Count == 0)
+            return [];
+
+        var giaiDoanIds = phaseRows
+            .Select(x => x.GiaiDoanId)
+            .Distinct()
+            .ToList();
+
+        var giaiDoanTenById = await giaiDoanRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(g => giaiDoanIds.Contains(g.Id))
+            .Select(g => new { g.Id, g.Ten })
+            .ToDictionaryAsync(g => g.Id, g => g.Ten ?? string.Empty, cancellationToken);
+
+        return phaseRows
+            .Where(x => !string.IsNullOrWhiteSpace(x.DisplayName))
+            .GroupBy(x => x.DuAnId)
+            .ToDictionary(
+                g => g.Key,
+                g => g
+                    .GroupBy(x => x.GiaiDoanId)
+                    .Select(items => items.OrderBy(x => x.SortOrder).ThenBy(x => x.DisplayName).First())
+                    .Select(x => new ProjectPhaseLookup(
+                        x.GiaiDoanId,
+                        (x.DisplayName ?? string.Empty).Trim(),
+                        (giaiDoanTenById.GetValueOrDefault(x.GiaiDoanId) ?? string.Empty).Trim(),
+                        x.SortOrder))
+                    .OrderBy(x => x.SortOrder)
+                    .ThenBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
+    }
+
+    private static void RegisterLookupName(Dictionary<string, int> byTen, string name, int giaiDoanId) {
+        var trimmed = name.Trim();
+        if (trimmed.Length == 0)
+            return;
+
+        byTen.TryAdd(trimmed, giaiDoanId);
+    }
+
+    private sealed record ProjectPhaseLookup(
+        int GiaiDoanId,
+        string DisplayName,
+        string GiaiDoanTen,
+        int SortOrder);
 }

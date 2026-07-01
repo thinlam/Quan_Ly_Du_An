@@ -18,8 +18,8 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
         serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
-    private readonly IRepository<DanhMucBuoc, int> _danhMucBuocRepo =
-        serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
+        serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IRepository<DmDonVi, long> _donViRepo =
         serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<UserMaster, long> _userRepo =
@@ -47,7 +47,7 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
 
         var danhSachGiaiDoan = await KeHoachTrienKhaiHangMucImportGiaiDoanHelper.LoadGiaiDoanComboAsync(
             _duAnRepo,
-            _danhMucBuocRepo,
+            _duAnBuocRepo,
             _giaiDoanRepo,
             visibleDuAn,
             request.DuAnId,
