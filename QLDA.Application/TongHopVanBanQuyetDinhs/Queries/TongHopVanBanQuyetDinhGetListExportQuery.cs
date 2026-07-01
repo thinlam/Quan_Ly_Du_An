@@ -71,8 +71,8 @@ internal class TongHopVanBanQuyetDinhGetListExportQueryHandler(IServiceProvider 
             TenDuAn = row.TenDuAn,
             So = row.So,
             Ngay = row.Ngay,
-            Loai = row.LoaiRaw!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
             TrichYeu = row.TrichYeu,
+            Loai = row.LoaiRaw!.GetDescriptionFromName<EnumLoaiVanBanQuyetDinh>(),
         }).ToList();
     }
 }

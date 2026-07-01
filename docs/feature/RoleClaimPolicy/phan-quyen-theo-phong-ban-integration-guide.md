@@ -1,7 +1,7 @@
 ---
 title: "Tích hợp Hệ thống Phân quyền QLDA theo Phòng ban"
-version: 1.1
-date: 2026-06-29
+version: 1.2
+date: 2026-06-30
 audience: developer
 status: stable
 related_issues: [9591, 9584]
@@ -18,6 +18,12 @@ related_issues: [9591, 9584]
 5. [Bước 1 — Xác định tác nhân](#5-bước-1--xác-định-tác-nhân)
 6. [Bước 2 — Kiểm tra Global Bypass](#6-bước-2--kiểm-tra-global-bypass)
 7. [Bước 3 — Áp dụng Buoc-level filter](#7-bước-3--áp-dụng-buoc-level-filter)
+   - [7.1 Logic filter (`BuildOwnershipFilter`)](#71-logic-filter-buocauthorizationhelperbuildownershipfilter)
+   - [7.2 4 điều kiện match](#72-4-điều-kiện-match)
+   - [7.3 Quy tắc ưu tiên bước vs DuAn (mới từ v1.2)](#73-quy-tắc-ưu-tiên-bước-vs-duan-mới-từ-v12)
+   - [7.4 Ví dụ behavior](#74-ví-dụ-behavior)
+   - [7.5 Sử dụng trong code](#75-sử-dụng-trong-code)
+   - [7.6 Files tham chiếu](#76-files-tham-chiếu)
 8. [Bước 4 — Áp dụng DuAn-level filter](#8-bước-4--áp-dụng-duan-level-filter)
 9. [Bước 5 — Phân quyền CUD theo phòng](#9-bước-5--phân-quyền-cud-theo-phòng)
 10. [Bước 6 — Phân công chuyên viên](#10-bước-6--phân-công-chuyên-viên)
@@ -439,58 +445,112 @@ public const string GroupReadAll = $"{NVTT_BP01},{NVTT_XemDuAn}";
 
 ## 7. Bước 3 — Áp dụng Buoc-level filter
 
-### 7.1. Logic filter (`BuocAuthorizationProvider.cs:57-79`)
+### 7.1. Logic filter (`BuocAuthorizationHelper.BuildOwnershipFilter`)
 
-`FilterVisibleSteps` áp dụng cho `DuAnBuoc`:
+> **Cập nhật từ v1.2** — Ownership filter giờ gồm **4 điều kiện OR**, trong đó điều kiện 4 được mở rộng thêm nhánh bypass (4b) khi bước THIẾU CẢ HAI yếu tố phòng ban.
+
+`FilterVisibleSteps` áp dụng cho `DuAnBuoc` thông qua `BuildOwnershipFilter`:
 
 ```csharp
-public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IUserProvider user)
+public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx)
 {
-    if (HasGlobalBypass(user))
-        return query;
+    if (ctx.HasAdminCatalog) return query;          // PhongKHTC ∪ {QLDA_TatCa, QLDA_QuanTri}
+    if (ctx.HasReadAllBypass) return query;          // NVTT_BP01 ∪ NVTT_XemDuAn (read-only)
 
-    var phongBanId = user.Info.PhongBanID ?? 0;
-    var userId = user.Info.UserID;
-    if (phongBanId == 0 && userId <= 0)
+    if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
         return query.Where(e => false);
 
-    return query.Where(e =>
-        (e.DuAn != null && e.DuAn.LanhDaoPhuTrachId == userId)
-        || e.PhongPhuTrachChinhId == phongBanId
-        || (e.DuAnBuocPhongBanPhoiHops != null
-            && e.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanId))
-        || (e.PhongPhuTrachChinhId == null
-            && (e.DuAnBuocPhongBanPhoiHops == null || !e.DuAnBuocPhongBanPhoiHops.Any())
-            && e.DuAn != null
-            && (e.DuAn.DonViPhuTrachChinhId == phongBanId
-                || e.DuAn.DuAnChiuTrachNhiemXuLys!
-                    .Any(x => x.RightId == phongBanId
-                          && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop))));
+    return query.Where(BuocAuthorizationHelper.BuildOwnershipFilter(ctx.UserId, ctx.PhongBanId));
 }
+```
+
+`BuildOwnershipFilter` biên dịch ra 4 điều kiện OR:
+
+```text
+(1) b.DuAn.LanhDaoPhuTrachId == userId
+OR
+(2) b.CreatedBy == userId.ToString()
+OR
+(3) b.PhongPhuTrachChinhId == phongBanId
+OR
+(4a) b.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanId)
+    AND b.DuAn.DuAnChiuTrachNhiemXuLys.Any(x => x.RightId == phongBanId && x.Loai == DonViPhoiHop)
+OR
+(4b) (b.PhongPhuTrachChinhId == null AND !b.DuAnBuocPhongBanPhoiHops.Any())
+    AND b.DuAn != null
+    AND (b.DuAn.DonViPhuTrachChinhId == phongBanId
+         OR b.DuAn.DuAnChiuTrachNhiemXuLys.Any(x => x.RightId == phongBanId && x.Loai == DonViPhoiHop))
 ```
 
 ### 7.2. 4 điều kiện match
 
-| # | Điều kiện | Ai match |
-|---|-----------|----------|
-| 1 | `e.DuAn.LanhDaoPhuTrachId == userId` | BGĐ / Trưởng phòng được gán vào dự án |
-| 2 | `e.PhongPhuTrachChinhId == phongBanId` | Phòng phụ trách chính của bước |
-| 3 | `e.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanId)` | Phòng phối hợp của bước |
-| 4 | Bước chưa cấu hình + phòng user thuộc dự án | Phòng phối hợp dự án (fallback) |
+| # | Điều kiện | Ai match | Đã có từ |
+|---|-----------|----------|----------|
+| 1 | `b.DuAn.LanhDaoPhuTrachId == userId` | BGĐ / Trưởng phòng được gán vào dự án | v1.0 |
+| 2 | `b.CreatedBy == userId.ToString()` | Người tạo bước | v1.0 |
+| 3 | `b.PhongPhuTrachChinhId == phongBanId` | Phòng phụ trách chính của bước | v1.0 |
+| 4a | `b.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanId)` AND thuộc `DuAn.DuAnChiuTrachNhiemXuLys(DonViPhoiHop)` | Phòng phối hợp của bước (khi bước đã gán PBPH) | v1.0 |
+| 4b | Bước THIẾU CẢ HAI (`PhongPhuTrachChinhId == null` AND PBPH rỗng) AND thuộc `DuAn.DonViPhuTrachChinhId` HOẶC `DuAn.DuAnChiuTrachNhiemXuLys(DonViPhoiHop)` | Phòng phối hợp dự án (fallback khi bước chưa gán) | **v1.2** |
 
-### 7.3. Sử dụng trong code
+### 7.3. Quy tắc ưu tiên bước vs DuAn (mới từ v1.2)
+
+Khi bước đã được gán **một trong hai** yếu tố (`PhongPhuTrachChinhId != null`
+HOẶC PBPH có phòng) → ownership riêng của bước (điều kiện 3, 4a) được ưu
+tiên, KHÔNG fallback theo DuAn.
+
+Chỉ khi bước THIẾU CẢ HAI (`PhongPhuTrachChinhId == null` VÀ PBPH null/rỗng)
+mới kích hoạt bypass 4b — fallback theo scope phòng ban của `DuAn`.
+
+| Trạng thái bước | Match bằng | Kết quả |
+|------------------|-----------|---------|
+| `PhongPhuTrachChinhId != null` HOẶC PBPH có phòng | (3) hoặc (4a) | Theo ownership bước |
+| `PhongPhuTrachChinhId == null` VÀ PBPH rỗng | (4b) — `DuAn.DonViPhuTrachChinhId == phongBanId` | True |
+| `PhongPhuTrachChinhId == null` VÀ PBPH rỗng | (4b) — `DuAn.ChiuTrachNhiemXuLys.Any(RightId==pb, Loai==DonViPhoiHop)` | True |
+| Cả hai đều khớp (1)/(2) | bất kỳ | True |
+
+### 7.4. Ví dụ behavior
+
+**Ví dụ 1 — bước chưa gán, user thuộc DuAn:**
+
+- Bước: `PhongPhuTrachChinhId = null`, PBPH rỗng
+- User: phòng 100, thuộc `DuAn.DonViPhuTrachChinhId = 100`
+- → **True** (khớp 4b — fallback theo DuAn)
+
+**Ví dụ 2 — bước đã gán, user thuộc DuAn nhưng không thuộc bước:**
+
+- Bước: `PhongPhuTrachChinhId = 999`, PBPH rỗng
+- User: phòng 100, thuộc `DuAn.DonViPhuTrachChinhId = 100`
+- → **False** (đã gán `PhongPhuTrachChinhId` → 4b KHÔNG kích hoạt; 3, 4a fail)
+
+**Ví dụ 3 — bước đã có PBPH nhưng không chứa user:**
+
+- Bước: `PhongPhuTrachChinhId = null`, PBPH = `[RightId=777]`
+- User: phòng 100, thuộc `DuAn.DuAnChiuTrachNhiemXuLys(Loai=DonViPhoiHop, RightId=100)`
+- → **False** (PBPH có phòng → 4b không kích hoạt; 4a fail vì phòng 777 ≠ 100)
+
+### 7.5. Sử dụng trong code
 
 ```csharp
-// Cách 1: Gọi trực tiếp
+// Cách 1: Gọi trực tiếp qua IAuthorizationContext
 var query = _duAnBuocRepository.GetQueryableSet();
-var visibleQuery = _buocAuth.FilterVisibleSteps(query, user);
+var visibleQuery = _buocAuth.FilterVisibleSteps(query, authContext);
 var buocList = await visibleQuery.ToListAsync(cancellationToken);
 
-// Cách 2: Qua extension
+// Cách 2: Qua extension (filter child entity)
 var visibleQuery = _duAnBuocRepository.GetQueryableSet()
     .AsNoTracking()
-    .WhereFilterBuocVisibility(_duAnBuocRepository, _buocAuth, user, x => x.BuocId);
+    .WhereFilterBuocVisibility(_duAnBuocRepository, _buocAuth, authContext, x => x.BuocId);
 ```
+
+### 7.6. Files tham chiếu
+
+- `QLDA.Application/Authorization/Providers/BuocAuthorizationProvider.cs`:
+  - `BuildOwnershipFilter` (line ~33) — biên dịch 4 điều kiện.
+  - `BuildPhoiHopInChiuTrachNhiemScopeCondition` (line ~115) — điều kiện 4a + 4b.
+  - `BuildIsNullOrEmpty` (line ~172) — helper `collection == null || !collection.Any()`.
+  - `CheckOwnership` (line ~219) — compile expression, dùng cho `CanExecuteStepAsync` (line ~233).
+- `QLDA.Tests/Unit/BuocAuthorizationProviderChildFilterTests.cs` — 5 unit test mới (v1.2) cho bypass.
+- `QLDA.Tests/Integration/BuocAuthorizationProviderTranslationTests.cs` — 1 EF translation test mới (v1.2).
 
 ---
 
@@ -906,17 +966,22 @@ flowchart TD
     CheckAuth -->|Fail| Deny1[403 Forbidden]
     CheckAuth -->|Pass| GlobalBypass{Global Bypass?}
 
-    GlobalBypass -->|Yes<br/>PhongBanID == PhongKHTCId<br/>HOẶC XemTatCa| ReturnAll[Trả về tất cả]
+    GlobalBypass -->|Yes<br/>HasAdminCatalog ∪ HasReadAllBypass| ReturnAll[Trả về tất cả]
 
     GlobalBypass -->|No| EntityType{Loại entity?}
 
     EntityType -->|DuAn| DuAnFilter[ApplyDuAnVisibility<br/>Filter DonViPhuTrachChinhId<br/>HOẶC DuAnChiuTrachNhiemXuLys]
-    EntityType -->|DuAnBuoc| BuocFilter[FilterVisibleSteps<br/>Check LanhDaoPhuTrachId<br/>HOẶC PhongPhuTrachChinhId<br/>HOẶC DuAnBuocPhongBanPhoiHops]
-    EntityType -->|Child entity<br/>HopDong/GoiThau| ChildFilter[ApplyDuAnChildVisibility<br/>Subquery theo DuAn]
+    EntityType -->|DuAnBuoc| BuocFilter[BuildOwnershipFilter<br/>4 điều kiện OR]
+    EntityType -->|Child entity<br/>HopDong/GoiThau| ChildFilter[ApplyChildBuocIdFilter<br/>Subquery visible buoc ids]
 
     DuAnFilter --> CUDCheck{Loại thao tác?}
     BuocFilter --> CUDCheck
     ChildFilter --> CUDCheck
+
+    BuocFilter -.->|4 điều kiện| Cond1[1. LanhDaoPhuTrachId]
+    BuocFilter -.->|4 điều kiện| Cond2[2. CreatedBy]
+    BuocFilter -.->|4 điều kiện| Cond3[3. PhongPhuTrachChinhId]
+    BuocFilter -.->|4 điều kiện| Cond4[4a. PBPH + ChiuTrachNhiemXuLys<br/>4b. Bypass DuAn nếu thiếu cả 2]
 
     CUDCheck -->|Read| ReturnData[Trả về DTO]
     CUDCheck -->|CUD| RoleCheck{User role?}
@@ -935,6 +1000,7 @@ flowchart TD
     style Deny2 fill:#FFB6C1
     style ReturnAll fill:#87CEEB
     style ReturnData fill:#87CEEB
+    style Cond4 fill:#fff4cc
 ```
 
 ---
@@ -1432,5 +1498,6 @@ public static class PermissionConstants
 - Constants: `QLDA.Domain/Constants/RoleConstants.cs`, `QLDA.Domain/Constants/PermissionConstants.cs`
 
 **Lịch sử thay đổi:**
+- **v1.2 (2026-06-30)** — Mở rộng ownership filter cho `DuAnBuoc` với nhánh bypass 4b: khi bước THIẾU CẢ HAI yếu tố phòng ban (`PhongPhuTrachChinhId == null` AND PBPH rỗng) → fallback theo `DuAn.DonViPhuTrachChinhId` HOẶC `DuAn.DuAnChiuTrachNhiemXuLys(Loai=DonViPhoiHop)`. Bước đã gán một trong hai → giữ ownership riêng (3, 4a), KHÔNG fallback. Thêm 5 unit test + 1 integration test. Section 7 tách thành 7.1-7.6 với rule ưu tiên + ví dụ. Mermaid Flowchart (Section 15) thêm nhánh 4a/4b.
 - **v1.1 (2026-06-29)** — Thêm section 6.5 (`HasAdminCatalog`) + 6.6 (`HasReadAllBypass` cho NVTT_BP01/NVTT_XemDuAn). Gộp actor trùng cơ chế trong section 5.1 (9→8 actor). Bỏ các biến check phòng riêng trong code 5.3, dùng `HasKhtcBypass` thay thế. Gộp `PhongKHTCID` về `PhongKHTCId` trong toàn bộ docs.
 - **v1.0 (2026-06-16)** — Phiên bản đầu tiên.

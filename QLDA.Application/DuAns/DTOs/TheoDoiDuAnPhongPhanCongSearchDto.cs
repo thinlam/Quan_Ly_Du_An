@@ -8,7 +8,7 @@ public record TheoDoiDuAnPhongPhanCongSearchDto : CommonSearchDto
     /// <summary>Đơn vị/phòng phụ trách chính — chỉ lọc khi FE truyền (giống DuAnGetDanhSachQuery)</summary>
     public long? DonViPhuTrachChinhId { get; set; }
 
-    /// <summary>Lãnh đạo phụ trách — logic giống DuAnSearchDto</summary>
+    /// <summary>Lãnh đạo phụ trách — UserMaster.Id. Gửi -1 để lọc dự án chưa gán.</summary>
     public long? LanhDaoPhuTrachId { get; set; }
 
     /// <summary>Filter năm dự án — logic NamDuAn (#9121)</summary>
@@ -25,7 +25,6 @@ public record TheoDoiDuAnPhongPhanCongSearchDto : CommonSearchDto
 
     /// <summary>Mã dự án (contains)</summary>
     public string? MaDuAn { get; set; }
-
 
     /// <summary>Trạng thái dự án — DanhMucTrangThaiDuAn (KHÔNG phải trạng thái phê duyệt)</summary>
     public int? TrangThaiDuAnId { get; set; }

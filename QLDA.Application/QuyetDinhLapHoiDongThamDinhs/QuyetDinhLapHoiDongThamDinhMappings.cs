@@ -11,6 +11,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             So = dto.SoQuyetDinh,
             Ngay = dto.NgayQuyetDinh,
             TrichYeu = dto.TrichYeu,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NoiDung = dto.NoiDung,
             NgayKy = dto.NgayKy,
             NguoiKy = dto.NguoiKy
@@ -24,6 +25,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             Ngay = dto.NgayQuyetDinh,
             TrichYeu = dto.TrichYeu,
             NoiDung = dto.NoiDung,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NgayKy = dto.NgayKy,
             NguoiKy = dto.NguoiKy
         };
@@ -37,6 +39,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             SoQuyetDinh = entity.So,
             NgayQuyetDinh = entity.Ngay,
             TrichYeu = entity.TrichYeu,
+            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
             NoiDung = entity.NoiDung,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy

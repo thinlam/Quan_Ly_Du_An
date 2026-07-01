@@ -1,6 +1,15 @@
-# Issue #9469 — Kết xuất Excel Kế hoạch triển khai hạng mục
+# Issue #9469 — Kế hoạch triển khai hạng mục (Export)
 
 ## Mô tả nghiệp vụ
+
+CB/LĐ có thể **kết xuất** dữ liệu kế hoạch triển khai hạng mục theo hai định dạng:
+
+| Chức năng | Định dạng | Trạng thái |
+|-----------|-----------|------------|
+| Kết xuất kế hoạch triển khai | Excel (`.xlsx`) | ✅ Đã implement |
+| Xuất phiếu trình kế hoạch triển khai | Word (`.docx`) | ✅ Đã implement — xem [phieu-trinh-word-spec.md](phieu-trinh-word-spec.md) |
+
+### Excel
 
 CB/LĐ có thể **kết xuất Excel** danh sách hạng mục công việc trong Kế hoạch triển khai theo mẫu **"mẫu kế hoạch triển khai sau khi đã lập.xlsx"**.
 
@@ -24,4 +33,7 @@ File preview cấu trúc: [`template-preview.json`](template-preview.json)
 
 ## Tài liệu triển khai
 
-- **[report.md](report.md)** — Spec kỹ thuật đầy đủ: API, DTO, query, template, mapping cột, checklist implement.
+| Tài liệu | Nội dung |
+|----------|----------|
+| **[report.md](report.md)** | Spec Excel — API, DTO, query, template, mapping cột (✅ đã implement) |
+| **[phieu-trinh-word-spec.md](phieu-trinh-word-spec.md)** | Spec Word phiếu trình — API, DTO, Word exporter, template, checklist (✅ đã implement) |

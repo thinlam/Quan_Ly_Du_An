@@ -13,6 +13,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappingConfiguration {
             SoQuyetDinh = entity.So, //Số quyết định
             NgayQuyetDinh = entity.Ngay, //Ngày quyết định
             TrichYeu = entity.TrichYeu,
+            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy,
             NoiDung = entity.NoiDung,
@@ -30,6 +31,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappingConfiguration {
             So = model.SoQuyetDinh, //Số quyết định
             Ngay = model.NgayQuyetDinh, //Ngày quyết định
             TrichYeu = model.TrichYeu,
+            CoQuanQuyetDinh = model.CoQuanQuyetDinh,
             NgayKy = model.NgayKy,
             NguoiKy = model.NguoiKy,
             NoiDung = model.NoiDung,
@@ -42,6 +44,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappingConfiguration {
         entity.So = model.SoQuyetDinh; //Số quyết định
         entity.Ngay = model.NgayQuyetDinh; //Ngày quyết định
         entity.TrichYeu = model.TrichYeu;
+        entity.CoQuanQuyetDinh = model.CoQuanQuyetDinh;
         entity.NgayKy = model.NgayKy;
         entity.NguoiKy = model.NguoiKy;
         entity.NoiDung = model.NoiDung;

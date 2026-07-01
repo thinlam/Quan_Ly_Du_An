@@ -19,7 +19,16 @@ public static class BuocAuthorizationHelper
     /// 1. User là Lãnh Đạo Phụ Trách DuAn → được (ALL - không cần check phòng)
     /// 2. User là người tạo bước → được (chỉ bản ghi mình tạo)
     /// 3. Phòng ban chính của Bước = Phòng ban của user → được
-    /// 4. User nằm trong danh sách PBPH của Bước AND user thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
+    /// 4a. User nằm trong danh sách PBPH của Bước AND user thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
+    /// 4b. Bypass theo DuAn khi Bước CHƯA gán phòng ban
+    ///     (PhongPhuTrachChinhId == null HOẶC DuAnBuocPhongBanPhoiHops rỗng):
+    ///     - DuAn.DonViPhuTrachChinhId == phongBanId → được
+    ///     - Phòng ban ∈ DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
+    ///
+    /// Lãnh đạo (1) luôn check ở DuAn — không đổi.
+    /// Bước đã gán đủ một trong hai (PhongBanChinh != null HOẶC có PBPH) → khóa
+    /// theo ownership riêng của bước (4a), KHÔNG fallback DuAn. Chỉ khi THIẾU
+    /// CẢ HAI (PhongBanChinh == null VÀ PBPH rỗng) mới fallback theo DuAn (4b).
     /// </summary>
     public static Expression<Func<DuAnBuoc, bool>> BuildOwnershipFilter(long userId, long? phongBanId)
     {
@@ -89,17 +98,24 @@ public static class BuocAuthorizationHelper
     }
 
     /// <summary>
-    /// Điều kiện 4 mới: User nằm trong DuAnBuocPhongBanPhoiHops AND thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop).
+    /// Điều kiện 4 mới (đã mở rộng): User thuộc scope của Bước hoặc fallback theo DuAn khi Bước chưa gán.
+    ///
+    /// 4a (cũ): b.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanId)
+    ///      AND b.DuAn.DuAnChiuTrachNhiemXuLys.Any(x => x.RightId == phongBanId && x.Loai == DonViPhoiHop)
+    ///
+    /// 4b (mới - bypass khi Bước THIẾU CẢ HAI yếu tố phòng ban):
+    ///      (b.PhongPhuTrachChinhId == null && !b.DuAnBuocPhongBanPhoiHops.Any())
+    ///      AND (
+    ///          b.DuAn.DonViPhuTrachChinhId == phongBanId
+    ///          || b.DuAn.DuAnChiuTrachNhiemXuLys.Any(x => x.RightId == phongBanId && x.Loai == DonViPhoiHop)
+    ///      )
+    ///
+    /// Tổng: 4a OR 4b.
     /// </summary>
     private static BinaryExpression BuildPhoiHopInChiuTrachNhiemScopeCondition(ParameterExpression param, long phongBanId)
     {
-        // b.DuAnBuocPhongBanPhoiHops != null && b.DuAnBuocPhongBanPhoiHops.Any(p => p.RightId == phongBanIdValue)
-        // AND b.DuAn != null
-        // AND b.DuAn.DuAnChiuTrachNhiemXuLys!.Any(x => x.RightId == phongBanIdValue && x.Loai == DonViPhoiHop)
         var phongBanPhoiHops = Expression.Property(param, "DuAnBuocPhongBanPhoiHops");
-        var nullPhoiHopCheck = Expression.NotEqual(phongBanPhoiHops, Expression.Constant(null, typeof(ICollection<DuAnBuocPhongBanPhoiHop>)));
-        var phoiHopMatch = BuildAnyCall(phongBanPhoiHops, phongBanId);
-        var phoiHopCondition = Expression.AndAlso(nullPhoiHopCheck, phoiHopMatch);
+        var phongPhuTrachChinhId = Expression.Property(param, "PhongPhuTrachChinhId");
 
         var duAn = Expression.Property(param, "DuAn");
         var notNullDuAn = Expression.NotEqual(duAn, Expression.Constant(null, typeof(DuAn)));
@@ -107,7 +123,31 @@ public static class BuocAuthorizationHelper
         var chiuTrachNhiem = Expression.Property(duAn, "DuAnChiuTrachNhiemXuLys");
         var chiuTrachNhiemMatch = BuildAnyChiuTrachNhiemWithLoaiCall(chiuTrachNhiem, phongBanId, EChiuTrachNhiemXuLy.DonViPhoiHop);
 
-        return Expression.AndAlso(phoiHopCondition, Expression.AndAlso(notNullDuAn, chiuTrachNhiemMatch));
+        // ---------- 4a: điều kiện cũ ----------
+        // PBPH.Any(p => p.RightId == phongBanId) AND DuAn.ChiuTrachNhiemXuLys.Any(...)
+        var nullPhoiHopCheck = Expression.NotEqual(phongBanPhoiHops, Expression.Constant(null, typeof(ICollection<DuAnBuocPhongBanPhoiHop>)));
+        var phoiHopMatch = BuildAnyCall(phongBanPhoiHops, phongBanId);
+        var phoiHopCondition = Expression.AndAlso(nullPhoiHopCheck, phoiHopMatch);
+        var oldCondition = Expression.AndAlso(phoiHopCondition, Expression.AndAlso(notNullDuAn, chiuTrachNhiemMatch));
+
+        // ---------- 4b: bypass theo DuAn khi Bước chưa gán ----------
+        // "Chưa gán" = PhongPhuTrachChinhId == null VÀ PBPH null/rỗng.
+        // Phải THIẾU CẢ HAI mới fallback (user đã xác nhận) — đã gán một trong hai
+        // thì khóa theo ownership riêng của bước (4a).
+        var phongBanChinhIsNull = Expression.Equal(phongPhuTrachChinhId, Expression.Constant(null, typeof(long?)));
+        var phoiHopIsNullOrEmpty = BuildIsNullOrEmpty(phongBanPhoiHops);
+        var buocChuaGan = Expression.AndAlso(phongBanChinhIsNull, phoiHopIsNullOrEmpty);
+
+        // Bypass scope: DuAn.DonViPhuTrachChinhId == phongBanId HOẶC DuAn.ChiuTrachNhiemXuLys.Any(...)
+        var donViPhuTrachChinhProperty = Expression.Property(duAn, "DonViPhuTrachChinhId");
+        var isDonViPhuTrachChinh = Expression.Equal(donViPhuTrachChinhProperty, Expression.Constant(phongBanId, typeof(long?)));
+        var bypassScope = Expression.OrElse(isDonViPhuTrachChinh, chiuTrachNhiemMatch);
+
+        // Tổng 4b: bước chưa gán AND DuAn != null AND (DonViPhuTrachChinh == pb OR ChiuTrachNhiemXuLys match)
+        var bypassCondition = Expression.AndAlso(buocChuaGan, Expression.AndAlso(notNullDuAn, bypassScope));
+
+        // Tổng 4a OR 4b
+        return Expression.OrElse(oldCondition, bypassCondition);
     }
 
     private static MethodCallExpression BuildAnyCall(Expression collection, long phongBanId)
@@ -124,6 +164,27 @@ public static class BuocAuthorizationHelper
         var lambda = Expression.Lambda(condition, param);
 
         return Expression.Call(anyMethod, collection, lambda);
+    }
+
+    /// <summary>
+    /// Trả về expression: collection == null || !collection.Any().
+    /// Dùng pattern này (không Count() == 0) để EF Core dịch được đồng nhất
+    /// trên các provider; đồng thời null-safe khi collection chưa load.
+    /// </summary>
+    private static BinaryExpression BuildIsNullOrEmpty(Expression collection)
+    {
+        // collection == null
+        var isNull = Expression.Equal(collection, Expression.Constant(null, collection.Type));
+
+        // !collection.Any() — dùng Any không predicate (1-arg overload)
+        var anyNoPredicate = typeof(Enumerable)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == "Any" && m.GetParameters().Length == 1)
+            .MakeGenericMethod(collection.Type.GetGenericArguments()[0]);
+        var anyExists = Expression.Call(anyNoPredicate, collection);
+        var isEmpty = Expression.Not(anyExists);
+
+        return Expression.OrElse(isNull, isEmpty);
     }
 
     private static MethodCallExpression BuildAnyChiuTrachNhiemWithLoaiCall(Expression collection, long phongBanId, EChiuTrachNhiemXuLy loai)

@@ -5,6 +5,7 @@ using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.ToTrinhCoThamDinhs.DTOs;
 using QLDA.Domain.Constants;
+using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
@@ -35,17 +36,16 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
             .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDaDuyet = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
-        var trangThaiChoThamDinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
+        var trangThaiChoThamDinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.ThamDinh);
 
 
         var entity = await _repo.GetQueryableSet().AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
-
+         
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-
         if (entity.TrangThaiId != trangThaiDaDuyet?.Id && entity.TrangThaiId != trangThaiChoThamDinh?.Id)
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");

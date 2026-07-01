@@ -63,6 +63,7 @@ internal class
                 NguoiKy = e.NguoiKy,
                 LoaiVanBanId = e.LoaiVanBanId,
                 NgayVanBan = e.Ngay,
+                CoQuanQuyetDinh =  e.CoQuanQuyetDinh,
                 SoVanBan = e.So,
                 TrichYeu = e.TrichYeu,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()

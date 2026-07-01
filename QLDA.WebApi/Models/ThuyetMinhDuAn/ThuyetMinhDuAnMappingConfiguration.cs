@@ -39,5 +39,11 @@ public static class ThuyetMinhDuAnMappingConfiguration
     public static void Update(this ThuyetMinhDuAn entity, ThuyetMinhDuAnModel model) {
         entity.BuocId = model.BuocId;
         entity.DuAnId = model.DuAnId;
+        entity.So = model.So;
+        entity.NgayTrinh = model.NgayTrinh;
+        entity.TrichYeu = model.TrichYeu;
+        entity.KetQuaThamDinh = model.KetQuaThamDinh;
+        entity.TrangThaiThamDinhId = model.TrangThaiThamDinhId;
+     
     }
 }

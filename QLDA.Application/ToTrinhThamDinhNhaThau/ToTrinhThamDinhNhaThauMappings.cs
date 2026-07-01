@@ -15,7 +15,7 @@ public static class ToTrinhThamDinhNhaThauMappings
         foreach (var item in NhaThaus) {
             entity.NhaThaus.Add(new KetQuaThamDinhNhaThau
             {
-                Id = Guid.NewGuid(),
+                Id = item.Id,
                 ToTrinhId = entity.Id,
                 NhaThauId = item.NhaThauId,
                 GoiThauId = item.GoiThauId,
