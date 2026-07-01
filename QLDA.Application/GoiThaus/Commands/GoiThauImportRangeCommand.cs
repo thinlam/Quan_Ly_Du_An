@@ -1,43 +1,75 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.GoiThaus.Commands;
 
-public record GoiThauImportRangeCommand(List<GoiThauImportDto> Imports) : IRequest;
+public record GoiThauImportRangeCommand(List<GoiThauImportDto> Imports) : IRequest<GoiThauImportResultDto> {
+    public Guid DuAnId { get; init; }
+    public int BuocId { get; init; }
+}
 
-public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
-    : IRequestHandler<GoiThauImportRangeCommand> {
+internal class GoiThauImportRangeCommandHandler(IServiceProvider serviceProvider)
+    : IRequestHandler<GoiThauImportRangeCommand, GoiThauImportResultDto> {
     private readonly IRepository<GoiThau, Guid> _goiThau =
-        ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
+        serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
     private readonly IRepository<KeHoachLuaChonNhaThau, Guid> _keHoach =
-        ServiceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
+        serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
     private readonly IRepository<DanhMucLoaiHopDong, int> _loaiHopDong =
-        ServiceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
+        serviceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
     private readonly IRepository<DanhMucHinhThucLuaChonNhaThau, int> _hinhThuc =
-        ServiceProvider.GetRequiredService<IRepository<DanhMucHinhThucLuaChonNhaThau, int>>();
+        serviceProvider.GetRequiredService<IRepository<DanhMucHinhThucLuaChonNhaThau, int>>();
     private readonly IRepository<DanhMucPhuongThucLuaChonNhaThau, int> _phuongThuc =
-        ServiceProvider.GetRequiredService<IRepository<DanhMucPhuongThucLuaChonNhaThau, int>>();
+        serviceProvider.GetRequiredService<IRepository<DanhMucPhuongThucLuaChonNhaThau, int>>();
     private readonly IRepository<DanhMucNguonVon, int> _nguonVon =
-        ServiceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
+        serviceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
+    private readonly IBuocAuthorizationProvider _auth =
+        serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+    private readonly IAuthorizationContext _authContext =
+        serviceProvider.GetRequiredService<IAuthorizationContext>();
 
-    public async Task Handle(GoiThauImportRangeCommand request, CancellationToken cancellationToken) {
-        var keHoachNames = request.Imports
+    public async Task<GoiThauImportResultDto> Handle(
+        GoiThauImportRangeCommand request,
+        CancellationToken cancellationToken) {
+        var result = new GoiThauImportResultDto();
+        var rows = request.Imports.Where(row => !IsEmptyRow(row)).ToList();
+
+        if (rows.Count == 0)
+            return result;
+
+        var importTrongDuAn = request.DuAnId != Guid.Empty;
+
+        if (importTrongDuAn && request.BuocId <= 0) {
+            result.Errors.Add("Thiếu buocId");
+            result.ErrorCount = 1;
+            return result;
+        }
+
+        if (importTrongDuAn)
+            await _auth.EnsureCanExecuteStepAsync(request.BuocId, _authContext, cancellationToken);
+
+        var keHoachNames = rows
             .Where(e => !string.IsNullOrWhiteSpace(e.TenKeHoachLuaChonNhaThau))
             .Select(e => e.TenKeHoachLuaChonNhaThau!)
             .Distinct()
             .ToList();
 
-        var keHoachs = await _keHoach.GetQueryableSet()
-            .Where(e => keHoachNames.Contains(e.Ten!))
+        var keHoachQuery = _keHoach.GetQueryableSet()
+            .Where(e => keHoachNames.Contains(e.Ten!));
+
+        if (importTrongDuAn)
+            keHoachQuery = keHoachQuery.Where(e => e.DuAnId == request.DuAnId);
+
+        var keHoachs = await keHoachQuery
             .Select(e => new { e.Ten, e.Id, e.DuAnId })
             .ToListAsync(cancellationToken);
         var keHoachDict = keHoachs
             .DistinctBy(e => e.Ten)
             .ToDictionary(g => g.Ten!, g => new { g.Id, g.DuAnId });
 
-        var loaiHopDongNames = request.Imports
+        var loaiHopDongNames = rows
             .Where(e => !string.IsNullOrWhiteSpace(e.TenLoaiHopDong))
             .Select(e => e.TenLoaiHopDong!)
             .Distinct()
@@ -49,7 +81,7 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
             .ToListAsync(cancellationToken);
         var loaiHopDongDict = loaiHopDongs.DistinctBy(e => e.Ten).ToDictionary(g => g.Ten!, g => g.Id);
 
-        var hinhThucNames = request.Imports
+        var hinhThucNames = rows
             .Where(e => !string.IsNullOrWhiteSpace(e.TenHinhThucLuaChonNhaThau))
             .Select(e => e.TenHinhThucLuaChonNhaThau!)
             .Distinct()
@@ -61,7 +93,7 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
             .ToListAsync(cancellationToken);
         var hinhThucDict = hinhThucs.DistinctBy(e => e.Ten).ToDictionary(g => g.Ten!, g => g.Id);
 
-        var phuongThucNames = request.Imports
+        var phuongThucNames = rows
             .Where(e => !string.IsNullOrWhiteSpace(e.TenPhuongThucLuaChonNhaThau))
             .Select(e => e.TenPhuongThucLuaChonNhaThau!)
             .Distinct()
@@ -73,7 +105,7 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
             .ToListAsync(cancellationToken);
         var phuongThucDict = phuongThucs.DistinctBy(e => e.Ten).ToDictionary(g => g.Ten!, g => g.Id);
 
-        var nguonVonNames = request.Imports
+        var nguonVonNames = rows
             .Where(e => !string.IsNullOrWhiteSpace(e.TenNguonVon))
             .Select(e => e.TenNguonVon!)
             .Distinct()
@@ -85,9 +117,29 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
             .ToListAsync(cancellationToken);
         var nguonVonDict = nguonVons.DistinctBy(e => e.Ten).ToDictionary(g => g.Ten!, g => g.Id);
 
-        foreach (var item in request.Imports) {
-            if (!keHoachDict.TryGetValue(item.TenKeHoachLuaChonNhaThau ?? string.Empty, out var keHoachInfo))
+        for (var i = 0; i < rows.Count; i++) {
+            var item = rows[i];
+            var rowLabel = $"dòng {i + 1}";
+
+            if (string.IsNullOrWhiteSpace(item.TenKeHoachLuaChonNhaThau)) {
+                result.Errors.Add($"{rowLabel}: Kế hoạch lựa chọn nhà thầu không được để trống");
+                result.ErrorCount++;
                 continue;
+            }
+
+            if (!keHoachDict.TryGetValue(item.TenKeHoachLuaChonNhaThau, out var keHoachInfo)) {
+                result.Errors.Add(
+                    $"{rowLabel}: Không tìm thấy kế hoạch lựa chọn nhà thầu '{item.TenKeHoachLuaChonNhaThau}'");
+                result.ErrorCount++;
+                continue;
+            }
+
+            if (importTrongDuAn && keHoachInfo.DuAnId != request.DuAnId) {
+                result.Errors.Add(
+                    $"{rowLabel}: Kế hoạch '{item.TenKeHoachLuaChonNhaThau}' không thuộc dự án hiện tại");
+                result.ErrorCount++;
+                continue;
+            }
 
             int? loaiHopDongId = !string.IsNullOrWhiteSpace(item.TenLoaiHopDong)
                 && loaiHopDongDict.TryGetValue(item.TenLoaiHopDong, out var loaiHopDongIdVal)
@@ -111,7 +163,8 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
 
             await _goiThau.AddAsync(new GoiThau {
                 Id = Guid.NewGuid(),
-                DuAnId = keHoachInfo.DuAnId,
+                DuAnId = importTrongDuAn ? request.DuAnId : keHoachInfo.DuAnId,
+                BuocId = request.BuocId > 0 ? request.BuocId : null,
                 KeHoachLuaChonNhaThauId = keHoachInfo.Id,
                 Ten = item.Ten,
                 GiaTri = item.GiaTri,
@@ -124,10 +177,19 @@ public class GoiThauImportRangeCommandHandler(IServiceProvider ServiceProvider)
                 ThoiGianThucHienGoiThau = item.ThoiGianThucHienGoiThau,
                 TomTatCongViecChinhGoiThau = item.TomTatCongViecChinhGoiThau,
                 TuyChonMuaThem = item.TuyChonMuaThem,
-                DaDuyet = false
+                DaDuyet = true
             }, cancellationToken);
+
+            result.SuccessCount++;
         }
 
-        await _goiThau.UnitOfWork.SaveChangesAsync(cancellationToken);
+        if (result.SuccessCount > 0)
+            await _goiThau.UnitOfWork.SaveChangesAsync(cancellationToken);
+
+        return result;
     }
+
+    private static bool IsEmptyRow(GoiThauImportDto row) =>
+        string.IsNullOrWhiteSpace(row.TenKeHoachLuaChonNhaThau)
+        && string.IsNullOrWhiteSpace(row.Ten);
 }
