@@ -592,8 +592,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         {
             DuAnId = searchModel.DuAnId,
             BuocId = searchModel.BuocId,
-            PageIndex = searchModel.PageIndex,
-            PageSize = searchModel.PageSize,
             GlobalFilter = searchModel.GlobalFilter,
             Loai = searchModel.Loai,
             TrichYeu = searchModel.TrichYeu,

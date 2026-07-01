@@ -22,8 +22,8 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
-    private readonly IRepository<DanhMucBuoc, int> _danhMucBuocRepo =
-        serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
+        serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IRepository<DmDonVi, long> _donViRepo =
         serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<UserMaster, long> _userRepo =
@@ -65,7 +65,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
 
         var giaiDoanByDuAn = await KeHoachTrienKhaiHangMucImportGiaiDoanHelper.LoadGiaiDoanLookupByDuAnAsync(
             _duAnRepo,
-            _danhMucBuocRepo,
+            _duAnBuocRepo,
             _giaiDoanRepo,
             duAnByTen.Values,
             cancellationToken);
@@ -183,6 +183,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             return result;
 
         var groups = validRows.GroupBy(r => (r.DuAnId, r.BuocId));
+        var createdParents = new List<KeHoachTrienKhaiHangMuc>();
 
         foreach (var group in groups) {
             await _auth.EnsureCanExecuteStepAsync(group.Key.BuocId, _authContext, cancellationToken);
@@ -213,10 +214,14 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             }
 
             await _repo.AddAsync(parent, cancellationToken);
+            createdParents.Add(parent);
         }
 
         await _repo.UnitOfWork.SaveChangesAsync(cancellationToken);
         result.SuccessCount = validRows.Count;
+        result.Ids = createdParents.Select(p => p.Id).ToList();
+        result.Id = result.Ids.Count == 1 ? result.Ids[0] : null;
+        result.Message = "Import thành công";
         return result;
     }
 

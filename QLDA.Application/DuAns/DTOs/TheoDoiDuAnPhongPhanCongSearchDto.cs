@@ -5,7 +5,7 @@ namespace QLDA.Application.DuAns.DTOs;
 
 public record TheoDoiDuAnPhongPhanCongSearchDto : CommonSearchDto
 {
-    /// <summary>Đơn vị/phòng phụ trách chính — fallback phòng user khi không gửi filter khác</summary>
+    /// <summary>Đơn vị/phòng phụ trách chính — chỉ lọc khi FE truyền (giống DuAnGetDanhSachQuery)</summary>
     public long? DonViPhuTrachChinhId { get; set; }
 
     /// <summary>Lãnh đạo phụ trách — logic giống DuAnSearchDto</summary>
