@@ -7,4 +7,5 @@ public class NguoiDungMacDinhTheoPhong : Entity<Guid>, IAggregateRoot
 {
     public long PhongBanId { get; set; }
     public long NguoiDungId { get; set; }
+
 }

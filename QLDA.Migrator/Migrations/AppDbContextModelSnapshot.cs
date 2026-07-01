@@ -7035,18 +7035,9 @@ namespace QLDA.Migrator.Migrations
                     b.Property<int?>("Level")
                         .HasColumnType("int");
 
-                    b.Property<long?>("LevelId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("MaChucNang")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
-
-                    b.Property<string>("NguoiDungId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("NguoiDungMacDinh")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("SuDung")
                         .HasColumnType("bit");
@@ -7061,6 +7052,25 @@ namespace QLDA.Migrator.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PhanQuyenChucNang", (string)null);
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.PhanQuyenChucNangCapDo", b =>
+                {
+                    b.Property<int>("QuyenId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("LevelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("NguoiDungChiDinhs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("NguoiDungMacDinh")
+                        .HasColumnType("bit");
+
+                    b.HasKey("QuyenId", "LevelId");
+
+                    b.ToTable("PhanQuyenChucNangCapDo", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.PheDuyet", b =>
@@ -9768,6 +9778,17 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("TrangThai");
                 });
 
+            modelBuilder.Entity("QLDA.Domain.Entities.PhanQuyenChucNangCapDo", b =>
+                {
+                    b.HasOne("QLDA.Domain.Entities.PhanQuyenChucNang", "Quyen")
+                        .WithMany("DanhSachChiTiet")
+                        .HasForeignKey("QuyenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quyen");
+                });
+
             modelBuilder.Entity("QLDA.Domain.Entities.PheDuyet", b =>
                 {
                     b.HasOne("QLDA.Domain.Entities.DuAnBuoc", "Buoc")
@@ -10666,6 +10687,11 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("NghiemThuPhuLucHopDongs");
 
                     b.Navigation("ThanhToan");
+                });
+
+            modelBuilder.Entity("QLDA.Domain.Entities.PhanQuyenChucNang", b =>
+                {
+                    b.Navigation("DanhSachChiTiet");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.PhuLucHopDong", b =>

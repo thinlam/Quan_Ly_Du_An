@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QLDA.Application.Authorization;
@@ -26,11 +27,13 @@ internal class
     PaginatedList<PhanQuyenChucNangDto>>
 {
     private readonly IRepository<PhanQuyenChucNang, int> _PhanQuyenChucNang = serviceProvider.GetRequiredService<IRepository<PhanQuyenChucNang, int>>();
+    private readonly IRepository<NguoiDungMacDinhTheoPhong, Guid> _PhongBanNguoiDungMacDinh = serviceProvider.GetRequiredService<IRepository<NguoiDungMacDinhTheoPhong, Guid>>();
+    private readonly IRepository<UserMaster, long> _users = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
 
     public async Task<PaginatedList<PhanQuyenChucNangDto>> Handle(PhanQuyenChucNangDanhSachQuery request,
         CancellationToken cancellationToken = default)
     {
-        var queryable = _PhanQuyenChucNang.GetQueryableSet()
+        var queryable = _PhanQuyenChucNang.GetQueryableSet().Include(x=>x.DanhSachChiTiet)
             .WhereIf(request.SuDung, e => e.SuDung == request.SuDung)
             .WhereIf(!string.IsNullOrEmpty(request.MaChucNang), e => e.MaChucNang == request.MaChucNang)
             .WhereIf(!string.IsNullOrEmpty(request.ChucNang), e => e.ChucNang == request.ChucNang)
@@ -43,15 +46,21 @@ internal class
            .Select(e => new PhanQuyenChucNangDto
            {
                Id = e.Id,
-               //  TenNhomQuyen = e.Quyen.NhomQuyen,
-               //  TenQuyen = e.Quyen.Ten,
-               Level = e.Level,
-               LevelId = e.LevelId,
                MaChucNang = e.MaChucNang,
+               Level = e.Level,
                ChucNang = e.ChucNang,
                SuDung = e.SuDung,
-               NguoiDungMacDinh = e.NguoiDungMacDinh,
-           });
+               DanhSachChiTiet = e.DanhSachChiTiet.Select(x => new PhanQuyenChucNangCapDoDto() { 
+                    LevelId = x.LevelId,
+                    NguoiDungMacDinh = x.NguoiDungMacDinh,
+                    TenNguoiDungMacDinh =  e.Level == PhanQuyenChucNangLevel.PhongBan &&
+                    x.NguoiDungMacDinh == true
+                    ? ( from md in _PhongBanNguoiDungMacDinh.GetQueryableSet()
+                        join u in _users.GetQueryableSet()  on md.NguoiDungId equals u.UserPortalId
+                        where md.PhongBanId == x.LevelId
+                        select u.HoTen    
+                    ).FirstOrDefault() : null }).ToList()
+            });
 
             var pagedResult = await query.PaginatedListAsync(
                 request.Skip(),

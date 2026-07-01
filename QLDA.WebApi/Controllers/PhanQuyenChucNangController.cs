@@ -21,12 +21,12 @@ public class PhanQuyenChucNangController : AggregateRootController
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [ProducesResponseType<ResultApi<PhanQuyenChucNang>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<PhanQuyenChucNangDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(int id)
     {
-        var entity = await Mediator.Send(new PhanQuyenChucNangGetQuery()
+        var entity = await Mediator.Send(new PhanQuyenChucNangGetById()
         {
             Id = id,
             ThrowIfNull = true,
@@ -55,13 +55,11 @@ public class PhanQuyenChucNangController : AggregateRootController
         var entity = new PhanQuyenChucNang()
         {
             Level = (PhanQuyenChucNangLevel?)model.Level,// phương thức phòng ban/vai trò/ng dùng
-           LevelId = model.LevelId, // phòng ban Id, NguoiDungId, 
             ChucNang = model.ChucNang,
             MaChucNang = model.MaChucNang,
-            NguoiDungId = model.DanhSachNguoiDung,  // đối tượng nếu là ng dùng mặc định( có thể  có nhiều, 1 thì set cho levelId)
             SuDung = model.SuDung,
-            NguoiDungMacDinh = model.NguoiDungMacDinh,// có phải là ng dùng mặc định
-         //   QuyenId = model.QuyenId,
+            DanhSachChiTiet = model.DanhSachChiTiet?.Select(x=> x.ToEntity(model.Id??0)).ToList(),
+          
         };
         var id = await Mediator.Send(new PhanQuyenChucNangInsertUpdateCommand(entity));
         return ResultApi.Ok(id);
@@ -77,19 +75,8 @@ public class PhanQuyenChucNangController : AggregateRootController
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = new PhanQuyenChucNang()
-        {
-            Id = model.Id??0,
-            Level = (PhanQuyenChucNangLevel?)model.Level,// phương thức phòng ban/vai trò/ng dùng
-            LevelId = model.LevelId, // phòng ban Id, NguoiDungId, 
-            ChucNang = model.ChucNang,
-            MaChucNang = model.MaChucNang,
-            NguoiDungId = model.DanhSachNguoiDung,  // đối tượng nếu là ng dùng mặc định( có thể  có nhiều, 1 thì set cho levelId)
-            SuDung = model.SuDung,
-            NguoiDungMacDinh = model.NguoiDungMacDinh,// có phải là ng dùng mặc định
-          //  QuyenId = model.QuyenId,//chức năng : tạo mới/sửa/xóa
-        };
-
+        var entity = await Mediator.Send(new PhanQuyenChucNangGetQuery { Id = model.Id??0, ThrowIfNull = true });
+        entity.Update(model);
         var result = await Mediator.Send(new PhanQuyenChucNangInsertUpdateCommand(entity), cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
