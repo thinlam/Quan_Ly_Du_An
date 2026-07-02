@@ -53,8 +53,11 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             request.DuAnId,
             cancellationToken);
 
+        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var danhSachDonVi = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
+            .Where(e => e.DonViCapChaId != null)
+            .WhereIf(donViId > 0, e => e.DonViCapChaId == donViId)
             .Where(e => e.TenDonVi != null && e.TenDonVi != "")
             .OrderBy(e => e.TenDonVi)
             .Select(e => new ComboData {
@@ -62,8 +65,6 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
                 Id = e.Id.ToString(),
             })
             .ToListAsync(cancellationToken);
-
-        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var danhSachCanBo = await _userRepo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => e.LaDonViChinh == true)

@@ -70,13 +70,14 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             duAnByTen.Values,
             cancellationToken);
 
+        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var donViRows = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
+            .Where(e => e.DonViCapChaId != null)
+            .WhereIf(donViId > 0, e => e.DonViCapChaId == donViId)
             .Where(e => e.TenDonVi != null && e.TenDonVi != "")
             .Select(e => new DonViImportLookup(e.Id, e.TenDonVi!))
             .ToListAsync(cancellationToken);
-
-        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var usersInDonVi = await _userRepo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => e.LaDonViChinh == true)
