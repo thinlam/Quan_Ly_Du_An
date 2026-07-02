@@ -37,6 +37,17 @@ public class KetQuaTrungThau : Entity<Guid>, IAggregateRoot, ITienDo, IQuyetDinh
     public DateTimeOffset? NgayQuyetDinh { get; set; }
     #endregion
 
+    #region Issue #9643
+    /// <summary>
+    /// Loại hợp đồng — liên kết DanhMucLoaiHopDong (đã có sẵn)
+    /// </summary>
+    public int? LoaiHopDongId { get; set; }
+    /// <summary>
+    /// Hình thức hợp đồng — text tự do nhập tay
+    /// </summary>
+    public string? HinhThucHopDong { get; set; }
+    #endregion
+
     #region Navigation Properties
 
     public GoiThau? GoiThau { get; set; }
@@ -44,5 +55,6 @@ public class KetQuaTrungThau : Entity<Guid>, IAggregateRoot, ITienDo, IQuyetDinh
     public DuAnBuoc? DuAnBuoc { get; set; }
     public DanhMucNhaThau? DonViTrungThau { get; set; }
     public DanhMucLoaiGoiThau? LoaiGoiThau { get; set; }
+    public DanhMucLoaiHopDong? LoaiHopDong { get; set; }
     #endregion
 }

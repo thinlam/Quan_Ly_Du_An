@@ -31,6 +31,15 @@ public class KetQuaTrungThauConfiguration : AggregateRootConfiguration<KetQuaTru
                 fromDb => fromDb
             );
 
+        // Issue #9643
+        builder.Property(e => e.HinhThucHopDong)
+            .HasMaxLength(500);
+
+        builder.HasOne(e => e.LoaiHopDong)
+            .WithMany()
+            .HasForeignKey(e => e.LoaiHopDongId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
         // Enforce 1-1 relationship: only one non-deleted KetQuaTrungThau per GoiThau
         builder.HasIndex(e => e.GoiThauId)
             .IsUnique()
