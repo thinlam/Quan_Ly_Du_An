@@ -75,6 +75,8 @@ internal class
                 SoQuyetDinh = e.SoQuyetDinh,
                 NgayQuyetDinh = e.NgayQuyetDinh,
                 SoNgayThucHienHopDong = e.SoNgayThucHienHopDong,
+                LoaiHopDongId = e.LoaiHopDongId,
+                HinhThucHopDong = e.HinhThucHopDong,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

@@ -30,5 +30,16 @@ public class KetQuaTrungThauUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto, ITr
     /// </summary>
     public DateTimeOffset? NgayQuyetDinh { get; set; }
     #endregion
+
+    #region Issue #9643
+    /// <summary>
+    /// Loại hợp đồng
+    /// </summary>
+    public int? LoaiHopDongId { get; set; }
+    /// <summary>
+    /// Hình thức hợp đồng
+    /// </summary>
+    public string? HinhThucHopDong { get; set; }
+    #endregion
     public List<TepDinhKemInsertOrUpdateDto>? DanhSachTepDinhKem { get; set; }
 }
