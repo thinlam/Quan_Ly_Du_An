@@ -36,11 +36,11 @@ internal class KeHoachTrienKhaiHangMucGetQueryHandler(IServiceProvider servicePr
             TenTrangThai    = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
             TrangThaiId = e.TrangThaiId,    
             DuAnId = e.DuAnId,
-            TenDuAn = e.DuAn.TenDuAn,    
+            TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn :string.Empty,    
             NgayTrinh = e.NgayToTrinh,    
             So = e.So,    
             TrichYeu = e.TrichYeu,    
-            HangMucTrienKhai = e.DanhSachHangMuc.Select(h => new HangMucTrienKhaiDto
+            HangMucTrienKhai = e.DanhSachHangMuc !=null? e.DanhSachHangMuc.Where(x=> !x.IsDeleted).Select(h => new HangMucTrienKhaiDto
             {
                 Id = h.Id,
                 TenHangMuc = h.TenHangMuc,
@@ -53,7 +53,7 @@ internal class KeHoachTrienKhaiHangMucGetQueryHandler(IServiceProvider servicePr
                 CanBoPhoiHopIds = h.CanBoPhoiHopIds,
                 DonViChuTriId = h.DonViChuTriId,
                 DonViPhoiHops = h.DonViPhoiHopIds,
-            }).ToList(),
+            }).ToList() : null ,
             DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

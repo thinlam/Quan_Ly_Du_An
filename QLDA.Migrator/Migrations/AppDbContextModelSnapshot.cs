@@ -5792,6 +5792,12 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("MaTrangThaiTiepTheo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("RecipientRoleId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("RecipientRoleLevel")
+                        .HasColumnType("int");
+
                     b.Property<long?>("RoleId")
                         .HasColumnType("bigint");
 

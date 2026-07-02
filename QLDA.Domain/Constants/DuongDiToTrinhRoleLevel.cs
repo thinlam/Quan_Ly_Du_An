@@ -7,7 +7,7 @@ public enum DuongDiToTrinhRoleLevel
 {
     [Description("Bất kỳ")]
     BatKy = 0,
-    [Description("Phòng ban chủ trì")]
+    [Description("Phòng ban chủ trì")] // phòng ban chủ trì tùy theo cấu hình tờ trình. maybe chủ trì dự án/bước hiện tại
     PhongBanChuTri = 1,
 
     [Description("Người dùng chỉ định")]

@@ -38,7 +38,7 @@ internal class NguoiDungMacDinhTheoPhongGetDanhSachQueryHandler(IServiceProvider
         var query = from cfg in queryable
             join pb in dmDonVi on cfg.PhongBanId equals pb.Id into pbJoin
             from pb in pbJoin.DefaultIfEmpty()
-            join nd in userMaster on cfg.NguoiDungId equals nd.Id into ndJoin
+            join nd in userMaster on cfg.NguoiDungId equals nd.UserPortalId into ndJoin
             from nd in ndJoin.DefaultIfEmpty()
             where string.IsNullOrEmpty(keyword)
                   || (pb.TenDonVi != null && pb.TenDonVi.Contains(keyword))

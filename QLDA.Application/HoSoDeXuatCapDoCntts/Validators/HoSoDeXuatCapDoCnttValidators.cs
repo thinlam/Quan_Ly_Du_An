@@ -25,14 +25,11 @@ public class HoSoDeXuatCapDoCnttUpdateValidator : AbstractValidator<HoSoDeXuatCa
 }
 
 public class HoSoDeXuatCapDoCnttThayDoiTrangThaiValidator 
-    : AbstractValidator<HoSoDeXuatCapDoCnttThayDoiTrangThaiCommand> {
+    : AbstractValidator<HoSoDeXuatCapDoCnttPheDuyetCommand> {
     
     public HoSoDeXuatCapDoCnttThayDoiTrangThaiValidator() {
-        RuleFor(x => x.Dto.HoSoId).NotEmpty().WithMessage("Id hồ sơ không được để trống");
-        RuleFor(x => x.Dto.TrangThaiId).NotEmpty().WithMessage("Trạng thái không được để trống");
-        RuleFor(x => x.Dto.NoiDung)
-            .NotEmpty().When(x => IsTuChoi(x.Dto.TrangThaiId))
-            .WithMessage("Nội dung từ chối không được để trống");
+        RuleFor(x => x.Id).NotEmpty().WithMessage("Id hồ sơ không được để trống");
+        RuleFor(x => x.TrangThaiTiepTheo).NotEmpty().WithMessage("Trạng thái không được để trống");
     }
 
     private static bool IsTuChoi(int trangThaiId) {

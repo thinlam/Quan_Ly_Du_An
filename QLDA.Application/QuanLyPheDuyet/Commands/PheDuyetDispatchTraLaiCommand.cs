@@ -42,7 +42,6 @@ internal class PheDuyetDispatchTraLaiCommandHandler : IRequestHandler<PheDuyetDi
 
         IRequest<int> command = request.Type switch {
             PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanTraLaiCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.HoSoDeXuatCapDoCntt => new HoSoDeXuatCapDoCnttTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.BaoCaoKetQuaKhaoSat => new BaoCaoKetQuaKhaoSatTraLaiCommand(request.Id, request.NoiDung),

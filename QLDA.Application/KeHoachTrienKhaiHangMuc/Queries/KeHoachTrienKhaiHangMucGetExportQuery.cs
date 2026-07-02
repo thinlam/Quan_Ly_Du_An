@@ -100,7 +100,7 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
                 .OrderByDescending(e => e.NgayToTrinh)
                 .ThenByDescending(e => e.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
-            return keHoach?.DanhSachHangMuc?.ToList() ?? [];
+            return keHoach?.DanhSachHangMuc?.Where(x => !x.IsDeleted).ToList() ?? [];
         }
 
         var keHoachs = await queryable

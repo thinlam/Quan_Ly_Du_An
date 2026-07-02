@@ -1,18 +1,22 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
-using QLDA.Application.HoSoDeXuatCapDoCntts.Queries;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
+using QLDA.Application.HoSoDeXuatCapDoCntts.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
+using QLDA.Application.ToTrinhCoThamDinhs.Commands;
+using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models;
 using QLDA.WebApi.Models.HoSoDeXuatCapDoCntts;
+using QLDA.WebApi.Models.QuanLyPheDuyet;
+using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Hồ sơ đề xuất cấp độ CNTT")]
-[Route("api/ho-so-de-xuat-cap-do-cntt")]
-[Authorize] 
+[Route("api/ho-so-de-xuat-cap-do-cntt")] 
+[Authorize]
 public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootController(sp) {
 
     [HttpGet("{id}")]
@@ -35,7 +39,7 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Create([FromBody] HoSoDeXuatCapDoCnttModel model) {
         var insertDto = model.ToInsertDto();
         var entity = await Mediator.Send(new HoSoDeXuatCapDoCnttInsertCommand(insertDto));
-        
+
         // Lưu file đính kèm
         if (model.DanhSachTepDinhKem?.Count > 0) {
             await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
@@ -43,7 +47,7 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
                 Entities = model.GetDanhSachTepDinhKem(entity.Id)
             });
         }
-        
+
         return ResultApi.Ok(entity.Id);
     }
 
@@ -51,7 +55,7 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Update([FromBody] HoSoDeXuatCapDoCnttModel model) {
         var updateModel = model.ToUpdateModel();
         var entity = await Mediator.Send(new HoSoDeXuatCapDoCnttUpdateCommand(updateModel));
-        
+
         // Cập nhật file đính kèm
         if (model.DanhSachTepDinhKem?.Count > 0) {
             await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
@@ -59,7 +63,7 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
                 Entities = model.GetDanhSachTepDinhKem(entity.Id)
             });
         }
-        
+
         return ResultApi.Ok(entity.Id);
     }
 
@@ -69,11 +73,15 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
         return ResultApi.Ok("Xóa hồ sơ thành công");
     }
 
-    [HttpPut("thay-doi-trang-thai")]
-    public async Task<ResultApi> ThayDoiTrangThai(
-        [FromBody] HoSoDeXuatCapDoCnttThayDoiTrangThaiDto dto) {
-        
-        await Mediator.Send(new HoSoDeXuatCapDoCnttThayDoiTrangThaiCommand(dto));
-        return ResultApi.Ok("Cập nhật trạng thái thành công");
+    // t thêm này
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPost("{type}/{id}/xu-ly")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public async Task<ResultApi> XuLy(string type, Guid id, [FromBody] XuLyChungModel model)
+    {
+        //var res = await Mediator.Send(new ToTrinhCoThamDinhThaoTacCommand(id, type, model.MaTrangThaiTiepTheo, model.NoiDung));
+        var res = await Mediator.Send(new HoSoDeXuatCapDoCnttPheDuyetCommand(id, type, model.MaTrangThaiTiepTheo, model.NoiDung));
+        return ResultApi.Ok(res);
     }
 }

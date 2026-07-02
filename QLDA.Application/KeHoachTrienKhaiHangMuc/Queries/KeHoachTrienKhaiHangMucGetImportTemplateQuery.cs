@@ -56,7 +56,6 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
         var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
         var danhSachDonVi = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => e.DonViCapChaId != null)
             .WhereIf(donViId > 0, e => e.DonViCapChaId == donViId)
             .Where(e => e.TenDonVi != null && e.TenDonVi != "")
             .OrderBy(e => e.TenDonVi)

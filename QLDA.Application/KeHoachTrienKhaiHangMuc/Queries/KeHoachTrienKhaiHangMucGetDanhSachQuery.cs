@@ -120,7 +120,7 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
-                SoHangMuc = e.DanhSachHangMuc.Count(),
+                SoHangMuc = e.DanhSachHangMuc!=null ? e.DanhSachHangMuc.Where(x=> !x.IsDeleted).Count() :0,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

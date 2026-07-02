@@ -22,7 +22,7 @@ public static class HoSoDeXuatCapDoCnttMappings
 
     public static void Update (this HoSoDeXuatCapDoCntt entity, HoSoDeXuatCapDoCnttUpdateModel model)
     {
-        entity.TrangThaiId = model.TrangThaiId;
+      //  entity.TrangThaiId = model.TrangThaiId;
         entity.CapDoId = model.CapDoId;
         entity.NgayTrinh = model.NgayTrinh.HasValue
             ? model.NgayTrinh.ToStartOfDayUtc()
@@ -39,6 +39,7 @@ public static class HoSoDeXuatCapDoCnttMappings
         DuAnId = entity.DuAnId,
         BuocId = entity.BuocId,
         TrangThaiId = entity.TrangThaiId,
+        MaTrangThai = entity.TrangThai?.Ma,
         CapDoId = entity.CapDoId,
         TenCapDo = entity.CapDo?.Ten,
         NgayTrinh = entity.NgayTrinh.ToDateOnlyVn(),
