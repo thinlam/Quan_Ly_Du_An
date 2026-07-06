@@ -19,7 +19,7 @@ public class ThanhLyHopDong : Entity<Guid>, IAggregateRoot
 
     #region Navigation Properties
 
-    public ICollection<Guid>? DanhSachNghiemThus { get; set; } = [];
+    public ICollection<ThanhLyHopDongNghiemThu>? DanhSachNghiemThus { get; set; } = [];
     public HopDong? HopDong { get; set; }
     public DuAn? DuAn { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
