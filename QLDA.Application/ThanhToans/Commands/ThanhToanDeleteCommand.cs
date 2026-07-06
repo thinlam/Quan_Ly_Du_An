@@ -7,7 +7,8 @@ namespace QLDA.Application.ThanhToans.Commands;
 
 public record ThanhToanDeleteCommand(Guid Id) : IRequest;
 
-public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCommand> {
+public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCommand>
+{
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
@@ -16,7 +17,8 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
 
-    public ThanhToanDeleteCommandHandler(IServiceProvider serviceProvider) {
+    public ThanhToanDeleteCommandHandler(IServiceProvider serviceProvider)
+    {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
@@ -26,7 +28,12 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
     }
 
-    public async Task Handle(ThanhToanDeleteCommand request, CancellationToken cancellationToken) {
+    public async Task Handle(ThanhToanDeleteCommand request, CancellationToken cancellationToken)
+    {
+        ManagedException.ThrowIf(
+           _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
+           "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
+       );
         var entity = await ThanhToan.GetOrderedSet()
            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 

@@ -33,11 +33,14 @@ public static class RoleConstants {
     public const string NVTT_XemDuAn = "NVTT_XemDuAn";
     /// <summary>
     /// Nhóm role có quyền xem tất cả DuAn và Bước.
-    /// Đăng ký role mới tại đây để cấp quyền read-all mà không cần sửa provider.
+    /// Hiện đã được dỡ bỏ (empty) — NVTT_BP01/NVTT_XemDuAn không còn bypass
+    /// ownership filter trên các endpoint chuẩn. Hai role này dùng controller
+    /// riêng (NvttDuAnController, NvttBuocController) với prefix nvtt/ để xem
+    /// toàn bộ dự án. Admin catalog (GroupAdminCatalog) vẫn giữ read-all.
     /// Write path (CanExecuteAsync, CanExecuteStepAsync) LUÔN fallback về ownership
     /// check — user có role trong group này vẫn CUD được DuAn được assign.
     /// </summary>
-    public const string GroupReadAll = $"{NVTT_BP01},{NVTT_XemDuAn}";
+    public const string GroupReadAll = "";
     /// <summary>
     /// Quyền Admin hoặc Manager
     /// </summary>
