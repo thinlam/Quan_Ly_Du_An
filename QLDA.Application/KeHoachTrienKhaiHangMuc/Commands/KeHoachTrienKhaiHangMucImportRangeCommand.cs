@@ -70,7 +70,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             duAnByTen.Values,
             cancellationToken);
 
-        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
+        var donViId = TryGetCurrentDonViId(_userProvider);
         var donViRows = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
             .Where(e => e.DonViCapChaId != null)
@@ -354,6 +354,22 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         && !row.NgayKetThuc.HasValue
         && !row.KinhPhi.HasValue
         && !row.ThoiHan.HasValue;
+
+    private static long? TryGetCurrentDonViId(IUserProvider userProvider)
+    {
+        if (userProvider.Id <= 0)
+            return null;
+
+        try
+        {
+            var donViId = userProvider.Info.DonViID;
+            return donViId > 0 ? donViId : null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
 
     private sealed record DonViImportLookup(long Id, string TenDonVi);
 

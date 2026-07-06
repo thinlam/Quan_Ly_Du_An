@@ -5,7 +5,7 @@ using Xunit;
 
 namespace QLDA.Tests.Unit;
 
-public class KeHoachTrienKhaiHangMucExportMapperTests
+public class KeHoachTrienKhaiHangMucExportMappingsTests
 {
     [Fact]
     public void ToExportRows_OrdersGroupsByProjectSort_NotGlobalName()
@@ -32,7 +32,7 @@ public class KeHoachTrienKhaiHangMucExportMapperTests
             [giaiDoanCb] = "Chuẩn bị thực hiện đầu tư",
         };
 
-        var rows = KeHoachTrienKhaiHangMucExportMapper.ToExportRows(
+        var rows = KeHoachTrienKhaiHangMucExportMappings.ToExportRows(
             hangMucs, tenById, sortById,
             new Dictionary<long, string>(),
             new Dictionary<long, string>());
@@ -55,7 +55,7 @@ public class KeHoachTrienKhaiHangMucExportMapperTests
             CreateHangMuc("B", giaiDoanId, order: 3),
         };
 
-        var rows = KeHoachTrienKhaiHangMucExportMapper.ToExportRows(
+        var rows = KeHoachTrienKhaiHangMucExportMappings.ToExportRows(
             hangMucs,
             new Dictionary<int, string> { [giaiDoanId] = "Giai đoạn A" },
             new Dictionary<int, int> { [giaiDoanId] = 1 },
