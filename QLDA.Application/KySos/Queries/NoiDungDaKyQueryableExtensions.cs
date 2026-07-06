@@ -21,13 +21,18 @@ internal static class NoiDungDaKyQueryableExtensions
         NoiDungDaKySearchDto search,
         IDateTimeProvider clock)
     {
-        if (!search.TuNgay.HasValue && !search.DenNgay.HasValue)
-        {
-            var today = DateOnly.FromDateTime(clock.OffsetNow.LocalDateTime);
-            return (today.AddYears(-1), today);
-        }
+        var today = DateOnly.FromDateTime(clock.OffsetNow.LocalDateTime);
 
-        return (search.TuNgay, search.DenNgay);
+        if (!search.TuNgay.HasValue && !search.DenNgay.HasValue)
+            return (today.AddYears(-1), today);
+
+        var tuNgay = search.TuNgay;
+        var denNgay = search.DenNgay ?? today;
+
+        if (!tuNgay.HasValue)
+            tuNgay = denNgay.AddYears(-1);
+
+        return (tuNgay, denNgay);
     }
 
     internal static async Task<List<NoiDungDaKyJoinedRow>> ApplyFiltersAsync(

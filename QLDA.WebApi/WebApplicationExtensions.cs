@@ -34,7 +34,8 @@ public static class WebApiServiceExtensions {
     /// </summary>
     public static IServiceCollection AddControllersWithJson(this IServiceCollection services) {
         services.AddControllers(options => {
-            options.ModelBinderProviders.Insert(0, new DateOnlyVnModelBinderProvider());
+            options.ModelBinderProviders.Insert(0, new NoiDungDaKyDateModelBinderProvider());
+            options.ModelBinderProviders.Insert(1, new DateOnlyVnModelBinderProvider());
             var duration = TimeSpan.FromHours(12);
             // Cache profile for combobox endpoints (12 hours client cache)
             options.CacheProfiles.Add("Combobox", new Microsoft.AspNetCore.Mvc.CacheProfile {

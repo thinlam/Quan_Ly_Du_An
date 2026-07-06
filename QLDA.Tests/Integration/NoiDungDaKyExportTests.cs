@@ -31,6 +31,24 @@ public class NoiDungDaKyExportTests(WebApiFixture fixture)
     }
 
     [Fact]
+    public async Task GetNoiDungDaKyList_WithDayMonthOnly_ReturnsOk()
+    {
+        var response = await AuthedClient.GetAsync(
+            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=30-06&denNgay=30-06");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetNoiDungDaKyList_WithTuNgayDayMonthOnly_ReturnsOk()
+    {
+        var response = await AuthedClient.GetAsync(
+            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=30-06");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task GetNoiDungDaKyList_WithDdMmYyyyDateRange_ReturnsOk()
     {
         var response = await AuthedClient.GetAsync(
