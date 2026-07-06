@@ -4,7 +4,7 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Domain.Entities;
 
 /// <summary>
-/// Bảng dự án
+/// 
 /// </summary>
 public class ThanhLyHopDong : Entity<Guid>, IAggregateRoot
 {
