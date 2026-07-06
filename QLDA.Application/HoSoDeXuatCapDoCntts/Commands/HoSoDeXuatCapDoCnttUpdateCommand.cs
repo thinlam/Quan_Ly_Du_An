@@ -24,6 +24,8 @@ internal class HoSoDeXuatCapDoCnttUpdateCommandHandler : IRequestHandler<HoSoDeX
     }
 
     public async Task<HoSoDeXuatCapDoCntt> Handle(HoSoDeXuatCapDoCnttUpdateCommand request, CancellationToken cancellationToken = default) {
+        var trangThaiDaChuyen = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DaChuyen && s.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt, cancellationToken);
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DuThao && s.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt, cancellationToken);
 
@@ -35,21 +37,24 @@ internal class HoSoDeXuatCapDoCnttUpdateCommandHandler : IRequestHandler<HoSoDeX
 
         // get các trạng thái dc phép sửa trong dường đi tờ trình
 
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThai?.Ma != "LEG") {
+        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiDaChuyen?.Id) {
+            ManagedException.Throw( "Trạng thái không thể cập nhật.");
         }
-        long phongBanTaoId = 0;
-        long.TryParse(entity.CreatedBy, out phongBanTaoId);
-        // get các trạng thái được phép xử lý
-        var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
-                   .Where(x => x.Used && !(x.IsDeleted ?? false)
-                   && x.MaTrangThaiHienTai == entity.TrangThai.Ma
-                   && x.MaTrangThaiTiepTheo == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.Sua
-                   && (x.RoleLevel == 0
-                   || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == entity.DuAn.DonViPhuTrachChinhId)
-                   || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && _userProvider.Info.PhongBanID == phongBanTaoId)   // NGuoiPhuTrachChinh là Người tạo ra hồ sơ đề xuất cnntt này
-                   || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // chuyển chỉ định phòng hạ tầng nhận
-                   )).ToListAsync(cancellationToken);
-        ManagedException.ThrowIf(duongDi == null, "Trạng thái không thể cập nhật.");
+        //long phongBanTaoId = 0;
+        //long.TryParse(entity.CreatedBy, out phongBanTaoId);
+        //get các trạng thái được phép xử lý
+        //var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
+        //           .Where(x => x.Used && !(x.IsDeleted ?? false)
+        //           && x.MaTrangThaiHienTai == entity.TrangThai.Ma
+        //           && x.MaTrangThaiTiepTheo == TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.Sua
+        //           && (x.RoleLevel == 0
+        //           || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == entity.DuAn.DonViPhuTrachChinhId)
+        //           || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && _userProvider.Info.PhongBanID == phongBanTaoId)   // NGuoiPhuTrachChinh là Người tạo ra hồ sơ đề xuất cnntt này
+        //           || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // chuyển chỉ định phòng hạ tầng nhận
+        //           )).ToListAsync(cancellationToken);
+
+        // TrangTHai có the Sua : DT / DC 
+        //ManagedException.ThrowIf(duongDi == null, "Trạng thái không thể cập nhật.");
 
         entity.Update(request.Model);
 

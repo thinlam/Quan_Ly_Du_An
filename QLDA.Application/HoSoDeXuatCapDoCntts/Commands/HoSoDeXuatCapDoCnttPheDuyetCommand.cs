@@ -93,8 +93,8 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
                        && x.MaTrangThaiHienTai == entity.TrangThai.Ma
                        && x.MaTrangThaiTiepTheo == request.TrangThaiTiepTheo
                        && (x.RoleLevel == 0
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && (_userProvider.Info.PhongBanID == userChuTri.PhongBanId))
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && ( _userProvider.Info.UserID == entity.DuAn.LanhDaoPhuTrachId ))
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == userChuTri.PhongBanId)
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh &&  _userProvider.Info.UserID == entity.DuAn.LanhDaoPhuTrachId )
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // chuyển chỉ định phòng hạ tầng nhận
                        )).ToListAsync(cancellationToken);
 
