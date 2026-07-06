@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: true
+---
+
 # Project Rules
 
 ## Migrations
