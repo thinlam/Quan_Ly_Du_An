@@ -116,8 +116,14 @@ public static class PheDuyetEntityNames
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
     [Description("Quyết định lập ban quản lý dự án ")] //issue #9636
     public const string QuyetDinhLapBanQLDA = "QuyetDinhLapBanQLDA";
-   
-   
+
+    /// <summary>
+    /// UC63 — Thanh lý hợp đồng (Nghiệm thu thanh lý) (#9644)
+    /// </summary>
+    [Description("Thanh lý hợp đồng")]
+    public const string ThanhLyHopDong = "ThanhLyHopDong";
+
+
 }
 public static class LoaiToTrinhKhongDuyetExtensions
 {

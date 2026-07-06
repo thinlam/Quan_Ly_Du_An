@@ -15,6 +15,6 @@ public class ThanhLyHopDongNghiemThu : IJunctionEntity<Guid, Guid>, IAggregateRo
     #region Navigation Properties
 
     public ThanhLyHopDong? ThanhLy { get; set; }
-   
+    public NghiemThu? NghiemThu { get; set; }
     #endregion
 }

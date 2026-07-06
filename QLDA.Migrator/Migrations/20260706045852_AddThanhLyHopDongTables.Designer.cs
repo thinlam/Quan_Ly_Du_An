@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260706045852_AddThanhLyHopDongTables")]
+    partial class AddThanhLyHopDongTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4785,62 +4788,6 @@ namespace QLDA.Migrator.Migrations
                             Index = 0L,
                             IsDeleted = false,
                             Loai = "DeXuatMacDinh",
-                            Ma = "TL",
-                            Stt = 4,
-                            Ten = "Trả lại",
-                            UpdatedBy = "",
-                            Used = true
-                        },
-                        new
-                        {
-                            Id = 67,
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CreatedBy = "",
-                            Index = 0L,
-                            IsDeleted = false,
-                            Loai = "ThanhLyHopDong",
-                            Ma = "DT",
-                            Stt = 1,
-                            Ten = "Dự thảo",
-                            UpdatedBy = "",
-                            Used = true
-                        },
-                        new
-                        {
-                            Id = 68,
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CreatedBy = "",
-                            Index = 0L,
-                            IsDeleted = false,
-                            Loai = "ThanhLyHopDong",
-                            Ma = "ĐTr",
-                            Stt = 2,
-                            Ten = "Đã trình",
-                            UpdatedBy = "",
-                            Used = true
-                        },
-                        new
-                        {
-                            Id = 69,
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CreatedBy = "",
-                            Index = 0L,
-                            IsDeleted = false,
-                            Loai = "ThanhLyHopDong",
-                            Ma = "ĐD",
-                            Stt = 3,
-                            Ten = "Đã duyệt",
-                            UpdatedBy = "",
-                            Used = true
-                        },
-                        new
-                        {
-                            Id = 70,
-                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            CreatedBy = "",
-                            Index = 0L,
-                            IsDeleted = false,
-                            Loai = "ThanhLyHopDong",
                             Ma = "TL",
                             Stt = 4,
                             Ten = "Trả lại",
