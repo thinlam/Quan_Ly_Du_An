@@ -33,8 +33,12 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan]
         });
-      
-        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
+        var danhSachTepDinhKemKhac = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+        {
+            GroupId = [entity.Id.ToString()],
+            EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan_Khac]
+        });
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }
 
     [HttpDelete("{id}/xoa")]
@@ -63,7 +67,14 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
             GroupId = entity.Id.ToString(),
             Entities = files
         });
+        List<TepDinhKem> fileKhacs = [.. dto.DanhSachTepDinhKemKhac?.ToEntities(
+            entity.Id, GroupTypeConstants.QuyetDinhDuyetDuToan_Khac) ?? []];
 
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = fileKhacs
+        });
         return ResultApi.Ok(entity.Id);
     }
 
@@ -88,8 +99,19 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan]
         });
-
-        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
+        // 3. Lưu danh sách file khác
+        List<TepDinhKem> fileKhacs = [.. model.DanhSachTepDinhKemKhac?.ToEntities(entity.Id,  GroupTypeConstants.QuyetDinhDuyetDuToan_Khac) ?? []];
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = fileKhacs
+        });
+        var danhSachTepDinhKemKhac = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
+        {
+            GroupId = [entity.Id.ToString()],
+            EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan_Khac]
+        });
+        return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }
 
     [HttpGet("danh-sach-tien-do")]

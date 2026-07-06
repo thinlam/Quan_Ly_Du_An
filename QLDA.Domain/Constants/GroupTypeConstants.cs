@@ -44,6 +44,7 @@ public static class GroupTypeConstants
     public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
     public const string QuyetDinhKeHoachThueThamDinh = "QuyetDinhKeHoachThueThamDinh";
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
+    public const string QuyetDinhDuyetDuToan_Khac = "QuyetDinhDuyetDuToan_Khac";
     public const string HoSoMoiThauDienTu = "HoSoMoiThauDienTu";
     public const string HoSoMoiThauDienTuChiDinh = "HoSoMoiThauDienTuChiDinh";
     public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";

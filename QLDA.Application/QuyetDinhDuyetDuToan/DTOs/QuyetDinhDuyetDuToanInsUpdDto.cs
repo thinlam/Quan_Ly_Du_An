@@ -28,4 +28,6 @@ public class QuyetDinhDuyetDuToanInsUpdDto : IHasKey<Guid?>, IMustHaveId<Guid> ,
     public List<QuyetDinhDuyetDuToanNguonVonDto>? KeHoachVons { get; set; } = [];
     public List<QuyetDinhDuyetDuToanChiPhiDto>? ChiPhis { get; set; } = [];
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepDinhKemKhac { get; set; }
+    
 }

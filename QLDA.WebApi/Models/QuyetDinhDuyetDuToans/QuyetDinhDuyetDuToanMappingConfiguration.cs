@@ -8,7 +8,7 @@ namespace QLDA.WebApi.Models.QuyetDinhDuyetDuToans;
 public static class QuyetDinhDuyetDuToanMappingConfiguration
 {
     public static QuyetDinhDuyetDuToanModel ToModel(this QuyetDinhDuyetDuToan entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem>? danhSachTepDinhKemKhac = null) =>
         new()
         {
             Id = entity.Id,
@@ -34,7 +34,8 @@ public static class QuyetDinhDuyetDuToanMappingConfiguration
                 NguonVonId = e.NguonVonId,
                 Nam = e.Nam
             }).ToList(),
-            DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList()
+            DanhSachTepDinhKem = danhSachTepDinhKem?.Select(o => o.ToModel()).ToList(),
+            DanhSachTepDinhKemKhac = danhSachTepDinhKemKhac?.Select(o => o.ToModel()).ToList()
         };
 
 

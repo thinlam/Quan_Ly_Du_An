@@ -26,6 +26,6 @@ public class QuyetDinhDuyetDuToanModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
 
     public List<QuyetDinhDuyetDuToanNguonVonDto>? KeHoachVons { get; set; }
     public List<QuyetDinhDuyetDuToanChiPhiDto>? ChiPhis { get; set; }
-    
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemModel>? DanhSachTepDinhKemKhac { get; set; }
 }

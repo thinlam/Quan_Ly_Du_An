@@ -1,5 +1,4 @@
-using BuildingBlocks.Application.DmChucVus.DTOs;
-using BuildingBlocks.Application.DmChucVus.Queries;
+
 using BuildingBlocks.Application.UserMasters.Queries;
 using QLDA.Application.DanhMucDonVis.Queries;
 using QLDA.Application.DmChucVus.Queries;
