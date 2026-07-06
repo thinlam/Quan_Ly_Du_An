@@ -12,6 +12,7 @@ public static class GroupTypeConstants
     public const string NghiemThu = "NghiemThu";
     public const string TamUng = "TamUng";
     public const string ThanhToan = "ThanhToan";
+    public const string ThanhLyHopDong = "ThanhLyHopDong";
     public const string KySo = "KySo";
 
     /// <summary>

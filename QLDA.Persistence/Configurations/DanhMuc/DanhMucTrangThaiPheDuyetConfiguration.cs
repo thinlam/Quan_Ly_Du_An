@@ -60,7 +60,13 @@ public class DanhMucTrangThaiPheDuyetConfiguration : AggregateRootConfiguration<
             new DanhMucTrangThaiPheDuyet { Id = 30, Ma = TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao, Ten = TrangThaiPheDuyetCodes.Default.TenDuThao, Loai = PheDuyetEntityNames.DeXuatMacDinhStt, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 31, Ma = TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh, Ten = TrangThaiPheDuyetCodes.Default.TenDaTrinh, Loai = PheDuyetEntityNames.DeXuatMacDinhStt, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 32, Ma = TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaDuyet, Loai = PheDuyetEntityNames.DeXuatMacDinhStt, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 33, Ma = TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.DeXuatMacDinhStt, Stt = 4, Used = true, CreatedAt = SeedCreatedAt }
+            new DanhMucTrangThaiPheDuyet { Id = 33, Ma = TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.DeXuatMacDinhStt, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
+            // ThanhLyHopDong statuses (UC63 - #9644)
+            // Bumped from 34-37 → 67-70 to avoid PK collision with existing rows in DmTrangThaiPheDuyet
+            new DanhMucTrangThaiPheDuyet { Id = 67, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.DuThao, Ten = TrangThaiPheDuyetCodes.Default.TenDuThao, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 68, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.DaTrinh, Ten = TrangThaiPheDuyetCodes.Default.TenDaTrinh, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 69, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.DaDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaDuyet, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
+            new DanhMucTrangThaiPheDuyet { Id = 70, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 4, Used = true, CreatedAt = SeedCreatedAt }
         );
     }
 }

@@ -6,7 +6,7 @@ namespace QLDA.Domain.Entities;
 /// <summary>
 /// 
 /// </summary>
-public class ThanhLyHopDong : Entity<Guid>, IAggregateRoot
+public class ThanhLyHopDong : Entity<Guid>, IAggregateRoot, IApprovableEntity
 {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
