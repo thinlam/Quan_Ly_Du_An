@@ -40,7 +40,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
             var sheets = new List<TinhHinhThucHienDauThauSheetDto>(SheetTabs.Length);
             foreach (var tab in SheetTabs)
             {
-                var items = await GetExportItemsAsync(tab.Loai, cancellationToken);
+                var items = await GetExportItemsAsync(tab.Loai, request.SearchDto, cancellationToken);
                 sheets.Add(new TinhHinhThucHienDauThauSheetDto
                 {
                     Title = tab.Title,
@@ -55,7 +55,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
             };
         }
 
-        var data = await GetExportItemsAsync(loai, cancellationToken);
+        var data = await GetExportItemsAsync(loai, request.SearchDto, cancellationToken);
 
         return new TinhHinhThucHienDauThauPrintResultDto
         {
@@ -66,6 +66,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
 
     private async Task<List<TinhHinhThucHienDauThauExportDto>> GetExportItemsAsync(
         TinhHinhThucHienDauThauLoai loai,
+        TinhHinhThucHienDauThauPrintSearchDto searchDto,
         CancellationToken cancellationToken)
     {
         var duAnBuocQuery = _duAnBuoc.GetQueryableSet().AsNoTracking();
@@ -73,7 +74,9 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
         var queryable = _goiThau.GetOrderedSet()
             .Include(e => e.KetQuaTrungThau)
             .Include(e => e.HopDong)
-            .AsQueryable();
+            .AsQueryable()
+            .ApplyTinhHinhDauThauFilters(searchDto.DuAnId, searchDto.GiaiDoanId)
+            .ApplyTinhHinhDauThauNamDuAnFilter(searchDto.NamDuAn);
 
         queryable = loai switch
         {

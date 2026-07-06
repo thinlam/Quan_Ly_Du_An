@@ -29,6 +29,8 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
 {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _keHoachRepo =
         serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
+    private readonly IRepository<HangMucKeHoach, Guid> _hangMucRepo =
+        serviceProvider.GetRequiredService<IRepository<HangMucKeHoach, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
     private readonly IRepository<DmDonVi, long> _donViRepo =
@@ -47,13 +49,15 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
         CancellationToken cancellationToken = default)
     {
         var queryable = BuildFilteredQueryable(request);
-        var hangMucs = await LoadHangMucsAsync(queryable, request, cancellationToken);
+        var (hangMucs, duAnId) = await LoadHangMucsWithContextAsync(queryable, request, cancellationToken);
 
         ManagedException.ThrowIf(hangMucs.Count == 0, "Không có dữ liệu để xuất");
 
         return await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
             hangMucs,
+            duAnId ?? request.DuAnId,
             _giaiDoanRepo,
+            _duAnBuocRepo,
             _donViRepo,
             _userRepo,
             cancellationToken);
@@ -68,7 +72,6 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
                 _authContext,
                 e => e.BuocId)
             .AsNoTracking()
-            .Include(e => e.DanhSachHangMuc)
             .WhereIf(request.Id.HasValue && request.Id != Guid.Empty, e => e.Id == request.Id)
             .WhereIf(request.DuAnId.HasValue && request.DuAnId != Guid.Empty, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
@@ -80,7 +83,7 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
             .WhereIf(request.DenNgay.HasValue, e => e.NgayToTrinh.HasValue && e.NgayToTrinh.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
     }
 
-    private static async Task<List<HangMucKeHoach>> LoadHangMucsAsync(
+    private async Task<(List<HangMucKeHoach> HangMucs, Guid? DuAnId)> LoadHangMucsWithContextAsync(
         IQueryable<KeHoachTrienKhaiHangMuc> queryable,
         KeHoachTrienKhaiHangMucGetExportQuery request,
         CancellationToken cancellationToken)
@@ -91,7 +94,11 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
         if (hasId)
         {
             var keHoach = await queryable.FirstOrDefaultAsync(cancellationToken);
-            return keHoach?.DanhSachHangMuc?.ToList() ?? [];
+            if (keHoach == null)
+                return ([], null);
+
+            var hangMucs = await LoadHangMucsByKeHoachIdAsync(keHoach.Id, cancellationToken);
+            return (hangMucs, keHoach.DuAnId);
         }
 
         if (hasDuAnId)
@@ -100,7 +107,11 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
                 .OrderByDescending(e => e.NgayToTrinh)
                 .ThenByDescending(e => e.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
-            return keHoach?.DanhSachHangMuc?.Where(x => !x.IsDeleted).ToList() ?? [];
+            if (keHoach == null)
+                return ([], request.DuAnId);
+
+            var hangMucs = await LoadHangMucsByKeHoachIdAsync(keHoach.Id, cancellationToken);
+            return (hangMucs, request.DuAnId);
         }
 
         var keHoachs = await queryable
@@ -108,8 +119,20 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
             .ThenByDescending(e => e.NgayToTrinh)
             .ToListAsync(cancellationToken);
 
-        return keHoachs
-            .SelectMany(k => k.DanhSachHangMuc ?? [])
-            .ToList();
+        var allHangMucs = new List<HangMucKeHoach>();
+        foreach (var keHoach in keHoachs)
+            allHangMucs.AddRange(await LoadHangMucsByKeHoachIdAsync(keHoach.Id, cancellationToken));
+
+        return (allHangMucs, null);
     }
+
+    private async Task<List<HangMucKeHoach>> LoadHangMucsByKeHoachIdAsync(
+        Guid keHoachId,
+        CancellationToken cancellationToken) =>
+        await _hangMucRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(h => h.KeHoachId == keHoachId)
+            .OrderBy(h => h.CreatedAt)
+            .ThenBy(h => h.Id)
+            .ToListAsync(cancellationToken);
 }

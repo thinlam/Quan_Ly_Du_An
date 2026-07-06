@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="QLDA.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Compile Remove="DanhMucPhuongAnThietKe\**" />
       <Compile Remove="DanhMucTrangThaiPheDuyet\**" />
       <Compile Remove="DmTrangThaiPheDuyets\**" />
