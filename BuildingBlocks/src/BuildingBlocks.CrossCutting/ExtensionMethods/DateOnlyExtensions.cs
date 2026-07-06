@@ -1,25 +1,7 @@
-using System.Globalization;
-
 namespace BuildingBlocks.CrossCutting.ExtensionMethods;
 
 public static class DateOnlyExtensions
 {
-    /// <summary>
-    /// Định dạng ngày chấp nhận trên query string API (ưu tiên dd-MM-yyyy).
-    /// </summary>
-    public static readonly string[] VnQueryDateFormats =
-        ["dd-MM-yyyy", "dd/MM/yyyy", "yyyy-MM-dd"];
-
-    public static bool TryParseFromQuery(string? value, out DateOnly date)
-    {
-        date = default;
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        var trimmed = value.Trim();
-        return DateOnly.TryParseExact(trimmed, VnQueryDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out date)
-            || DateOnly.TryParseExact(trimmed, VnQueryDateFormats, new CultureInfo("vi-VN"), DateTimeStyles.None, out date);
-    }
     /// <summary>
     /// Nếu sau có xử lý liên quan đến thời gian thì thay thành DateTimeOffset
     /// </summary>

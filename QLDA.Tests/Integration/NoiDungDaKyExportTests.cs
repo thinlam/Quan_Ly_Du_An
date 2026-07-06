@@ -31,28 +31,19 @@ public class NoiDungDaKyExportTests(WebApiFixture fixture)
     }
 
     [Fact]
-    public async Task GetNoiDungDaKyList_WithDayMonthOnly_ReturnsOk()
+    public async Task GetNoiDungDaKyList_WithIsoDateRange_ReturnsOk()
     {
         var response = await AuthedClient.GetAsync(
-            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=30-06&denNgay=30-06");
+            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=2025-07-01&denNgay=2026-06-30");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
-    public async Task GetNoiDungDaKyList_WithTuNgayDayMonthOnly_ReturnsOk()
+    public async Task GetNoiDungDaKyList_WithTuNgayOnly_FallsBackDenNgayToToday()
     {
         var response = await AuthedClient.GetAsync(
-            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=30-06");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [Fact]
-    public async Task GetNoiDungDaKyList_WithDdMmYyyyDateRange_ReturnsOk()
-    {
-        var response = await AuthedClient.GetAsync(
-            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=01-07-2025&denNgay=30-06-2026");
+            "/api/ky-so/noi-dung-da-ky/danh-sach?pageIndex=1&pageSize=20&tuNgay=2025-07-01");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }

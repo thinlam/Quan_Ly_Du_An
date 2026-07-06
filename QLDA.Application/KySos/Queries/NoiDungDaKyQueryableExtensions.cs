@@ -22,15 +22,14 @@ internal static class NoiDungDaKyQueryableExtensions
         IDateTimeProvider clock)
     {
         var today = DateOnly.FromDateTime(clock.OffsetNow.LocalDateTime);
+        var tuNgay = search.TuNgay;
+        var denNgay = search.DenNgay;
 
-        if (!search.TuNgay.HasValue && !search.DenNgay.HasValue)
+        if (!tuNgay.HasValue && !denNgay.HasValue)
             return (today.AddYears(-1), today);
 
-        var tuNgay = search.TuNgay;
-        var denNgay = search.DenNgay ?? today;
-
-        if (!tuNgay.HasValue)
-            tuNgay = denNgay.AddYears(-1);
+        if (tuNgay.HasValue && !denNgay.HasValue)
+            return (tuNgay, today);
 
         return (tuNgay, denNgay);
     }
