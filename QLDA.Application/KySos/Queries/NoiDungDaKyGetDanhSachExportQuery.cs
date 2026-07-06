@@ -1,7 +1,6 @@
 using BuildingBlocks.CrossCutting.DateTimes;
 using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.DuAns.Services;
 using QLDA.Application.KySos.DTOs;
 using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
 
@@ -18,8 +17,6 @@ internal class NoiDungDaKyGetDanhSachExportQueryHandler(
         serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<UserMaster, long> _userRepository =
         serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
-    private readonly DuAnTepDinhKemGroupIdResolver _duAnResolver =
-        serviceProvider.GetRequiredService<DuAnTepDinhKemGroupIdResolver>();
     private readonly IDateTimeProvider _clock =
         serviceProvider.GetRequiredService<IDateTimeProvider>();
 
@@ -33,7 +30,7 @@ internal class NoiDungDaKyGetDanhSachExportQueryHandler(
         var rows = await _tepDinhKemRepository
             .GetQueryableSet(OnlyNotDeleted: false, OrderByIndex: false)
             .AsNoTracking()
-            .ApplyFiltersAsync(search, users, _duAnResolver, _clock, cancellationToken);
+            .ApplyFiltersAsync(search, users, serviceProvider, _clock, cancellationToken);
 
         ManagedException.ThrowIf(rows.Count == 0, "Không có dữ liệu để xuất");
 

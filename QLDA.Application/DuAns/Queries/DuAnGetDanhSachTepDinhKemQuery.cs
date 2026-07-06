@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.DuAns.Services;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.DuAns.Queries;
@@ -14,15 +13,13 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(
 
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepo =
         serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-    private readonly DuAnTepDinhKemGroupIdResolver _groupIdResolver =
-        serviceProvider.GetRequiredService<DuAnTepDinhKemGroupIdResolver>();
 
     public async Task<List<TepDinhKemDto>> Handle(
         DuAnGetDanhSachTepDinhKemQuery request,
         CancellationToken cancellationToken = default) {
 
-        var groupIds = await _groupIdResolver.ResolveGroupIdsAsync(
-            request.DuAnId, cancellationToken);
+        var groupIds = await DuAnTepDinhKemGroupIdQueryExtensions.ResolveGroupIdsAsync(
+            request.DuAnId, serviceProvider, cancellationToken);
 
         var files = await _tepDinhKemRepo.GetQueryableSet()
             .Where(f => groupIds.Contains(f.GroupId) && !f.IsDeleted)

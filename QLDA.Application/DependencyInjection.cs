@@ -3,7 +3,6 @@ using BuildingBlocks.Application;
 using MediatR;
 using QLDA.Application.Authorization;
 using QLDA.Application.Authorization.Behaviors;
-using QLDA.Application.DuAns.Services;
 
 namespace QLDA.Application;
 
@@ -23,8 +22,6 @@ public static class DependencyInjection
 
         // DuAnAuthorizationProvider for project-level authorization
         services.AddScoped<IAuthorizationProvider, DuAnAuthorizationProvider>();
-
-        services.AddScoped<DuAnTepDinhKemGroupIdResolver>();
 
         return services;
     }

@@ -2,7 +2,7 @@ using BuildingBlocks.CrossCutting.DateTimes;
 using BuildingBlocks.CrossCutting.ExtensionMethods;
 using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.DuAns.Services;
+using QLDA.Application.DuAns.Queries;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Domain.Constants;
 using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
@@ -39,7 +39,7 @@ internal static class NoiDungDaKyQueryableExtensions
         this IQueryable<TepDinhKem> query,
         NoiDungDaKySearchDto search,
         IQueryable<UserMaster> users,
-        DuAnTepDinhKemGroupIdResolver duAnResolver,
+        IServiceProvider serviceProvider,
         IDateTimeProvider clock,
         CancellationToken cancellationToken)
     {
@@ -48,8 +48,8 @@ internal static class NoiDungDaKyQueryableExtensions
 
         if (search.DuAnId.HasValue)
         {
-            groupIds = await duAnResolver.ResolveGroupIdsAsync(
-                search.DuAnId.Value, cancellationToken);
+            groupIds = await DuAnTepDinhKemGroupIdQueryExtensions.ResolveGroupIdsAsync(
+                search.DuAnId.Value, serviceProvider, cancellationToken);
         }
 
         var nguoiKyId = search.NguoiKyId?.ToString();
