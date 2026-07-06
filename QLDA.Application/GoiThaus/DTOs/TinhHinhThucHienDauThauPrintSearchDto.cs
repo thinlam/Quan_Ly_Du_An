@@ -11,5 +11,20 @@ public record TinhHinhThucHienDauThauPrintSearchDto
     /// </summary>
     public int? Loai { get; set; }
 
+    /// <summary>
+    /// Năm dự án — bind query param <c>namDuAn</c>. Null hoặc &lt;= 0 = không lọc.
+    /// </summary>
+    public int? NamDuAn { get; set; }
+
+    /// <summary>
+    /// Giai đoạn hiện tại (<c>DuAn.GiaiDoanHienTaiId</c>). Null hoặc -1 = không lọc.
+    /// </summary>
+    public int? GiaiDoanId { get; set; }
+
+    /// <summary>
+    /// Dự án — bind query param <c>duAnId</c>. Null = không lọc.
+    /// </summary>
+    public Guid? DuAnId { get; set; }
+
     public List<string>? HiddenColumns { get; set; }
 }

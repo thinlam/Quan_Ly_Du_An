@@ -148,6 +148,47 @@ internal static class KeHoachTrienKhaiHangMucImportGiaiDoanHelper {
         return true;
     }
 
+    /// <summary>
+    /// GiaiDoanId → SortOrder theo quy trình dự án (DuAnBuoc.Buoc.Stt).
+    /// Dùng chung import combo, Excel export, Word phiếu trình.
+    /// </summary>
+    internal static async Task<IReadOnlyDictionary<int, int>> GetGiaiDoanSortByDuAnAsync(
+        Guid duAnId,
+        IRepository<DuAnBuoc, int> duAnBuocRepo,
+        IRepository<DanhMucGiaiDoan, int> giaiDoanRepo,
+        CancellationToken cancellationToken = default)
+    {
+        var phasesByDuAn = await LoadRootPhasesByDuAnAsync(
+            duAnBuocRepo,
+            giaiDoanRepo,
+            [duAnId],
+            cancellationToken);
+
+        if (!phasesByDuAn.TryGetValue(duAnId, out var phases) || phases.Count == 0)
+            return new Dictionary<int, int>();
+
+        return phases.ToDictionary(p => p.GiaiDoanId, p => p.SortOrder);
+    }
+
+    /// <summary>GiaiDoanId → tên hiển thị theo quy trình dự án (Buoc.Ten / TenBuoc).</summary>
+    internal static async Task<IReadOnlyDictionary<int, string>> GetGiaiDoanDisplayNameByDuAnAsync(
+        Guid duAnId,
+        IRepository<DuAnBuoc, int> duAnBuocRepo,
+        IRepository<DanhMucGiaiDoan, int> giaiDoanRepo,
+        CancellationToken cancellationToken = default)
+    {
+        var phasesByDuAn = await LoadRootPhasesByDuAnAsync(
+            duAnBuocRepo,
+            giaiDoanRepo,
+            [duAnId],
+            cancellationToken);
+
+        if (!phasesByDuAn.TryGetValue(duAnId, out var phases) || phases.Count == 0)
+            return new Dictionary<int, string>();
+
+        return phases.ToDictionary(p => p.GiaiDoanId, p => p.DisplayName);
+    }
+
     private static async Task<Dictionary<Guid, List<ProjectPhaseLookup>>> LoadRootPhasesByDuAnAsync(
         IRepository<DuAnBuoc, int> duAnBuocRepo,
         IRepository<DanhMucGiaiDoan, int> giaiDoanRepo,

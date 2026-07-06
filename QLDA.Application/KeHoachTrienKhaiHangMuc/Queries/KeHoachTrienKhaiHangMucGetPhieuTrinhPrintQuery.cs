@@ -18,6 +18,10 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
 {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _keHoachRepo =
         serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
+    private readonly IRepository<HangMucKeHoach, Guid> _hangMucRepo =
+        serviceProvider.GetRequiredService<IRepository<HangMucKeHoach, Guid>>();
+    private readonly IRepository<DuAn, Guid> _duAnRepo =
+        serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
@@ -41,26 +45,32 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
 
         ManagedException.ThrowIfNull(keHoach, "Không tìm thấy dữ liệu");
 
-        // Cùng cách load với GetExportQuery / GetQuery: Include navigation (không lọc IsDeleted trên child).
-        var hangMucs = keHoach.DanhSachHangMuc?.ToList() ?? [];
+        await EnsureDuAnLoadedAsync(keHoach, cancellationToken);
+
+        var hangMucs = await LoadHangMucsForKeHoachAsync(keHoach.Id, cancellationToken);
 
         var rows = hangMucs.Count == 0
             ? []
             : await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
                 hangMucs,
+                keHoach.DuAnId,
                 _giaiDoanRepo,
+                _duAnBuocRepo,
                 _donViRepo,
                 _userRepo,
                 cancellationToken);
+
+        var maDuAn = keHoach.DuAn?.MaDuAn?.Trim();
+        var tenDuAn = keHoach.DuAn?.TenDuAn?.Trim();
 
         return new KeHoachTrienKhaiHangMucPhieuTrinhPrintDto
         {
             So = keHoach.So,
             NgayToTrinh = keHoach.NgayToTrinh,
             TrichYeu = keHoach.TrichYeu,
-            MaDuAn = keHoach.DuAn?.MaDuAn,
-            TenDuAn = keHoach.DuAn?.TenDuAn,
-            DuAnDisplay = BuildDuAnDisplay(keHoach.DuAn?.MaDuAn, keHoach.DuAn?.TenDuAn),
+            MaDuAn = maDuAn,
+            TenDuAn = tenDuAn,
+            DuAnDisplay = BuildDuAnDisplay(maDuAn, tenDuAn),
             Rows = rows,
         };
     }
@@ -76,7 +86,6 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
                 e => e.BuocId)
             .AsNoTracking()
             .Include(e => e.DuAn)
-            .Include(e => e.DanhSachHangMuc)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
         if (keHoach != null)
@@ -87,15 +96,42 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
                 AuthorizationResourceKeys.DuAn)
             .AsNoTracking()
             .Include(e => e.DuAn)
-            .Include(e => e.DanhSachHangMuc)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
+    private async Task<List<HangMucKeHoach>> LoadHangMucsForKeHoachAsync(
+        Guid keHoachId,
+        CancellationToken cancellationToken) =>
+        await _hangMucRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(h => h.KeHoachId == keHoachId)
+            .OrderBy(h => h.CreatedAt)
+            .ThenBy(h => h.Id)
+            .ToListAsync(cancellationToken);
+
+    private async Task EnsureDuAnLoadedAsync(
+        KeHoachTrienKhaiHangMuc keHoach,
+        CancellationToken cancellationToken)
+    {
+        if (keHoach.DuAn != null || keHoach.DuAnId == Guid.Empty)
+            return;
+
+        keHoach.DuAn = await _duAnRepo.GetQueryableSet()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == keHoach.DuAnId, cancellationToken);
     }
 
     private static string BuildDuAnDisplay(string? maDuAn, string? tenDuAn)
     {
-        if (!string.IsNullOrWhiteSpace(maDuAn) && !string.IsNullOrWhiteSpace(tenDuAn))
-            return $"{maDuAn} — {tenDuAn}";
+        var ma = maDuAn?.Trim();
+        var ten = tenDuAn?.Trim();
 
-        return maDuAn ?? tenDuAn ?? string.Empty;
+        if (!string.IsNullOrEmpty(ma) && !string.IsNullOrEmpty(ten))
+            return $"{ma} — {ten}";
+
+        if (!string.IsNullOrEmpty(ma))
+            return ma;
+
+        return ten ?? string.Empty;
     }
 }

@@ -18,6 +18,15 @@ internal static class KeHoachTrienKhaiHangMucExportMapper
         if (items.Count == 0)
             return [];
 
+        var itemIndexById = items
+            .Select((h, i) => (h.Id, i))
+            .ToDictionary(x => x.Id, x => x.i);
+
+        var firstGroupIndexByGiaiDoanId = items
+            .Select((h, i) => (h.GiaiDoanId, i))
+            .GroupBy(x => x.GiaiDoanId)
+            .ToDictionary(g => g.Key, g => g.Min(x => x.i));
+
         var groups = items
             .GroupBy(h => h.GiaiDoanId)
             .Select(g =>
@@ -29,7 +38,7 @@ internal static class KeHoachTrienKhaiHangMucExportMapper
                         GiaiDoanId = id,
                         TenGiaiDoan = ten,
                         SortOrder = giaiDoanSortById.GetValueOrDefault(id, int.MaxValue - 1),
-                        Items = g.OrderBy(x => x.NgayBatDau).ThenBy(x => x.TenHangMuc).ToList(),
+                        Items = g.OrderBy(x => itemIndexById.GetValueOrDefault(x.Id, int.MaxValue)).ToList(),
                     };
                 }
 
@@ -38,11 +47,11 @@ internal static class KeHoachTrienKhaiHangMucExportMapper
                     GiaiDoanId = null,
                     TenGiaiDoan = KhacGiaiDoanTen,
                     SortOrder = int.MaxValue,
-                    Items = g.OrderBy(x => x.NgayBatDau).ThenBy(x => x.TenHangMuc).ToList(),
+                    Items = g.OrderBy(x => itemIndexById.GetValueOrDefault(x.Id, int.MaxValue)).ToList(),
                 };
             })
             .OrderBy(g => g.SortOrder)
-            .ThenBy(g => g.TenGiaiDoan)
+            .ThenBy(g => firstGroupIndexByGiaiDoanId.GetValueOrDefault(g.GiaiDoanId, int.MaxValue))
             .ToList();
 
         var rows = new List<KeHoachTrienKhaiHangMucExportItemDto>();
@@ -58,9 +67,7 @@ internal static class KeHoachTrienKhaiHangMucExportMapper
 
             var itemStt = 1;
             foreach (var hangMuc in group.Items)
-            {
                 rows.Add(MapItem(hangMuc, itemStt++, donViTenById, userTenById));
-            }
         }
 
         return rows;
