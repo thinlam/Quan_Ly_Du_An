@@ -2,7 +2,7 @@
 
 **Module:** QLDA — `KeHoachTrienKhaiHangMuc`  
 **Ngày:** 2026-07-06  
-**Trạng thái:** ✅ **IMPLEMENTED** (06/07/2026)  
+**Trạng thái:** ✅ **IMPLEMENTED** (commit `af1fa46`, 06/07/2026)  
 **Pattern tham chiếu:** [phieu-trinh-word-spec.md](../9469/phieu-trinh-word-spec.md), `KeHoachTrienKhaiHangMucImportGiaiDoanHelper`
 
 ---
@@ -12,11 +12,10 @@
 | Hạng mục | Trạng thái | Ghi chú |
 |----------|------------|---------|
 | `GetGiaiDoanSortByDuAnAsync` (ImportGiaiDoanHelper) | ✅ Done | Reuse sort theo `DuAnBuoc.Buoc.Stt` |
-| `KeHoachTrienKhaiHangMucExportMapper` | ✅ Done | Group theo project order + giữ thứ tự item trong list gốc |
-| `KeHoachTrienKhaiHangMucExportRowLoader` | ✅ Done | Nhận `duAnId` + load sort/display name theo dự án |
-| `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery` | ✅ Done | `EnsureDuAnLoadedAsync`, load HM `OrderBy CreatedAt`, truyền `DuAnId` |
-| `KeHoachTrienKhaiHangMucGetExportQuery` | ✅ Done | Truyền `DuAnId` vào loader (Excel đồng bộ) |
-| `KeHoachTrienKhaiHangMucExportMapperTests` | ✅ Done | 2 unit tests (group order + item order) |
+| `KeHoachTrienKhaiHangMucExportMappings.cs` | ✅ Done | Gộp mapper + loader — dùng chung Excel + Word |
+| `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery` | ✅ Done | Word `.docx` — header + `ToExportRowsAsync` |
+| `KeHoachTrienKhaiHangMucGetExportQuery` | ✅ Done | Excel — cùng `ToExportRowsAsync` + filter list |
+| `KeHoachTrienKhaiHangMucExportMappingsTests` | ✅ Done | 2 unit tests (`ToExportRows`) |
 | `KeHoachTrienKhaiHangMucPhieuTrinhPrintTests` | ✅ Partial | Smoke HTTP 200 + empty guid; chưa assert `DuAnDisplay`/thứ tự group |
 | `GetQuery` trả `MaDuAn` (bước 9) | ⏳ Pending | Tuỳ chọn — print đã đủ `DuAnDisplay` |
 | QA manual Word vs UI | ⏳ Pending | Cần mở file `.docx` trên môi trường có data |
@@ -35,6 +34,7 @@
 8. [Bước code chi tiết](#7-bước-code-chi-tiết)
 9. [Test plan](#8-test-plan)
 10. [Checklist nghiệm thu](#9-checklist-nghiệm-thu)
+11. [Refactor sau implement](#10-refactor-sau-implement)
 
 ---
 
@@ -67,23 +67,19 @@
 sequenceDiagram
     participant FE as FE (form chi tiết)
     participant GetQuery as KeHoachTrienKhaiHangMucGetQuery
-    participant PrintQuery as KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery
-    participant RowLoader as ExportRowLoader
-    participant Mapper as ExportMapper
+    participant PrintQ as KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery
+    participant Mappings as KeHoachTrienKhaiHangMucExportMappings
     participant Word as WordExporter
 
     FE->>GetQuery: GET api/ke-hoach-trien-khai-hang-muc/{id}
     GetQuery-->>FE: DuAnId, TenDuAn, HangMucTrienKhai[] (flat, no reorder)
     Note over FE: FE group theo GiaiDoanId<br/>+ order giai đoạn theo quy trình dự án<br/>+ Roman I, II, ...
 
-    FE->>PrintQuery: GET api/print/phieu-trinh-ke-hoach-trien-khai-hang-muc?id=
-    PrintQuery->>PrintQuery: Include(DuAn); load HM OrderBy CreatedAt
-    PrintQuery->>PrintQuery: EnsureDuAnLoadedAsync nếu navigation null
-    PrintQuery->>RowLoader: hangMucs[], keHoach.DuAnId
-    RowLoader->>RowLoader: GetGiaiDoanSortByDuAnAsync (Buoc.Stt)
-    RowLoader->>Mapper: ToExportRows(..., giaiDoanSortById theo dự án)
-    Mapper-->>PrintQuery: rows[] (group A,B đúng thứ tự UI)
-    PrintQuery->>Word: PhieuTrinhPrintDto
+    FE->>PrintQ: GET api/print/phieu-trinh-ke-hoach-trien-khai-hang-muc?id=
+    PrintQ->>PrintQ: EnsureDuAnLoadedAsync, load HM OrderBy CreatedAt
+    PrintQ->>Mappings: ToExportRowsAsync(duAnId)
+    Mappings-->>PrintQ: rows[] (đúng thứ tự UI)
+    PrintQ->>Word: PhieuTrinhPrintDto
     Word-->>FE: .docx
 ```
 
@@ -94,8 +90,9 @@ sequenceDiagram
 | `QLDA.WebApi/Controllers/PrintController.cs` | Endpoint `InPhieuTrinhKeHoachTrienKhaiHangMuc` (~L1414) |
 | `QLDA.Application/.../KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | Load header + hạng mục cho print |
 | `QLDA.Application/.../KeHoachTrienKhaiHangMucGetQuery.cs` | Load dữ liệu form UI |
-| `QLDA.Application/.../KeHoachTrienKhaiHangMucExportRowLoader.cs` | Load lookup + gọi mapper |
-| `QLDA.Application/.../KeHoachTrienKhaiHangMucExportMapper.cs` | **Group + sort** giai đoạn/hạng mục |
+| `QLDA.Application/.../KeHoachTrienKhaiHangMucExportMappings.cs` | Map rows — `ToExportRowsAsync` / `ToExportRows` |
+| `QLDA.Application/.../KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | Word — load header + gọi mappings |
+| `QLDA.Application/.../KeHoachTrienKhaiHangMucGetExportQuery.cs` | Excel — filter list + gọi mappings |
 | `QLDA.Application/.../KeHoachTrienKhaiHangMucImportGiaiDoanHelper.cs` | **Chuẩn thứ tự giai đoạn theo dự án** (đã có) |
 | `QLDA.Infrastructure/Offices/KeHoachTrienKhaiHangMucWordExporter.cs` | Fill `<DuAn>`, bảng hạng mục |
 
@@ -259,11 +256,10 @@ var hangMucs = keHoach.DanhSachHangMuc?
 | File | Thay đổi | Trạng thái |
 |------|----------|------------|
 | `KeHoachTrienKhaiHangMucImportGiaiDoanHelper.cs` | `GetGiaiDoanSortByDuAnAsync` | ✅ |
-| `KeHoachTrienKhaiHangMucExportMapper.cs` | Sort group theo `giaiDoanSortById`; item theo index list gốc | ✅ |
-| `KeHoachTrienKhaiHangMucExportRowLoader.cs` | `duAnId` + `duAnBuocRepo`; load sort + display name theo dự án | ✅ |
-| `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | `EnsureDuAnLoadedAsync`; HM query `OrderBy CreatedAt`; truyền `DuAnId` | ✅ |
-| `KeHoachTrienKhaiHangMucGetExportQuery.cs` | Truyền `duAnId` vào loader | ✅ |
-| `KeHoachTrienKhaiHangMucExportMapperTests.cs` | 2 unit tests | ✅ |
+| `KeHoachTrienKhaiHangMucExportMappings.cs` | Gộp mapper + loader; sort theo project + list index | ✅ |
+| `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | Word: `EnsureDuAnLoadedAsync` + `ToExportRowsAsync` | ✅ |
+| `KeHoachTrienKhaiHangMucGetExportQuery.cs` | Excel: filter + `ToExportRowsAsync` | ✅ |
+| `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | 2 unit tests | ✅ |
 | `KeHoachTrienKhaiHangMucPhieuTrinhPrintTests.cs` | Smoke docx + empty guid | ✅ Partial |
 | `KeHoachTrienKhaiHangMucGetQuery.cs` / DTO | Bổ sung `MaDuAn` | ⏳ Pending |
 
@@ -283,20 +279,22 @@ var hangMucs = keHoach.DanhSachHangMuc?
 var keHoach = await LoadKeHoachForPrintAsync(...);          // Include(DuAn)
 await EnsureDuAnLoadedAsync(keHoach, ...);                  // fallback _duAnRepo
 var hangMucs = await LoadHangMucsForKeHoachAsync(...);      // OrderBy CreatedAt, ThenBy Id
-var rows = await ExportRowLoader.LoadAsync(hangMucs, keHoach.DuAnId, ...);
-DuAnDisplay = BuildDuAnDisplay(maDuAn, tenDuAn);            // "{MaDuAn} — {TenDuAn}"
+var rows = await KeHoachTrienKhaiHangMucExportMappings.ToExportRowsAsync(
+    hangMucs, keHoach.DuAnId, _giaiDoanRepo, _duAnBuocRepo, _donViRepo, _userRepo, ct);
+DuAnDisplay = BuildDuAnDisplay(maDuAn, tenDuAn);
 ```
 
-**ExportRowLoader** — khi có `duAnId`:
+**`KeHoachTrienKhaiHangMucExportMappings.ToExportRowsAsync`** — khi có `duAnId`:
 
 ```csharp
 giaiDoanSortById = await ImportGiaiDoanHelper.GetGiaiDoanSortByDuAnAsync(...);
-// + GetGiaiDoanDisplayNameByDuAnAsync cho tên giai đoạn trên phiếu
+// + GetGiaiDoanDisplayNameByDuAnAsync
+// → ToExportRows(...) — group SortOrder + itemIndexById
 ```
 
-**ExportMapper** — sort group theo `SortOrder` (project), item theo `itemIndexById` (thứ tự list gốc).
+> **Lưu ý:** §7 các bước 2–3 bên dưới ghi tên file cũ (`ExportMapper` / `ExportRowLoader`) — đã **gộp** vào `ExportMappings.cs`. Logic không đổi.
 
-> **Thứ tự implement (đã xong):** Helper sort giai đoạn → ExportMapper → ExportRowLoader → PrintQuery → ExportQuery → Unit test → Integration test → Build & QA.
+> **Thứ tự implement (đã xong):** Helper sort giai đoạn → ExportMappings → PrintQuery → ExportQuery → Unit test → Integration test → Build & QA.
 
 ---
 
@@ -799,7 +797,7 @@ cd e:\SER
 dotnet build QLDA.sln -c Release
 
 # Unit test mapper
-dotnet test QLDA.Tests\QLDA.Tests.csproj --filter "FullyQualifiedName~KeHoachTrienKhaiHangMucExportMapper"
+dotnet test QLDA.Tests\QLDA.Tests.csproj --filter "FullyQualifiedName~KeHoachTrienKhaiHangMucExportMappings"
 
 # Integration test print
 dotnet test QLDA.Tests\QLDA.Tests.csproj --filter "FullyQualifiedName~KeHoachTrienKhaiHangMucPhieuTrinh"
@@ -897,7 +895,7 @@ public async Task Print_GiaiDoanOrder_MatchesProjectWorkflow() { ... }
 
 Parse `.docx` bằng Aspose hoặc assert qua unit test trực tiếp `ExportMapper` với fixture data (nhanh hơn).
 
-### 8.3. Unit test ExportMapper
+### 8.3. Unit test ExportMappings
 
 | Case | Input | Expected group order |
 |------|-------|---------------------|
@@ -926,8 +924,8 @@ curl --location \
 - [x] Code: `EnsureDuAnLoadedAsync` + `BuildDuAnDisplay` trên print handler
 - [x] Code: sort giai đoạn theo `GetGiaiDoanSortByDuAnAsync` (không `DanhMucGiaiDoan.Stt` global)
 - [x] Code: giữ thứ tự hạng mục theo list gốc / `CreatedAt`
-- [x] Excel export dùng chung `ExportRowLoader` + `DuAnId`
-- [x] Unit test `KeHoachTrienKhaiHangMucExportMapperTests` (2 tests) pass
+- [x] Excel + Word dùng chung `KeHoachTrienKhaiHangMucExportMappings` + `DuAnId`
+- [x] Unit test `KeHoachTrienKhaiHangMucExportMappingsTests` (2 tests) pass
 - [x] `dotnet build` pass
 - [ ] AC-1: QA manual — `Dự án:` không trống với dự án `t01`
 - [ ] AC-2: QA manual — thứ tự giai đoạn khớp UI
@@ -935,6 +933,32 @@ curl --location \
 - [ ] AC-5: Phiếu cũ / đã duyệt — regression manual
 - [ ] Integration test assert `DuAnDisplay` + thứ tự group (§7 bước 7 — chưa thêm)
 - [ ] (Tuỳ chọn) `MaDuAn` trên GetQuery DTO
+
+---
+
+## 10. Refactor sau implement
+
+### 10.1. Gộp `ExportMappings`
+
+`ExportMapper` + `ExportRowLoader` (tên cũ trong §7) → **`KeHoachTrienKhaiHangMucExportMappings.cs`**:
+
+| Method | Dùng khi |
+|--------|----------|
+| `ToExportRowsAsync(...)` | `GetExportQuery`, `GetPhieuTrinhPrintQuery` |
+| `ToExportRows(...)` | Unit test — map với dictionary có sẵn |
+
+### 10.2. Giữ 2 MediatR query
+
+| Query | Output | Khác biệt |
+|-------|--------|-----------|
+| `GetExportQuery` | `List<ExportItemDto>` | Filter list, có thể merge nhiều KH |
+| `GetPhieuTrinhPrintQuery` | `PhieuTrinhPrintDto` | 1 KH, header Word, auth fallback |
+
+Phần chung rows → `ExportMappings`. Tách endpoint ở `PrintController` (`.xlsx` / `.docx`) — đúng CQRS.
+
+### 10.3. `InternalsVisibleTo`
+
+`QLDA.Application.csproj` → `InternalsVisibleTo: QLDA.Tests` cho test `ExportMappings` (internal).
 
 ---
 
@@ -947,6 +971,6 @@ flowchart TD
     C --> D[Sort group theo DuAnBuoc.Buoc.Stt]
     D --> E[Tie-break: index xuất hiện đầu trong list gốc]
     E --> F[Sort item trong group theo CreatedAt / list index]
-    F --> G[ExportMapper → rows A,B,1,2,...]
-    G --> H[WordExporter → .docx]
+    F --> G[ExportMappings → rows A,B,1,2,...]
+    G --> H[WordExporter / ExcelExporter]
 ```

@@ -53,7 +53,7 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             request.DuAnId,
             cancellationToken);
 
-        var donViId = KeHoachTrienKhaiHangMucImportUserScope.TryGetCurrentDonViId(_userProvider);
+        var donViId = TryGetCurrentDonViId(_userProvider);
         var danhSachDonVi = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
             .WhereIf(donViId > 0, e => e.DonViCapChaId == donViId)
@@ -77,5 +77,21 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             .ToListAsync(cancellationToken);
 
         return [danhSachDuAn, danhSachGiaiDoan, danhSachDonVi, danhSachCanBo, danhSachDonVi, danhSachCanBo];
+    }
+
+    private static long? TryGetCurrentDonViId(IUserProvider userProvider)
+    {
+        if (userProvider.Id <= 0)
+            return null;
+
+        try
+        {
+            var donViId = userProvider.Info.DonViID;
+            return donViId > 0 ? donViId : null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 }

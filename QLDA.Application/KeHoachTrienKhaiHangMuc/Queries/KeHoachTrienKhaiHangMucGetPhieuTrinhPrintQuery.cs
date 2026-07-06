@@ -51,7 +51,7 @@ internal class KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQueryHandler(IServicePro
 
         var rows = hangMucs.Count == 0
             ? []
-            : await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
+            : await KeHoachTrienKhaiHangMucExportMappings.ToExportRowsAsync(
                 hangMucs,
                 keHoach.DuAnId,
                 _giaiDoanRepo,

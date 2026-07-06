@@ -53,7 +53,7 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
 
         ManagedException.ThrowIf(hangMucs.Count == 0, "Không có dữ liệu để xuất");
 
-        return await KeHoachTrienKhaiHangMucExportRowLoader.LoadAsync(
+        return await KeHoachTrienKhaiHangMucExportMappings.ToExportRowsAsync(
             hangMucs,
             duAnId ?? request.DuAnId,
             _giaiDoanRepo,

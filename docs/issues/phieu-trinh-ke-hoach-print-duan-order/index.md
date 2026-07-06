@@ -1,7 +1,7 @@
 # Lỗi in phiếu trình KH triển khai — thiếu Dự án & sai thứ tự giai đoạn
 
 > Ngày ghi nhận: 06/07/2026  
-> Trạng thái: ✅ **IMPLEMENTED** (06/07/2026)  
+> Trạng thái: ✅ **IMPLEMENTED** (commit `af1fa46`, 06/07/2026)  
 > Liên quan: [#9469 phieu-trinh-word-spec](../9469/phieu-trinh-word-spec.md), [print-fix trước đó](../phieu-trinh-ke-hoach-print-fix/index.md)
 
 ## Tóm tắt
@@ -26,39 +26,24 @@ Role: GroupKeHoachTrienKhaiHangMucExport
 | Hạng mục | File | Trạng thái |
 |----------|------|------------|
 | Sort giai đoạn theo dự án | `KeHoachTrienKhaiHangMucImportGiaiDoanHelper.cs` | ✅ |
-| Group/item order | `KeHoachTrienKhaiHangMucExportMapper.cs` | ✅ |
-| Loader + DuAnId | `KeHoachTrienKhaiHangMucExportRowLoader.cs` | ✅ |
-| Print handler | `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | ✅ |
+| Map rows (Excel + Word) | `KeHoachTrienKhaiHangMucExportMappings.cs` | ✅ |
+| Print handler (Word) | `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | ✅ |
 | Excel export | `KeHoachTrienKhaiHangMucGetExportQuery.cs` | ✅ |
-| Unit test | `KeHoachTrienKhaiHangMucExportMapperTests.cs` | ✅ 2 tests |
+| Unit test | `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | ✅ 2 tests |
 | Integration test | `KeHoachTrienKhaiHangMucPhieuTrinhPrintTests.cs` | ✅ Partial |
 
 ## Điểm quan trọng
 
 | Vấn đề | Fix as-built |
 |--------|--------------|
-| Dự án trống | `EnsureDuAnLoadedAsync` fallback `_duAnRepo`; `DuAnDisplay` = `{MaDuAn} — {TenDuAn}` |
-| Sai thứ tự giai đoạn | `GetGiaiDoanSortByDuAnAsync` (`DuAnBuoc.Buoc.Stt`) thay `DanhMucGiaiDoan.Stt` |
+| Dự án trống | `EnsureDuAnLoadedAsync` + `DuAnDisplay` = `{MaDuAn} — {TenDuAn}` |
+| Sai thứ tự giai đoạn | `GetGiaiDoanSortByDuAnAsync` (`DuAnBuoc.Buoc.Stt`) |
 | Sai thứ tự HM | Giữ index list gốc; load HM `OrderBy CreatedAt` |
-| Excel | Cùng `ExportRowLoader` + `DuAnId` |
-
-## Acceptance Criteria
-
-- [x] Code fix DuAn + sort theo quy trình dự án
-- [x] Unit test mapper pass
-- [ ] QA manual: `Dự án:` hiển thị `t01` (hoặc `MaDuAn — TenDuAn`)
-- [ ] QA manual: thứ tự giai đoạn/hạng mục khớp UI
-- [ ] (Tuỳ chọn) `MaDuAn` trên GetQuery DTO cho FE
-
-## Tài liệu triển khai
-
-| File | Nội dung |
-|------|----------|
-| **[report.md](report.md)** | Spec as-built, luồng sau fix, test plan, checklist |
-| [phieu-trinh-word-spec](../9469/phieu-trinh-word-spec.md) | Spec gốc #9469 |
+| Excel + Word | Cùng `ExportMappings.ToExportRowsAsync` |
 
 ## QA còn lại
 
-1. Mở form kế hoạch có dự án `t01` → in phiếu trình → kiểm tra dòng `Dự án:` và thứ tự group A/B.
-2. So sánh với grid UI: Xin chủ trương trước, Chuẩn bị THĐT sau; HM 1,2 / 3 đúng group.
-3. Export Excel cùng `id` — thứ tự group đồng bộ với phiếu trình.
+1. In phiếu trình → kiểm tra `Dự án:` và thứ tự group/hạng mục khớp UI.
+2. Export Excel cùng `id` — thứ tự đồng bộ với phiếu trình.
+
+Chi tiết: **[report.md](report.md)**
