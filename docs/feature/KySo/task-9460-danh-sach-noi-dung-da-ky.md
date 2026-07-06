@@ -2,7 +2,9 @@
 
 > **V2 (áp dụng)** — nguồn `TepDinhKem`; phân loại theo **`GroupType` = hiện hành / lịch sử**, không theo “lần ký đầu / lần ký cuối”.  
 > **V1 (tham khảo, §6)** — query bảng `NoiDungDaKySo` riêng (đã bỏ).  
-> Liên quan: [task-9460-noi-dung-da-ky.md](./task-9460-noi-dung-da-ky.md) (upload/ký lại), [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md).
+> Liên quan: [task-9460-noi-dung-da-ky.md](./task-9460-noi-dung-da-ky.md) (upload/ký lại), [task-9460-ky-so-crud.md](./task-9460-ky-so-crud.md), [task-export-excel-noi-dung-da-ky.md](./task-export-excel-noi-dung-da-ky.md) (export Excel + filter chuẩn hóa).
+
+**Trạng thái:** ✅ **IMPLEMENTED** — cập nhật 06/07/2026
 
 ---
 
@@ -15,7 +17,7 @@
 | 1 | **1 API GET** danh sách file đã ký | Phân trang |
 | 2 | Nguồn: **`TepDinhKem`** | Chỉ bản **đã ký** |
 | 3 | Điều kiện cố định | `ParentId IS NOT NULL` |
-| 4 | Filter 3 tham số (FE) + join `UserMaster` | `GroupType` cố định BE |
+| 4 | Filter FE + join `UserMaster` | `GroupType` cố định BE |
 
 ### 1.2 `GroupType` — hiện hành vs lịch sử (không phải “lần đầu / lần cuối”)
 
@@ -56,36 +58,63 @@ File gốc (GoiThau, …)              ParentId = null        → KHÔNG có tro
 | User “ký đời” / ẩn khỏi hiện hành | `IsDeleted = true` thủ công — **vẫn** hiện trong API **lịch sử** (`OnlyNotDeleted: false`) |
 | Lấy file **hiện hành** (màn đối tượng) | `GroupType = 'KySo'` AND `IsDeleted = false` (query riêng, không phải API này) |
 
-### 1.5 Đầu vào (3 tham số — FE)
+### 1.5 Đầu vào (query params — FE)
 
-| Tham số (spec) | Query param | Kiểu | Map `TepDinhKem` |
-|----------------|-------------|------|------------------|
-| Người ký | `createUserId` | `long?` | `CreatedBy == createUserId.ToString()` |
-| Từ ngày | `tuNgay` | `DateOnly?` | `CreatedAt >= tuNgay.ToStartOfDayUtc()` |
-| Đến ngày | `denNgay` | `DateOnly?` | `CreatedAt <= denNgay.ToEndOfDayUtc()` |
+```
+GET /api/ky-so/noi-dung-da-ky/danh-sach
+  ?nguoiKyId=
+  &tuNgay=
+  &denNgay=
+  &duAnId=
+  &globalFilter=
+  &pageIndex=
+  &pageSize=
+```
+
+| Tham số | Kiểu | Map / hành vi |
+|---------|------|----------------|
+| `nguoiKyId` | `long?` | `CreatedBy == nguoiKyId.ToString()` — **`UserPortalId`**, không phải `USER_MASTER.Id` |
+| `tuNgay` | `DateOnly?` | `CreatedAt >= tuNgay.ToStartOfDayUtc()` — xem §1.5.1 |
+| `denNgay` | `DateOnly?` | `CreatedAt <= denNgay.ToEndOfDayUtc()` — xem §1.5.1 |
+| `duAnId` | `Guid?` | `GroupId IN (...)` — resolve qua `DuAnTepDinhKemGroupIdQueryExtensions` |
+| `globalFilter` | `string?` | OR: `FileName`, `OriginalName`, `UserMaster.HoTen` (sau join, in-memory) |
+| `pageIndex`, `pageSize` | int | Phân trang (`AggregateRootPagination`) |
 
 **`GroupType`:** BE cố định `IN ('KySo', 'NoiDungDaKySo')` — **FE không truyền**.
 
-**Điều kiện ngày (spec):** `tuNgay <= CreateDate <= denNgay` → cột audit **`CreatedAt`**.
+**Điều kiện ngày:** `tuNgay <= CreatedAt <= denNgay` (cột audit **`CreatedAt`**).
 
-### 1.6 Đầu ra (map spec → `TepDinhKem`)
+#### 1.5.1 Default khoảng ngày & bind `dd-MM`
 
-| Output (spec) | DTO | Cột `TepDinhKem` |
-|---------------|-----|------------------|
-| `FileName` | `FileName` | `FileName` |
-| `FileOrginal` | `FileOrginal` | `OriginalName` |
-| `GroupId` | `GroupId` | `GroupId` |
-| `GroupName` | `GroupName` | `GroupType` |
-| `CreateUserName` | `CreateUserName` | Join `UserMaster.HoTen` qua `CreatedBy` |
+| Tình huống | `tuNgay` | `denNgay` |
+|------------|----------|-----------|
+| FE **không** truyền cả hai | `hôm nay − 1 năm` | `hôm nay` |
+| Chỉ có `denNgay` | `denNgay − 1 năm` | giá trị FE |
+| Chỉ có `tuNgay` | giá trị FE | `hôm nay` |
 
-**Bổ sung hữu ích:**
+**Bind ngày** (`NoiDungDaKyDateModelBinder` — chỉ áp dụng cho `NoiDungDaKySearchDto`):
 
-| DTO | Nguồn |
-|-----|--------|
-| `Id` | `TepDinhKem.Id` |
-| `ParentId` | `ParentId` |
-| `CreateUserId` | `CreatedBy` → `long?` |
-| `CreateDate` | `CreatedAt.ToDateOnlyVn()` |
+| Format query | Ý nghĩa |
+|--------------|---------|
+| `dd-MM-yyyy`, `dd/MM/yyyy`, `yyyy-MM-dd` | Ngày đầy đủ |
+| `dd-MM` / `dd/MM` trên **`tuNgay`** | Cùng ngày-tháng, **năm trước** |
+| `dd-MM` / `dd/MM` trên **`denNgay`** (hoặc bỏ trống) | **Hôm nay** |
+
+Logic resolve: `NoiDungDaKyQueryableExtensions.ResolveDateRange`.
+
+### 1.6 Đầu ra (`TepDinhKemDto`)
+
+| Cột UI / spec | Field response | Nguồn |
+|---------------|----------------|--------|
+| Tên file | `FileName` | `TepDinhKem.FileName` |
+| Tên gốc | `OriginalName` | `TepDinhKem.OriginalName` |
+| Loại file | `Type` | `TepDinhKem.Type` |
+| Dung lượng | `Size` | `TepDinhKem.Size` |
+| Nhóm / đối tượng | `GroupId`, `GroupType` | `TepDinhKem` |
+| Người tạo / ký | `TenNguoiTao` | Join `UserMaster.HoTen` qua `CreatedBy` ↔ `UserPortalId` |
+| Id, ParentId | `Id`, `ParentId` | `TepDinhKem` |
+
+`CreatedBy`, `CreatedAt`, `UpdatedBy`, `UpdatedAt` có trên DTO nhưng **`[JsonIgnore]`** — FE dùng `TenNguoiTao` cho tên người ký.
 
 ### 1.7 API
 
@@ -95,84 +124,98 @@ GET /api/ky-so/noi-dung-da-ky/danh-sach
 
 Đặt trên **`KySoController`** (cùng nhóm upload/ký file), không dùng `QuanLyKySoController` (bảng `KySo` chứng thư).
 
----
-
-## 2. Hiện trạng
-
-| Thành phần | Trạng thái |
-|------------|------------|
-| `POST /api/ky-so/them-moi` | Insert `TepDinhKem` (file có `ParentId`) |
-| Bảng `NoiDungDaKySo` | V1 — **không dùng** cho API list; có thể drop sau |
-| `GET` danh sách file đã ký | ❌ Chưa có |
-| `GroupTypeConstants.NoiDungDaKySo` | Cần có khi V2 upload ký lại (nếu chưa có thì dùng literal `"NoiDungDaKySo"`) |
+**Export Excel** (cùng filter, không phân trang): `GET /api/print/danh-sach-noi-dung-da-ky` — chi tiết [task-export-excel-noi-dung-da-ky.md](./task-export-excel-noi-dung-da-ky.md).
 
 ---
 
-## 3. Thứ tự thực hiện
+## 2. Hiện trạng (sau implement)
+
+| Thành phần | Trạng thái | File |
+|------------|------------|------|
+| `POST /api/ky-so/them-moi` | ✅ | Upload/ký file |
+| `GET /api/ky-so/noi-dung-da-ky/danh-sach` | ✅ | `KySoController` |
+| `GET /api/print/danh-sach-noi-dung-da-ky` | ✅ | `PrintController` |
+| Filter dùng chung list + export | ✅ | `NoiDungDaKyQueryableExtensions` |
+| Lọc theo dự án (`duAnId`) | ✅ | `DuAnTepDinhKemGroupIdQueryExtensions` |
+| Bind ngày `dd-MM` | ✅ | `NoiDungDaKyDateModelBinder` |
+| Bảng `NoiDungDaKySo` | V1 — **không dùng** | Có thể drop sau |
+| `GroupTypeConstants.NoiDungDaKySo` | ✅ | `QLDA.Domain.Constants` |
+
+---
+
+## 3. Kiến trúc code
 
 ```
-Bước 1: Application – NoiDungDaKySearchDto + `TepDinhKemDto` (response)
-Bước 2: Application – NoiDungDaKyGetDanhSachQuery (filter ParentId + GroupType)
-Bước 3: WebApi – KySoController GET
-Bước 4: Build + Postman
+KySoController.GetNoiDungDaKyList
+  └─ NoiDungDaKyGetDanhSachQuery
+       └─ NoiDungDaKyQueryableExtensions.ApplyFiltersAsync  ← filter + join UserMaster
+            ├─ ResolveDateRange (default 1 năm)
+            ├─ DuAnTepDinhKemGroupIdQueryExtensions.ResolveGroupIdsAsync (nếu có duAnId)
+            ├─ Query TepDinhKem (ParentId, GroupType, nguoiKyId, GroupId)
+            ├─ Lọc CreatedAt in-memory
+            ├─ Load UserMaster chỉ CreatedBy có trong danh sách file
+            └─ globalFilter (FileName | OriginalName | HoTen)
+       └─ Map → TepDinhKemDto → PaginatedList
 ```
 
-**Không** migration. **Không** WebApi Model.
+**Không** migration. **Không** WebApi Model cho search — dùng DTO Application.
 
 ---
 
 ## 4. Chi tiết implementation
 
-### Bước 1 – DTOs
+### 4.1 DTOs
 
-**`NoiDungDaKySearchDto.cs`** — kế thừa `CommonSearchDto` (`TuNgay`, `DenNgay` đã có):
+**`NoiDungDaKySearchDto`** — kế thừa `CommonSearchDto` (`TuNgay`, `DenNgay`, `DuAnId`, `GlobalFilter`, …):
 
 ```csharp
-public class NoiDungDaKySearchDto : CommonSearchDto {
-    public long? CreateUserId { get; set; }
+public record NoiDungDaKySearchDto : CommonSearchDto {
+    /// <summary>Người ký — UserPortalId (map TepDinhKem.CreatedBy).</summary>
+    public long? NguoiKyId { get; set; }
 }
 ```
 
-**Response:** dùng `TepDinhKemDto` (`GroupType`, `OriginalName`, …) — không tạo DTO riêng.
+**Response:** `TepDinhKemDto` — không tạo DTO riêng cho list.
 
----
+### 4.2 Filter dùng chung
 
-### Bước 2 – Query
+**File:** `QLDA.Application/KySos/Queries/NoiDungDaKyQueryableExtensions.cs`
+
+| Bước | Mô tả |
+|------|--------|
+| 1 | `ResolveDateRange` — default 1 năm nếu không có ngày |
+| 2 | `ResolveGroupIdsAsync` khi `duAnId` có giá trị |
+| 3 | Query DB: `ParentId != null`, `GroupType ∈ {KySo, NoiDungDaKySo}`, `CreatedBy`, `GroupId` |
+| 4 | Lọc `CreatedAt` theo `tuNgay` / `denNgay` (in-memory) |
+| 5 | Lấy `CreatedBy` distinct từ danh sách file → query `UserMaster` **chỉ** `UserPortalId` trong tập đó |
+| 6 | Join → `NoiDungDaKyJoinedRow`; `globalFilter` OR tên file / tên gốc / họ tên |
+| 7 | `OrderByDescending(CreatedAt)` |
+
+**Convention `CreatedBy`:** lưu **`UserPortalId`** (JWT `UserId`), join `UserMaster` qua `UserPortalId.ToString()`.
+
+### 4.3 Query handler
 
 **File:** `QLDA.Application/KySos/Queries/NoiDungDaKyGetDanhSachQuery.cs`
 
-**Filter cốt lõi:**
-
 ```csharp
-var signedGroupTypes = new[] {
-    GroupTypeConstants.KySo,
-    GroupTypeConstants.NoiDungDaKySo  // hoặc "NoiDungDaKySo" nếu constant chưa thêm
-};
-
-// Lịch sử: cả KySo + NoiDungDaKySo, kể cả IsDeleted (user ẩn nhưng vẫn xem lịch sử)
-var query = _tepDinhKemRepository.GetQueryableSet(OnlyNotDeleted: false)
+var rows = await _tepDinhKemRepository
+    .GetQueryableSet(OnlyNotDeleted: false, OrderByIndex: false)
     .AsNoTracking()
-    .Where(e => e.ParentId != null)
-    .Where(e => signedGroupTypes.Contains(e.GroupType))
-    .WhereIf(search.CreateUserId.HasValue,
-        e => e.CreatedBy == search.CreateUserId!.Value.ToString())
-    .WhereIf(search.TuNgay.HasValue,
-        e => e.CreatedAt >= search.TuNgay!.Value.ToStartOfDayUtc())
-    .WhereIf(search.DenNgay.HasValue,
-        e => e.CreatedAt <= search.DenNgay!.Value.ToEndOfDayUtc());
+    .ApplyFiltersAsync(search, users, serviceProvider, _clock, cancellationToken);
+
+return PaginatedList<TepDinhKemDto>.Create(dtos, request.Skip(), request.Take());
 ```
 
-`Select` → `TepDinhKemDto`.
+### 4.4 Controller
 
----
-
-### Bước 3 – Controller
+**File:** `QLDA.WebApi/Controllers/KySoController.cs`
 
 ```csharp
 [HttpGet("noi-dung-da-ky/danh-sach")]
 public async Task<ResultApi> GetNoiDungDaKyList(
     [FromQuery] NoiDungDaKySearchDto searchDto,
-    [FromQuery] AggregateRootPagination pagination) {
+    [FromQuery] AggregateRootPagination pagination)
+{
     var res = await Mediator.Send(new NoiDungDaKyGetDanhSachQuery(searchDto) {
         PageIndex = pagination.PageIndex,
         PageSize = pagination.PageSize,
@@ -180,6 +223,16 @@ public async Task<ResultApi> GetNoiDungDaKyList(
     return ResultApi.Ok(res);
 }
 ```
+
+### 4.5 Bind ngày
+
+**File:** `QLDA.WebApi/ModelBinding/NoiDungDaKyDateModelBinder.cs`  
+Đăng ký trong `WebApplicationExtensions` (`NoiDungDaKyDateModelBinderProvider`).
+
+### 4.6 Lọc theo dự án
+
+**File:** `QLDA.Application/DuAns/Queries/DuAnTepDinhKemGroupIdQueryExtensions.cs`  
+Thu thập mọi `GroupId` (string) của entity thuộc `DuAnId` → `WHERE GroupId IN (...)`.
 
 ---
 
@@ -191,12 +244,16 @@ SELECT Id, ParentId, FileName, GroupType, IsDeleted, CreatedAt, CreatedBy
 FROM TepDinhKem
 WHERE ParentId IS NOT NULL
   AND GroupType IN ('KySo', 'NoiDungDaKySo')
-  -- 2026-05-21 00:00 VN  →  2026-05-20 17:00:00 UTC
-  AND CreatedAt >= '2026-05-20T17:00:00.0000000+00:00'
-  -- 2026-05-21 23:59:59 VN  →  2026-05-21 16:59:59 UTC
-  AND CreatedAt <= '2026-05-21T16:59:59.0000000+00:00'
-  AND CreatedBy = '4'
+  AND CreatedAt >= @tuNgayStartUtc
+  AND CreatedAt <= @denNgayEndUtc
+  AND (@nguoiKyId IS NULL OR CreatedBy = CAST(@nguoiKyId AS NVARCHAR))
+  AND (@duAnId IS NULL OR GroupId IN (...))
 ORDER BY CreatedAt DESC;
+
+-- UserMaster: chỉ load UserPortalId có trong CreatedBy của kết quả trên
+SELECT * FROM USER_MASTER
+WHERE User_PortalID IS NOT NULL
+  AND CAST(User_PortalID AS NVARCHAR) IN (...);
 ```
 
 ---
@@ -210,8 +267,7 @@ ORDER BY CreatedAt DESC;
 | Ý nghĩa `GroupType` | Hay hiểu nhầm **lần đầu = KySo, ký lại = NoiDungDaKySo** (bản **mới** gán `NoiDungDaKySo`) | **Hiện hành = `KySo`**, **lịch sử = `NoiDungDaKySo`** (bản **cũ** demote khi ký lại) |
 | Ký lại | Tự `IsDeleted` bản cũ | Chỉ đổi `GroupType` bản cũ; `IsDeleted` chỉ khi user ẩn thủ công |
 | API lịch sử | Chỉ bảng `NoiDungDaKySo` | `GroupType IN ('KySo','NoiDungDaKySo')`, `OnlyNotDeleted: false` |
-| `GroupName` output | Cột `GroupName` | `GroupType` |
-| `FileOrginal` | Cột `FileOrginal` | `OriginalName` |
+| Tên người ký | Cột riêng | `TenNguoiTao` ← join `UserMaster.HoTen` |
 | Đồng bộ upload | Insert 2 nơi | Chỉ `TepDinhKem` / `NoiDungDaKyCommand` |
 
 ---
@@ -219,11 +275,14 @@ ORDER BY CreatedAt DESC;
 ## 7. Checklist
 
 ```
-[ ] 1. NoiDungDaKySearchDto + TepDinhKemDto (response)
-[ ] 2. NoiDungDaKyGetDanhSachQuery — ParentId != null + GroupType ký số
-[ ] 3. KySoController GET noi-dung-da-ky/danh-sach
-[ ] 4. GroupTypeConstants.NoiDungDaKySo (nếu V2 upload đã merge)
-[ ] 5. Build + Postman
+[x] 1. NoiDungDaKySearchDto + TepDinhKemDto (response)
+[x] 2. NoiDungDaKyQueryableExtensions — filter dùng chung + default 1 năm
+[x] 3. NoiDungDaKyGetDanhSachQuery — ParentId != null + GroupType ký số
+[x] 4. KySoController GET noi-dung-da-ky/danh-sach
+[x] 5. NoiDungDaKyDateModelBinder (dd-MM / dd-MM-yyyy)
+[x] 6. duAnId → DuAnTepDinhKemGroupIdQueryExtensions
+[x] 7. Export Excel (task-export-excel-noi-dung-da-ky.md)
+[x] 8. Integration tests — NoiDungDaKyExportTests
 ```
 
 ---
@@ -234,12 +293,18 @@ ORDER BY CreatedAt DESC;
 - API này **không** thay thế list file gốc (`ParentId == null`) trên màn hình đối tượng (Gói thầu, Hợp đồng, …).
 - **Handler upload** (`NoiDungDaKyCommand`): ký lại → `parent.GroupType = NoiDungDaKySo`, bản mới `KySo`; **không** tự `IsDeleted` khi ký lại (xem [task-9460-noi-dung-da-ky.md](./task-9460-noi-dung-da-ky.md) §1.3).
 - **Query list:** `GetQueryableSet(OnlyNotDeleted: false)` — user “ký đời” (`IsDeleted = true`) vẫn thấy trong lịch sử.
+- **`TenNguoiTao`:** `TepDinhKem.CreatedBy` = **`UserPortalId`**; join `UserMaster.UserPortalId` — **không** dùng `USER_MASTER.Id`.
+- **UserMaster:** chỉ load user có `UserPortalId` nằm trong `CreatedBy` của file đã lọc (không `ToList` cả bảng).
+- **`globalFilter`:** áp dụng sau join, in-memory — list và export dùng chung logic `ApplyFiltersAsync`.
 - Khi drop bảng `NoiDungDaKySo` (V1), **không** đổi contract API list V2.
-- `CreateUserName`: join `UserMaster` qua `CreatedBy` ↔ `UserPortalId` (đã dùng trong handler).
 
 ---
 
 ## 9. Trạng thái
 
-- ✅ Doc V2 — hiện hành / lịch sử theo `GroupType`; API list lấy cả 2 type + `IsDeleted`
-- ⏳ Checklist §7 — build + Postman
+| Mục | Trạng thái |
+|-----|------------|
+| Doc V2 — hiện hành / lịch sử theo `GroupType` | ✅ |
+| API list + filter (ngày, người ký, dự án, keyword) | ✅ |
+| Export Excel cùng filter | ✅ |
+| Test integration | ✅ `QLDA.Tests/Integration/NoiDungDaKyExportTests.cs` |

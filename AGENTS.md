@@ -42,3 +42,40 @@ This project is indexed by GitNexus as **Quan_Ly_Du_An** (18694 symbols, 38994 r
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+## Rule bổ sung về Architecture Clean + CQRS
+
+Dự án đang dùng **Clean Architecture + CQRS**, nên khi sinh code hoặc đề xuất cấu trúc code phải tuân thủ đúng boundary hiện tại.
+
+### Application Layer
+
+`QLDA.Application` chỉ nên chứa các nhóm chính sau:
+
+* `Commands`
+* `Queries`
+* `Handlers`
+* `Dtos` / `DTOs`
+* `Validators`
+
+**Không tạo thêm `Services` trong Application layer.**
+
+Lý do: với CQRS, bản thân `CommandHandler` và `QueryHandler` đã đóng vai trò xử lý use case / application service rồi. Nếu tách thêm `Service` trong Application sẽ làm sai pattern, dễ sinh thêm tầng trung gian không cần thiết và làm lệch kiến trúc dự án.
+
+### Khi cần xử lý nghiệp vụ
+
+* Logic ghi dữ liệu đặt trong `Command` + `CommandHandler`.
+* Logic đọc dữ liệu đặt trong `Query` + `QueryHandler`.
+* Dữ liệu request/response đặt trong `Dto`.
+* Validate input đặt trong `Validator`.
+* Business model/entity đặt ở `Domain`.
+* EF configuration/repository/db context đặt ở `Persistence`.
+* Controller ở `WebApi` chỉ gọi command/query, không chứa business logic.
+
+### Tuyệt đối tránh
+
+* Không tạo folder/class kiểu `Application/Services`.
+* Không tạo `SomethingService` để xử lý CRUD nếu có thể xử lý bằng `CommandHandler` / `QueryHandler`.
+* Không đưa business logic vào Controller.
+* Không tạo model trong WebApi nếu đã có DTO/Application pattern.
+* Không sửa architecture theo kiểu MVC service layer truyền thống.
+
