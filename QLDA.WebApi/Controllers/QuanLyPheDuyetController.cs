@@ -157,18 +157,6 @@ public class QuanLyPheDuyetController : AggregateRootController
         return ResultApi.Ok(res);
     }
 
-    /// <summary>
-    /// Chuyen P.HC-TH de phat hanh so (issue #9459)
-    /// </summary>
-    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    [HttpPost("{type}/{id}/chuyen-phat-hanh")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> ChuyenPhatHanh(string type, Guid id, [FromBody] ChuyenPhatHanhModel? model = null)
-    {
-        var res = await Mediator.Send(new PheDuyetChuyenPhatHanhCommand(type, id, model?.SoPhatHanh));
-        return ResultApi.Ok(res);
-    }
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("{type}/{id}/chuyen")]
