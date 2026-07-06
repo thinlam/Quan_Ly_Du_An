@@ -72,10 +72,20 @@ internal static class NoiDungDaKyQueryableExtensions
         if (files.Count == 0)
             return [];
 
-        var userList = await users.ToListAsync(cancellationToken);
-        var userMap = userList
-            .GroupBy(u => u.UserPortalId.ToString())
-            .ToDictionary(g => g.Key, g => g.First());
+        var createdByIds = files
+            .Select(e => e.CreatedBy)
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Distinct()
+            .ToList();
+
+        var userMap = createdByIds.Count == 0
+            ? new Dictionary<string, UserMaster>()
+            : (await users
+                .Where(u => u.UserPortalId.HasValue
+                         && createdByIds.Contains(u.UserPortalId.Value.ToString()))
+                .ToListAsync(cancellationToken))
+                .GroupBy(u => u.UserPortalId!.Value.ToString())
+                .ToDictionary(g => g.Key, g => g.First());
 
         IEnumerable<NoiDungDaKyJoinedRow> rows = files
             .OrderByDescending(e => e.CreatedAt)
