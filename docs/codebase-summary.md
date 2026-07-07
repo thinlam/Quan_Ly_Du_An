@@ -60,6 +60,7 @@ The solution consists of 5 main projects following Clean Architecture:
 - Master data management (DanhMuc entities)
 - File processing capabilities with Aspose integration
 - JWT-based authentication and authorization
+- Resource-level row-level authorization (`IAuthorizationContext` per-request scoped) with `DuAnAuthorizationProvider` + `BuocAuthorizationProvider`; KHTC department short-circuits all ownership checks via `HasKhtcBypass`
 - CQRS implementation for scalable architecture
 
 ## Files and Statistics
@@ -89,6 +90,9 @@ The solution consists of 5 main projects following Clean Architecture:
 - Build warning cleanup completed (0 warnings achieved)
 - PR #89 merged: export-tong-hop-nhu-cau-kinh-phi-nam feature
 - Branch: main
+
+## Recent Updates (July 2026)
+- `HasKhtcBypass` now grants full read + write across `DuAn` and `DuAnBuoc` resources: `DuAnAuthorizationProvider` (`CanExecuteAsync`, `CanViewAsync`, `Filter<T>`, `EnsureCanExecuteAsync`) and `BuocAuthorizationProvider` (`CanExecuteStepAsync`, `FilterVisibleSteps`, `FilterVisibleChildEntities`, `CanManageStepFieldsAsync`, `CanExecuteThanhToanAsync`) short-circuit to allow when the current user belongs to `PhongKHTC`
 
 ---
 *This summary was generated from repomix compaction on June 2026.*
