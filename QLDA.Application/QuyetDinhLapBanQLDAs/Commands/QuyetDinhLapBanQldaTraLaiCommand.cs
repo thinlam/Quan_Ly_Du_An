@@ -40,11 +40,6 @@ internal class QuyetDinhLapBanQldaTraLaiCommandHandler : IRequestHandler<QuyetDi
 
     public async Task<int> Handle(QuyetDinhLapBanQldaTraLaiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");

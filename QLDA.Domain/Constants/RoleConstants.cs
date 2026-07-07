@@ -36,7 +36,11 @@ public static class RoleConstants {
     /// Hiện đã được dỡ bỏ (empty) — NVTT_BP01/NVTT_XemDuAn không còn bypass
     /// ownership filter trên các endpoint chuẩn. Hai role này dùng controller
     /// riêng (NvttDuAnController, NvttBuocController) với prefix nvtt/ để xem
-    /// toàn bộ dự án. Admin catalog (GroupAdminCatalog) vẫn giữ read-all.
+    /// toàn bộ dự án.
+    /// Lưu ý (v1.4): Admin catalog (`GroupAdminCatalog`) KHÔNG còn read-all DuAn
+    /// — `DuAnAuthorizationProvider` không short-circuit cho admin role nữa.
+    /// Bypass role admin catalog chỉ áp dụng cho Buoc/ThanhToan (qua
+    /// `BuocAuthorizationProvider.IsAdminCatalogRole`).
     /// Write path (CanExecuteAsync, CanExecuteStepAsync) LUÔN fallback về ownership
     /// check — user có role trong group này vẫn CUD được DuAn được assign.
     /// </summary>

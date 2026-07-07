@@ -32,7 +32,6 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var traLaiStt = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -61,7 +60,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
             entity.BuocId = request.Dto.BuocId;
 
         }
-        else if((entity.TrangThaiId == daDuyetStt?.Id || entity.TrangThaiId == traLaiStt?.Id) && isHcth)
+        else if(entity.TrangThaiId == daDuyetStt?.Id || entity.TrangThaiId == traLaiStt?.Id)
         {
             entity.TrangThaiThamDinhId = request.Dto.TrangThaiThamDinhId;
             entity.KetQuaThamDinh = request.Dto.KetQuaThamDinh;

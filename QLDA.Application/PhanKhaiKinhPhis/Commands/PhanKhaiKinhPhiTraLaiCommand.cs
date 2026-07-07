@@ -28,9 +28,6 @@ internal class PhanKhaiKinhPhiTraLaiCommandHandler : IRequestHandler<PhanKhaiKin
 
     public async Task<int> Handle(PhanKhaiKinhPhiTraLaiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền trả lại phân khai kinh phí");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {

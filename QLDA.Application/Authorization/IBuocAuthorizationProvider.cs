@@ -21,7 +21,7 @@ public interface IBuocAuthorizationProvider
 
     /// <summary>
     /// Kiểm tra quyền chỉnh sửa danh sách phòng ban phối hợp (DanhSachPhongBanPhoiHopIds).
-    /// Chỉ Owner (CreatedBy) + Lãnh đạo phụ trách + HasAdminCatalog mới có quyền.
+    /// Chỉ Owner (CreatedBy) + Lãnh đạo phụ trách mới có quyền.
     /// </summary>
     Task<bool> CanManageViewerListAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct);
 
@@ -32,7 +32,7 @@ public interface IBuocAuthorizationProvider
 
     /// <summary>
     /// Kiểm tra quyền edit/delete các field của bước (TenBuoc, Ngay, ManHinh, PhongPhuTrachChinhId).
-    /// Chỉ Owner (CreatedBy) + Lãnh đạo phụ trách + HasAdminCatalog mới có quyền.
+    /// Chỉ Owner (CreatedBy) + Lãnh đạo phụ trách mới có quyền.
     /// </summary>
     Task<bool> CanManageStepFieldsAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct);
 
@@ -43,7 +43,7 @@ public interface IBuocAuthorizationProvider
     Task EnsureCanManageStepFieldsAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default);
 
     /// <summary>
-    /// Kiểm tra quyền Insert/Update ThanhToan: Owner + Lãnh đạo + HasAdminCatalog + PhongBanChinh.
+    /// Kiểm tra quyền Insert/Update ThanhToan: Owner + Lãnh đạo + role thuộc GroupAdminCatalog + PhongBanChinh.
     /// PhongBanPhoiHop KHÔNG có quyền (kể cả khi thuộc DuAn.ChiuTrachNhiemXuLys).
     /// </summary>
     Task<bool> CanExecuteThanhToanAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct);

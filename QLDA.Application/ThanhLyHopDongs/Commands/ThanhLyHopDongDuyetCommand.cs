@@ -10,12 +10,11 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Application.ThanhLyHopDongs.Commands;
 
 /// <summary>
-/// UC63 — Duyệt thanh lý hợp đồng. Yêu cầu role QLDA_LDDV hoặc thuộc phòng HC-TH.
+/// UC63 — Duyệt thanh lý hợp đồng.
 /// </summary>
 public record ThanhLyHopDongDuyetCommand(Guid Id) : IRequest<int>;
 
-internal class ThanhLyHopDongDuyetCommandHandler : IRequestHandler<ThanhLyHopDongDuyetCommand, int>
-{
+internal class ThanhLyHopDongDuyetCommandHandler : IRequestHandler<ThanhLyHopDongDuyetCommand, int> {
     private readonly IRepository<ThanhLyHopDong, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
@@ -25,8 +24,7 @@ internal class ThanhLyHopDongDuyetCommandHandler : IRequestHandler<ThanhLyHopDon
     private readonly IAppSettingsProvider _settings;
     private readonly IUnitOfWork _unitOfWork;
 
-    public ThanhLyHopDongDuyetCommandHandler(IServiceProvider serviceProvider)
-    {
+    public ThanhLyHopDongDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<ThanhLyHopDong, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
@@ -37,13 +35,7 @@ internal class ThanhLyHopDongDuyetCommandHandler : IRequestHandler<ThanhLyHopDon
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(ThanhLyHopDongDuyetCommand request, CancellationToken cancellationToken)
-    {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
+    public async Task<int> Handle(ThanhLyHopDongDuyetCommand request, CancellationToken cancellationToken) {
 
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThanhLyHopDong, cancellationToken);
         var statusDict = statuses
@@ -62,15 +54,13 @@ internal class ThanhLyHopDongDuyetCommandHandler : IRequestHandler<ThanhLyHopDon
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id)
-        {
+        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
         entity.TrangThaiId = trangThaiDaDuyet.Id;
 
-        var history = new PheDuyetHistory
-        {
+        var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ThanhLyHopDong,
             EntityId = entity.Id,

@@ -14,8 +14,6 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUserProvider _userProvider;
-    private readonly IAppSettingsProvider _settings;
 
     public ThanhToanDeleteCommandHandler(IServiceProvider serviceProvider)
     {
@@ -24,23 +22,18 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
-        _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
     }
 
     public async Task Handle(ThanhToanDeleteCommand request, CancellationToken cancellationToken)
     {
         ManagedException.ThrowIf(
-           _userProvider.Info.PhongBanID != _settings.PhongKHTCId,
-           "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
-       );
+            !_authContext.HasKhtcBypass,
+            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
+        );
         var entity = await ThanhToan.GetOrderedSet()
            .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
-
-        // Phân quyền Delete: chỉ Owner + Lãnh đạo + KHTC (PhongBanChinh KHÔNG được xóa)
-        await _auth.EnsureCanManageStepFieldsAsync(entity.BuocId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

@@ -27,11 +27,6 @@ internal class PheDuyetDuToanTrinhCommandHandler : IRequestHandler<PheDuyetDuToa
     }
 
     public async Task<int> Handle(PheDuyetDuToanTrinhCommand request, CancellationToken cancellationToken) {
-        // Permission check: KH-TC only (PhongBanId = 219)
-        var phongBanId = _userProvider.Info.PhongBanID;
-        if (phongBanId != 219) {
-            throw new ManagedException("Chỉ phòng KH-TC có quyền trình phê duyệt dự toán");
-        }
 
         // Get status IDs from DB by code
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)

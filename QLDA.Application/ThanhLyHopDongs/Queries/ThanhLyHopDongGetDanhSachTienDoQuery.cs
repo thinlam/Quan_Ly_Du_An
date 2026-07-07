@@ -4,6 +4,7 @@ using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
+using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ThanhLyHopDongs.Queries;
 
@@ -47,15 +48,21 @@ internal class ThanhLyHopDongGetDanhSachTienDoQueryHandler : IRequestHandler<Tha
                 DuAnId = x.DuAnId,
                 BuocId = x.BuocId,
                 HopDongId = x.HopDongId,
-                HopDongTen = x.HopDong != null ? x.HopDong.SoHopDong : null,
+                HopDongTen = x.HopDong!.SoHopDong,
                 So = x.So,
                 Ngay = x.Ngay,
                 TrichYeu = x.TrichYeu,
                 TrangThaiId = x.TrangThaiId,
-                TrangThaiTen = x.TrangThai != null ? x.TrangThai.Ten : null,
+                TrangThaiTen = x.TrangThai!.Ten,
                 NghiemThuIds = x.DanhSachNghiemThus!.Select(j => j.RightId).ToList(),
-                DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString())
+                BienBanNghiemThus = _tepDinhKem.GetQueryableSet()
+                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu)
+                    .Select(i => i.ToDto()).ToList(),
+                ThanhLyHopDongs = _tepDinhKem.GetQueryableSet()
+                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong)
+                    .Select(i => i.ToDto()).ToList(),
+                Khacs = _tepDinhKem.GetQueryableSet()
+                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong_Khac)
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

@@ -39,12 +39,6 @@ internal class ThanhLyHopDongTrinhCommandHandler : IRequestHandler<ThanhLyHopDon
 
     public async Task<int> Handle(ThanhLyHopDongTrinhCommand request, CancellationToken cancellationToken)
     {
-        // Chỉ phòng KH-TC mới được trình
-        var isKhtc = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
-        if (!isKhtc)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThanhLyHopDong, cancellationToken);
         var statusDict = statuses

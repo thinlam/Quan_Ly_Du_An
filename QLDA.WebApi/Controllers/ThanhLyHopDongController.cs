@@ -12,10 +12,8 @@ namespace QLDA.WebApi.Controllers;
 
 [Tags("Thanh lý hợp đồng - Phiếu trình nghiệm thu(thanh-ly-hop-dong)")]
 [Route("api/thanh-ly-hop-dong")]
-public class ThanhLyHopDongController : AggregateRootController
-{
-    public ThanhLyHopDongController(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
+public class ThanhLyHopDongController : AggregateRootController {
+    public ThanhLyHopDongController(IServiceProvider serviceProvider) : base(serviceProvider) {
     }
 
     /// <summary>
@@ -24,17 +22,14 @@ public class ThanhLyHopDongController : AggregateRootController
     [HttpGet("{id}/chi-tiet")]
     [ProducesResponseType<ResultApi<ThanhLyHopDongDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get(Guid id)
-    {
-        var entity = await Mediator.Send(new ThanhLyHopDongGetQuery
-        {
+    public async Task<ResultApi> Get(Guid id) {
+        var entity = await Mediator.Send(new ThanhLyHopDongGetQuery {
             Id = id,
             ThrowIfNull = true,
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
+        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
             GroupId = [entity.Id.ToString()]
         });
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
@@ -43,8 +38,7 @@ public class ThanhLyHopDongController : AggregateRootController
     [HttpDelete("{id}/xoa")]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Delete(Guid id)
-    {
+    public async Task<ResultApi> Delete(Guid id) {
         await Mediator.Send(new ThanhLyHopDongDeleteCommand(id));
         return ResultApi.Ok(1);
     }
@@ -59,15 +53,17 @@ public class ThanhLyHopDongController : AggregateRootController
     public async Task<ResultApi> Create(
         [FromBody] ThanhLyHopDongInsertDto insertDto,
         [FromServices] IUnitOfWork unitOfWork,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default) {
         using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
         var entity = await Mediator.Send(new ThanhLyHopDongInsertCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        {
+        List<TepDinhKem> files = [
+            .. insertDto.BienBanNghiemThus?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu) ?? [],
+            .. insertDto.ThanhLyHopDongs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong) ?? [],
+            .. insertDto.Khacs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_Khac) ?? []
+        ];
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
         }, cancellationToken);
@@ -87,15 +83,17 @@ public class ThanhLyHopDongController : AggregateRootController
     public async Task<ResultApi> Update(
         [FromBody] ThanhLyHopDongUpdateDto updateDto,
         [FromServices] IUnitOfWork unitOfWork,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default) {
         using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
         var entity = await Mediator.Send(new ThanhLyHopDongUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        {
+        List<TepDinhKem> files = [
+            .. updateDto.BienBanNghiemThus?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu) ?? [],
+            .. updateDto.ThanhLyHopDongs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong) ?? [],
+            .. updateDto.Khacs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_Khac) ?? []
+        ];
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
         }, cancellationToken);
@@ -112,8 +110,7 @@ public class ThanhLyHopDongController : AggregateRootController
     [ProducesResponseType<ResultApi<PaginatedList<ThanhLyHopDongDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetDanhSachTienDo(
-        [FromQuery] ThanhLyHopDongGetDanhSachTienDoQuery req)
-    {
+        [FromQuery] ThanhLyHopDongGetDanhSachTienDoQuery req) {
         var res = await Mediator.Send(req);
         return ResultApi.Ok(res);
     }
@@ -125,8 +122,7 @@ public class ThanhLyHopDongController : AggregateRootController
     [ProducesResponseType<ResultApi<List<ThanhLyHopDongDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetDanhSach(
-        [FromQuery] ThanhLyHopDongGetDanhSachQuery req)
-    {
+        [FromQuery] ThanhLyHopDongGetDanhSachQuery req) {
         var res = await Mediator.Send(req);
         return ResultApi.Ok(res);
     }

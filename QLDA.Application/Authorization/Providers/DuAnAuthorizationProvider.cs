@@ -9,13 +9,13 @@ namespace QLDA.Application.Authorization;
 
 /// <summary>
 /// Authorization cho resource "DuAn":
-/// - CanExecute (write): HasAdminCatalog OR ownership. HasReadAllBypass KHÔNG tự bypass
+/// - CanExecute (write):  Ownership. HasReadAllBypass KHÔNG tự bypass
 ///                       write — user có role read-all vẫn phải match ownership
 ///                       (Lãnh đạo phụ trách / Phòng phụ trách chính / Phối hợp) mới CUD được.
 ///                       Cho phép NVTT_XemDuAn CUD DuAn được assign.
-/// - CanView (read): HasAdminCatalog OR HasReadAllBypass OR ownership
+/// - CanView (read): HasReadAllBypass OR ownership
 /// - Filter&lt;T&gt;:
-///     * T = DuAn: apply ownership filter on DuAn rows (skipped khi HasAdminCatalog/HasReadAllBypass)
+///     * T = DuAn: apply ownership filter on DuAn rows (skipped khi HasReadAllBypass)
 ///     * T có property DuAnId (HopDong, GoiThau, VanBan...): subquery filter on visible DuAn ids
 ///     * T khác: fail-safe empty result
 ///
@@ -25,7 +25,7 @@ namespace QLDA.Application.Authorization;
 /// 3. DonViPhuTrachChinhId == phongBanId → được (ALL trong phòng)
 /// 4. DuAnChiuTrachNhiemXuLys.Any(RightId == phongBanId) → được (ALL trong phòng)
 ///
-/// Authorization flags (HasAdminCatalog, HasReadAllBypass) are computed once
+/// Authorization flags ( HasReadAllBypass) are computed once
 /// per request by AuthorizationContext and exposed via IAuthorizationContext parameter.
 /// </summary>
 public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuthorizationProvider
@@ -36,7 +36,6 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
 
     public async Task<bool> CanExecuteAsync(object entity, IAuthorizationContext ctx, CancellationToken ct)
     {
-        if (ctx.HasAdminCatalog) return true;
         // HasReadAllBypass: không tự bypass write — ownership check phía sau quyết định.
         // NVTT_XemDuAn user khi assign DuAn sẽ match ownership → CUD được.
         if (entity is not DuAn duAn) return false;
@@ -45,16 +44,12 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
 
     public async Task<bool> CanViewAsync(object entity, IAuthorizationContext ctx, CancellationToken ct)
     {
-        if (ctx.HasAdminCatalog) return true;
-        if (ctx.HasReadAllBypass) return true;
         if (entity is not DuAn duAn) return false;
         return await CheckOwnershipAsync(ctx, duAn.Id, ct);
     }
 
     public IQueryable<T> Filter<T>(IQueryable<T> query, IAuthorizationContext ctx) where T : class
     {
-        if (ctx.HasAdminCatalog) return query;
-        if (ctx.HasReadAllBypass) return query;
 
         if (query is IQueryable<DuAn> daQuery)
             return (IQueryable<T>)ApplyDuAnOwnershipFilter(daQuery, ctx);

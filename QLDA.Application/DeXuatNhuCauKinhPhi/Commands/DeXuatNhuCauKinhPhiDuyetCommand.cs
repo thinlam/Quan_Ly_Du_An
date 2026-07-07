@@ -36,11 +36,6 @@ internal class DeXuatNhuCauKinhPhiDuyetCommandHandler : IRequestHandler<DeXuatNh
     }
 
     public async Task<int> Handle(DeXuatNhuCauKinhPhiDuyetCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)

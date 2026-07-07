@@ -36,11 +36,6 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuDuyetCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
        
 

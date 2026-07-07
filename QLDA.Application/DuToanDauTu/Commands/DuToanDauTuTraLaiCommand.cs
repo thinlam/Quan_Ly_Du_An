@@ -36,11 +36,6 @@ internal class DuToanDauTuTraLaiCommandHandler : IRequestHandler<DuToanDauTuTraL
     }
 
     public async Task<int> Handle(DuToanDauTuTraLaiCommand request, CancellationToken cancellationToken) {
-        var phongBanId = _userProvider.Info.PhongBanID;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHId)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
         
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {

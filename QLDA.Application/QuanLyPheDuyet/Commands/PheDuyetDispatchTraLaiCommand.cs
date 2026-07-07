@@ -1,3 +1,4 @@
+using QLDA.Application.Authorization;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
@@ -25,21 +26,22 @@ using QLDA.Domain.Constants;
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
 
 /// <summary>
-/// Dispatch tra lai phe duyet theo type → den dung entity command
+/// Dispatch tra lai phe duyet theo type → den dung entity command.
+/// Phân quyền ở tầng dispatch: chỉ Lãnh đạo phụ trách chính của DuAn hoặc role QLDA_LDDV mới được trả lại.
 /// </summary>
 public record PheDuyetDispatchTraLaiCommand(string Type, Guid Id, string NoiDung) : IRequest<int>;
 
-internal class PheDuyetDispatchTraLaiCommandHandler : IRequestHandler<PheDuyetDispatchTraLaiCommand, int> {
-    private readonly IMediator _mediator;
-
-    public PheDuyetDispatchTraLaiCommandHandler(IServiceProvider serviceProvider) {
-        _mediator = serviceProvider.GetRequiredService<IMediator>();
-    }
+internal class PheDuyetDispatchTraLaiCommandHandler(IServiceProvider serviceProvider) : IRequestHandler<PheDuyetDispatchTraLaiCommand, int> {
+    private readonly IMediator _mediator = serviceProvider.GetRequiredService<IMediator>();
+    private readonly IAuthorizationManager _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
 
     public async Task<int> Handle(PheDuyetDispatchTraLaiCommand request, CancellationToken cancellationToken) {
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");
         }
+
+        var duAnId = await PheDuyetDispatchHelper.GetDuAnIdAsync(serviceProvider, request.Type, request.Id, cancellationToken);
+        await _auth.EnsureCanApproveDuAnAsync(duAnId ?? Guid.Empty, cancellationToken);
 
         IRequest<int> command = request.Type switch {
             PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanTraLaiCommand(request.Id, request.NoiDung),

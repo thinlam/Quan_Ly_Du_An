@@ -36,10 +36,6 @@ internal class KeHoachLuaChonNhaThauRutGonTuChoiCommandHandler : IRequestHandler
     }
 
     public async Task<int> Handle(KeHoachLuaChonNhaThauRutGonTuChoiCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) )
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {

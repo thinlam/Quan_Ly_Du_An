@@ -3,7 +3,7 @@ using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.ThanhLyHopDongs.DTOs;
 
-public class ThanhLyHopDongUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
+public class ThanhLyHopDongUpdateDto {
     public Guid Id { get; set; }
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
@@ -12,5 +12,7 @@ public class ThanhLyHopDongUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
     public DateTimeOffset? Ngay { get; set; }
     public string? TrichYeu { get; set; }
     public List<Guid>? NghiemThuIds { get; set; }
-    public List<TepDinhKemInsertOrUpdateDto>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemInsertOrUpdateDto>? BienBanNghiemThus { get; set; }
+    public List<TepDinhKemInsertOrUpdateDto>? ThanhLyHopDongs { get; set; }
+    public List<TepDinhKemInsertOrUpdateDto>? Khacs { get; set; }
 }

@@ -10,7 +10,7 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Application.ThanhLyHopDongs.Commands;
 
 /// <summary>
-/// UC63 — Trả lại thanh lý hợp đồng. Yêu cầu role QLDA_LDDV hoặc thuộc phòng HC-TH; bắt buộc lý do.
+/// UC63 — Trả lại thanh lý hợp đồng; bắt buộc lý do.
 /// </summary>
 public record ThanhLyHopDongTraLaiCommand(Guid Id, string NoiDung) : IRequest<int>;
 
@@ -39,11 +39,6 @@ internal class ThanhLyHopDongTraLaiCommandHandler : IRequestHandler<ThanhLyHopDo
 
     public async Task<int> Handle(ThanhLyHopDongTraLaiCommand request, CancellationToken cancellationToken)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung))
         {

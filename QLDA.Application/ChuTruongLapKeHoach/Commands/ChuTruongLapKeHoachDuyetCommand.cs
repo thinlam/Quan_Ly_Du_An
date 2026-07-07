@@ -13,7 +13,7 @@ namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 /// <summary>
 /// Duyệt phân khai kinh phí - LDDV role
 /// </summary>
-public record ChuTruongLapKeHoachDuyetCommand(Guid Id, string NoiDung) : IRequest<int>;
+public record ChuTruongLapKeHoachDuyetCommand(Guid Id, string? NoiDung) : IRequest<int>;
 
 internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruongLapKeHoachDuyetCommand, int> {
     private readonly IRepository<Domain.Entities.ChuTruongLapKeHoach, Guid> _repository;
@@ -37,15 +37,10 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
     }
 
     public async Task<int> Handle(ChuTruongLapKeHoachDuyetCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh 
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh
             && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);

@@ -4,6 +4,7 @@ using BuildingBlocks.CrossCutting.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
+using RoleConstants = QLDA.Domain.Constants.RoleConstants;
 
 namespace QLDA.Application.Authorization;
 
@@ -218,31 +219,23 @@ public static class BuocAuthorizationHelper
 
 /// <summary>
 /// Authorization cho step (DuAnBuoc):
-/// - CanExecuteStep (write): HasAdminCatalog OR ownership (Owner/LanhDao/PhongBanChinh/PhoiHopInScope)
-/// - FilterVisibleSteps: filter qua ownership scope
+/// - CanExecuteStep (write): Ownership (Owner/LanhDao/PhongBanChinh/PhoiHopInScope)
+/// - FilterVisibleSteps: filter qua ownership scope (short-circuit khi hoặc HasReadAllBypass)
 /// - FilterVisibleChildEntities: filter child entity qua subquery visible buoc ids
-/// - CanManageViewerListAsync: chỉ Owner/LanhDao/HasAdminCatalog (KHÔNG bao gồm PhongBanChinh/PhoiHop) — cho phép chỉnh DanhSachPhongBanPhoiHopIds
-/// - CanManageStepFieldsAsync: chỉ Owner/LanhDao/HasAdminCatalog — cho phép edit/delete các field của bước
-/// - CanExecuteThanhToanAsync: chỉ Owner/LanhDao/HasAdminCatalog + PhongBanChinh (KHÔNG cho PhoiHop) — cho phép Insert/Update ThanhToan
-///
-/// Authorization flags (HasAdminCatalog) are computed once per request
-/// by AuthorizationContext and exposed via IAuthorizationContext parameter.
+/// - CanManageViewerListAsync: chỉ Owner/LanhDao (KHÔNG bao gồm PhongBanChinh/PhoiHop) — cho phép chỉnh DanhSachPhongBanPhoiHopIds
+/// - CanManageStepFieldsAsync: chỉ Owner/LanhDao — cho phép edit/delete các field của bước
+/// - CanExecuteThanhToanAsync: chỉ Owner/LanhDao + PhongBanChinh (KHÔNG cho PhoiHop) — cho phép Insert/Update ThanhToan
 /// </summary>
 public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IBuocAuthorizationProvider
 {
     public async Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
-        if (ctx.HasAdminCatalog) return true;
-        // HasReadAllBypass: không tự bypass write — ownership check phía sau quyết định.
-        // NVTT_XemDuAn user khi assign Buoc sẽ match ownership → CUD được.
 
         return BuocAuthorizationHelper.CheckOwnership(buoc, ctx.UserId, ctx.PhongBanId);
     }
 
     public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx)
     {
-        if (ctx.HasAdminCatalog) return query;
-        if (ctx.HasReadAllBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -257,8 +250,6 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         IAuthorizationContext ctx,
         Expression<Func<T, int?>> buocIdSelector) where T : class
     {
-        if (ctx.HasAdminCatalog) return query;
-        if (ctx.HasReadAllBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -284,7 +275,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     }
 
     /// <summary>
-    /// Quyền chỉnh sửa DanhSachPhongBanPhoiHopIds: chỉ Owner (CreatedBy) + Lãnh đạo phụ trách + HasAdminCatalog.
+    /// Quyền chỉnh sửa DanhSachPhongBanPhoiHopIds: chỉ Owner (CreatedBy) + Lãnh đạo phụ trách + role thuộc GroupAdminCatalog.
     /// PhongBanChinh và PhongBanPhoiHop KHÔNG có quyền chỉnh viewer list.
     /// </summary>
     public async Task<bool> CanManageViewerListAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
@@ -307,11 +298,10 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     }
 
     /// <summary>
-    /// Quyền edit/delete các field của bước (TenBuoc, Ngay, ManHinh, PhongPhuTrachChinhId): chỉ Owner + Lãnh đạo + HasAdminCatalog.
+    /// Quyền edit/delete các field của bước (TenBuoc, Ngay, ManHinh, PhongPhuTrachChinhId): chỉ Owner + Lãnh đạo + role thuộc GroupAdminCatalog.
     /// </summary>
     public async Task<bool> CanManageStepFieldsAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
-        if (ctx.HasAdminCatalog) return true;
 
         if (buoc.CreatedBy == ctx.UserId.ToString()) return true;
 
@@ -338,7 +328,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     }
 
     /// <summary>
-    /// Quyền Insert/Update ThanhToan: Owner + Lãnh đạo + HasAdminCatalog + PhongBanChinh.
+    /// Quyền Insert/Update ThanhToan: Owner + Lãnh đạo + role thuộc GroupAdminCatalog + PhongBanChinh.
     /// PhongBanPhoiHop KHÔNG có quyền (kể cả khi thuộc DuAn.ChiuTrachNhiemXuLys).
     /// </summary>
     public async Task<bool> CanExecuteThanhToanAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)

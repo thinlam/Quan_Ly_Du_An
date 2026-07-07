@@ -5,7 +5,7 @@ using SequentialGuid;
 
 namespace QLDA.Application.ThanhLyHopDongs.DTOs;
 
-public class ThanhLyHopDongDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKemDto, ITienDo {
+public class ThanhLyHopDongDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo {
     [DefaultValue(null)] public Guid? Id { get; set; }
 
     public Guid GetId() {
@@ -22,5 +22,7 @@ public class ThanhLyHopDongDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepD
     public int? TrangThaiId { get; set; }
     public string? TrangThaiTen { get; set; }
     public List<Guid>? NghiemThuIds { get; set; }
-    public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemDto>? BienBanNghiemThus { get; set; }
+    public List<TepDinhKemDto>? ThanhLyHopDongs { get; set; }
+    public List<TepDinhKemDto>? Khacs { get; set; }
 }
