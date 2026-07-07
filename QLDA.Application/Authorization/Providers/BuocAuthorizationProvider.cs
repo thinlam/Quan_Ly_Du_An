@@ -230,12 +230,14 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
 {
     public async Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
+        if (ctx.HasKhtcBypass) return true;
 
         return BuocAuthorizationHelper.CheckOwnership(buoc, ctx.UserId, ctx.PhongBanId);
     }
 
     public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx)
     {
+        if (ctx.HasKhtcBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -250,6 +252,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         IAuthorizationContext ctx,
         Expression<Func<T, int?>> buocIdSelector) where T : class
     {
+        if (ctx.HasKhtcBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -302,6 +305,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     /// </summary>
     public async Task<bool> CanManageStepFieldsAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
+        if (ctx.HasKhtcBypass) return true;
 
         if (buoc.CreatedBy == ctx.UserId.ToString()) return true;
 
@@ -333,6 +337,8 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     /// </summary>
     public async Task<bool> CanExecuteThanhToanAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
     {
+        if (ctx.HasKhtcBypass) return true;
+
         if (await CanManageStepFieldsAsync(buoc, ctx, ct)) return true;
 
         // PhongBanChinh được Insert/Update ThanhToan nhưng KHÔNG được Delete

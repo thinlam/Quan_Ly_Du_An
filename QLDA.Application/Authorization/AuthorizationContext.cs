@@ -24,7 +24,6 @@ public class AuthorizationContext(
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     private bool? _hasKhtcBypass;
-    private bool? _isAdminManager;
     private readonly ConcurrentDictionary<Guid, long?> _lanhDaoCache = new();
 
     public IUserProvider User => _user;

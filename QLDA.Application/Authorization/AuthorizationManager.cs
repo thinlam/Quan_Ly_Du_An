@@ -57,6 +57,10 @@ public class AuthorizationManager(
     public async Task EnsureCanApproveDuAnAsync(Guid duAnId, CancellationToken ct = default) {
         if (duAnId == Guid.Empty) return;
 
+        // KHTC: full quyền — bypass mọi check phê duyệt DuAn.
+        if (_context.HasKhtcBypass)
+            return;
+
         // Short-circuit khi user đã có role LDDV.
         if (_context.User.AuthInfo.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV))
             return;

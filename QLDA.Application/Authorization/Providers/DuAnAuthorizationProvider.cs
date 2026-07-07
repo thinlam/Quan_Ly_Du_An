@@ -36,6 +36,8 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
 
     public async Task<bool> CanExecuteAsync(object entity, IAuthorizationContext ctx, CancellationToken ct)
     {
+        if (ctx.HasKhtcBypass) return true;
+
         // HasReadAllBypass: không tự bypass write — ownership check phía sau quyết định.
         // NVTT_XemDuAn user khi assign DuAn sẽ match ownership → CUD được.
         if (entity is not DuAn duAn) return false;
@@ -44,12 +46,15 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
 
     public async Task<bool> CanViewAsync(object entity, IAuthorizationContext ctx, CancellationToken ct)
     {
+        if (ctx.HasKhtcBypass) return true;
+
         if (entity is not DuAn duAn) return false;
         return await CheckOwnershipAsync(ctx, duAn.Id, ct);
     }
 
     public IQueryable<T> Filter<T>(IQueryable<T> query, IAuthorizationContext ctx) where T : class
     {
+        if (ctx.HasKhtcBypass) return query;
 
         if (query is IQueryable<DuAn> daQuery)
             return (IQueryable<T>)ApplyDuAnOwnershipFilter(daQuery, ctx);
@@ -69,6 +74,7 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
     public async Task EnsureCanExecuteAsync(Guid? duAnId, IAuthorizationContext ctx, CancellationToken ct = default)
     {
         if (!duAnId.HasValue) return;
+        if (ctx.HasKhtcBypass) return;
 
         var duAn = await duAnRepo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == duAnId.Value, ct);
