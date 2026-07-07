@@ -37,6 +37,7 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
 
         var trangThaiDaDuyet = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
         var trangThaiChoThamDinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.ThamDinh);
+        var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.TraLai);
 
 
         var entity = await _repo.GetQueryableSet().AsNoTracking()
@@ -46,7 +47,7 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-        if (entity.TrangThaiId != trangThaiDaDuyet?.Id && entity.TrangThaiId != trangThaiChoThamDinh?.Id)
+        if (entity.TrangThaiId != trangThaiDaDuyet?.Id && entity.TrangThaiId != trangThaiChoThamDinh?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }

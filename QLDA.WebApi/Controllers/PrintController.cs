@@ -850,7 +850,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// TongHopNhuCauKinhPhiNam.xlsx — Export tổng hợp nhu cầu kinh phí năm
     /// </summary>
     [HttpGet("api/print/tong-hop-nhu-cau-kinh-phi-nam")]
-    [Authorize(Roles = RoleConstants.GroupTongHopNhuCauKinhPhiNamExport)]
+    //[Authorize(Roles = RoleConstants.GroupTongHopNhuCauKinhPhiNamExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InTongHopNhuCauKinhPhiNam(
         [FromQuery] DeXuatNhuCauKinhPhiNamPrintSearchModel searchModel,
@@ -898,7 +898,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// TinhHinhDeXuatNhuCau.xlsx — Export tổng hợp nhu cầu kinh phí năm
     /// </summary>
     [HttpGet("api/print/tinh-hinh-de-xuat-nhu-cau")]
-    [Authorize(Roles = RoleConstants.GroupTinhHinhDeXuatNhuCauExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InTinhHinhDeXuatNhuCau(
         [FromQuery] TheoDoiDeXuatNhuCauKinhPhiPrintSearchModel searchModel)
@@ -948,7 +947,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// TinhHinhThucHienDauThau.xlsx — Export báo cáo tình hình thực hiện đấu thầu (Issue #103)
     /// </summary>
     [HttpGet("api/print/tinh-hinh-thuc-hien-dau-thau")]
-    [Authorize(Roles = RoleConstants.GroupTinhHinhThucHienDauThauExport)]
+   // [Authorize(Roles = RoleConstants.GroupTinhHinhThucHienDauThauExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InTinhHinhThucHienDauThau(
         [FromQuery] TinhHinhThucHienDauThauPrintSearchDto searchDto,
