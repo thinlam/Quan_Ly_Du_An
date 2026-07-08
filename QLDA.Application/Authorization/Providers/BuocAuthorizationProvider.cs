@@ -319,10 +319,12 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     /// <summary>
     /// Throw ManagedException nếu user không có quyền edit/delete các field của bước.
     /// Noop khi buocId null.
+    /// User có role thuộc GroupAdminCatalog (QLDA_TatCa/QLDA_QuanTri) bypass check.
     /// </summary>
     public async Task EnsureCanManageStepFieldsAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
     {
         if (!buocId.HasValue) return;
+        if (ctx.User.AuthInfo.HasRole(RoleConstants.GroupAdminCatalog)) return;
         var buoc = await buocRepo.GetQueryableSet()
             .Include(e => e.DuAn)
             .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
