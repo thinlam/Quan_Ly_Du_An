@@ -15,14 +15,13 @@ public static class QuyetDinhDuyetDuAnMappings {
         };
     }
 
-    public static QuyetDinhDuyetDuAn ToEntity(this QuyetDinhDuyetDuAnUpdateDto dto) {
-        return new QuyetDinhDuyetDuAn {
-            Id = dto.Id,
-            So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh,
-            TrichYeu = dto.TrichYeu,
-            CoQuanQuyetDinhDauTu = dto.CoQuanQuyetDinhDauTu
-        };
+    public static void  ToEntity(this QuyetDinhDuyetDuAnUpdateDto dto, QuyetDinhDuyetDuAn entity) {
+
+        entity.Id = dto.Id;
+        entity.So = dto.SoQuyetDinh;
+        entity.Ngay = dto.NgayQuyetDinh;
+        entity.TrichYeu = dto.TrichYeu;
+        entity.CoQuanQuyetDinhDauTu = dto.CoQuanQuyetDinhDauTu;
     }
 
     public static QuyetDinhDuyetDuAnDto ToDto(this QuyetDinhDuyetDuAn entity) {

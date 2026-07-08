@@ -12,6 +12,9 @@ public static class GroupTypeConstants
     public const string NghiemThu = "NghiemThu";
     public const string TamUng = "TamUng";
     public const string ThanhToan = "ThanhToan";
+    public const string ThanhLyHopDong = "ThanhLyHopDong";
+    public const string ThanhLyHopDong_BienBanNghiemThu = "ThanhLyHopDong_BienBanNghiemThu";
+    public const string ThanhLyHopDong_Khac = "ThanhLyHopDong_Khac";
     public const string KySo = "KySo";
 
     /// <summary>
@@ -49,5 +52,5 @@ public static class GroupTypeConstants
     public const string HoSoMoiThauDienTuChiDinh = "HoSoMoiThauDienTuChiDinh";
     public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";
 
-    
+
 }

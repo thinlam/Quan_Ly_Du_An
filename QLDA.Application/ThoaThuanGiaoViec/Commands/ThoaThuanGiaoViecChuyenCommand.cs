@@ -8,7 +8,7 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Application.ThoaThuanGiaoViecs.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record ThoaThuanGiaoViecChuyenCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 

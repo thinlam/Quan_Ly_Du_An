@@ -4,9 +4,9 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Domain.Entities;
 
 /// <summary>
-/// Bảng dự án
+/// 
 /// </summary>
-public class ThanhLyHopDong : Entity<Guid>, IAggregateRoot
+public class ThanhLyHopDong : Entity<Guid>, IAggregateRoot, IApprovableEntity
 {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }

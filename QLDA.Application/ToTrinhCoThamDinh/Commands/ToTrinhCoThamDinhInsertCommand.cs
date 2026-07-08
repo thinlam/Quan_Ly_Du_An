@@ -9,7 +9,7 @@ using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
-public record ToTrinhCoThamDinhInsertCommand(ToTrinhCoThamDinh Dto) : IRequest<ToTrinhCoThamDinh>;
+public record ToTrinhCoThamDinhInsertCommand(ToTrinhCoThamDinhInsUpdDto Dto) : IRequest<ToTrinhCoThamDinh>;
 
 internal class ToTrinhCoThamDinhInsertCommandHandler : IRequestHandler<ToTrinhCoThamDinhInsertCommand, ToTrinhCoThamDinh>
 {
@@ -40,11 +40,12 @@ internal class ToTrinhCoThamDinhInsertCommandHandler : IRequestHandler<ToTrinhCo
             ManagedException.ThrowIf(trangThaiDuThao == null, "Không tìm thấy trạng thái cần cập nhật!");
         try
         {
-            var entity = request.Dto;
+            ToTrinhCoThamDinh entity = new ToTrinhCoThamDinh() {
+                Id = request.Dto.Id is null || request.Dto.Id == Guid.Empty? Guid.NewGuid(): request.Dto.Id.Value
+            };
+             request.Dto.MapToEntity(entity);
             entity.TrangThaiId = trangThaiDuThao?.Id;
-            request.Dto.TrangThaiId = trangThaiDuThao?.Id;
-
-            await _repo.AddAsync(request.Dto, cancellationToken);
+            await _repo.AddAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return entity;

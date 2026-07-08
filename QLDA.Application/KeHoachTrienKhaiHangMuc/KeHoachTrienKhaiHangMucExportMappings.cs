@@ -82,12 +82,13 @@ internal static class KeHoachTrienKhaiHangMucExportMappings
             .Distinct()
             .ToList();
 
+        // CanBoChuTriId / CanBoPhoiHopIds store UserPortalId (same as UI combobox).
         var users = userIds.Count == 0
             ? []
             : await userRepo.GetQueryableSet(OnlyUsed: false, OnlyNotDeleted: false)
                 .AsNoTracking()
-                .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.HoTen })
+                .Where(u => u.UserPortalId.HasValue && userIds.Contains(u.UserPortalId.Value))
+                .Select(u => new { PortalId = u.UserPortalId!.Value, u.HoTen })
                 .ToListAsync(cancellationToken);
 
         var giaiDoanTenById = giaiDoans.ToDictionary(g => g.Id, g => g.Ten ?? string.Empty);
@@ -110,7 +111,7 @@ internal static class KeHoachTrienKhaiHangMucExportMappings
             giaiDoanTenById,
             giaiDoanSortById,
             donVis.ToDictionary(d => d.Id, d => d.TenDonVi ?? string.Empty),
-            users.ToDictionary(u => u.Id, u => u.HoTen ?? string.Empty));
+            users.ToDictionary(u => u.PortalId, u => u.HoTen ?? string.Empty));
     }
 
     public static List<KeHoachTrienKhaiHangMucExportItemDto> ToExportRows(

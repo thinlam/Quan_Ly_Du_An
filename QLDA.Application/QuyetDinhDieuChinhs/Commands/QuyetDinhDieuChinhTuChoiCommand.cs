@@ -33,12 +33,6 @@ internal class QuyetDinhDieuChinhTuChoiCommandHandler : IRequestHandler<QuyetDin
     }
 
     public async Task<int> Handle(QuyetDinhDieuChinhTuChoiCommand request, CancellationToken cancellationToken) {
-        // Permission: LDDV role OR QLDA_QuanTri
-        var hasPermission = _userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)
-                            || _userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_QuanTri);
-        if (!hasPermission) {
-            throw new ManagedException("Không có quyền từ chối điều chỉnh");
-        }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do từ chối là bắt buộc");

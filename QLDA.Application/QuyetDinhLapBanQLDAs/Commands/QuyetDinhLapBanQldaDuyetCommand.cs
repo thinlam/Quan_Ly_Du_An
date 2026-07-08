@@ -41,11 +41,6 @@ internal class QuyetDinhLapBanQldaDuyetCommandHandler : IRequestHandler<QuyetDin
 
     public async Task<int> Handle(QuyetDinhLapBanQldaDuyetCommand request, CancellationToken cancellationToken)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var statusDict = statuses

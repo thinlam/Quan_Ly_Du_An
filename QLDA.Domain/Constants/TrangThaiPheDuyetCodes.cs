@@ -124,4 +124,15 @@ public static class TrangThaiPheDuyetCodes
         public const string DaDuyet = "ĐD";
         public const string TuChoi = "TC";
     }
+
+    /// <summary>
+    /// UC63 — Thanh lý hợp đồng (#9644). Không có TuChoi — workflow chỉ kết thúc qua Duyệt hoặc Trả lại.
+    /// </summary>
+    public static class ThanhLyHopDong
+    {
+        public const string DuThao = "DT";
+        public const string DaTrinh = "ĐTr";
+        public const string DaDuyet = "ĐD";
+        public const string TraLai = "TL";
+    }
 }

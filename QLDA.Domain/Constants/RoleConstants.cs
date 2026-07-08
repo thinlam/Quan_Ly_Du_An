@@ -36,7 +36,11 @@ public static class RoleConstants {
     /// Hiện đã được dỡ bỏ (empty) — NVTT_BP01/NVTT_XemDuAn không còn bypass
     /// ownership filter trên các endpoint chuẩn. Hai role này dùng controller
     /// riêng (NvttDuAnController, NvttBuocController) với prefix nvtt/ để xem
-    /// toàn bộ dự án. Admin catalog (GroupAdminCatalog) vẫn giữ read-all.
+    /// toàn bộ dự án.
+    /// Lưu ý (v1.4): Admin catalog (`GroupAdminCatalog`) KHÔNG còn read-all DuAn
+    /// — `DuAnAuthorizationProvider` không short-circuit cho admin role nữa.
+    /// Bypass role admin catalog chỉ áp dụng cho Buoc/ThanhToan (qua
+    /// `BuocAuthorizationProvider.IsAdminCatalogRole`).
     /// Write path (CanExecuteAsync, CanExecuteStepAsync) LUÔN fallback về ownership
     /// check — user có role trong group này vẫn CUD được DuAn được assign.
     /// </summary>
@@ -75,7 +79,7 @@ public static class RoleConstants {
     /// Kết xuất Excel tình hình đề xuất nhu cầu (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
     /// </summary>
     public const string GroupTinhHinhDeXuatNhuCauExport =
-        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV}";
 
     /// <summary>
     /// Kết xuất Excel báo cáo đề xuất chủ trương (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
@@ -86,8 +90,7 @@ public static class RoleConstants {
     /// <summary>
     /// Kết xuất Excel tổng hợp nhu cầu kinh phí năm (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
     /// </summary>
-    public const string GroupTongHopNhuCauKinhPhiNamExport =
-        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+  
 
     /// <summary>
     /// Kết xuất Excel đề xuất nhu cầu kinh phí chủ trương (tổng hợp CT mới / chuyển tiếp)
@@ -101,10 +104,6 @@ public static class RoleConstants {
     public const string GroupKeHoachTrienKhaiHangMucExport =
         $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
 
-    /// <summary>
-    /// Kết xuất Excel báo cáo tình hình thực hiện đấu thầu (Issue #103)
-    /// </summary>
-    public const string GroupTinhHinhThucHienDauThauExport =
-        $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
+
 
 }

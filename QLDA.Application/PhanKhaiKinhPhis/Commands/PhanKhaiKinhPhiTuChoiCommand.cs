@@ -30,13 +30,7 @@ internal class PhanKhaiKinhPhiTuChoiCommandHandler : IRequestHandler<PhanKhaiKin
     }
 
     public async Task<int> Handle(PhanKhaiKinhPhiTuChoiCommand request, CancellationToken cancellationToken) {
-        // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) ?? false;
-        var isQuanTri = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_QuanTri) ?? false;
-        if (!isLanhDao && !isHcth && !isQuanTri) {
-            throw new ManagedException("Chỉ quản lý có quyền từ chối phân khai kinh phí");
-        }
+        // Permission: QLDA_LD or QLDA_QuanTri
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do từ chối là bắt buộc");

@@ -37,11 +37,6 @@ internal class KeHoachTrienKhaiHangMucTraLaiCommandHandler : IRequestHandler<KeH
 
     public async Task<int> Handle(KeHoachTrienKhaiHangMucTraLaiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {

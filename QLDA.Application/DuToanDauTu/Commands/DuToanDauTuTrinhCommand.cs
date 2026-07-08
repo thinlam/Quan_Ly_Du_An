@@ -9,7 +9,7 @@ using QLDA.Domain.Entities;
 namespace QLDA.Application.DuToanDauTus.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record DuToanDauTuTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -33,7 +33,7 @@ internal class DuToanDauTuTrinhCommandHandler : IRequestHandler<DuToanDauTuTrinh
     }
 
     public async Task<int> Handle(DuToanDauTuTrinhCommand request, CancellationToken cancellationToken) {
-       
+
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);

@@ -10,7 +10,7 @@ namespace QLDA.Application.DuAnBuocs.Commands;
 /// Cập nhật trạng thái bước dự án + cho phép cập nhật PhongPhuTrachChinhId, DanhSachPhongBanPhoiHopIds.
 /// Phân quyền:
 /// - Tất cả field (TrangThaiId, NgayDuKien, NgayThucTe, GhiChu, TrachNhiemThucHien, IsKetThuc, PhongPhuTrachChinhId, DanhSachPhongBanPhoiHopIds):
-///   chỉ Owner (CreatedBy) + Lãnh đạo phụ trách (DuAn.LanhDaoPhuTrachId) + HasAdminCatalog (Phòng KHTC / QLDA_QuanTri / QLDA_TatCa).
+///   chỉ Owner (CreatedBy) + Lãnh đạo phụ trách (DuAn.LanhDaoPhuTrachId) + role thuộc GroupAdminCatalog (QLDA_QuanTri / QLDA_TatCa) hoặc Phòng KHTC (HasKhtcBypass).
 /// - DanhSachPhongBanPhoiHopIds: validate mọi ID phải thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop).
 /// </summary>
 public record DuAnBuocDuAnUpdateStateCommand(DuAnBuocDuAnUpdateStateDto Dto) : IRequest<DuAnBuoc>;
@@ -62,15 +62,23 @@ public record DuAnBuocDuAnUpdateStateCommandHandler : IRequestHandler<DuAnBuocDu
         // Update DanhSachPhongBanPhoiHops (nếu DTO gửi list)
         if (request.Dto.DanhSachPhongBanPhoiHopIds != null) {
             // (1) Validate IDs thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
-            var allowedPhongBanIds = await _duAnRepo.GetQueryableSet()
+            //     HOẶC trùng DuAn.DonViPhuTrachChinhId (phòng ban phụ trách chính cũng được phép thêm vào danh sách phối hợp).
+            var allowedPhongBanInfo = await _duAnRepo.GetQueryableSet()
                 .Where(d => d.Id == entity.DuAnId)
-                .SelectMany(d => d.DuAnChiuTrachNhiemXuLys!
-                    .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
-                    .Select(x => x.RightId))
-                .ToListAsync(cancellationToken);
+                .Select(d => new {
+                    PhoiHopIds = d.DuAnChiuTrachNhiemXuLys!
+                        .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
+                        .Select(x => x.RightId),
+                    d.DonViPhuTrachChinhId
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var allowedSet = new HashSet<long>(allowedPhongBanInfo?.PhoiHopIds ?? Enumerable.Empty<long>());
+            if (allowedPhongBanInfo?.DonViPhuTrachChinhId.HasValue == true)
+                allowedSet.Add(allowedPhongBanInfo.DonViPhuTrachChinhId.Value);
 
             var invalid = request.Dto.DanhSachPhongBanPhoiHopIds
-                .Where(id => !allowedPhongBanIds.Contains(id))
+                .Where(id => !allowedSet.Contains(id))
                 .ToList();
 
             if (invalid.Count > 0)

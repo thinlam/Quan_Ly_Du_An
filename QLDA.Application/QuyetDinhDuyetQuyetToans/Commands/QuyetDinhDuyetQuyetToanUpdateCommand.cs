@@ -24,7 +24,9 @@ internal class QuyetDinhDuyetQuyetToanUpdateCommandHandler : IRequestHandler<Quy
 
     public async Task<QuyetDinhDuyetQuyetToan> Handle(QuyetDinhDuyetQuyetToanUpdateCommand request, CancellationToken cancellationToken = default) {
         try {
-            var entity = request.Dto.ToEntity();
+            var entity = QuyetDinhDuyetQuyetToan.GetQueryableSet().Where(x => x.Id == request.Dto.Id).FirstOrDefault();
+            ManagedException.ThrowIfNull(entity, "Không tồn tại dữ liệu cần cập nhật");
+            request.Dto.ToEntity(entity);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetQuyetToan.UpdateAsync(entity, cancellationToken);

@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="QLDA.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\QLDA.Application\QLDA.Application.csproj" />
       <ProjectReference Include="..\QLDA.Persistence\QLDA.Persistence.csproj" />
       <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />

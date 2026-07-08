@@ -7,13 +7,9 @@ using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
 
 namespace QLDA.Application.KySos.Queries;
 
-public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto)
-    : AggregateRootPagination, IRequest<PaginatedList<TepDinhKemDto>>;
+public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto) : AggregateRootSearch, IRequest<PaginatedList<TepDinhKemDto>>;
 
-internal class NoiDungDaKyGetDanhSachQueryHandler(
-    IServiceProvider serviceProvider)
-    : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>>
-{
+internal class NoiDungDaKyGetDanhSachQueryHandler(IServiceProvider serviceProvider) : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>> {
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository =
         serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
     private readonly IRepository<UserMaster, long> _userRepository =
@@ -23,18 +19,15 @@ internal class NoiDungDaKyGetDanhSachQueryHandler(
 
     public async Task<PaginatedList<TepDinhKemDto>> Handle(
         NoiDungDaKyGetDanhSachQuery request,
-        CancellationToken cancellationToken = default)
-    {
+        CancellationToken cancellationToken = default) {
         var search = request.SearchDto;
         var users = _userRepository.GetQueryableSet().AsNoTracking();
 
         var rows = await _tepDinhKemRepository
             .GetQueryableSet(OnlyNotDeleted: false, OrderByIndex: false)
-            .AsNoTracking()
             .ApplyFiltersAsync(search, users, serviceProvider, _clock, cancellationToken);
 
-        var dtos = rows.Select(x => new TepDinhKemDto
-        {
+        var dtos = rows.Select(x => new TepDinhKemDto {
             Id = x.E.Id,
             ParentId = x.E.ParentId,
             GroupId = x.E.GroupId,

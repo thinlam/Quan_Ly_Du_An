@@ -2,9 +2,6 @@ namespace QLDA.Application.TepDinhKems.DTOs;
 
 public class TepDinhKemInsertOrUpdateDto : IHasKey<Guid?>, IMayHaveCreated, IMayHaveUpdate {
     [DefaultValue(null)] public Guid? Id { get; set; }
-    [DefaultValue("Guid")] public string? GroupId { get; set; }
-    [DefaultValue(null)] public string? GroupType { get; set; }
-
     /// <summary>
     /// Loại tệp
     /// </summary>

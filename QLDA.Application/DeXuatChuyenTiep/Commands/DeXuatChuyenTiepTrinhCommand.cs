@@ -9,7 +9,7 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Application.DeXuatChuyenTieps.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record DeXuatChuyenTiepTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 

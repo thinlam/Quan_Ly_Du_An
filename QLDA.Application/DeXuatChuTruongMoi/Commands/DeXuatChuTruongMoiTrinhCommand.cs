@@ -7,7 +7,7 @@ using QLDA.Domain.Entities.DanhMuc;
 namespace QLDA.Application.DeXuatChuTruongMois.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record DeXuatChuTruongMoiTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -41,7 +41,7 @@ internal class DeXuatChuTruongMoiTrinhCommandHandler : IRequestHandler<DeXuatChu
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
-     
+
         ManagedException.ThrowIfNull(entity, "Không tìm thấy đề xuất");
 
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)

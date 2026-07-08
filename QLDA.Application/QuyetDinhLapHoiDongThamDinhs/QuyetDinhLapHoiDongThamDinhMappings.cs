@@ -10,7 +10,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh??dto.NgayKy,//chi co ngay ky
+            Ngay = dto.NgayQuyetDinh ?? dto.NgayKy,//chi co ngay ky
             TrichYeu = dto.TrichYeu,
             CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NoiDung = dto.NoiDung,
@@ -20,18 +20,15 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
         };
     }
 
-    public static QuyetDinhLapHoiDongThamDinh ToEntity(this QuyetDinhLapHoiDongThamDinhUpdateDto dto) {
-        return new QuyetDinhLapHoiDongThamDinh {
-            Id = dto.Id,
-            So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh ?? dto.NgayKy,
-            TrichYeu = dto.TrichYeu,
-            NoiDung = dto.NoiDung,
-            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
-            NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy,
-            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString(),
-        };
+    public static void ToEntity(this QuyetDinhLapHoiDongThamDinhUpdateDto dto, QuyetDinhLapHoiDongThamDinh entity) {
+        entity.So = dto.SoQuyetDinh;
+        entity.Ngay = dto.NgayQuyetDinh ?? dto.NgayKy;
+        entity.TrichYeu = dto.TrichYeu;
+        entity.NoiDung = dto.NoiDung;
+        entity.CoQuanQuyetDinh = dto.CoQuanQuyetDinh;
+        entity.NgayKy = dto.NgayKy;
+        entity.NguoiKy = dto.NguoiKy;
+        entity.Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString();
     }
 
     public static QuyetDinhLapHoiDongThamDinhDto ToDto(this QuyetDinhLapHoiDongThamDinh entity) {

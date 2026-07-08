@@ -85,7 +85,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         if(LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai)) 
             entity =  await Mediator.Send(new ToTrinhKhongDuyetUpdateCommand(dto), cancellationToken);
         else
-            entity = await Mediator.Send(new ToTrinhKhongDuyetUpdateCommand(dto), cancellationToken);
+            entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
         
         List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand

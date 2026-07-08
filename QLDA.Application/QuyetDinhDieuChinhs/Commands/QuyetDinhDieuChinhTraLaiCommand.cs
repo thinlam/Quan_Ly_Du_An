@@ -36,10 +36,6 @@ internal class QuyetDinhDieuChinhTraLaiCommandHandler : IRequestHandler<QuyetDin
     }
 
     public async Task<int> Handle(QuyetDinhDieuChinhTraLaiCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth) {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");

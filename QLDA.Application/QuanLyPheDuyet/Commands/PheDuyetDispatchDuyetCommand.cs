@@ -1,3 +1,4 @@
+using QLDA.Application.Authorization;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.Common;
@@ -14,6 +15,7 @@ using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PheDuyetDuToans.Commands;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
 using QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
+using QLDA.Application.ThanhLyHopDongs.Commands;
 using QLDA.Application.ThoaThuanGiaoViecs.Commands;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
@@ -25,23 +27,20 @@ using QLDA.Domain.Constants;
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
 
 /// <summary>
-/// Dispatch duyet phe duyet theo type → den dung entity command
+/// Dispatch duyet phe duyet theo type → den dung entity command.
+/// Phân quyền ở tầng dispatch: chỉ Lãnh đạo phụ trách chính của DuAn hoặc role QLDA_LDDV mới được duyệt.
 /// </summary>
 public record PheDuyetDispatchDuyetCommand(string Type, Guid Id, string? NoiDung) : IRequest<int>;
 
-internal class PheDuyetDispatchDuyetCommandHandler : IRequestHandler<PheDuyetDispatchDuyetCommand, int>
-{
-    private readonly IMediator _mediator;
+internal class PheDuyetDispatchDuyetCommandHandler(IServiceProvider serviceProvider) : IRequestHandler<PheDuyetDispatchDuyetCommand, int> {
+    private readonly IMediator _mediator = serviceProvider.GetRequiredService<IMediator>();
+    private readonly IAuthorizationManager _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
 
-    public PheDuyetDispatchDuyetCommandHandler(IServiceProvider serviceProvider)
-    {
-        _mediator = serviceProvider.GetRequiredService<IMediator>();
-    }
+    public async Task<int> Handle(PheDuyetDispatchDuyetCommand request, CancellationToken cancellationToken) {
+        var duAnId = await PheDuyetDispatchHelper.GetDuAnIdAsync(serviceProvider, request.Type, request.Id, cancellationToken);
+        await _auth.EnsureCanApproveDuAnAsync(duAnId ?? Guid.Empty, cancellationToken);
 
-    public async Task<int> Handle(PheDuyetDispatchDuyetCommand request, CancellationToken cancellationToken)
-    {
-        IRequest<int> command = request.Type switch
-        {
+        IRequest<int> command = request.Type switch {
             PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanDuyetCommand(request.Id),
             PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuDuyetCommand(request.Id),
             PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiDuyetCommand(request.Id),
@@ -67,6 +66,8 @@ internal class PheDuyetDispatchDuyetCommandHandler : IRequestHandler<PheDuyetDis
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),
             PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan),
             PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaDuyetCommand(request.Id),
+
+            PheDuyetEntityNames.ThanhLyHopDong => new ThanhLyHopDongDuyetCommand(request.Id),
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };

@@ -32,11 +32,6 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
     }
 
     public async Task<int> Handle(ToTrinhPheDuyetCommand request, CancellationToken cancellationToken) {
-        // Permission check: KH-TC only (PhongBanId = 219)
-        //var phongBanId = _userProvider.Info.PhongBanID;
-        //if (phongBanId != 219) {
-        //    throw new ManagedException("Chỉ phòng KH-TC có quyền trình phân khai kinh phí");
-        //}
 
         // Get status IDs from DB by code
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -59,7 +54,7 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc trả lại");
         }
-        
+
         // Update status to Đã trình
         entity.TrangThaiId = trangThaiDaTrinh.Id;
         //1 QuyetDinhKeHoachThue

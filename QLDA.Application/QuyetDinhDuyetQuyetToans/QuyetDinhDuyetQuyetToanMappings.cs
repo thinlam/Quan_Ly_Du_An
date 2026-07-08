@@ -18,31 +18,15 @@ public static class QuyetDinhDuyetQuyetToanMappings {
         };
     }
 
-    public static QuyetDinhDuyetQuyetToan ToEntity(this QuyetDinhDuyetQuyetToanUpdateDto dto) {
-        return new QuyetDinhDuyetQuyetToan {
-            Id = dto.Id,
-            So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh,
-            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
-            TrichYeu = dto.TrichYeu,
-            NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy,
-            GiaTri = dto.GiaTri
-        };
+    public static void ToEntity(this QuyetDinhDuyetQuyetToanUpdateDto dto, QuyetDinhDuyetQuyetToan entity) {
+
+        entity.So = dto.SoQuyetDinh;
+        entity.Ngay = dto.NgayQuyetDinh;
+        entity.CoQuanQuyetDinh = dto.CoQuanQuyetDinh;
+        entity.TrichYeu = dto.TrichYeu;
+        entity.NgayKy = dto.NgayKy;
+        entity.NguoiKy = dto.NguoiKy;
+        entity.GiaTri = dto.GiaTri;
     }
 
-    public static QuyetDinhDuyetQuyetToanDto ToDto(this QuyetDinhDuyetQuyetToan entity) {
-        return new QuyetDinhDuyetQuyetToanDto {
-            Id = entity.Id,
-            DuAnId = entity.DuAnId,
-            BuocId = entity.BuocId,
-            SoQuyetDinh = entity.So,
-            NgayQuyetDinh = entity.Ngay,
-            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
-            TrichYeu = entity.TrichYeu,
-            NgayKy = entity.NgayKy,
-            NguoiKy = entity.NguoiKy,
-            GiaTri = entity.GiaTri
-        };
-    }
 }

@@ -1,4 +1,5 @@
 using System.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.QuyetDinhLapHoiDongThamDinhs.DTOs;
 
@@ -24,7 +25,11 @@ internal class QuyetDinhLapHoiDongThamDinhUpdateCommandHandler : IRequestHandler
 
     public async Task<QuyetDinhLapHoiDongThamDinh> Handle(QuyetDinhLapHoiDongThamDinhUpdateCommand request, CancellationToken cancellationToken = default) {
         try {
-            var entity = request.Dto.ToEntity();
+           
+            var entity = await QuyetDinhLapHoiDongThamDinh.GetQueryableSet()
+                                    .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+            ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu.");
+            request.Dto.ToEntity(entity);
 
             using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhLapHoiDongThamDinh.UpdateAsync(entity, cancellationToken);

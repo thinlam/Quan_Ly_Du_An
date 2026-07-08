@@ -9,18 +9,15 @@ using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
 
 namespace QLDA.Application.KySos.Queries;
 
-internal sealed class NoiDungDaKyJoinedRow
-{
+internal sealed class NoiDungDaKyJoinedRow {
     public TepDinhKem E { get; init; } = null!;
     public UserMaster? User { get; init; }
 }
 
-internal static class NoiDungDaKyQueryableExtensions
-{
+internal static class NoiDungDaKyQueryableExtensions {
     internal static (DateOnly? TuNgay, DateOnly? DenNgay) ResolveDateRange(
         NoiDungDaKySearchDto search,
-        IDateTimeProvider clock)
-    {
+        IDateTimeProvider clock) {
         var today = DateOnly.FromDateTime(clock.OffsetNow.LocalDateTime);
         var tuNgay = search.TuNgay;
         var denNgay = search.DenNgay;
@@ -40,13 +37,11 @@ internal static class NoiDungDaKyQueryableExtensions
         IQueryable<UserMaster> users,
         IServiceProvider serviceProvider,
         IDateTimeProvider clock,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken) {
         var (tuNgay, denNgay) = ResolveDateRange(search, clock);
         List<string>? groupIds = null;
 
-        if (search.DuAnId.HasValue)
-        {
+        if (search.DuAnId.HasValue) {
             groupIds = await DuAnTepDinhKemGroupIdQueryExtensions.ResolveGroupIdsAsync(
                 search.DuAnId.Value, serviceProvider, cancellationToken);
         }
@@ -57,8 +52,7 @@ internal static class NoiDungDaKyQueryableExtensions
 
         var files = await query
             .Where(e => e.ParentId != null)
-            .Where(e => e.GroupType == GroupTypeConstants.KySo
-                     || e.GroupType == GroupTypeConstants.NoiDungDaKySo)
+            .Where(e => e.GroupType.Contains("KySo"))
             .WhereIf(nguoiKyId != null, e => e.CreatedBy == nguoiKyId)
             .WhereIf(groupIds != null, e => groupIds!.Contains(e.GroupId))
             .ToListAsync(cancellationToken);
@@ -88,14 +82,12 @@ internal static class NoiDungDaKyQueryableExtensions
 
         IEnumerable<NoiDungDaKyJoinedRow> rows = files
             .OrderByDescending(e => e.CreatedAt)
-            .Select(e => new NoiDungDaKyJoinedRow
-            {
+            .Select(e => new NoiDungDaKyJoinedRow {
                 E = e,
                 User = userMap.GetValueOrDefault(e.CreatedBy),
             });
 
-        if (!string.IsNullOrWhiteSpace(filterLower))
-        {
+        if (!string.IsNullOrWhiteSpace(filterLower)) {
             rows = rows.Where(x =>
                 (x.E.FileName != null && x.E.FileName.Contains(filterLower, StringComparison.OrdinalIgnoreCase))
                 || (x.E.OriginalName != null && x.E.OriginalName.Contains(filterLower, StringComparison.OrdinalIgnoreCase))
@@ -106,8 +98,7 @@ internal static class NoiDungDaKyQueryableExtensions
     }
 
     internal static string FormatDungLuong(long sizeBytes) =>
-        sizeBytes switch
-        {
+        sizeBytes switch {
             < 1024 => $"{sizeBytes} B",
             < 1024 * 1024 => $"{sizeBytes / 1024.0:0.#} KB",
             _ => $"{sizeBytes / (1024.0 * 1024.0):0.##} MB"

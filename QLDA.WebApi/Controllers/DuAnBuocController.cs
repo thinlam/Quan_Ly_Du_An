@@ -109,7 +109,6 @@ public class DuAnBuocController(IServiceProvider serviceProvider) : AggregateRoo
         var entity = await Mediator.Send(new DuAnBuocGetQuery() {
             Id = id,
             IncludeManHinh = true,
-            IsNoTracking = true,
         });
 
         return ResultApi.Ok(entity.ToDto());

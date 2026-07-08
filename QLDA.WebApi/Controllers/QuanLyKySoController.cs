@@ -2,14 +2,16 @@ using System.Net.Mime;
 using QLDA.Application.KySos.Commands;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Application.KySos.Queries;
+using QLDA.Domain.Constants;
+using QLDA.WebApi.Models.KySos;
+using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Controllers;
 
-[Tags("Quản lý ký số")]
-[Route("api/quan-ly-ky-so")]
+[Tags("Quản lý ký số(quan-ly-ky-so)")]
 public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider) {
 
-    [HttpGet("{id}/chi-tiet")]
+    [HttpGet("api/quan-ly-ky-so/{id}/chi-tiet")]
     [ProducesResponseType<ResultApi<KySoDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Get(Guid id) {
@@ -17,7 +19,7 @@ public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateR
         return ResultApi.Ok(entity.ToDto());
     }
 
-    [HttpGet("danh-sach")]
+    [HttpGet("api/quan-ly-ky-so/danh-sach")]
     [ProducesResponseType<ResultApi<PaginatedList<KySoDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> GetList([FromQuery] KySoSearchDto searchDto,
@@ -29,8 +31,42 @@ public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateR
         });
         return ResultApi.Ok(res);
     }
+    /// <summary>
+    ///
+    /// </summary>
+    /// <remarks>
+    /// GroupId là id của dối tượng chính có file ký số - guid
+    /// </remarks>
+    /// <param name="model"></param>
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPost("api/quan-ly-ky-so/ky-so")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    public async Task<ResultApi> Create([FromBody] KySoModel model) {
+        ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
+        model.DanhSachTepDinhKem ??= [];
 
-    [HttpPost("them-moi")]
+        var entities = model.DanhSachTepDinhKem.ToEntities(model.GroupId, GroupTypeConstants.KySo)
+            .ToList();
+
+        var count = await Mediator.Send(new NoiDungDaKyCommand {
+            GroupId = model.GroupId.ToString(),
+            Entities = entities,
+        });
+
+        return ResultApi.Ok(count);
+    }
+    [HttpGet("api/quan-ly-ky-so/noi-dung-da-ky/danh-sach")]
+    [ProducesResponseType<ResultApi<PaginatedList<KySoDto>>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    public async Task<ResultApi> GetSigned([FromQuery] NoiDungDaKySearchDto searchDto, [FromQuery] AggregateRootPagination pagination) {
+        var res = await Mediator.Send(new NoiDungDaKyGetDanhSachQuery(searchDto) {
+            PageIndex = pagination.PageIndex,
+            PageSize = pagination.PageSize,
+        });
+        return ResultApi.Ok(res);
+    }
+    [HttpPost("api/quan-ly-ky-so/them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<KySoDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -39,7 +75,7 @@ public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateR
         return ResultApi.Ok(entity.ToDto());
     }
 
-    [HttpPut("cap-nhat")]
+    [HttpPut("api/quan-ly-ky-so/cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<KySoDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -48,7 +84,7 @@ public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateR
         return ResultApi.Ok(entity.ToDto());
     }
 
-    [HttpDelete("{id}/xoa-tam")]
+    [HttpDelete("api/quan-ly-ky-so/{id}/xoa-tam")]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> SoftDelete(Guid id) {
