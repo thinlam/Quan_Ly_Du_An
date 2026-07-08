@@ -11,7 +11,7 @@ public record KetQuaTrungThauInsertCommand(KetQuaTrungThauInsertDto Dto) : IRequ
 internal class KetQuaTrungThauInsertCommandHandler : IRequestHandler<KetQuaTrungThauInsertCommand, KetQuaTrungThau> {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<KetQuaTrungThauInsertCommandHandler>();
@@ -19,7 +19,7 @@ internal class KetQuaTrungThauInsertCommandHandler : IRequestHandler<KetQuaTrung
     public KetQuaTrungThauInsertCommandHandler(IServiceProvider serviceProvider) {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KetQuaTrungThau.UnitOfWork;
     }
@@ -28,7 +28,7 @@ internal class KetQuaTrungThauInsertCommandHandler : IRequestHandler<KetQuaTrung
 
         await ValidateAsync(request, cancellationToken);
 
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 

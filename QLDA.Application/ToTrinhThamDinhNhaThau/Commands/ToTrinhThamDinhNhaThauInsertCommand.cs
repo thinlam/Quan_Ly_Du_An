@@ -13,7 +13,7 @@ public record ToTrinhThamDinhNhaThauInsertCommand(ToTrinhThamDinhNhaThau Dto) : 
 internal class ToTrinhThamDinhNhaThauInsertCommandHandler : IRequestHandler<ToTrinhThamDinhNhaThauInsertCommand, Domain.Entities.ToTrinhThamDinhNhaThau> {
     private readonly IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,7 +21,7 @@ internal class ToTrinhThamDinhNhaThauInsertCommandHandler : IRequestHandler<ToTr
     public ToTrinhThamDinhNhaThauInsertCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _user = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
@@ -29,7 +29,7 @@ internal class ToTrinhThamDinhNhaThauInsertCommandHandler : IRequestHandler<ToTr
 
     public async Task<Domain.Entities.ToTrinhThamDinhNhaThau> Handle(ToTrinhThamDinhNhaThauInsertCommand request,
         CancellationToken cancellationToken = default) {
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);

@@ -19,7 +19,7 @@ internal class ThanhLyHopDongInsertCommandHandler : IRequestHandler<ThanhLyHopDo
     private readonly IRepository<HopDong, Guid> _hopDong;
     private readonly IRepository<DuAnBuoc, int> _buoc;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -30,7 +30,7 @@ internal class ThanhLyHopDongInsertCommandHandler : IRequestHandler<ThanhLyHopDo
         _hopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         _buoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _thanhLy.UnitOfWork;
     }
@@ -38,7 +38,7 @@ internal class ThanhLyHopDongInsertCommandHandler : IRequestHandler<ThanhLyHopDo
     public async Task<ThanhLyHopDong> Handle(ThanhLyHopDongInsertCommand request, CancellationToken cancellationToken = default) {
         await ValidateAsync(request, cancellationToken);
 
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 

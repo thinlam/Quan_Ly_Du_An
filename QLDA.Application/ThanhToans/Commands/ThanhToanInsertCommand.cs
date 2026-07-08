@@ -13,6 +13,7 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -21,6 +22,7 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
     }
@@ -28,12 +30,7 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
     public async Task<ThanhToan> Handle(ThanhToanInsertCommand request, CancellationToken cancellationToken = default)
     {
         // Phân quyền: Owner + Lãnh đạo + KHTC + PhongBanChinh (KHÔNG cho PhongBanPhoiHop)
-
-        // await _auth.EnsureCanExecuteThanhToanAsync(request.Dto.BuocId, _authContext, cancellationToken);
-        ManagedException.ThrowIf(
-            !_authContext.HasKhtcBypass,
-            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
-        );
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         await ValidateAsync(request, cancellationToken);
 

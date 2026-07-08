@@ -10,10 +10,10 @@ namespace QLDA.Application.Authorization;
 public class AuthorizationManager(
     IAuthorizationContext context,
     IEnumerable<IAuthorizationProvider> providers,
-    IServiceProvider serviceProvider) : IAuthorizationManager {
+    IBuocAuthorizationProvider buocAuth) : IAuthorizationManager {
     private readonly IAuthorizationContext _context = context;
     private readonly Dictionary<string, IAuthorizationProvider> _providers = BuildProviderMap(providers);
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IBuocAuthorizationProvider _buocAuth = buocAuth;
 
     private static Dictionary<string, IAuthorizationProvider> BuildProviderMap(
         IEnumerable<IAuthorizationProvider> providers) {
@@ -70,6 +70,26 @@ public class AuthorizationManager(
             return;
 
         throw new ForbiddenException("Chỉ Lãnh đạo phụ trách chính hoặc role LDDV mới có quyền duyệt phê duyệt");
+    }
+
+    /// <summary>
+    /// Check quyền Insert/Update/Delete trên VanBanQuyetDinh-derived entity:
+    /// - buocId != null: BuocAuth.EnsureCanExecuteStepAsync (chỉ Owner/Lãnh đạo)
+    /// - buocId == null: fallback DuAn ownership
+    /// - QLDA_QuanTri role hoặc HasKhtcBypass → bypass hoàn toàn
+    /// </summary>
+    public async Task EnsureCanExecuteAsync(int? buocId, Guid duAnId, IAuthorizationContext ctx, CancellationToken ct = default) {
+        if (ctx.HasKhtcBypass) return;
+        if (ctx.User.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_QuanTri)) return;
+
+        if (buocId.HasValue) {
+            await _buocAuth.EnsureCanExecuteStepAsync(buocId, ctx, ct);
+            return;
+        }
+
+        // Fallback: check DuAn ownership
+        var duAnProvider = _providers[AuthorizationResourceKeys.DuAn] as DuAnAuthorizationProvider;
+        await duAnProvider!.EnsureCanExecuteAsync(duAnId, ctx, ct);
     }
 
     private IAuthorizationProvider ResolveProvider(string resourceKey) {

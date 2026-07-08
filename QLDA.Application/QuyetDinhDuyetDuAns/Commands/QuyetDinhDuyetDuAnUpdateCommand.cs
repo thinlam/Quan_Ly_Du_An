@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.QuyetDinhDuyetDuAns.DTOs;
 using QLDA.Application.QuyetDinhDuyetDuAnNguonVons.DTOs;
 
@@ -15,6 +16,8 @@ internal class QuyetDinhDuyetDuAnUpdateCommandHandler : IRequestHandler<QuyetDin
     private readonly IRepository<QuyetDinhDuyetDuAnNguonVon, Guid> QuyetDinhDuyetDuAnNguonVon;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<QuyetDinhDuyetDuAnUpdateCommandHandler> _logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public QuyetDinhDuyetDuAnUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhDuyetDuAnUpdateCommandHandler> logger) {
@@ -25,6 +28,8 @@ internal class QuyetDinhDuyetDuAnUpdateCommandHandler : IRequestHandler<QuyetDin
             serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuAnNguonVon, Guid>>();
         _logger = logger;
         _unitOfWork = QuyetDinhDuyetDuAn.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<QuyetDinhDuyetDuAn> Handle(QuyetDinhDuyetDuAnUpdateCommand request, CancellationToken cancellationToken = default) {
@@ -32,6 +37,7 @@ internal class QuyetDinhDuyetDuAnUpdateCommandHandler : IRequestHandler<QuyetDin
 
             var entity = await QuyetDinhDuyetDuAn.GetQueryableSet().AsNoTracking()
            .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+            await _authManager.EnsureCanExecuteAsync(entity!.BuocId, entity.DuAnId, _authContext, cancellationToken);
             request.Dto.ToEntity(entity);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {

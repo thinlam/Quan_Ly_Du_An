@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThaus.Commands;
@@ -13,6 +14,8 @@ public record KeHoachLuaChonNhaThauDeleteCommandHandler : IRequestHandler<KeHoac
     private readonly IRepository<DangTaiKeHoachLcntLenMang, Guid> DangTaiKeHoachLcntLenMang;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public KeHoachLuaChonNhaThauDeleteCommandHandler(IServiceProvider serviceProvider) {
         KeHoachLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
@@ -21,14 +24,19 @@ public record KeHoachLuaChonNhaThauDeleteCommandHandler : IRequestHandler<KeHoac
         DangTaiKeHoachLcntLenMang = serviceProvider.GetRequiredService<IRepository<DangTaiKeHoachLcntLenMang, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _unitOfWork = KeHoachLuaChonNhaThau.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task Handle(KeHoachLuaChonNhaThauDeleteCommand request, CancellationToken cancellationToken) {
-        await ValidateAsync(request, cancellationToken);
         var entity = await KeHoachLuaChonNhaThau.GetOrderedSet()
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
+
+        await ValidateAsync(request, cancellationToken);
 
         await RemoveAsync(entity, cancellationToken);
 

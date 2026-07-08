@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.QuyetDinhLapBanQLDAs.DTOs;
 using QLDA.Domain.Constants;
@@ -16,6 +17,8 @@ internal class QuyetDinhLapBanQldaInsertCommandHandler : IRequestHandler<QuyetDi
     private readonly IUnitOfWork UnitOfWork;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _StatusRepository;
     private readonly ILogger<QuyetDinhLapBanQldaInsertCommandHandler> Logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public QuyetDinhLapBanQldaInsertCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhLapBanQldaInsertCommandHandler> logger) {
@@ -26,9 +29,13 @@ internal class QuyetDinhLapBanQldaInsertCommandHandler : IRequestHandler<QuyetDi
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
         Logger = logger;
         UnitOfWork = QuyetDinhLapBanQLDA.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<QuyetDinhLapBanQLDA> Handle(QuyetDinhLapBanQldaInsertCommand request, CancellationToken cancellationToken = default) {
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
+
         try {
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Dto.DuAnId),
                 "Không tồn tại dự án");

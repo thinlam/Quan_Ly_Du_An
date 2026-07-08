@@ -14,6 +14,7 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,6 +23,7 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
@@ -42,6 +44,7 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         if (entity.TrangThaiId != null &&  entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiDaChuyen?.Id)
         {

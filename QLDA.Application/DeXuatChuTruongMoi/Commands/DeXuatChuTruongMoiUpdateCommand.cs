@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.DeXuatChuTruongMois;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Domain.Constants;
@@ -12,12 +13,16 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
 {
     private readonly IRepository<DeXuatChuTruongMoi, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeXuatChuTruongMoiUpdateCommandHandler(IServiceProvider serviceProvider)
     {
         _repo = serviceProvider.GetRequiredService<IRepository<DeXuatChuTruongMoi, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
@@ -33,6 +38,8 @@ internal class DeXuatChuTruongMoiUpdateCommandHandler : IRequestHandler<DeXuatCh
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);// Không tìm thấy dữ liệu
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         if ( entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTra?.Id)

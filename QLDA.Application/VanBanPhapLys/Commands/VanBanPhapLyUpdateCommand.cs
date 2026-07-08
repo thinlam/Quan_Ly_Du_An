@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.VanBanPhapLys.DTOs;
 
 namespace QLDA.Application.VanBanPhapLys.Commands;
@@ -15,6 +16,8 @@ internal class VanBanPhapLyUpdateCommandHandler : IRequestHandler<VanBanPhapLyUp
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<VanBanPhapLyUpdateCommandHandler> _logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public VanBanPhapLyUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<VanBanPhapLyUpdateCommandHandler> logger) {
@@ -26,6 +29,8 @@ internal class VanBanPhapLyUpdateCommandHandler : IRequestHandler<VanBanPhapLyUp
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
         _logger = logger;
         _unitOfWork = VanBanPhapLy.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<VanBanPhapLy> Handle(VanBanPhapLyUpdateCommand request, CancellationToken cancellationToken = default) {
@@ -36,6 +41,8 @@ internal class VanBanPhapLyUpdateCommandHandler : IRequestHandler<VanBanPhapLyUp
                 "Không tồn tại chức vụ này");
 
             var entity = request.Dto.ToEntity();
+
+            await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await VanBanPhapLy.UpdateAsync(entity, cancellationToken);

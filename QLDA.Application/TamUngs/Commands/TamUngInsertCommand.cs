@@ -9,7 +9,7 @@ public record TamUngInsertCommand(TamUngInsertDto Dto) : IRequest<TamUng>;
 internal class TamUngInsertCommandHandler : IRequestHandler<TamUngInsertCommand, TamUng> {
     private readonly IRepository<TamUng, Guid> TamUng;
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<TamUngInsertCommandHandler>();
@@ -17,13 +17,13 @@ internal class TamUngInsertCommandHandler : IRequestHandler<TamUngInsertCommand,
     public TamUngInsertCommandHandler(IServiceProvider serviceProvider) {
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = TamUng.UnitOfWork;
     }
 
     public async Task<TamUng> Handle(TamUngInsertCommand request, CancellationToken cancellationToken = default) {
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         await ValidateAsync(request, cancellationToken);
 

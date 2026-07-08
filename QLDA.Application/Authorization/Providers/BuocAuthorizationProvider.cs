@@ -12,8 +12,7 @@ namespace QLDA.Application.Authorization;
 /// Authorization helper cho Bước (DuAnBuoc).
 /// Chuẩn hóa cách check ownership cho Bước - dùng chung cho cả CanExecute, Filter, Child entity filter.
 /// </summary>
-public static class BuocAuthorizationHelper
-{
+public static class BuocAuthorizationHelper {
     /// <summary>
     /// Tạo filter expression cho ownership check của Bước.
     /// Logic (sau khi siết phân quyền):
@@ -31,8 +30,7 @@ public static class BuocAuthorizationHelper
     /// theo ownership riêng của bước (4a), KHÔNG fallback DuAn. Chỉ khi THIẾU
     /// CẢ HAI (PhongBanChinh == null VÀ PBPH rỗng) mới fallback theo DuAn (4b).
     /// </summary>
-    public static Expression<Func<DuAnBuoc, bool>> BuildOwnershipFilter(long userId, long? phongBanId)
-    {
+    public static Expression<Func<DuAnBuoc, bool>> BuildOwnershipFilter(long userId, long? phongBanId) {
         var phongBanIdValue = phongBanId ?? 0;
         var param = Expression.Parameter(typeof(DuAnBuoc), "b");
 
@@ -56,22 +54,7 @@ public static class BuocAuthorizationHelper
         return Expression.Lambda<Func<DuAnBuoc, bool>>(combinedBody, param);
     }
 
-    /// <summary>
-    /// Tạo subquery expression để lấy visible BuocIds.
-    /// </summary>
-    public static Expression<Func<DuAnBuoc, bool>> BuildVisibleBuocIdsFilter(
-        IQueryable<DuAnBuoc> baseQuery,
-        long userId,
-        long? phongBanId)
-    {
-        if (phongBanId == 0 && userId <= 0)
-            return _ => false;
-
-        return BuildOwnershipFilter(userId, phongBanId);
-    }
-
-    private static BinaryExpression BuildLanhDaoCondition(ParameterExpression param, long userId)
-    {
+    private static BinaryExpression BuildLanhDaoCondition(ParameterExpression param, long userId) {
         // b.DuAn != null && b.DuAn.LanhDaoPhuTrachId == userId
         // LanhDaoPhuTrachId is long? — constant must be typed as long? to match the property
         // and avoid System.InvalidOperationException on null DB values.
@@ -82,15 +65,13 @@ public static class BuocAuthorizationHelper
         return Expression.AndAlso(nullCheck, compareCheck);
     }
 
-    private static BinaryExpression BuildCreatorCondition(ParameterExpression param, long userId)
-    {
+    private static BinaryExpression BuildCreatorCondition(ParameterExpression param, long userId) {
         // b.CreatedBy == userId.ToString()
         var createdByProperty = Expression.Property(param, "CreatedBy");
         return Expression.Equal(createdByProperty, Expression.Constant(userId.ToString()));
     }
 
-    private static BinaryExpression BuildPhongBanChinhCondition(ParameterExpression param, long phongBanId)
-    {
+    private static BinaryExpression BuildPhongBanChinhCondition(ParameterExpression param, long phongBanId) {
         // b.PhongPhuTrachChinhId == phongBanIdValue
         // PhongPhuTrachChinhId is long? — constant must be typed as long? to match the property
         // and avoid System.InvalidOperationException on null DB values.
@@ -113,8 +94,7 @@ public static class BuocAuthorizationHelper
     ///
     /// Tổng: 4a OR 4b.
     /// </summary>
-    private static BinaryExpression BuildPhoiHopInChiuTrachNhiemScopeCondition(ParameterExpression param, long phongBanId)
-    {
+    private static BinaryExpression BuildPhoiHopInChiuTrachNhiemScopeCondition(ParameterExpression param, long phongBanId) {
         var phongBanPhoiHops = Expression.Property(param, "DuAnBuocPhongBanPhoiHops");
         var phongPhuTrachChinhId = Expression.Property(param, "PhongPhuTrachChinhId");
 
@@ -151,8 +131,7 @@ public static class BuocAuthorizationHelper
         return Expression.OrElse(oldCondition, bypassCondition);
     }
 
-    private static MethodCallExpression BuildAnyCall(Expression collection, long phongBanId)
-    {
+    private static MethodCallExpression BuildAnyCall(Expression collection, long phongBanId) {
         // collection.Any(p => p.RightId == phongBanIdValue)
         var anyMethod = typeof(Enumerable)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -172,8 +151,7 @@ public static class BuocAuthorizationHelper
     /// Dùng pattern này (không Count() == 0) để EF Core dịch được đồng nhất
     /// trên các provider; đồng thời null-safe khi collection chưa load.
     /// </summary>
-    private static BinaryExpression BuildIsNullOrEmpty(Expression collection)
-    {
+    private static BinaryExpression BuildIsNullOrEmpty(Expression collection) {
         // collection == null
         var isNull = Expression.Equal(collection, Expression.Constant(null, collection.Type));
 
@@ -188,8 +166,7 @@ public static class BuocAuthorizationHelper
         return Expression.OrElse(isNull, isEmpty);
     }
 
-    private static MethodCallExpression BuildAnyChiuTrachNhiemWithLoaiCall(Expression collection, long phongBanId, EChiuTrachNhiemXuLy loai)
-    {
+    private static MethodCallExpression BuildAnyChiuTrachNhiemWithLoaiCall(Expression collection, long phongBanId, EChiuTrachNhiemXuLy loai) {
         // collection.Any(x => x.RightId == phongBanIdValue && x.Loai == loai)
         var anyMethod = typeof(Enumerable)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -210,8 +187,7 @@ public static class BuocAuthorizationHelper
     /// <summary>
     /// Kiểm tra ownership trên object đã load (không phải IQueryable).
     /// </summary>
-    public static bool CheckOwnership(DuAnBuoc buoc, long userId, long? phongBanId)
-    {
+    public static bool CheckOwnership(DuAnBuoc buoc, long userId, long? phongBanId) {
         var filter = BuildOwnershipFilter(userId, phongBanId);
         return filter.Compile()(buoc);
     }
@@ -226,17 +202,15 @@ public static class BuocAuthorizationHelper
 /// - CanManageStepFieldsAsync: chỉ Owner/LanhDao — cho phép edit/delete các field của bước
 /// - CanExecuteThanhToanAsync: chỉ Owner/LanhDao + PhongBanChinh (KHÔNG cho PhoiHop) — cho phép Insert/Update ThanhToan
 /// </summary>
-public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IBuocAuthorizationProvider
-{
-    public async Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
-    {
+public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IBuocAuthorizationProvider {
+    public async Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct) {
         if (ctx.HasKhtcBypass) return true;
+        if (ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)) return true;
 
         return BuocAuthorizationHelper.CheckOwnership(buoc, ctx.UserId, ctx.PhongBanId);
     }
 
-    public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx)
-    {
+    public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx) {
         if (ctx.HasKhtcBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
@@ -250,8 +224,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         IQueryable<T> query,
         IRepository<DuAnBuoc, int> buocRepository,
         IAuthorizationContext ctx,
-        Expression<Func<T, int?>> buocIdSelector) where T : class
-    {
+        Expression<Func<T, int?>> buocIdSelector) where T : class {
         if (ctx.HasKhtcBypass) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
@@ -264,9 +237,10 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         return ApplyChildBuocIdFilter(query, visibleBuocIds, buocIdSelector);
     }
 
-    public async Task EnsureCanExecuteStepAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
-    {
+    public async Task EnsureCanExecuteStepAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default) {
         if (!buocId.HasValue) return;
+        if (ctx.HasKhtcBypass) return;
+        if (ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)) return;
 
         var buoc = await buocRepo.GetQueryableSet()
             .Include(e => e.DuAn)
@@ -277,95 +251,11 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
             throw new ForbiddenException("Phòng ban không có quyền thao tác bước này");
     }
 
-    /// <summary>
-    /// Quyền chỉnh sửa DanhSachPhongBanPhoiHopIds: chỉ Owner (CreatedBy) + Lãnh đạo phụ trách + role thuộc GroupAdminCatalog.
-    /// PhongBanChinh và PhongBanPhoiHop KHÔNG có quyền chỉnh viewer list.
-    /// </summary>
-    public async Task<bool> CanManageViewerListAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
-    {
-        return await CanManageStepFieldsAsync(buoc, ctx, ct);
-    }
-
-    /// <summary>
-    /// Throw ManagedException nếu user không có quyền chỉnh DanhSachPhongBanPhoiHopIds.
-    /// </summary>
-    public async Task EnsureCanManageViewerListAsync(int buocId, IAuthorizationContext ctx, CancellationToken ct = default)
-    {
-        var buoc = await buocRepo.GetQueryableSet()
-            .Include(e => e.DuAn)
-            .FirstOrDefaultAsync(e => e.Id == buocId, ct);
-
-        if (buoc == null) return;
-        if (!await CanManageViewerListAsync(buoc, ctx, ct))
-            throw new ForbiddenException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa danh sách phòng ban phối hợp");
-    }
-
-    /// <summary>
-    /// Quyền edit/delete các field của bước (TenBuoc, Ngay, ManHinh, PhongPhuTrachChinhId): chỉ Owner + Lãnh đạo + role thuộc GroupAdminCatalog.
-    /// </summary>
-    public async Task<bool> CanManageStepFieldsAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
-    {
-        if (ctx.HasKhtcBypass) return true;
-
-        if (buoc.CreatedBy == ctx.UserId.ToString()) return true;
-
-        var lanhDaoId = buoc.DuAn?.LanhDaoPhuTrachId
-            ?? await ctx.GetLanhDaoPhuTrachIdAsync(buoc.DuAnId, ct);
-        if (lanhDaoId.HasValue && lanhDaoId.Value == ctx.UserId) return true;
-
-        return false;
-    }
-
-    /// <summary>
-    /// Throw ManagedException nếu user không có quyền edit/delete các field của bước.
-    /// Noop khi buocId null.
-    /// User có role thuộc GroupAdminCatalog (QLDA_TatCa/QLDA_QuanTri) bypass check.
-    /// </summary>
-    public async Task EnsureCanManageStepFieldsAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
-    {
-        if (!buocId.HasValue) return;
-        if (ctx.User.AuthInfo.HasRole(RoleConstants.GroupAdminCatalog)) return;
-        var buoc = await buocRepo.GetQueryableSet()
-            .Include(e => e.DuAn)
-            .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
-        if (buoc == null) return;
-        if (!await CanManageStepFieldsAsync(buoc, ctx, ct))
-            throw new ForbiddenException("Chỉ Lãnh đạo phụ trách hoặc người tạo bước mới được chỉnh sửa thông tin bước");
-    }
-
-    /// <summary>
-    /// Quyền Insert/Update ThanhToan: Owner + Lãnh đạo + role thuộc GroupAdminCatalog + PhongBanChinh.
-    /// PhongBanPhoiHop KHÔNG có quyền (kể cả khi thuộc DuAn.ChiuTrachNhiemXuLys).
-    /// </summary>
-    public async Task<bool> CanExecuteThanhToanAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct)
-    {
-        if (ctx.HasKhtcBypass) return true;
-
-        if (await CanManageStepFieldsAsync(buoc, ctx, ct)) return true;
-
-        // PhongBanChinh được Insert/Update ThanhToan nhưng KHÔNG được Delete
-        return buoc.PhongPhuTrachChinhId == ctx.PhongBanId;
-    }
-
-    /// <summary>
-    /// Throw ManagedException nếu user không có quyền Insert/Update ThanhToan.
-    /// </summary>
-    public async Task EnsureCanExecuteThanhToanAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default)
-    {
-        if (!buocId.HasValue) return;
-        var buoc = await buocRepo.GetQueryableSet()
-            .Include(e => e.DuAn)
-            .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
-        if (buoc == null) return;
-        if (!await CanExecuteThanhToanAsync(buoc, ctx, ct))
-            throw new ForbiddenException("Phòng ban không có quyền thao tác thanh toán");
-    }
 
     private static IQueryable<T> ApplyChildBuocIdFilter<T>(
         IQueryable<T> query,
         IQueryable<int> visibleBuocIds,
-        Expression<Func<T, int?>> buocIdSelector) where T : class
-    {
+        Expression<Func<T, int?>> buocIdSelector) where T : class {
         var parameter = Expression.Parameter(typeof(T), "e");
 
         // Inline the selector body against the unified query parameter. Invoking
@@ -404,8 +294,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     /// inlined against a unified query parameter (EF-translatable member access
     /// rather than an opaque delegate Invoke).
     /// </summary>
-    private sealed class ParameterReplacer(ParameterExpression oldParam, ParameterExpression newParam) : ExpressionVisitor
-    {
+    private sealed class ParameterReplacer(ParameterExpression oldParam, ParameterExpression newParam) : ExpressionVisitor {
         private readonly ParameterExpression _oldParam = oldParam;
         private readonly ParameterExpression _newParam = newParam;
 

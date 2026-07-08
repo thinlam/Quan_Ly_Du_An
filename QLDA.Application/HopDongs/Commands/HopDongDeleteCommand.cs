@@ -12,6 +12,7 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
     private readonly IRepository<TamUng, Guid> TamUng;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -21,6 +22,7 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HopDong.UnitOfWork;
     }
@@ -34,6 +36,7 @@ public record HopDongDeleteCommandHandler : IRequestHandler<HopDongDeleteCommand
 
         // Check step authorization
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         await RemoveAsync(entity, cancellationToken);
         return await _unitOfWork.SaveChangesAsync(cancellationToken);

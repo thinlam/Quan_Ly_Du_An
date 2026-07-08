@@ -13,7 +13,7 @@ public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCom
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -21,7 +21,7 @@ public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCom
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = NghiemThu.UnitOfWork;
     }
@@ -39,7 +39,7 @@ public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCom
           ManagedException.Throw("Nghiệm thu này đã có hóa đơn thanh toán. Không thể xóa");
 
         // Authorization check on existing entity's BuocId
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

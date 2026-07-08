@@ -14,6 +14,7 @@ public record DuToanDauTuDeleteCommandHandler : IRequestHandler<DuToanDauTuDelet
     private readonly IRepository<DuToanDauTu, Guid> DuToanDauTu;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,6 +23,7 @@ public record DuToanDauTuDeleteCommandHandler : IRequestHandler<DuToanDauTuDelet
         DuToanDauTu = serviceProvider.GetRequiredService<IRepository<DuToanDauTu, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = DuToanDauTu.UnitOfWork;
     }
@@ -34,6 +36,7 @@ public record DuToanDauTuDeleteCommandHandler : IRequestHandler<DuToanDauTuDelet
         ManagedException.ThrowIfNull(entity);
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

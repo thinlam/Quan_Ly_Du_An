@@ -15,7 +15,7 @@ internal class ToTrinhKhongDuyetUpdateCommandHandler : IRequestHandler<ToTrinhKh
 {
     private readonly IRepository<ToTrinhPheDuyet, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
@@ -25,7 +25,7 @@ internal class ToTrinhKhongDuyetUpdateCommandHandler : IRequestHandler<ToTrinhKh
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -45,7 +45,7 @@ internal class ToTrinhKhongDuyetUpdateCommandHandler : IRequestHandler<ToTrinhKh
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         // Phòng KHTC (HasKhtcBypass) được phép cập nhật mọi trạng thái; các role khác chỉ cập nhật được khi trạng thái = Dự thảo.

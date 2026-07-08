@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.QuyetDinhDuyetKHLCNTs.Commands;
 
@@ -14,6 +15,8 @@ internal class
     private readonly IRepository<QuyetDinhDuyetKHLCNT, Guid> QuyetDinhDuyetKHLCNT;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<QuyetDinhDuyetKHLCNTInsertOrUpdateCommandHandler> _logger;
 
@@ -24,12 +27,19 @@ internal class
         KeHoachLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = QuyetDinhDuyetKHLCNT.UnitOfWork;
     }
 
     public async Task Handle(QuyetDinhDuyetKHLCNTInsertOrUpdateCommand request,
         CancellationToken cancellationToken = default) {
+        await _authManager.EnsureCanExecuteAsync(
+            request.Entity.VanBanQuyetDinh?.BuocId ?? 0,
+            request.Entity.VanBanQuyetDinh?.DuAnId ?? Guid.Empty,
+            _authContext,
+            cancellationToken);
         try {
             // 1. Tách hẳn ID ra biến riêng biệt, KHÔNG truyền nguyên cả Object Navigation vào câu query
             var targetDuAnId = request.Entity.VanBanQuyetDinh?.DuAnId;

@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.QuyetDinhLapBenMoiThaus.DTOs;
 
 namespace QLDA.Application.QuyetDinhLapBenMoiThaus.Commands;
@@ -7,6 +8,8 @@ namespace QLDA.Application.QuyetDinhLapBenMoiThaus.Commands;
 public record QuyetDinhLapBenMoiThauUpdateCommand(QuyetDinhLapBenMoiThauUpdateDto Dto) : IRequest<QuyetDinhLapBenMoiThau>;
 
 internal class QuyetDinhLapBenMoiThauUpdateCommandHandler : IRequestHandler<QuyetDinhLapBenMoiThauUpdateCommand, QuyetDinhLapBenMoiThau> {
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IRepository<QuyetDinhLapBenMoiThau, Guid> QuyetDinhLapBenMoiThau;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
@@ -15,6 +18,8 @@ internal class QuyetDinhLapBenMoiThauUpdateCommandHandler : IRequestHandler<Quye
 
     public QuyetDinhLapBenMoiThauUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhLapBenMoiThauUpdateCommandHandler> logger) {
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         QuyetDinhLapBenMoiThau = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapBenMoiThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
@@ -25,6 +30,8 @@ internal class QuyetDinhLapBenMoiThauUpdateCommandHandler : IRequestHandler<Quye
     public async Task<QuyetDinhLapBenMoiThau> Handle(QuyetDinhLapBenMoiThauUpdateCommand request, CancellationToken cancellationToken = default) {
         try {
             var entity = request.Dto.ToEntity();
+
+            await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
             using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhLapBenMoiThau.UpdateAsync(entity, cancellationToken);

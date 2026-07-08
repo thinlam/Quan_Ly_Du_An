@@ -20,7 +20,7 @@ internal class ThanhLyHopDongUpdateCommandHandler : IRequestHandler<ThanhLyHopDo
     private readonly IRepository<HopDong, Guid> _hopDong;
     private readonly IRepository<DuAnBuoc, int> _buoc;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -32,7 +32,7 @@ internal class ThanhLyHopDongUpdateCommandHandler : IRequestHandler<ThanhLyHopDo
         _hopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         _buoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _thanhLy.UnitOfWork;
     }
@@ -47,7 +47,7 @@ internal class ThanhLyHopDongUpdateCommandHandler : IRequestHandler<ThanhLyHopDo
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Status guard: chỉ cho phép cập nhật khi status = DT hoặc TL (UC63)
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThanhLyHopDong, cancellationToken);

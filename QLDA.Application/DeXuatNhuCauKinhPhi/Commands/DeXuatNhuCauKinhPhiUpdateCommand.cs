@@ -14,7 +14,7 @@ internal class DeXuatNhuCauKinhPhiUpdateCommandHandler : IRequestHandler<DeXuatN
 {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,7 +22,7 @@ internal class DeXuatNhuCauKinhPhiUpdateCommandHandler : IRequestHandler<DeXuatN
     {
         _repo = serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
@@ -37,7 +37,7 @@ internal class DeXuatNhuCauKinhPhiUpdateCommandHandler : IRequestHandler<DeXuatN
         var entity = await _repo.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         if (entity.TrangThaiId != trangThaiDuThao?.Id && trangThaiTraLai?.Id != entity.TrangThaiId)

@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.QuyetDinhDuyetQuyetToans.DTOs;
 
 namespace QLDA.Application.QuyetDinhDuyetQuyetToans.Commands;
@@ -10,6 +11,8 @@ internal class QuyetDinhDuyetQuyetToanUpdateCommandHandler : IRequestHandler<Quy
     private readonly IRepository<QuyetDinhDuyetQuyetToan, Guid> QuyetDinhDuyetQuyetToan;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<QuyetDinhDuyetQuyetToanUpdateCommandHandler> _logger;
 
@@ -18,6 +21,8 @@ internal class QuyetDinhDuyetQuyetToanUpdateCommandHandler : IRequestHandler<Quy
         QuyetDinhDuyetQuyetToan = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetQuyetToan, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = QuyetDinhDuyetQuyetToan.UnitOfWork;
     }
@@ -27,6 +32,8 @@ internal class QuyetDinhDuyetQuyetToanUpdateCommandHandler : IRequestHandler<Quy
             var entity = QuyetDinhDuyetQuyetToan.GetQueryableSet().Where(x => x.Id == request.Dto.Id).FirstOrDefault();
             ManagedException.ThrowIfNull(entity, "Không tồn tại dữ liệu cần cập nhật");
             request.Dto.ToEntity(entity);
+
+            await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetQuyetToan.UpdateAsync(entity, cancellationToken);
