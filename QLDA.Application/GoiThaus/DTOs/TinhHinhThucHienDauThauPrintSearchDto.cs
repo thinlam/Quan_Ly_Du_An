@@ -13,6 +13,9 @@ public record TinhHinhThucHienDauThauPrintSearchDto
 
     /// <summary>
     /// Năm dự án — bind query param <c>namDuAn</c>. Null hoặc &lt;= 0 = không lọc.
+    /// Cùng logic với param <c>nam</c> của API danh sách
+    /// (<see cref="QLDA.Application.GoiThaus.GoiThauTinhHinhDauThauQueryableExtensions.ApplyTinhHinhDauThauNamFilter"/>,
+    /// theo <c>DuAn.NgayBatDau</c>) để Excel khớp dữ liệu grid.
     /// </summary>
     public int? NamDuAn { get; set; }
 

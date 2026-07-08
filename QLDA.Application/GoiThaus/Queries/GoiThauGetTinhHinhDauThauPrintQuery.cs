@@ -76,7 +76,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
             .Include(e => e.HopDong)
             .AsQueryable()
             .ApplyTinhHinhDauThauFilters(searchDto.DuAnId, searchDto.GiaiDoanId)
-            .ApplyTinhHinhDauThauNamDuAnFilter(searchDto.NamDuAn);
+            .ApplyTinhHinhDauThauNamFilter(searchDto.NamDuAn);
 
         queryable = loai switch
         {
