@@ -73,7 +73,6 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         var donViId = TryGetCurrentDonViId(_userProvider);
         var donViRows = await _donViRepo.GetQueryableSet()
             .AsNoTracking()
-            .Where(e => e.DonViCapChaId != null)
             .WhereIf(donViId > 0, e => e.DonViCapChaId == donViId)
             .Where(e => e.TenDonVi != null && e.TenDonVi != "")
             .Select(e => new DonViImportLookup(e.Id, e.TenDonVi!))
@@ -83,7 +82,8 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
             .Where(e => e.LaDonViChinh == true)
             .WhereIf(donViId > 0, e => e.DonViId == donViId)
             .Where(e => e.HoTen != null && e.HoTen != "")
-            .Select(e => new UserImportLookup(e.Id, e.HoTen!, e.DonViId))
+            .Where(e => e.UserPortalId != null)
+            .Select(e => new UserImportLookup(e.UserPortalId!.Value, e.HoTen!, e.DonViId))
             .ToListAsync(cancellationToken);
 
         var trangThaiDuThao = await _statusRepo
@@ -175,7 +175,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
                 buocId,
                 giaiDoanId,
                 donViChuTriId,
-                chuTriUser.Id,
+                chuTriUser.PortalId,
                 donViPhoiHopIds,
                 canBoPhoiHopIds));
         }
@@ -335,7 +335,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
         foreach (var token in tokens) {
             if (!TryResolveUser(token, usersInDonVi, out var user, out error))
                 return false;
-            resolved.Add(user.Id);
+            resolved.Add(user.PortalId);
         }
 
         ids = resolved;
@@ -373,7 +373,7 @@ internal class KeHoachTrienKhaiHangMucImportRangeCommandHandler(IServiceProvider
 
     private sealed record DonViImportLookup(long Id, string TenDonVi);
 
-    private sealed record UserImportLookup(long Id, string HoTen, long? DonViId);
+    private sealed record UserImportLookup(long PortalId, string HoTen, long? DonViId);
 
     private sealed record ValidatedImportRow(
         KeHoachTrienKhaiHangMucImportDto Source,
