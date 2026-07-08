@@ -19,9 +19,7 @@ public class GoiThauTinhHinhDauThauQueryableExtensionsTests
                 DuAn = new DuAn
                 {
                     GiaiDoanHienTaiId = 22,
-                    ThoiGianKhoiCong = 2026,
-                    ThoiGianHoanThanh = 2028,
-                    NgayBatDau = null,
+                    NgayBatDau = new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero),
                 },
             },
             new()
@@ -31,8 +29,17 @@ public class GoiThauTinhHinhDauThauQueryableExtensionsTests
                 DuAn = new DuAn
                 {
                     GiaiDoanHienTaiId = 10,
-                    ThoiGianKhoiCong = 2025,
-                    ThoiGianHoanThanh = 2025,
+                    NgayBatDau = new DateTimeOffset(2025, 6, 1, 0, 0, 0, TimeSpan.Zero),
+                },
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                DuAnId = Guid.NewGuid(),
+                DuAn = new DuAn
+                {
+                    GiaiDoanHienTaiId = 22,
+                    NgayBatDau = null,
                 },
             },
         }.AsQueryable();
@@ -42,7 +49,7 @@ public class GoiThauTinhHinhDauThauQueryableExtensionsTests
     {
         var result = CreateSampleData()
             .ApplyTinhHinhDauThauFilters(MatchingDuAnId, giaiDoanId: 22)
-            .ApplyTinhHinhDauThauNamDuAnFilter(2026)
+            .ApplyTinhHinhDauThauNamFilter(2026)
             .ToList();
 
         result.Should().HaveCount(1);
@@ -50,24 +57,34 @@ public class GoiThauTinhHinhDauThauQueryableExtensionsTests
     }
 
     [Fact]
-    public void ApplyNamDuAnFilter_MatchesThoiGianKhoiCong_WhenNgayBatDauNull()
+    public void ApplyNamFilter_MatchesNgayBatDau_ForGivenYear()
     {
+        // Đảm bảo API print (namDuAn) và API list (nam) trả cùng tập dữ liệu
+        // vì dùng chung ApplyTinhHinhDauThauNamFilter.
         var result = CreateSampleData()
-            .ApplyTinhHinhDauThauNamDuAnFilter(2026)
+            .ApplyTinhHinhDauThauNamFilter(2026)
             .ToList();
 
         result.Should().HaveCount(1);
-        result[0].DuAn!.NgayBatDau.Should().BeNull();
+        result[0].DuAnId.Should().Be(MatchingDuAnId);
     }
 
     [Fact]
-    public void ApplyNamFilter_RequiresNgayBatDau()
+    public void ApplyNamFilter_ExcludesEntitiesWithNullNgayBatDau()
     {
         var result = CreateSampleData()
             .ApplyTinhHinhDauThauNamFilter(2026)
             .ToList();
 
-        result.Should().BeEmpty();
+        result.Should().NotContain(e => e.DuAn!.NgayBatDau == null);
+    }
+
+    [Fact]
+    public void ApplyNamFilter_NullOrNonPositive_DoesNotFilter()
+    {
+        CreateSampleData().ApplyTinhHinhDauThauNamFilter(null).ToList().Should().HaveCount(3);
+        CreateSampleData().ApplyTinhHinhDauThauNamFilter(0).ToList().Should().HaveCount(3);
+        CreateSampleData().ApplyTinhHinhDauThauNamFilter(-1).ToList().Should().HaveCount(3);
     }
 
     [Fact]
@@ -77,7 +94,7 @@ public class GoiThauTinhHinhDauThauQueryableExtensionsTests
             .ApplyTinhHinhDauThauFilters(duAnId: null, giaiDoanId: -1)
             .ToList();
 
-        result.Should().HaveCount(2);
+        result.Should().HaveCount(3);
     }
 
     [Theory]

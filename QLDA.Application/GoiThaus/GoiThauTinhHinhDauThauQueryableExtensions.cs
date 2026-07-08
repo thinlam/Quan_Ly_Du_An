@@ -24,13 +24,14 @@ internal static class GoiThauTinhHinhDauThauQueryableExtensions
     }
 
     /// <summary>
-    /// Lọc theo query param <c>nam</c> trên API list — theo <c>DuAn.NgayBatDau</c>.
+    /// Lọc theo năm — dùng chung cho cả API list (param <c>nam</c>) và API print
+    /// (param <c>namDuAn</c>), theo <c>DuAn.NgayBatDau</c>. Null hoặc &lt;= 0 → bỏ qua.
     /// </summary>
     public static IQueryable<GoiThau> ApplyTinhHinhDauThauNamFilter(
         this IQueryable<GoiThau> queryable,
         int? nam)
     {
-        if (!nam.HasValue)
+        if (nam is not > 0)
             return queryable;
 
         var firstDayOfYear = new DateTimeOffset(nam.Value, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -39,23 +40,6 @@ internal static class GoiThauTinhHinhDauThauQueryableExtensions
             && e.DuAn.NgayBatDau.HasValue
             && e.DuAn.NgayBatDau >= firstDayOfYear
             && e.DuAn.NgayBatDau < firstDayOfNextYear);
-    }
-
-    /// <summary>
-    /// Lọc theo query param <c>namDuAn</c> trên API print — logic #9121
-    /// (<c>ThoiGianKhoiCong</c> / <c>ThoiGianHoanThanh</c>).
-    /// </summary>
-    public static IQueryable<GoiThau> ApplyTinhHinhDauThauNamDuAnFilter(
-        this IQueryable<GoiThau> queryable,
-        int? namDuAn)
-    {
-        if (namDuAn is not > 0)
-            return queryable;
-
-        return queryable.Where(e => e.DuAn != null
-            && namDuAn >= e.DuAn.ThoiGianKhoiCong
-            && ((e.DuAn.ThoiGianHoanThanh == null && e.DuAn.ThoiGianKhoiCong == namDuAn)
-                || namDuAn <= e.DuAn.ThoiGianHoanThanh));
     }
 
     /// <summary>
