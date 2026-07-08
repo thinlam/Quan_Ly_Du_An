@@ -277,7 +277,7 @@ public static class HoSoMoiThauDienTuMappingConfiguration
        => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKemQuyetDinh(
       this ToTrinhQuyetDinhModel model, long groupId)
-      => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
+      => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuQuyetDinh).ToList() ?? [];
 
     public static List<TepDinhKem> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)

@@ -34,7 +34,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         var filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
             GroupId = [entity.QuyetDinh != null ? entity.QuyetDinh?.Id.ToString() :""],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
+            EGroupTypes = [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()]
         });
         var fileCamKets = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
@@ -75,35 +75,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return ResultApi.Ok(entity.Id);
-        //if(model.ToTrinh)
-        //if (model.ToTrinh != null && model.ToTrinh.DanhSachTepDinhKem?.Count > 0)
-        //{
-        //    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //    {
-        //        GroupId = entity.Id.ToString(),
-        //        Entities = model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemQuyetDinhThamDinh(entity.Id)
-        //    });
-        //}
-        //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //{
-        //    GroupId = entity.Id.ToString(),
-        //    Entities = model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemCamKetThamDinh(entity.Id)
-        //});
-        //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //{
-        //    GroupId = entity.Id.ToString(),
-        //    Entities = model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemBaoCaoThamDinh(entity.Id)
-        //});
-        //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //{
-        //    GroupId = entity.ToTrinh.Id.ToString(),
-        //    Entities = model.ToTrinh.GetDanhSachTepDinhKemToTrinh(entity.ToTrinh.Id)
-        //});
-        //await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
-        //{
-        //    GroupId = entity.Id.ToString(),
-        //    Entities = model.GetDanhSachTepDinhKem(entity.Id)
-        //});
+      
 
     }
 
@@ -150,8 +122,8 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             var quyetDinhId  = entity.QuyetDinh.Id;
             await SyncTepDinhKemAsync(
                 quyetDinhId.ToString(),
-                model.QuyetDinh?.GetDanhSachTepDinhKemToTrinh(quyetDinhId) ?? [],
-                EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
+                model.QuyetDinh?.GetDanhSachTepDinhKemQuyetDinh(quyetDinhId) ?? [],
+                EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString(),
                 cancellationToken);
         }
         if (model.HoSoMoiThauThamDinh != null)

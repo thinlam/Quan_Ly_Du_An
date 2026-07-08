@@ -20,7 +20,8 @@ public static class HoSoMoiThauDienTuMappings
             ThoiGianThucHien = dto.ThoiGianThucHien,
             TrangThaiDangTai = dto.TrangThaiDangTai,
             TrangThaiId = dto.TrangThaiId,
-            NhaThauId = dto.HoSoMoiThauThamDinh.NhaThauId,
+            ThamDinh = dto.ThamDinh,
+            NhaThauId = dto.ThamDinh ==true ? dto.HoSoMoiThauThamDinh.NhaThauId : null,
 
         };
         if (dto.ToTrinh == null || string.IsNullOrEmpty(dto.ToTrinh.So))
