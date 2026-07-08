@@ -69,10 +69,11 @@ internal class KeHoachTrienKhaiHangMucGetImportTemplateQueryHandler(IServiceProv
             .Where(e => e.LaDonViChinh == true)
             .WhereIf(donViId > 0, e => e.DonViId == donViId)
             .Where(e => e.HoTen != null && e.HoTen != "")
+            .Where(e => e.UserPortalId != null)
             .OrderBy(e => e.HoTen)
             .Select(e => new ComboData {
                 Name = e.HoTen!,
-                Id = e.Id.ToString(),
+                Id = e.UserPortalId!.Value.ToString(),
             })
             .ToListAsync(cancellationToken);
 

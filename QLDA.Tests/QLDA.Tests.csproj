@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\QLDA.Persistence\QLDA.Persistence.csproj" />
     <ProjectReference Include="..\QLDA.Application\QLDA.Application.csproj" />
+    <ProjectReference Include="..\QLDA.Infrastructure\QLDA.Infrastructure.csproj" />
     <ProjectReference Include="..\QLDA.WebApi\QLDA.WebApi.csproj" />
   </ItemGroup>
 

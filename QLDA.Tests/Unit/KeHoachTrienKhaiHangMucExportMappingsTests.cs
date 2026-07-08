@@ -8,6 +8,34 @@ namespace QLDA.Tests.Unit;
 public class KeHoachTrienKhaiHangMucExportMappingsTests
 {
     [Fact]
+    public void ToExportRows_ResolvesCanBoByUserPortalId()
+    {
+        const int giaiDoanId = 1;
+        const long portalId = 50_001;
+
+        var hangMucs = new List<HangMucKeHoach>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenHangMuc = "HM export",
+                GiaiDoanId = giaiDoanId,
+                CanBoChuTriId = portalId,
+                CreatedAt = DateTimeOffset.UtcNow,
+            },
+        };
+
+        var rows = KeHoachTrienKhaiHangMucExportMappings.ToExportRows(
+            hangMucs,
+            new Dictionary<int, string> { [giaiDoanId] = "Giai đoạn A" },
+            new Dictionary<int, int> { [giaiDoanId] = 1 },
+            new Dictionary<long, string>(),
+            new Dictionary<long, string> { [portalId] = "Đào Thị Bích Tuyền" });
+
+        rows.Single(r => !r.IsGroupHeader).CanBoChuTri.Should().Be("Đào Thị Bích Tuyền");
+    }
+
+    [Fact]
     public void ToExportRows_OrdersGroupsByProjectSort_NotGlobalName()
     {
         const int giaiDoanXin = 1;
