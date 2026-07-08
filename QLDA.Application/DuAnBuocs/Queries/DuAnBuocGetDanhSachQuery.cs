@@ -66,7 +66,7 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
                 TenBuoc = entity.TenBuoc ?? entity.Buoc.Ten,
                 PartialView = entity.PartialView,
                 DanhSachManHinh = manHinhs,
-                PhongBanPhoiHopIds = phongBanPhoiHopIds
+                DanhSachPhongBanPhoiHopIds = phongBanPhoiHopIds
             };
         });
 

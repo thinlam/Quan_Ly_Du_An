@@ -18,6 +18,7 @@ public class DuAnBuocDto : IHasUsed {
     public DateTimeOffset? NgayDuKienBatDau { get; set; }
     public DateTimeOffset? NgayDuKienKetThuc { get; set; }
     public List<int>? DanhSachManHinh { get; set; } = [];
-    public List<long>? PhongBanPhoiHopIds { get; set; } = [];
+    public long? PhongPhuTrachChinhId { get; set; }
+    public List<long>? DanhSachPhongBanPhoiHopIds { get; set; } = [];
     public bool Used { get; set; }
 }

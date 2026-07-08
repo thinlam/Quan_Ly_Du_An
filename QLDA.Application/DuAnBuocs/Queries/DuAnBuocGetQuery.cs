@@ -5,7 +5,6 @@ namespace QLDA.Application.DuAnBuocs.Queries;
 
 public class DuAnBuocGetQuery : IRequest<DuAnBuoc> {
     public int Id { get; set; }
-    public bool IsNoTracking { get; set; }
     public bool IncludeDuAn { get; set; }
     public bool IncludeManHinh { get; set; }
 }
@@ -28,7 +27,7 @@ internal class DuAnBuocGetDQueryHandler(IServiceProvider serviceProvider)
         var entity = await baseSet
             .Include(e => e.Buoc!.BuocManHinhs!)
             .ThenInclude(bm => bm.ManHinh)
-            .WhereFunc(request.IsNoTracking, q => q.AsNoTracking())
+            .Include(o => o.DuAnBuocPhongBanPhoiHops)
             .WhereFunc(request.IncludeDuAn, q => q.Include(e => e.DuAn))
             .WhereFunc(request.IncludeManHinh, q => q.Include(e => e.DuAnBuocManHinhs!).ThenInclude(bm => bm.ManHinh))
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
