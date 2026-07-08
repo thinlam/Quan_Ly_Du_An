@@ -71,8 +71,8 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
                 
                  DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString()
-                    || (e.ToTrinh  != null && i.GroupId == e.QuyetDinh.Id.ToString() && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString() )
-                    || (e.QuyetDinh != null && i.GroupId == e.ToTrinh.Id.ToString() && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString() ))
+                    || (e.ToTrinh  != null && i.GroupId == e.ToTrinh.Id.ToString() && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString() )
+                    || (e.QuyetDinh != null && i.GroupId == e.QuyetDinh.Id.ToString() && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString() ))
 
                     .Select(i => i.ToDto()).ToList()
              })
