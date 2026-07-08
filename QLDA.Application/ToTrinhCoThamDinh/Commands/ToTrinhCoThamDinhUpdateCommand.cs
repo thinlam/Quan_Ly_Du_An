@@ -9,7 +9,7 @@ using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
-public record ToTrinhCoThamDinhUpdateCommand(ToTrinhCoThamDinh Dto) : IRequest<ToTrinhCoThamDinh>;
+public record ToTrinhCoThamDinhUpdateCommand(ToTrinhCoThamDinhInsUpdDto Dto) : IRequest<ToTrinhCoThamDinh>;
 
 internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCoThamDinhUpdateCommand, ToTrinhCoThamDinh>
 {
@@ -51,9 +51,11 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
-        request.Dto.TrangThaiId = entity?.TrangThaiId;
+        // i had entity
+        // i want map request.Dto to entity , this is true func
+        request.Dto.MapToEntity(entity);
 
-        await _repo.UpdateAsync(request.Dto, cancellationToken);
+        await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         entity = await _repo.GetQueryableSet().AsNoTracking()
           .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken); 

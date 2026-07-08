@@ -143,6 +143,7 @@ public class QuanLyPheDuyetController : AggregateRootController
         var res = await Mediator.Send(new PheDuyetDispatchTraLaiCommand(type, id, model.NoiDung));
         return ResultApi.Ok(res);
     }
+   
 
     /// <summary>
     /// Tu choi phe duyet theo type — can ly do

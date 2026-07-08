@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
@@ -99,115 +100,70 @@ internal class
         var query = queryable.Select(x => new
         {
             Entity = x,
-
             KeHoachNam = x.DeXuatDaTrinhKeHoachNam!
-           .Where(t =>
-               t.DeXuatNhuCauKinhPhiNam != null &&
-               !t.DeXuatNhuCauKinhPhiNam.IsDeleted)
+           .Where(t => t.DeXuatNhuCauKinhPhiNam != null &&  !t.DeXuatNhuCauKinhPhiNam.IsDeleted)
            .Select(t => new
            {
                Id = t.DeXuatNhuCauKinhPhiNam!.Id,
                TrangThaiId = t.DeXuatNhuCauKinhPhiNam.TrangThaiId,
-               NgayDuyet = t.DeXuatNhuCauKinhPhiNam.NgayDuyet
-           })
-           .FirstOrDefault(),
-
+               NgayDuyet = t.DeXuatNhuCauKinhPhiNam.NgayDuyet,
+               SoKeHoach = t.DeXuatNhuCauKinhPhiNam.So,
+               NgayKeHoach = t.DeXuatNhuCauKinhPhiNam.NgayKeHoach,
+           }).FirstOrDefault(),
             TenDonViDeXuat = DanhMucDonVi.GetQueryableSet()
            .Where(dv => dv.Id == x.DonViDeXuatId)
            .Select(dv => dv.TenDonVi)
            .FirstOrDefault(),
-
             DanhSachTepToTrinh = TepDinhKem.GetQueryableSet()
-           .Where(f => f.GroupId == x.Id.ToString() && !f.IsDeleted)
-           .Select(f => f.ToDto())
-           .ToList()
+                .Where(f => f.GroupId == x.Id.ToString() && !f.IsDeleted).Select(f => f.ToDto()).ToList()
         });
-        var pagedData = await query
-    .OrderByDescending(x => x.Entity.NgayPhieuChuyen)
-    .PaginatedListAsync(
-        request.Skip(),
-        request.Take(),
-        cancellationToken);
-        var keHoachIds = pagedData.Data
-    .Where(x => x.KeHoachNam != null)
-    .Select(x => x.KeHoachNam!.Id.ToString())
-    .Distinct()
-    .ToList();
+       var pagedData = await query.OrderByDescending(x => x.Entity.NgayPhieuChuyen)
+                            .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
+       var keHoachIds = pagedData.Data.Where(x => x.KeHoachNam != null).Select(x => x.KeHoachNam!.Id.ToString()).Distinct().ToList();
 
         var tepKeHoachLookup = await TepDinhKem.GetQueryableSet()
-            .Where(f =>
-                !f.IsDeleted &&
-                keHoachIds.Contains(f.GroupId))
+            .Where(f => !f.IsDeleted && keHoachIds.Contains(f.GroupId))
             .Select(f => new
             {
                 f.GroupId,
                 Tep = f.ToDto()
-            })
-            .ToListAsync(cancellationToken);
+            }).ToListAsync(cancellationToken);
 
-        var tepDict = tepKeHoachLookup
-            .GroupBy(x => x.GroupId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(x => x.Tep).ToList());
+        var tepDict = tepKeHoachLookup.GroupBy(x => x.GroupId)
+            .ToDictionary( g => g.Key,  g => g.Select(x => x.Tep).ToList());
         var items = pagedData.Data.Select(x =>
         {
             var kh = x.KeHoachNam;
-
             return new TheoDoiDeXuatNhuCauKinhPhiDto
             {
                 Id = x.Entity.Id,
                 DuAnId = x.Entity.DuAnId,
                 BuocId = x.Entity.BuocId,
-
                 DonViDeXuatId = x.Entity.DonViDeXuatId,
                 TenDonViDeXuat = x.TenDonViDeXuat ?? "Không rõ",
-
                 SoPhieuChuyen = x.Entity.SoPhieuChuyen,
                 NgayPhieuChuyen = x.Entity.NgayPhieuChuyen,
                 TrichYeu = x.Entity.TrichYeu,
                 KinhPhiDeXuat = x.Entity.KinhPhiDeXuat,
-
                 TrangThaiId = x.Entity.TrangThaiId,
                 TenTrangThai = x.Entity.TrangThai?.Ten ?? "---",
-
                 TrangThaiKeHoachNamId = kh?.TrangThaiId,
-
-                TenTrangThaiKeHoachNam =
-                    kh?.TrangThaiId == trangThaiDaTrinh?.Id
-                        ? trangThaiDaTrinh.Ten
-                        : "--",
-
-                TenTrangThaiBanGiamDoc =
-                    kh?.TrangThaiId == trangThaiDaDuyet?.Id
-                        ? trangThaiDaDuyet.Ten
-                        : "--",
-
+                TenTrangThaiKeHoachNam = kh?.TrangThaiId == trangThaiDaTrinh?.Id ? trangThaiDaTrinh.Ten : "--",
+                TenTrangThaiBanGiamDoc =   kh?.TrangThaiId == trangThaiDaDuyet?.Id ? trangThaiDaDuyet.Ten : "--",
+                SoKeHoach = kh?.SoKeHoach,
+                NgayKeHoach = kh?.NgayKeHoach!= null ? kh?.NgayKeHoach?.ToString("dd/MM/yyyy"):"",
                 NgayDuyetKeHoach = kh?.NgayDuyet,
-
                 DanhSachTepToTrinh = x.DanhSachTepToTrinh,
-
-                DanhSachTepKeHoachNam =
-                    kh != null &&
-                    tepDict.TryGetValue(kh.Id.ToString(), out var teps)
-                        ? teps
-                        : new List<TepDinhKemDto>()
+                DanhSachTepKeHoachNam =   kh != null && tepDict.TryGetValue(kh.Id.ToString(), out var teps)
+                                                       ? teps   : new List<TepDinhKemDto>()
             };
         }).ToList();
-        //  pagedData.Data = items;// cs0029 here
-        //      return pagedData;
-        //   public PaginatedList(IReadOnlyCollection<T> items, int count, int pageNumber, int pageSize)
-        //    .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
         return new PaginatedList<TheoDoiDeXuatNhuCauKinhPhiDto>(
             items,
             pagedData.TotalRows,
             request.Skip(),
             request.Take()); 
-    //    return new PaginatedList<TheoDoiDeXuatNhuCauKinhPhiDto>(
-    //items,
-    //pagedData.TotalRows,
-    //pagedData.PageNumber,
-    //pagedData.TotalRows);
+   
 
         #region
         //    return await queryable.Select(x => new TheoDoiDeXuatNhuCauKinhPhiDto()

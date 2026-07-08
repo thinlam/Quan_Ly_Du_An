@@ -49,7 +49,7 @@ internal class ToTrinhKhongDuyetUpdateCommandHandler : IRequestHandler<ToTrinhKh
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         // Phòng KHTC (HasKhtcBypass) được phép cập nhật mọi trạng thái; các role khác chỉ cập nhật được khi trạng thái = Dự thảo.
-        if (!_authContext.HasKhtcBypass && entity.TrangThaiId != trangThaiDuThao?.Id)
+        if (!_authContext.HasKhtcBypass && entity.TrangThaiId != trangThaiDuThao?.Id )
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }

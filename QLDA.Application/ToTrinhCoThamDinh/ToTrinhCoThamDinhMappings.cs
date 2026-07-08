@@ -40,6 +40,18 @@ public static class ToTrinhCoThamDinhMappings
             KetQuaThamTra = entity.KetQuaThamTra,
         };
     }
+    public static void MapToEntity( this ToTrinhCoThamDinhInsUpdDto dto,ToTrinhCoThamDinh entity) {
+        
+        entity.DuAnId = dto.DuAnId;
+        entity.BuocId = dto.BuocId;
+        entity.NgayToTrinh = dto.NgayToTrinh;
+        entity.TrichYeu = dto.TrichYeu;
+        entity.So = dto.So;
+        entity.Loai = dto.Loai;
+        entity.TrangThaiThamTraId = dto.TrangThaiThamTraId;
+        entity.KetQuaThamDinh = dto.KetQuaThamDinh;
+        entity.KetQuaThamTra = dto.KetQuaThamTra;
+      }
     public static ToTrinhCoThamDinh ToEntity(this ToTrinhCoThamDinhInsUpdDto entity)
     {
         return new ToTrinhCoThamDinh

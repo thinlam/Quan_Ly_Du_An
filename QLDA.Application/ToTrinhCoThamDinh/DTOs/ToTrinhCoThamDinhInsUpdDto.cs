@@ -5,6 +5,7 @@ namespace QLDA.Application.ToTrinhCoThamDinhs.DTOs;
 
 public class ToTrinhCoThamDinhInsUpdDto : IMayHaveTepDinhKemDto {
     public Guid? Id { get; set; }
+
     public string? So { get; set; }
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }

@@ -29,7 +29,10 @@ internal class QuyetDinhDuyetDuAnUpdateCommandHandler : IRequestHandler<QuyetDin
 
     public async Task<QuyetDinhDuyetDuAn> Handle(QuyetDinhDuyetDuAnUpdateCommand request, CancellationToken cancellationToken = default) {
         try {
-            var entity = request.Dto.ToEntity();
+
+            var entity = await QuyetDinhDuyetDuAn.GetQueryableSet().AsNoTracking()
+           .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+            request.Dto.ToEntity(entity);
 
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetDuAn.UpdateAsync(entity, cancellationToken);

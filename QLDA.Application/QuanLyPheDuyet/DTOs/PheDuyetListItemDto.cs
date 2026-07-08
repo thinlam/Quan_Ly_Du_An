@@ -1,3 +1,4 @@
+using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.QuanLyPheDuyet.DTOs;
@@ -25,4 +26,6 @@ public class PheDuyetListItemDto {
     public string? MaTrangThai { get; set; }
     public string? TenTrangThai { get; set; }
     public DateTimeOffset? NgayXuLyMoiNhat { get; set; }
+    public List<DuongDiTrangThaiToTrinhDto>? ThaoTacTiepTheo { get; set; }
+
 }

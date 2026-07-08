@@ -60,15 +60,16 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
             await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
             long createUserId = 0;
             long.TryParse(entity.CreatedBy, out createUserId);
-            var userChuTri = _userMasterRepo.GetQueryableSet().AsNoTracking().Where(x => x.UserPortalId == createUserId).FirstOrDefault();
+            var userThucHien = _userMasterRepo.GetQueryableSet().AsNoTracking().Where(x => x.UserPortalId == createUserId).FirstOrDefault();
 
             // get các trạng thái được phép xử lý
             var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
                        .Where(x => x.Used && !(x.IsDeleted ?? false)
+                       && x.Loai == PheDuyetEntityNames.QuyetDinhKeHoachThueCNTT
                        && x.MaTrangThaiHienTai == entity.TrangThai.Ma
                        && x.MaTrangThaiTiepTheo == request.TrangThaiTiepTheo
                        && (x.RoleLevel == 0
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && (_userProvider.Info.PhongBanID == userChuTri.PhongBanId))//entity.DuAn.DonViPhuTrachChinhId)
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && (_userProvider.Info.PhongBanID == userThucHien.PhongBanId))//entity.DuAn.DonViPhuTrachChinhId)
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && _userProvider.Info.UserID == entity.DuAn.LanhDaoPhuTrachId)
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // ví dụ phòng KHTC
                                                                                                                              
@@ -84,7 +85,7 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
             var history = new PheDuyetHistory
             {
                 Id = Guid.NewGuid(),
-                EntityName = PheDuyetEntityNames.QuyetDinhKeHoachThue,
+                EntityName = entity.Loai,
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,

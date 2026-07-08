@@ -114,9 +114,11 @@ public static class PheDuyetEntityNames
     public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
     [Description("Quyết định duyệt dự toán")] //issue #9478
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
-    [Description("Quyết định lập ban quản lý dự án ")] //issue #9636
+    [Description("Quyết định lập ban quản lý dự án")] //issue #9636
     public const string QuyetDinhLapBanQLDA = "QuyetDinhLapBanQLDA";
-
+    [Description("Kế hoạch thuê dịch vụ CNTT")]//issue #9480
+    public const string QuyetDinhKeHoachThueCNTT = "QuyetDinhKeHoachThueCNTT";
+    
     /// <summary>
     /// UC63 — Thanh lý hợp đồng (Nghiệm thu thanh lý) (#9644)
     /// </summary>

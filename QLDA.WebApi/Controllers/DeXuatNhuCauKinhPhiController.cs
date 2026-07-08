@@ -171,6 +171,8 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
             PageIndex = req.PageIndex,
             PageSize = req.PageSize,
             IsNoTracking = true,
+            TuNgay = req.TuNgay,
+            DenNgay = req.DenNgay,
 
         });
         return ResultApi.Ok(res);

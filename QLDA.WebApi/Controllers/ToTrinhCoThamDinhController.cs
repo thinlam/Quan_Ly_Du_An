@@ -65,7 +65,7 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
       
-        var entity = await Mediator.Send(new ToTrinhCoThamDinhInsertCommand(dto.ToEntity()), cancellationToken);
+        var entity = await Mediator.Send(new ToTrinhCoThamDinhInsertCommand(dto), cancellationToken);
         // nếu dùng ToTrinhCoThamDinh cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhCoThamDinh theo Loai
         //tạo contanst LoaiToTrinhCoThamDinh
 
@@ -89,7 +89,7 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new ToTrinhCoThamDinhUpdateCommand(dto.ToEntity()), cancellationToken);
+        var entity = await Mediator.Send(new ToTrinhCoThamDinhUpdateCommand(dto), cancellationToken);
 
         List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.QuyetDinhKeHoachThue) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
