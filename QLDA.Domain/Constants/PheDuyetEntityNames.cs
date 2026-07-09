@@ -42,6 +42,7 @@ public static class PheDuyetEntityNames
     [Description("Đề xuất chủ trương mới")]
     public const string DeXuatChuTruongMoi = "DeXuatChuTruongMoi";
    
+    [ExcludeFromTypeList]
     [Description("Đề xuất chủ trương chuyển tiếp")]
     public const string DeXuatChuTruongChuyenTiep = "DeXuatChuyenTiep";
 
@@ -56,7 +57,8 @@ public static class PheDuyetEntityNames
     [ExcludeFromTypeList]
     [Description("Đề xuất")]
     public const string DeXuatMacDinhStt = "DeXuatMacDinh";// đối tượng dùng chung 
- 
+
+    [ExcludeFromTypeList]
     [Description("Tờ trình có thẩm định")]
     public const string ToTrinhCoThamDinh = "ToTrinhCoThamDinh"; // đối tượng dùng chung 
 
@@ -73,13 +75,11 @@ public static class PheDuyetEntityNames
     [Description("Thuyết minh dự án")]
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
 
-    [Description("Thẩm định")]
-    public const string ThamDinh = "ThamDinh";
 
     [Description("Tờ trình kết quả gói thầu")]
     public const string ToTrinhKetQuaGoiThau = "ToTrinhKetQuaGoiThau";
 
-    [Description("Tờ trình thẩm định nhà thầu")]
+    [Description("Tờ trình thẩm định và phê duyệt KQLCNT")]
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
 
     [Description("Tờ trình triển khai kế hoạch LCNT")]
@@ -95,7 +95,9 @@ public static class PheDuyetEntityNames
     public const string DuToanDauTu = "DuToanDauTu";
     [Description("Chủ trương lập kế hoạch")]
     public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";
-    [Description("Tờ trình không duyệt")]
+
+    [ExcludeFromTypeList]
+    [Description("ToTrinhKhongCanDuyet-UseForCoding")]
     public const string ToTrinhKhongDuyet = "ToTrinhKhongDuyet";
 
     [Description("Kế hoạch lcnt dự toán hoặc sẵn có")]
@@ -105,7 +107,8 @@ public static class PheDuyetEntityNames
     public const string KHLCNTDuToanYeuCauRieng = "KHLCNTDuToanYeuCauRieng";
     
     [Description("Kế hoạch tổng thể lựa chọn nhà thầu")]
-        public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
+    public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
+
     [Description("Kế hoạch LCNT giai đoạn CBĐT")]
     public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
     [Description("Thỏa thuận giao việc")]
@@ -151,6 +154,17 @@ public static class LoaiToTrinhKhongDuyetExtensions
 
         return false;
     }
+    public static string GetDescriptionFromName(this string fieldName) {
+        var field = typeof(PheDuyetEntityNames).GetField(fieldName);
+
+        if (field == null)
+            return fieldName;
+
+        var attr = field.GetCustomAttribute<DescriptionAttribute>();
+
+        return attr?.Description ?? fieldName;
+    }
+
 }
 // Mục đích để loại trừ các loại ko hiển thị trong quản lý phê duyệt api/phe-duyet/types
 [AttributeUsage(AttributeTargets.Field)]

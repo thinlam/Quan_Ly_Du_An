@@ -63,21 +63,23 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
         // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet.Id;
         entity.ButPhe = request.NoiDung;
-
+        var ngayToTrinh = entity.NgayToTrinh.ToDateOnlyVn();
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ChuTruongLapKeHoach,
-            NoiDung = request.NoiDung,
+            NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
+                        : $"{entity.SoToTrinh} - {(ngayToTrinh.HasValue ? ngayToTrinh.Value.ToString("dd/MM/yyyy") : "")}",
             EntityId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-
+       
         await _repository.UpdateAsync(entity, cancellationToken);
-        await _historyRepository.AddAsync(history, cancellationToken);
+        await _historyRepository.AddAsync(history, cancellationToken);// has trigger của table PheDuyetHistory
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
+
     }
 }

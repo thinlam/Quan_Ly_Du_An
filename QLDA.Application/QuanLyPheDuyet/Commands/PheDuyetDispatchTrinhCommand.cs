@@ -53,7 +53,7 @@ internal class PheDuyetDispatchTrinhCommandHandler(IServiceProvider serviceProvi
             PheDuyetEntityNames.TrienKhaiKeHoachLCNT => new TrienKhaiKeHoachLCNTTrinhCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc => new KeHoachTrienKhaiHangMucTrinhCommand(request.Id),
             PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuTrinhCommand(request.Id),
-            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTrinhCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
+            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTrinhCommand(request.Id, request.NoiDung),
 
             //simple ToTrinhPheDuyet
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),

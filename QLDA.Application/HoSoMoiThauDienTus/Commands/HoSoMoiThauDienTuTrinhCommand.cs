@@ -62,6 +62,7 @@ internal class HoSoMoiThauDienTuTrinhCommandHandler : IRequestHandler<HoSoMoiTha
             EntityName = PheDuyetEntityNames.HoSoMoiThauDienTu,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId ?? Guid.Empty,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,

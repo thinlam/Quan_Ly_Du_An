@@ -28,18 +28,16 @@ public class QuanLyPheDuyetController : AggregateRootController
     public ResultApi GetTypes()
     {
         var types = typeof(PheDuyetEntityNames)
-     .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-     .Where(f => f.IsLiteral
-         && f.Name != nameof(PheDuyetEntityNames.Default)
-         && !f.IsDefined(typeof(ExcludeFromTypeListAttribute), false))
-     .Select(f => new PheDuyetTypeItemDto
-     {
-         Key = (string)f.GetRawConstantValue()!,
-         Label = f.GetCustomAttribute<DescriptionAttribute>()?.Description
-                 ?? (string)f.GetRawConstantValue()!
-     })
-     .OrderBy(x => x.Label)
-     .ToList();
+         .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+         .Where(f => f.IsLiteral
+             && f.Name != nameof(PheDuyetEntityNames.Default)
+             && !f.IsDefined(typeof(ExcludeFromTypeListAttribute), false))
+         .Select(f => new PheDuyetTypeItemDto
+         {
+             Key = (string)f.GetRawConstantValue()!,
+             Label = f.GetCustomAttribute<DescriptionAttribute>()?.Description
+                     ?? (string)f.GetRawConstantValue()!
+         }).OrderBy(x => x.Label).ToList();
 
         return ResultApi.Ok(types);
     }

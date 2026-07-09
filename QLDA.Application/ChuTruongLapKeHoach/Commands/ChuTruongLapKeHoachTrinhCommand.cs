@@ -57,7 +57,9 @@ internal class ChuTruongLapKeHoachTrinhCommandHandler : IRequestHandler<ChuTruon
         }
 
         entity.TrangThaiId = trangThaiDaTrinh.Id;
-
+        var date = entity.NgayToTrinh.ToDateOnlyVn();
+        //  var date = entity.NgayTr.ToDateOnlyVn();
+        
         var history = new PheDuyetHistory
         {
             Id = Guid.NewGuid(),
@@ -65,8 +67,9 @@ internal class ChuTruongLapKeHoachTrinhCommandHandler : IRequestHandler<ChuTruon
             EntityId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
-            NoiDung = request.NoiDung,
-            NgayXuLy = DateTimeOffset.UtcNow
+            NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
+                        : $"{entity.SoToTrinh} - {(date.HasValue ? date.Value.ToString("dd/MM/yyyy") : "")}",
+            NgayXuLy = DateTimeOffset.UtcNow,
         };
 
         await _historyRepository.AddAsync(history, cancellationToken);

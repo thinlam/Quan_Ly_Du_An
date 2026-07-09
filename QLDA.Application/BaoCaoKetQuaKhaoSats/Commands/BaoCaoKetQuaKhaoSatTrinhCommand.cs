@@ -67,6 +67,7 @@ internal class BaoCaoKetQuaKhaoSatTrinhCommandHandler
             EntityName = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = request.NoiDung,
