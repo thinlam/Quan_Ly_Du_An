@@ -13,8 +13,8 @@ public class KeHoachTrienKhaiHangMucExportItemDto
     public string? TenHangMuc { get; set; }
     public string? DonViChuTri { get; set; }
     public string? DonViPhoiHop { get; set; }
-    public DateTime? NgayBatDau { get; set; }
-    public DateTime? NgayKetThuc { get; set; }
+    public string? NgayBatDau { get; set; }
+    public string? NgayKetThuc { get; set; }
     public int? ThoiHan { get; set; }
     public string? CanBoChuTri { get; set; }
     public string? CanBoPhoiHop { get; set; }

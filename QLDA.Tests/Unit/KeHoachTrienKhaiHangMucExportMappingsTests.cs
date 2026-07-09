@@ -36,6 +36,92 @@ public class KeHoachTrienKhaiHangMucExportMappingsTests
     }
 
     [Fact]
+    public void ToExportRows_ResolvesCanBoPhoiHopByUserPortalId()
+    {
+        const int giaiDoanId = 1;
+        const long portalId = 50_002;
+
+        var hangMucs = new List<HangMucKeHoach>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenHangMuc = "HM export",
+                GiaiDoanId = giaiDoanId,
+                CanBoPhoiHopIds = [portalId],
+                CreatedAt = DateTimeOffset.UtcNow,
+            },
+        };
+
+        var rows = KeHoachTrienKhaiHangMucExportMappings.ToExportRows(
+            hangMucs,
+            new Dictionary<int, string> { [giaiDoanId] = "Giai đoạn A" },
+            new Dictionary<int, int> { [giaiDoanId] = 1 },
+            new Dictionary<long, string>(),
+            new Dictionary<long, string> { [portalId] = "Đặng Trung Nghĩa" });
+
+        rows.Single(r => !r.IsGroupHeader).CanBoPhoiHop.Should().Be("Đặng Trung Nghĩa");
+    }
+
+    [Fact]
+    public void ToExportRows_FormatsDatesAsVietnameseShortDate()
+    {
+        const int giaiDoanId = 1;
+
+        var hangMucs = new List<HangMucKeHoach>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenHangMuc = "HM có ngày",
+                GiaiDoanId = giaiDoanId,
+                NgayBatDau = new DateOnly(2026, 7, 8),
+                NgayKetThuc = new DateOnly(2026, 7, 28),
+                CreatedAt = DateTimeOffset.UtcNow,
+            },
+        };
+
+        var rows = KeHoachTrienKhaiHangMucExportMappings.ToExportRows(
+            hangMucs,
+            new Dictionary<int, string> { [giaiDoanId] = "Giai đoạn A" },
+            new Dictionary<int, int> { [giaiDoanId] = 1 },
+            new Dictionary<long, string>(),
+            new Dictionary<long, string>());
+
+        var item = rows.Single(r => !r.IsGroupHeader);
+        item.NgayBatDau.Should().Be("08/07/2026");
+        item.NgayKetThuc.Should().Be("28/07/2026");
+    }
+
+    [Fact]
+    public void ToExportRows_NullDates_ReturnEmptyStrings()
+    {
+        const int giaiDoanId = 1;
+
+        var hangMucs = new List<HangMucKeHoach>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenHangMuc = "HM không ngày",
+                GiaiDoanId = giaiDoanId,
+                CreatedAt = DateTimeOffset.UtcNow,
+            },
+        };
+
+        var rows = KeHoachTrienKhaiHangMucExportMappings.ToExportRows(
+            hangMucs,
+            new Dictionary<int, string> { [giaiDoanId] = "Giai đoạn A" },
+            new Dictionary<int, int> { [giaiDoanId] = 1 },
+            new Dictionary<long, string>(),
+            new Dictionary<long, string>());
+
+        var item = rows.Single(r => !r.IsGroupHeader);
+        item.NgayBatDau.Should().BeEmpty();
+        item.NgayKetThuc.Should().BeEmpty();
+    }
+
+    [Fact]
     public void ToExportRows_OrdersGroupsByProjectSort_NotGlobalName()
     {
         const int giaiDoanXin = 1;

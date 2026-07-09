@@ -292,8 +292,8 @@ public class KeHoachTrienKhaiHangMucWordExporter(IAsposeHelper asposeHelper)
             data.TenHangMuc ?? string.Empty,
             data.DonViChuTri ?? string.Empty,
             data.DonViPhoiHop ?? string.Empty,
-            FormatDate(data.NgayBatDau),
-            FormatDate(data.NgayKetThuc),
+            data.NgayBatDau ?? string.Empty,
+            data.NgayKetThuc ?? string.Empty,
             data.ThoiHan?.ToString(ViCulture) ?? string.Empty,
             data.CanBoChuTri ?? string.Empty,
             data.CanBoPhoiHop ?? string.Empty,
@@ -378,9 +378,6 @@ public class KeHoachTrienKhaiHangMucWordExporter(IAsposeHelper asposeHelper)
         ManagedException.ThrowIf(true, "Không tìm thấy bảng hạng mục trong template Word");
         return null!;
     }
-
-    internal static string FormatDate(DateTime? date) =>
-        date?.ToString("dd/MM/yyyy", ViCulture) ?? string.Empty;
 
     private static string FormatKinhPhi(long? kinhPhi) =>
         kinhPhi?.ToString("#,##0", ViCulture).Replace(',', '.') ?? string.Empty;
