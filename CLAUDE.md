@@ -67,6 +67,83 @@ var queryable = _buocAuth.FilterVisibleChildEntities(
 ```
 
 <!-- gitnexus:start -->
+
+## TepDinhKem Signed Flow (Ký số)
+
+**Ký số** = file con của một file cha (`ParentId != null`). Những file này lưu với `GroupType = "KySo_<base>"` (ví dụ `"KySo_KhoKhanVuongMac"`). Đây là dynamic state, không phải entity riêng.
+
+### Single Source of Truth
+
+| Concern | Location |
+|---------|----------|
+| `KySo_` prefix constant | `QLDA.Application/Common/SignedHelper.cs` (`SignedHelper.Prefix`) |
+| GroupType enum | `QLDA.Domain/Enums/EGroupType.cs` |
+
+### Rules
+
+**RULE: Khi tạo TepDinhKem trong Application layer, PHẢI dùng `ResolveSignedGroupType()`**
+
+```csharp
+// ✅ CORRECT — stamp KySo_ khi ParentId != null
+GroupType = EGroupType.KhoKhanVuongMac.ToString().ResolveSignedGroupType(model.ParentId != null)
+
+// ❌ WRONG — không stamp prefix, file ký số sẽ không hiển thị trong query
+GroupType = EGroupType.KhoKhanVuongMac.ToString()
+```
+
+**RULE: Khi query TepDinhKem theo GroupType, PHẢI filter cả base + signed variant**
+
+```csharp
+// ✅ CORRECT — dùng WhereSignedScope hoặc tương đương
+.WhereSignedScope(entityId, nameof(EGroupType.KhoKhanVuongMac))
+// hoặc inline:
+.Where(t => t.GroupId == id && (t.GroupType == "KhoKhanVuongMac" || t.GroupType == "KySo_KhoKhanVuongMac"))
+
+// ❌ WRONG — thiếu KySo_ variant, file ký số bị mất
+.Where(t => t.GroupId == id && t.GroupType == "KhoKhanVuongMac")
+```
+
+**RULE: KHÔNG hardcode `"KySo_"` literal — dùng `SignedHelper.Prefix`**
+
+```csharp
+// ✅ CORRECT
+SignedHelper.Prefix + nameof(EGroupType.X)
+
+// ❌ WRONG — hardcoded prefix
+"KySo_" + nameof(EGroupType.X)
+```
+
+### SignedHelper Methods
+
+| Method | Use |
+|--------|-----|
+| `ResolveSignedGroupType(base, isChild)` | Stamp prefix khi write |
+| `ToBaseGroupType(groupType)` | Strip prefix — lấy base type |
+| `IsSignedVariant(groupType)` | Check có phải KySo_ variant |
+| `WithSignedVariant(base)` | Trả về `[base, KySo_base]` cho `.Contains()` |
+| `WhereSignedScope(q, groupId, base)` | Filter query theo GroupType + variant |
+
+### Exception Classes
+
+**DRI allowed**: Test files và data seeding được phép hardcode `"KySo_"` literals.
+
+### Anti-Patterns
+
+```csharp
+// ❌ Filter không cover signed variant
+.Where(t => t.GroupType == nameof(EGroupType.X))
+// ✅ Fix: cover cả variant
+.Where(t => t.GroupType == nameof(EGroupType.X) || t.GroupType == SignedHelper.Prefix + nameof(EGroupType.X))
+// hoặc dùng helper:
+// .WhereSignedScope(id, nameof(EGroupType.X))
+
+// ❌ Write-side không stamp prefix
+new TepDinhKem { GroupType = EGroupType.X.ToString(), ParentId = child.ParentId }
+// ✅ Fix: dùng ResolveSignedGroupType
+new TepDinhKem { GroupType = EGroupType.X.ToString().ResolveSignedGroupType(child.ParentId != null) }
+```
+
+<!-- gitnexus:end -->
 # GitNexus — Code Intelligence
 
 This project is indexed by GitNexus as **Quan_Ly_Du_An** (20781 symbols, 42093 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.

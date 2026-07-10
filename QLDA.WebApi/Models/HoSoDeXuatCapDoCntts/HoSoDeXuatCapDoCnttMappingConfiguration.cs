@@ -1,4 +1,5 @@
 using BuildingBlocks.CrossCutting.ExtensionMethods;
+using QLDA.Application.Common;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Enums;
@@ -78,7 +79,7 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
                 Id = m.Id ?? Guid.NewGuid(),
                 ParentId = m.ParentId,
                 GroupId = groupId.ToString(),
-                GroupType = EGroupType.HoSoDeXuatCapDoCntt.ToString(),
+                GroupType = EGroupType.HoSoDeXuatCapDoCntt.ToString().ResolveSignedGroupType(m.ParentId != null),
                 Type = m.Type,
                 FileName = m.FileName,
                 OriginalName = m.OriginalName,

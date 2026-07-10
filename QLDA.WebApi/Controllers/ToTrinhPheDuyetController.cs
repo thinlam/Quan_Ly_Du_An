@@ -30,7 +30,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
-            GroupId = [entity.Id.ToString()], EGroupTypes = [GroupTypeConstants.ToTrinhPheDuyet]
+            GroupId = [entity.Id.ToString()], EGroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)]
         });
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
@@ -58,10 +58,10 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
       
         var entity = await Mediator.Send(new ToTrinhPheDuyetInsertCommand(dto), cancellationToken);
-        // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhPheDuyet theo Loai
+        // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  EGroupType.ToTrinhPheDuyet theo Loai
         //tạo contanst LoaiToTrinhPheDuyet
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhPheDuyet) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -87,7 +87,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         else
             entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
         
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhPheDuyet) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

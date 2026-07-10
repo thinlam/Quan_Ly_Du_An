@@ -81,7 +81,7 @@ public class ThanhToanController(IServiceProvider serviceProvider) : AggregateRo
         await Mediator.Send(new DuAnUpdatePhaseCommand(insertDto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new ThanhToanInsertCommand(insertDto), cancellationToken);
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ThanhToan) ?? []];
+        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ThanhToan) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -112,7 +112,7 @@ public class ThanhToanController(IServiceProvider serviceProvider) : AggregateRo
 
         var entity = await Mediator.Send(new ThanhToanUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ThanhToan) ?? []];
+        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ThanhToan) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

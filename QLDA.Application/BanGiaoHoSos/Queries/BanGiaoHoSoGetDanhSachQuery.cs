@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
+using QLDA.Application.Common;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Entities;
@@ -73,14 +74,10 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 TenNguoiTao = x.User != null ? x.User.HoTen : null,
                 CreatedAt = x.E.CreatedAt,
                 DanhSachTepHSBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == x.E.Id.ToString()
-                                && f.GroupType == nameof(EGroupType.BanGiaoHoSo)
-                                && !f.IsDeleted)
+                    .WhereSignedScope(x.E.Id.ToString(), nameof(EGroupType.BanGiaoHoSo))
                     .Select(f => f.ToDto()).ToList(),
                 DanhSachBienBanBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == x.E.Id.ToString()
-                                && f.GroupType == nameof(EGroupType.BienBanBanGiao)
-                                && !f.IsDeleted)
+                    .WhereSignedScope(x.E.Id.ToString(), nameof(EGroupType.BienBanBanGiao))
                     .Select(f => f.ToDto()).ToList()
             });
 

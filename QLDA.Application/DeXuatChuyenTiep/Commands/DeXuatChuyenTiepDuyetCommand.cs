@@ -25,7 +25,6 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAppSettingsProvider _settings;
 
     public DeXuatChuyenTiepDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuyenTiep, Guid>>();
@@ -36,7 +35,6 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -50,7 +48,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
         var entity = await _repository.GetQueryableSet()
-            .Include(e => e.DuAn)
+            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
@@ -78,6 +76,11 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         if (affected > 0) {
+            var body =
+                $"Tờ trình/phê duyệt <b>{PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()}</b> " +
+                $"giá trị giải ngân <b>{entity.SoLieuGiaiNgan}</b> của dự án <b>{entity.DuAn?.TenDuAn}</b> - " +
+                $"<b>{entity.DuAn?.BuocHienTai?.TenBuoc}</b> đã được duyệt";
+
             await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
                 _dapper,
                 _historyRepository,
@@ -88,6 +91,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
                 entity.DuAn?.TenDuAn,
                 entity.CreatedBy,
                 PheDuyetNotificationAction.Duyet,
+                customBody: body,
                 cancellationToken: cancellationToken);
         }
 

@@ -1,4 +1,5 @@
 using System.Globalization;
+using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
@@ -44,9 +45,8 @@ internal class DeXuatNhuCauKinhPhiNamGetExportQueryHandler(IServiceProvider serv
             .WhereIf(tuNgayDto != null, e => e.NgayKeHoach >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayKeHoach < denNgayExclusiveDto);
 
+        // Same order as DeXuatNhuCauKinhPhiNamQuery (GetQueryableSet → Index DESC).
         var rows = await queryable
-            .OrderBy(e => e.CreatedAt)
-            .ThenBy(e => e.Id)
             .Select(e => new {
                 e.So,
                 e.TrichYeu,
@@ -65,7 +65,7 @@ internal class DeXuatNhuCauKinhPhiNamGetExportQueryHandler(IServiceProvider serv
             SoKeHoach = row.So,
             TrichYeu = row.TrichYeu,
             TongHopChiPhi = row.TongKinhPhiDeXuat,
-            Ngay = row.NgayKeHoach?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+            Ngay = row.NgayKeHoach?.ToDateOnlyVn().ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
             TrangThai = row.TenTrangThai,
             SoLuongTepDinhKem = row.SoLuongTepDinhKem,
         }).ToList();

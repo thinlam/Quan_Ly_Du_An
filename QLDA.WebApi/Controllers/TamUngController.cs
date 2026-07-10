@@ -76,7 +76,7 @@ public class TamUngController(IServiceProvider serviceProvider) : AggregateRootC
 
         var entity = await Mediator.Send(new TamUngInsertCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.TamUng) ?? []];
+        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.TamUng) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -107,7 +107,7 @@ public class TamUngController(IServiceProvider serviceProvider) : AggregateRootC
 
         var entity = await Mediator.Send(new TamUngUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.TamUng) ?? []];
+        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.TamUng) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

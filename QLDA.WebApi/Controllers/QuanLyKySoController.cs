@@ -46,7 +46,7 @@ public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateR
         ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
         model.DanhSachTepDinhKem ??= [];
 
-        var entities = model.DanhSachTepDinhKem.ToEntities(model.GroupId, GroupTypeConstants.KySo)
+        var entities = model.DanhSachTepDinhKem.ToEntities(model.GroupId, EGroupType.KySo)
             .ToList();
 
         var count = await Mediator.Send(new NoiDungDaKyCommand {

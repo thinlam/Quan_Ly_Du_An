@@ -74,6 +74,8 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ChuTruongLapKeHoach,
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
                         : $"{entity.SoToTrinh} - {(ngayToTrinh.HasValue ? ngayToTrinh.Value.ToString("dd/MM/yyyy") : "")}",
             EntityId = entity.Id,

@@ -47,7 +47,7 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
         await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-        if (entity.TrangThaiId != trangThaiDaDuyet?.Id && entity.TrangThaiId != trangThaiChoThamDinh?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
+        if (entity.TrangThaiId == trangThaiDaDuyet?.Id)//&& entity.TrangThaiId != trangThaiChoThamDinh?.Id && entity.TrangThaiId != trangThaiTraLai?.Id
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }

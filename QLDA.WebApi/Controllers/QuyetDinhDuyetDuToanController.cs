@@ -31,12 +31,12 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan]
+            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan)]
         });
         var danhSachTepDinhKemKhac = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan_Khac]
+            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)]
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }
@@ -60,7 +60,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         entity = await Mediator.Send( new QuyetDinhDuyetDuToanInsertCommand(dto.ToEntity())   );
        
         List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(
-            entity.Id, GroupTypeConstants.QuyetDinhDuyetDuToan) ?? []];
+            entity.Id, EGroupType.QuyetDinhDuyetDuToan) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
@@ -68,7 +68,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
             Entities = files
         });
         List<TepDinhKem> fileKhacs = [.. dto.DanhSachTepDinhKemKhac?.ToEntities(
-            entity.Id, GroupTypeConstants.QuyetDinhDuyetDuToan_Khac) ?? []];
+            entity.Id, EGroupType.QuyetDinhDuyetDuToan_Khac) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
@@ -86,7 +86,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
     {
         var entity = await Mediator.Send(new QuyetDinhDuyetDuToanUpdateCommand(model));
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,  GroupTypeConstants.QuyetDinhDuyetDuToan) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,  EGroupType.QuyetDinhDuyetDuToan) ?? []];
 
         // 3. Lưu danh sách file
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
@@ -97,10 +97,10 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan]
+            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan)]
         });
         // 3. Lưu danh sách file khác
-        List<TepDinhKem> fileKhacs = [.. model.DanhSachTepDinhKemKhac?.ToEntities(entity.Id,  GroupTypeConstants.QuyetDinhDuyetDuToan_Khac) ?? []];
+        List<TepDinhKem> fileKhacs = [.. model.DanhSachTepDinhKemKhac?.ToEntities(entity.Id,  EGroupType.QuyetDinhDuyetDuToan_Khac) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -109,7 +109,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         var danhSachTepDinhKemKhac = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.QuyetDinhDuyetDuToan_Khac]
+            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)]
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }

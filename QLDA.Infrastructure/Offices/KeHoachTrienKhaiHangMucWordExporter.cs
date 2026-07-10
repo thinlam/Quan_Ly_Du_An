@@ -379,11 +379,11 @@ public class KeHoachTrienKhaiHangMucWordExporter(IAsposeHelper asposeHelper)
         return null!;
     }
 
-    internal static string FormatDate(DateTime? date) =>
-        date?.ToString("dd/MM/yyyy", ViCulture) ?? string.Empty;
-
     private static string FormatKinhPhi(long? kinhPhi) =>
         kinhPhi?.ToString("#,##0", ViCulture).Replace(',', '.') ?? string.Empty;
+
+    private static string FormatDate(DateOnly? date) =>
+        date?.ToString("dd/MM/yyyy", ViCulture) ?? string.Empty;
 
     private static string FormatNgayLap(DateTimeOffset? ngayToTrinh)
     {

@@ -70,7 +70,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
         var savedEntity =  await Mediator.Send(new DeXuatChuTruongMoiInsertCommand(entity));
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
-            savedEntity.Id, GroupTypeConstants.ChuTruongMoi) ?? []];
+            savedEntity.Id, EGroupType.DeXuatChuTruongMoi) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = savedEntity.Id.ToString(),
@@ -93,7 +93,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
         var entity = await Mediator.Send(new DeXuatChuTruongMoiUpdateCommand(model.ToInsertDto()), cancellationToken);
 
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,
-            GroupTypeConstants.ChuTruongMoi) ?? []];
+            EGroupType.DeXuatChuTruongMoi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

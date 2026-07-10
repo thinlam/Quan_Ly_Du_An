@@ -34,12 +34,12 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [GroupTypeConstants.QuyetDinhKeHoachThue]
+            EGroupTypes= [nameof(EGroupType.QuyetDinhKeHoachThue)]
         });
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [GroupTypeConstants.QuyetDinhKeHoachThueThamDinh]
+            EGroupTypes= [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)]
         });
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()));
     }
@@ -66,10 +66,10 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
       
         var entity = await Mediator.Send(new ToTrinhCoThamDinhInsertCommand(dto), cancellationToken);
-        // nếu dùng ToTrinhCoThamDinh cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhCoThamDinh theo Loai
+        // nếu dùng ToTrinhCoThamDinh cho nhìu màn hình thì lấy  EGroupType.ToTrinhPheDuyet theo Loai
         //tạo contanst LoaiToTrinhCoThamDinh
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.QuyetDinhKeHoachThue) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.QuyetDinhKeHoachThue) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -91,14 +91,14 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
     {
         var entity = await Mediator.Send(new ToTrinhCoThamDinhUpdateCommand(dto), cancellationToken);
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.QuyetDinhKeHoachThue) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.QuyetDinhKeHoachThue) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
            
             Entities = files
         }, cancellationToken);
-        List<TepDinhKem> filesThamDinh = [.. dto.DanhSachTepThamDinh?.ToEntities(entity.Id, GroupTypeConstants.QuyetDinhKeHoachThueThamDinh) ?? []];
+        List<TepDinhKem> filesThamDinh = [.. dto.DanhSachTepThamDinh?.ToEntities(entity.Id, EGroupType.QuyetDinhKeHoachThueThamDinh) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -109,12 +109,12 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         var danhSachTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.QuyetDinhKeHoachThue]
+            EGroupTypes = [nameof(EGroupType.QuyetDinhKeHoachThue)]
         }, cancellationToken);
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.QuyetDinhKeHoachThueThamDinh]
+            EGroupTypes = [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)]
         }, cancellationToken);
 
         return ResultApi.Ok(entity.ToDto(danhSachTep.ToList(), danhSachTepThamDinh.ToList()));

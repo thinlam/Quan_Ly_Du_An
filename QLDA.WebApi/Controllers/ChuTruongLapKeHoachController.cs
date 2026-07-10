@@ -90,7 +90,7 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
 
         await Mediator.Send(new ChuTruongLapKeHoachUpdateCommand(entity));
         
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ChuTruongLapKeHoach) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ChuTruongLapKeHoach) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

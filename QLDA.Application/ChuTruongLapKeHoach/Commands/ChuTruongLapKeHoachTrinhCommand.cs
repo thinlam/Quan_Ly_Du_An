@@ -65,10 +65,12 @@ internal class ChuTruongLapKeHoachTrinhCommandHandler : IRequestHandler<ChuTruon
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ChuTruongLapKeHoach,
             EntityId = entity.Id,
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh.Id,
             NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
-                        : $"{entity.SoToTrinh} - {(date.HasValue ? date.Value.ToString("dd/MM/yyyy") : "")}",
+                        : $" Tờ trình/quyết định {entity.SoToTrinh} - {(date.HasValue ? date.Value.ToString("dd/MM/yyyy") : "")} {trangThaiDaTrinh?.Ten} ",
             NgayXuLy = DateTimeOffset.UtcNow,
         };
 

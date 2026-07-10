@@ -34,7 +34,7 @@ public class KeHoachTrienKhaiChiTietDuAnControllerController(IServiceProvider se
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.KeHoachTrienKhaiChiTietDuAn]
+            EGroupTypes = [nameof(EGroupType.KeHoachTrienKhaiChiTietDuAn)]
         });
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
@@ -63,7 +63,7 @@ public class KeHoachTrienKhaiChiTietDuAnControllerController(IServiceProvider se
         var entity = await Mediator.Send(new KeHoachTrienKhaiChiTietDuAnInsertCommand(dto.ToEntity()), cancellationToken);
        
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KeHoachTrienKhaiChiTietDuAn) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachTrienKhaiChiTietDuAn) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -86,7 +86,7 @@ public class KeHoachTrienKhaiChiTietDuAnControllerController(IServiceProvider se
     {
         var entity = await Mediator.Send(new KeHoachTrienKhaiChiTietDuAnUpdateCommand(dto.ToEntity()), cancellationToken);
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KeHoachTrienKhaiChiTietDuAn) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachTrienKhaiChiTietDuAn) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
