@@ -123,9 +123,9 @@ public class QuanLyPheDuyetController : AggregateRootController
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("{type}/{id}/duyet")]
-    public async Task<ResultApi> Duyet(string type, Guid id, string? noiDung)
+    public async Task<ResultApi> Duyet(string type, Guid id, [FromBody] TraLaiModel model)
     {
-        var res = await Mediator.Send(new PheDuyetDispatchDuyetCommand(type, id, noiDung));
+        var res = await Mediator.Send(new PheDuyetDispatchDuyetCommand(type, id, model.NoiDung));
         return ResultApi.Ok(res);
     }
 

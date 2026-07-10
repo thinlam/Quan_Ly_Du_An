@@ -1,3 +1,4 @@
+using System.Data;
 using BuildingBlocks.CrossCutting.Offices;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,5 +22,42 @@ public class WordHelper(IAsposeHelper asposeHelper) : IWordHelper
         using var ms = new MemoryStream();
         doc.Save(ms, Aspose.Words.SaveFormat.Docx);
         return ms.ToArray();
+    }
+    public byte[] ExportFromTemplate(string templatePath,DataSet tables, Dictionary<string, string> fieldValues) {
+        _asposeHelper.EnsureLicense();
+
+        var doc = new Aspose.Words.Document(templatePath);
+        doc.MailMerge.UseNonMergeFields = true;
+
+        foreach (var kvp in fieldValues) {
+            doc.MailMerge.Execute(new[] { kvp.Key }, new object[] { kvp.Value });
+        }
+        if (tables != null) {
+            doc.MailMerge.ExecuteWithRegions(tables);
+            if (tables.Tables.Count > 0) {
+                foreach (DataTable item in tables.Tables) {
+                    // Check if STT column exists (case insensitive)
+                    var sttColumn = item.Columns
+                        .Cast<DataColumn>()
+                        .FirstOrDefault(c =>
+                            string.Equals(c.ColumnName, "STT", StringComparison.OrdinalIgnoreCase));
+
+                    // Create STT column if missing
+                    if (sttColumn == null) {
+                        item.Columns.Add("STT", typeof(int));
+
+                        for (int i = 0; i < item.Rows.Count; i++) {
+                            item.Rows[i]["STT"] = i + 1;
+                        }
+                    }
+                    doc.MailMerge.ExecuteWithRegions(item);// if otems.rows not have any title STT or stt pls add stt auto crea
+                }
+            }
+        }
+
+        using var ms = new MemoryStream();
+        doc.Save(ms, Aspose.Words.SaveFormat.Docx);
+        return ms.ToArray();
+
     }
 }
