@@ -68,13 +68,24 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
                  TrangThaiDangTai = e.TrangThaiDangTai,
                  TrangThaiId = e.TrangThaiId,
                  TenTrangThai = e.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : e.TrangThaiPheDuyet.Ten,
-                
-                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString()
-                    || (e.ToTrinh  != null && i.GroupId == e.ToTrinh.Id.ToString() && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString() )
-                    || (e.QuyetDinh != null && i.GroupId == e.QuyetDinh.Id.ToString() && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString() ))
 
-                    .Select(i => i.ToDto()).ToList()
+                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
+                .Where(i =>
+                    !i.IsDeleted &&
+                    (
+                        i.GroupId == e.Id.ToString()
+                        || (
+                            e.ToTrinh != null
+                            && i.GroupId == e.ToTrinh.Id.ToString()
+                            && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString()
+                        )
+                        || (
+                            e.QuyetDinh != null
+                            && i.GroupId == e.QuyetDinh.Id.ToString()
+                            && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()
+                        )
+                    )
+                ).Select(i => i.ToDto()).ToList()
              })
             //.Select(e => e.ToDto(e.))
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
