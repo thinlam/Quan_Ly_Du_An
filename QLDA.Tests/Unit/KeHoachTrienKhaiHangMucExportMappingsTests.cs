@@ -64,7 +64,7 @@ public class KeHoachTrienKhaiHangMucExportMappingsTests
     }
 
     [Fact]
-    public void ToExportRows_FormatsDatesAsVietnameseShortDate()
+    public void ToExportRows_MapsDateOnlyValues()
     {
         const int giaiDoanId = 1;
 
@@ -89,12 +89,12 @@ public class KeHoachTrienKhaiHangMucExportMappingsTests
             new Dictionary<long, string>());
 
         var item = rows.Single(r => !r.IsGroupHeader);
-        item.NgayBatDau.Should().Be("08/07/2026");
-        item.NgayKetThuc.Should().Be("28/07/2026");
+        item.NgayBatDau.Should().Be(new DateOnly(2026, 7, 8));
+        item.NgayKetThuc.Should().Be(new DateOnly(2026, 7, 28));
     }
 
     [Fact]
-    public void ToExportRows_NullDates_ReturnEmptyStrings()
+    public void ToExportRows_NullDates_ReturnNull()
     {
         const int giaiDoanId = 1;
 
@@ -117,8 +117,8 @@ public class KeHoachTrienKhaiHangMucExportMappingsTests
             new Dictionary<long, string>());
 
         var item = rows.Single(r => !r.IsGroupHeader);
-        item.NgayBatDau.Should().BeEmpty();
-        item.NgayKetThuc.Should().BeEmpty();
+        item.NgayBatDau.Should().BeNull();
+        item.NgayKetThuc.Should().BeNull();
     }
 
     [Fact]

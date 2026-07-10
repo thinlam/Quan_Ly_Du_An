@@ -191,8 +191,8 @@ internal static class KeHoachTrienKhaiHangMucExportMappings
             TenHangMuc = hangMuc.TenHangMuc,
             DonViChuTri = ResolveName(hangMuc.DonViChuTriId, donViTenById),
             DonViPhoiHop = JoinNames(hangMuc.DonViPhoiHopIds, donViTenById),
-            NgayBatDau = FormatDate(hangMuc.NgayBatDau),
-            NgayKetThuc = FormatDate(hangMuc.NgayKetThuc),
+            NgayBatDau = hangMuc.NgayBatDau,
+            NgayKetThuc = hangMuc.NgayKetThuc,
             ThoiHan = CalcThoiHan(hangMuc),
             CanBoChuTri = ResolveName(hangMuc.CanBoChuTriId, userTenById),
             CanBoPhoiHop = JoinNames(hangMuc.CanBoPhoiHopIds, userTenById),
@@ -201,9 +201,6 @@ internal static class KeHoachTrienKhaiHangMucExportMappings
 
     private static string ToGroupLetter(int index) =>
         ((char)('A' + index)).ToString();
-
-    internal static string FormatDate(DateOnly? value) =>
-        value.HasValue ? value.Value.ToString("dd/MM/yyyy") : string.Empty;
 
     private static int? CalcThoiHan(HangMucKeHoach hangMuc)
     {

@@ -3,7 +3,8 @@
 **Module:** QLDA  
 **Trạng thái:** ✅ **IMPLEMENTED**  
 **Effort:** ~1h (BE only, không migration)  
-**Ngày:** 2026-07-08
+**Ngày:** 2026-07-08  
+**Cập nhật:** 2026-07-10 — DTO ngày dùng `DateOnly?`, format tại tầng export
 
 ---
 
@@ -42,8 +43,9 @@
 
 **Ràng buộc:**
 
-- Format ngày khi **map** dữ liệu in — không truyền `DateTime`/`DateOnly` vào template.
-- `null` → chuỗi rỗng; không in `01/01/0001`.
+- DTO export giữ **`DateOnly?`** — cùng kiểu với entity, không convert sang `string` rồi parse lại.
+- Format `dd/MM/yyyy` chỉ khi **render** (Word / Excel), không format trong `ExportMappings`.
+- `null` → ô trống; không in `01/01/0001`.
 - Print phải dùng **cùng logic ID** với UI combobox (`UserPortalId`).
 
 ---
@@ -57,7 +59,8 @@ sequenceDiagram
     participant DB as HangMucKeHoach
     participant Map as ExportMappings
     participant Word as WordExporter
-    participant Docx as File .docx
+    participant Excel as AsposeHelper
+    participant Docx as File .docx / .xlsx
 
     UI->>DB: Lưu CanBoChuTriId = UserPortalId
     GetQ->>DB: Trả Id (PortalId) + DateOnly ngày
@@ -65,9 +68,14 @@ sequenceDiagram
 
     DB->>Map: ToExportRowsAsync
     Map->>Map: Join user WHERE UserPortalId IN ids
-    Map->>Map: FormatDate(DateOnly?) → "dd/MM/yyyy"
-    Map->>Word: ExportItemDto (string dates + tên cán bộ)
-    Word->>Docx: Run text thuần — không auto-format date
+    Map->>Map: MapItem — gán DateOnly? trực tiếp
+    Map->>Word: ExportItemDto (DateOnly? + tên cán bộ)
+    Word->>Word: FormatDate(DateOnly?) → "dd/MM/yyyy"
+    Word->>Docx: Run text thuần
+
+    Map->>Excel: ExportItemDto (cùng DTO)
+    Excel->>Excel: PutValueSmart(DateOnly) → "dd/MM/yyyy"
+    Excel->>Docx: Cell literal
 ```
 
 ### 2.1 Đối chiếu ID cán bộ
@@ -95,11 +103,20 @@ sequenceDiagram
 | Tầng | File | Vai trò |
 | ---- | ---- | ------- |
 | Domain | `HangMucKeHoach.cs` | `DateOnly?`, `CanBoChuTriId` — không đổi |
-| Application | `KeHoachTrienKhaiHangMucExportMappings.cs` | Format ngày + lookup PortalId |
-| Application | `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc` = `string?` |
+| Application | `KeHoachTrienKhaiHangMucExportMappings.cs` | Map `DateOnly?` trực tiếp + lookup PortalId |
+| Application | `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc` = `DateOnly?` |
 | Application | `KeHoachTrienKhaiHangMucGetPhieuTrinhPrintQuery.cs` | Load + gọi `ToExportRowsAsync` |
-| Infrastructure | `KeHoachTrienKhaiHangMucWordExporter.cs` | Bind string vào cell |
+| Infrastructure | `KeHoachTrienKhaiHangMucWordExporter.cs` | `FormatDate(DateOnly?)` khi bind cell |
+| BuildingBlocks | `AsposeHelper.cs` | `PutValueSmart` format `DateOnly` → `dd/MM/yyyy` (Excel) |
 | BuildingBlocks | `UserMasterGetComboboxQueryHandler.cs` | UI: `Id = UserPortalId` |
+
+### 2.3 Phân tách trách nhiệm format ngày
+
+| Tầng | Trách nhiệm | Không làm |
+| ---- | ----------- | --------- |
+| **Application / DTO** | Giữ `DateOnly?` thuần | Không `ToString`, không `FormatDate` |
+| **Infrastructure / Word** | `FormatDate(DateOnly?)` → text `dd/MM/yyyy` | Không nhận `DateTime?` |
+| **BuildingBlocks / Excel** | `PutValueSmart` nhận `DateOnly` | Không để `ToString()` mặc định ISO |
 
 ---
 
@@ -110,14 +127,17 @@ sequenceDiagram
 **Hai lớp nguyên nhân (fix theo thứ tự):**
 
 1. **WordExporter** (fix lần 1): `FormatDate` hard-code `"yyyy-MM-dd"`.
-2. **Export DTO** (fix triệt để): vẫn truyền `DateTime?` — Aspose/serialization có thể render ISO trước khi Word format.
+2. **Export DTO** (fix triệt để): truyền `DateTime?` — Aspose/serialization render ISO trước khi Word format.
 
-**Giải pháp triệt để:** format tại `ExportMappings`, DTO chỉ chứa `string`.
+**Giải pháp cuối cùng (2026-07-10):**
 
-```csharp
-internal static string FormatDate(DateOnly? value) =>
-    value.HasValue ? value.Value.ToString("dd/MM/yyyy") : string.Empty;
-```
+- DTO dùng **`DateOnly?`** — cùng kiểu với `HangMucKeHoach`, không qua `string` trung gian.
+- `ExportMappings` gán trực tiếp: `NgayBatDau = hangMuc.NgayBatDau`.
+- Format `dd/MM/yyyy` tại **tầng export**:
+  - Word: `KeHoachTrienKhaiHangMucWordExporter.FormatDate(DateOnly?)`
+  - Excel: `AsposeHelper.PutValueSmart` xử lý `DateOnly`
+
+> **Lý do không dùng `string?` trong DTO:** truyền ngày thì giữ `DateOnly`; format là concern của renderer, không phải mapper.
 
 ### 3.2 Cán bộ sai người
 
@@ -133,21 +153,22 @@ internal static string FormatDate(DateOnly? value) =>
 | ---------- | ------- |
 | Template Word có DATE field | ❌ Bảng fill bằng `Run` text thuần |
 | `GetQuery` trả tên cán bộ | ❌ Chỉ trả ID — FE resolve từ combobox |
-| Excel export sai | ❌ Cùng `ExportMappings` — đồng bộ sau fix |
+| Excel export sai | ❌ Cùng DTO — `PutValueSmart` format `DateOnly` |
 
 ---
 
 ## 4. Các bước code
 
-Thứ tự sửa **bắt buộc** theo dependency: DTO → Mapping → WordExporter → Unit test.
+Thứ tự sửa **bắt buộc** theo dependency: DTO → Mapping → WordExporter → AsposeHelper → Unit test.
 
 | Bước | File | Mục tiêu |
 | ---- | ---- | -------- |
-| 1 | `KeHoachTrienKhaiHangMucExportItemDto.cs` | Ngày = `string?`, không còn date object |
-| 2 | `KeHoachTrienKhaiHangMucExportMappings.cs` | `FormatDate` + lookup `UserPortalId` |
-| 3 | `KeHoachTrienKhaiHangMucWordExporter.cs` | Bind plain string; xóa `FormatDate(DateTime?)` |
-| 4 | `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | Cover ngày + cán bộ |
-| 5 | (tuỳ chọn) `KeHoachTrienKhaiHangMucWordExporterTests.cs` | Xóa nếu chỉ test `FormatDate` cũ |
+| 1 | `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc` = `DateOnly?` |
+| 2 | `KeHoachTrienKhaiHangMucExportMappings.cs` | Gán `DateOnly?` trực tiếp + lookup `UserPortalId` |
+| 3 | `KeHoachTrienKhaiHangMucWordExporter.cs` | `FormatDate(DateOnly?)` khi bind cell |
+| 4 | `AsposeHelper.cs` | `PutValueSmart` xử lý `DateOnly` → `dd/MM/yyyy` |
+| 5 | `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | Cover `DateOnly?` + cán bộ |
+| 6 | (tuỳ chọn) `KeHoachTrienKhaiHangMucWordExporterTests.cs` | Xóa nếu chỉ test `FormatDate(DateTime?)` cũ |
 
 **Không sửa:** entity `HangMucKeHoach`, migration, template `.docx`, `GetPhieuTrinhPrintQuery` (đã gọi `ToExportRowsAsync`).
 
@@ -157,25 +178,25 @@ Thứ tự sửa **bắt buộc** theo dependency: DTO → Mapping → WordExpor
 
 **File:** `QLDA.Application/KeHoachTrienKhaiHangMuc/DTOs/KeHoachTrienKhaiHangMucExportItemDto.cs`
 
-**Trước:**
+**Trước (gốc bug):**
 
 ```csharp
 public DateTime? NgayBatDau { get; set; }
 public DateTime? NgayKetThuc { get; set; }
 ```
 
-**Sau:**
+**Sau (trạng thái hiện tại):**
 
 ```csharp
-public string? NgayBatDau { get; set; }
-public string? NgayKetThuc { get; set; }
+public DateOnly? NgayBatDau { get; set; }
+public DateOnly? NgayKetThuc { get; set; }
 ```
 
-> Lý do: không truyền `DateTime`/`DateOnly` vào Word/Aspose — format sẵn tại Application layer.
+> Lý do: cùng kiểu với entity `HangMucKeHoach`; không convert `DateOnly` → `string` rồi format ngược lại trong Application layer.
 
 ---
 
-### Bước 2 — Format ngày + lookup cán bộ theo `UserPortalId`
+### Bước 2 — Map `DateOnly?` trực tiếp + lookup cán bộ theo `UserPortalId`
 
 **File:** `QLDA.Application/KeHoachTrienKhaiHangMuc/KeHoachTrienKhaiHangMucExportMappings.cs`
 
@@ -212,7 +233,7 @@ var users = userIds.Count == 0
 users.ToDictionary(u => u.PortalId, u => u.HoTen ?? string.Empty)
 ```
 
-#### 2b. `MapItem` — format ngày thành string trước khi đưa vào DTO
+#### 2b. `MapItem` — gán `DateOnly?` trực tiếp, không format
 
 **Trước:**
 
@@ -224,30 +245,24 @@ NgayKetThuc = ToDateTime(hangMuc.NgayKetThuc),
 **Sau:**
 
 ```csharp
-NgayBatDau = FormatDate(hangMuc.NgayBatDau),
-NgayKetThuc = FormatDate(hangMuc.NgayKetThuc),
+NgayBatDau = hangMuc.NgayBatDau,
+NgayKetThuc = hangMuc.NgayKetThuc,
 CanBoChuTri = ResolveName(hangMuc.CanBoChuTriId, userTenById),
 CanBoPhoiHop = JoinNames(hangMuc.CanBoPhoiHopIds, userTenById),
 ```
 
-#### 2c. Thay `ToDateTime` bằng `FormatDate`
+#### 2c. Xóa helper convert/format ngày khỏi Mapping
 
-**Xóa:**
+**Không còn** trong `ExportMappings`:
 
 ```csharp
+// ❌ Đã xóa — không format tại Application layer
 private static DateTime? ToDateTime(DateOnly? date) =>
     date?.ToDateTime(TimeOnly.MinValue);
-```
 
-**Thêm:**
-
-```csharp
 internal static string FormatDate(DateOnly? value) =>
     value.HasValue ? value.Value.ToString("dd/MM/yyyy") : string.Empty;
 ```
-
-- `null` → `""` (ô trống).
-- Không bao giờ tạo `DateTime.MinValue` / `01/01/0001`.
 
 **Diff tóm tắt:**
 
@@ -263,35 +278,24 @@ internal static string FormatDate(DateOnly? value) =>
 
 - NgayBatDau = ToDateTime(hangMuc.NgayBatDau),
 - NgayKetThuc = ToDateTime(hangMuc.NgayKetThuc),
-+ NgayBatDau = FormatDate(hangMuc.NgayBatDau),
-+ NgayKetThuc = FormatDate(hangMuc.NgayKetThuc),
++ NgayBatDau = hangMuc.NgayBatDau,
++ NgayKetThuc = hangMuc.NgayKetThuc,
 
-- private static DateTime? ToDateTime(DateOnly? date) =>
--     date?.ToDateTime(TimeOnly.MinValue);
-+ internal static string FormatDate(DateOnly? value) =>
-+     value.HasValue ? value.Value.ToString("dd/MM/yyyy") : string.Empty;
+- private static DateTime? ToDateTime(...) { ... }
+- internal static string FormatDate(...) { ... }
 ```
 
 ---
 
-### Bước 3 — WordExporter bind plain string
+### Bước 3 — WordExporter format khi render
 
 **File:** `QLDA.Infrastructure/Offices/KeHoachTrienKhaiHangMucWordExporter.cs`
 
-#### 3a. `CreateItemRow` — không gọi `FormatDate` trên date object
-
-**Trước:**
+#### 3a. `CreateItemRow` — gọi `FormatDate(DateOnly?)`
 
 ```csharp
 FormatDate(data.NgayBatDau),
 FormatDate(data.NgayKetThuc),
-```
-
-**Sau:**
-
-```csharp
-data.NgayBatDau ?? string.Empty,
-data.NgayKetThuc ?? string.Empty,
 ```
 
 Cột cán bộ **giữ nguyên** (đã là string từ mapping):
@@ -301,39 +305,57 @@ data.CanBoChuTri ?? string.Empty,
 data.CanBoPhoiHop ?? string.Empty,
 ```
 
-#### 3b. Xóa `FormatDate(DateTime?)` ở Infrastructure
-
-**Xóa đoạn này** (tránh double-format / nhầm ISO):
+#### 3b. Helper format ngày ở Infrastructure
 
 ```csharp
-internal static string FormatDate(DateTime? date) =>
+private static string FormatDate(DateOnly? date) =>
     date?.ToString("dd/MM/yyyy", ViCulture) ?? string.Empty;
 ```
 
-> Format ngày chỉ còn ở `ExportMappings.FormatDate` — một nơi duy nhất.
+- `null` → `""` (ô trống).
+- Không còn `FormatDate(DateTime?)` — tránh double-format / nhầm ISO.
 
 **Diff tóm tắt:**
 
 ```diff
 // KeHoachTrienKhaiHangMucWordExporter.cs — CreateItemRow
-- FormatDate(data.NgayBatDau),
+- FormatDate(data.NgayBatDau),   // DateTime? — ISO bug
 - FormatDate(data.NgayKetThuc),
-+ data.NgayBatDau ?? string.Empty,
-+ data.NgayKetThuc ?? string.Empty,
++ FormatDate(data.NgayBatDau),   // DateOnly? — format tại export
++ FormatDate(data.NgayKetThuc),
 
 - internal static string FormatDate(DateTime? date) =>
 -     date?.ToString("dd/MM/yyyy", ViCulture) ?? string.Empty;
++ private static string FormatDate(DateOnly? date) =>
++     date?.ToString("dd/MM/yyyy", ViCulture) ?? string.Empty;
 ```
 
 ---
 
-### Bước 4 — Unit test
+### Bước 4 — Excel: `PutValueSmart` nhận `DateOnly`
+
+**File:** `BuildingBlocks/src/BuildingBlocks.Infrastructure/Offices/AsposeHelper.cs`
+
+Thêm nhánh xử lý `DateOnly` — tránh `ToString()` mặc định ra ISO `yyyy-MM-dd`:
+
+```csharp
+else if (val is DateOnly dateOnly)
+{
+    cell.PutValue(dateOnly.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
+}
+```
+
+Excel export (`GET /api/print/ke-hoach-trien-khai-hang-muc`) dùng chung `ExportItemDto` qua `ExcelHelper.Export` → `PutValueSmart`.
+
+---
+
+### Bước 5 — Unit test
 
 **File:** `QLDA.Tests/Unit/KeHoachTrienKhaiHangMucExportMappingsTests.cs`
 
 Thêm / giữ các test sau:
 
-#### 4a. Cán bộ chủ trì theo PortalId
+#### 5a. Cán bộ chủ trì theo PortalId
 
 ```csharp
 [Fact]
@@ -365,7 +387,7 @@ public void ToExportRows_ResolvesCanBoByUserPortalId()
 }
 ```
 
-#### 4b. Cán bộ phối hợp theo PortalId
+#### 5b. Cán bộ phối hợp theo PortalId
 
 ```csharp
 [Fact]
@@ -397,11 +419,11 @@ public void ToExportRows_ResolvesCanBoPhoiHopByUserPortalId()
 }
 ```
 
-#### 4c. Format ngày `dd/MM/yyyy`
+#### 5c. Map `DateOnly?` trực tiếp (không format trong Mapping)
 
 ```csharp
 [Fact]
-public void ToExportRows_FormatsDatesAsVietnameseShortDate()
+public void ToExportRows_MapsDateOnlyValues()
 {
     const int giaiDoanId = 1;
 
@@ -426,16 +448,16 @@ public void ToExportRows_FormatsDatesAsVietnameseShortDate()
         new Dictionary<long, string>());
 
     var item = rows.Single(r => !r.IsGroupHeader);
-    item.NgayBatDau.Should().Be("08/07/2026");
-    item.NgayKetThuc.Should().Be("28/07/2026");
+    item.NgayBatDau.Should().Be(new DateOnly(2026, 7, 8));
+    item.NgayKetThuc.Should().Be(new DateOnly(2026, 7, 28));
 }
 ```
 
-#### 4d. Ngày null → chuỗi rỗng
+#### 5d. Ngày null → `null` (format tại export layer)
 
 ```csharp
 [Fact]
-public void ToExportRows_NullDates_ReturnEmptyStrings()
+public void ToExportRows_NullDates_ReturnNull()
 {
     const int giaiDoanId = 1;
 
@@ -458,18 +480,20 @@ public void ToExportRows_NullDates_ReturnEmptyStrings()
         new Dictionary<long, string>());
 
     var item = rows.Single(r => !r.IsGroupHeader);
-    item.NgayBatDau.Should().BeEmpty();
-    item.NgayKetThuc.Should().BeEmpty();
+    item.NgayBatDau.Should().BeNull();
+    item.NgayKetThuc.Should().BeNull();
 }
 ```
 
-#### 4e. Dọn test Word cũ (nếu còn)
+> Format `dd/MM/yyyy` được verify qua manual test Word/Excel — không assert string trong Mapping test.
 
-Nếu vẫn còn `QLDA.Tests/Unit/KeHoachTrienKhaiHangMucWordExporterTests.cs` chỉ assert `WordExporter.FormatDate` → **xóa file** (logic đã chuyển sang `ExportMappings`).
+#### 5e. Dọn test Word cũ (nếu còn)
+
+Nếu vẫn còn `QLDA.Tests/Unit/KeHoachTrienKhaiHangMucWordExporterTests.cs` chỉ assert `FormatDate(DateTime?)` cũ → **xóa file**.
 
 ---
 
-### Bước 5 — Verify build + test
+### Bước 6 — Verify build + test
 
 ```bash
 dotnet build QLDA.Application/QLDA.Application.csproj
@@ -491,16 +515,25 @@ Kỳ vọng: `Passed! — Failed: 0, Passed: 6` (hoặc ≥ 6 nếu thêm test k
 
 | # | File | Thay đổi |
 | - | ---- | -------- |
-| 1 | `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc`: `DateTime?` → `string?` |
-| 2 | `KeHoachTrienKhaiHangMucExportMappings.cs` | `FormatDate(DateOnly?)`; lookup `UserPortalId` |
-| 3 | `KeHoachTrienKhaiHangMucWordExporter.cs` | Bind string; xóa `FormatDate(DateTime?)` |
-| 4 | `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | + tests ngày + cán bộ PortalId |
-| 5 | `KeHoachTrienKhaiHangMucWordExporterTests.cs` | Xóa (chuyển sang ExportMappings) |
+| 1 | `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc`: `DateTime?` → **`DateOnly?`** |
+| 2 | `KeHoachTrienKhaiHangMucExportMappings.cs` | Gán `DateOnly?` trực tiếp; lookup `UserPortalId`; xóa `FormatDate` |
+| 3 | `KeHoachTrienKhaiHangMucWordExporter.cs` | `FormatDate(DateOnly?)` khi bind cell |
+| 4 | `AsposeHelper.cs` | `PutValueSmart` xử lý `DateOnly` → `dd/MM/yyyy` |
+| 5 | `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | + tests `DateOnly?` + cán bộ PortalId |
+| 6 | `KeHoachTrienKhaiHangMucWordExporterTests.cs` | Xóa (chuyển sang ExportMappings) |
 
 ### 5.2 Excel export
 
 Excel (`GET /api/print/ke-hoach-trien-khai-hang-muc`) dùng chung `ExportItemDto` / `ExportMappings`.  
-Descriptor vẫn ghi `dd/MM/yyyy` — với `string` đã format, cell nhận literal `08/07/2026` (không regression).
+`PutValueSmart` format `DateOnly` → `08/07/2026` literal — không regression ISO.
+
+### 5.3 Tiến hóa thiết kế DTO ngày
+
+| Phiên bản | Kiểu DTO | Format ở đâu | Ghi chú |
+| --------- | -------- | ------------- | ------- |
+| Gốc (bug) | `DateTime?` | Word `yyyy-MM-dd` | ISO trên file in |
+| Trung gian | `string?` | `ExportMappings.FormatDate` | Hoạt động nhưng convert thừa |
+| **Hiện tại** | **`DateOnly?`** | Word + `PutValueSmart` | Đúng kiểu domain, format tại export |
 
 ---
 
@@ -508,12 +541,13 @@ Descriptor vẫn ghi `dd/MM/yyyy` — với `string` đã format, cell nhận li
 
 | # | Case | Test | Kỳ vọng |
 | - | ---- | ---- | ------- |
-| T1 | Ngày có giá trị | `ToExportRows_FormatsDatesAsVietnameseShortDate` | `08/07/2026` |
-| T2 | Ngày null | `ToExportRows_NullDates_ReturnEmptyStrings` | `""` |
+| T1 | Ngày có giá trị | `ToExportRows_MapsDateOnlyValues` | `DateOnly(2026,7,8)` / `(2026,7,28)` |
+| T2 | Ngày null | `ToExportRows_NullDates_ReturnNull` | `null` |
 | T3 | Chủ trì PortalId | `ToExportRows_ResolvesCanBoByUserPortalId` | Tên đúng |
 | T4 | Phối hợp PortalId | `ToExportRows_ResolvesCanBoPhoiHopByUserPortalId` | Tên đúng |
-| T5 | In Word manual | curl + mở docx | Khớp UI |
-| T6 | Dữ liệu cũ MasterId | Manual | Cần re-import |
+| T5 | In Word manual | curl + mở docx | `dd/MM/yyyy`, khớp UI |
+| T6 | In Excel manual | curl + mở xlsx | `dd/MM/yyyy`, không ISO |
+| T7 | Dữ liệu cũ MasterId | Manual | Cần re-import |
 
 ### 6.1 Lệnh chạy test
 
@@ -541,10 +575,11 @@ Kiểm tra bảng **Nội dung kế hoạch triển khai**:
 
 ## 7. Checklist trước merge
 
-- [x] `ExportMappings.FormatDate` → `dd/MM/yyyy` string
-- [x] DTO không còn `DateTime?` cho ngày hạng mục
+- [x] DTO `NgayBatDau`/`NgayKetThuc` = `DateOnly?` (không `string?`, không `DateTime?`)
+- [x] `ExportMappings` gán `DateOnly?` trực tiếp — không `FormatDate`
+- [x] Word `FormatDate(DateOnly?)` → `dd/MM/yyyy`
+- [x] Excel `PutValueSmart` xử lý `DateOnly`
 - [x] Lookup cán bộ theo `UserPortalId`
-- [x] Word bind plain string
 - [x] Unit tests pass
 - [x] Manual: mở `.docx` xác nhận ngày + tên cán bộ
 - [x] Restart WebApi sau deploy
@@ -553,13 +588,13 @@ Kiểm tra bảng **Nội dung kế hoạch triển khai**:
 
 ## Phụ lục — Cấu trúc bảng Word (11 cột)
 
-| Index | Header | Field DTO | Format |
-| ----- | ------ | --------- | ------ |
-| 5 | **Bắt đầu** | `NgayBatDau` | `string` `dd/MM/yyyy` |
-| 6 | **Kết thúc** | `NgayKetThuc` | `string` `dd/MM/yyyy` |
-| 8 | Cán bộ chủ trì | `CanBoChuTri` | `HoTen` via PortalId |
-| 9 | Cán bộ phối hợp | `CanBoPhoiHop` | `HoTen` via PortalId |
+| Index | Header | Field DTO | Kiểu DTO | Format khi render |
+| ----- | ------ | --------- | -------- | ----------------- |
+| 5 | **Bắt đầu** | `NgayBatDau` | `DateOnly?` | `dd/MM/yyyy` |
+| 6 | **Kết thúc** | `NgayKetThuc` | `DateOnly?` | `dd/MM/yyyy` |
+| 8 | Cán bộ chủ trì | `CanBoChuTri` | `string?` | `HoTen` via PortalId |
+| 9 | Cán bộ phối hợp | `CanBoPhoiHop` | `string?` | `HoTen` via PortalId |
 
 ---
 
-*Cập nhật sau implement — July 8, 2026.*
+*Cập nhật sau implement — July 10, 2026 (DTO `DateOnly?`, format tại export layer).*

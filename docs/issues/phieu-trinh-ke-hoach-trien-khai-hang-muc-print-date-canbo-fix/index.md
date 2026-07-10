@@ -18,7 +18,7 @@ UI hiển thị đúng, nhưng file Word in ra sai ở hai nhóm dữ liệu:
 
 | # | Root cause | Mức độ |
 |---|------------|--------|
-| 1 | DTO export truyền `DateTime?` → Word/Aspose render ISO `yyyy-MM-dd` | **Cao** |
+| 1 | DTO export truyền `DateTime?` → Word/Aspose render ISO `yyyy-MM-dd` | **Cao** (đã fix → `DateOnly?`) |
 | 2 | Export lookup cán bộ theo `UserMaster.Id` trong khi DB/UI lưu `UserPortalId` | **Cao** |
 | 3 | UI combobox (`UserMasterGetComboboxQuery`) dùng `UserPortalId` làm `Id` | Tham chiếu đúng |
 
@@ -26,8 +26,8 @@ UI hiển thị đúng, nhưng file Word in ra sai ở hai nhóm dữ liệu:
 
 | # | Thay đổi |
 |---|----------|
-| 1 | `NgayBatDau` / `NgayKetThuc` trong export DTO → **`string`** format `dd/MM/yyyy` tại `ExportMappings` |
-| 2 | Word exporter bind **plain text** — không gọi `FormatDate` trên `DateTime` |
+| 1 | `NgayBatDau` / `NgayKetThuc` trong export DTO → **`DateOnly?`** (cùng kiểu entity) |
+| 2 | Format `dd/MM/yyyy` tại **tầng export** — Word `FormatDate(DateOnly?)`, Excel `PutValueSmart` |
 | 3 | Lookup cán bộ theo `UserPortalId` (khớp UI combobox + import) |
 | 4 | Unit test: format ngày, null date, chủ trì + phối hợp theo PortalId |
 
@@ -37,9 +37,10 @@ UI hiển thị đúng, nhưng file Word in ra sai ở hai nhóm dữ liệu:
 
 | File | Thay đổi |
 |------|----------|
-| `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc`: `DateTime?` → `string?` |
-| `KeHoachTrienKhaiHangMucExportMappings.cs` | `FormatDate(DateOnly?)`; lookup `UserPortalId` |
-| `KeHoachTrienKhaiHangMucWordExporter.cs` | Bind string ngày trực tiếp |
+| `KeHoachTrienKhaiHangMucExportItemDto.cs` | `NgayBatDau`/`NgayKetThuc`: `DateTime?` → **`DateOnly?`** |
+| `KeHoachTrienKhaiHangMucExportMappings.cs` | Gán `DateOnly?` trực tiếp; lookup `UserPortalId` |
+| `KeHoachTrienKhaiHangMucWordExporter.cs` | `FormatDate(DateOnly?)` khi bind cell |
+| `AsposeHelper.cs` | `PutValueSmart` xử lý `DateOnly` → `dd/MM/yyyy` |
 | `KeHoachTrienKhaiHangMucExportMappingsTests.cs` | +4 unit tests |
 
 ## Tài liệu chi tiết
@@ -52,7 +53,7 @@ UI hiển thị đúng, nhưng file Word in ra sai ở hai nhóm dữ liệu:
 |-----------|--------|-----------|
 | ID cán bộ lưu DB | `CanBoChuTriId` / `CanBoPhoiHopIds` = **UserPortalId** | Cùng field |
 | Nguồn tên cán bộ | Combobox `UserMasterDto.Id = UserPortalId` | `ExportMappings` join `UserPortalId` |
-| Format ngày hiển thị | FE format `DateOnly` → `dd/MM/yyyy` | `ExportMappings.FormatDate` → string |
+| Format ngày hiển thị | FE format `DateOnly` → `dd/MM/yyyy` | Word/Excel format tại export layer |
 
 ## Tham chiếu
 
