@@ -1,3 +1,4 @@
+using QLDA.Application.Common;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -56,7 +57,7 @@ public static class BanGiaoHoSoMappings {
                 Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = f.ParentId,
                 GroupId = groupId.ToString(),
-                GroupType = EGroupType.BanGiaoHoSo.ToString(),
+                GroupType = EGroupType.BanGiaoHoSo.ToString().ResolveSignedGroupType(f.ParentId != null),
                 Type = f.Type,
                 FileName = f.FileName,
                 OriginalName = f.OriginalName,
@@ -73,7 +74,7 @@ public static class BanGiaoHoSoMappings {
                 Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = f.ParentId,
                 GroupId = groupId.ToString(),
-                GroupType = EGroupType.BienBanBanGiao.ToString(),
+                GroupType = EGroupType.BienBanBanGiao.ToString().ResolveSignedGroupType(f.ParentId != null),
                 Type = f.Type,
                 FileName = f.FileName,
                 OriginalName = f.OriginalName,

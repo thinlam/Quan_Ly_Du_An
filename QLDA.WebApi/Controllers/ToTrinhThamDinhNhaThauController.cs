@@ -33,12 +33,12 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.ToTrinhThamDinhNhaThau]
+            EGroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau)]
         });
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.NoiDungThamDinhNhaThau]
+            EGroupTypes = [nameof(EGroupType.NoiDungToTrinhThamDinhNhaThau)]
         });
         var nhaThauModel = entity.NhaThaus.Select(o => o.ToModel()).ToList();
         /*foreach (var item in nhaThauModel)
@@ -46,7 +46,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
                 GroupId = [item.Id.ToString()],
-                EGroupTypes = [GroupTypeConstants.KetQuaThamDinhNhaThau]
+                EGroupTypes = [EGroupType.KetQuaThamDinhNhaThau]
             });
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
         }*/
@@ -55,7 +55,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             var allFiles = await Mediator.Send(new GetDanhSachTepDinhKemQuery
             {
                 GroupId = ids,
-                EGroupTypes = [GroupTypeConstants.KetQuaThamDinhNhaThau]
+                EGroupTypes = [nameof(EGroupType.KetQuaThamDinhNhaThau)]
             });
         var lookup = allFiles.GroupBy(x => x.GroupId)
                     .ToDictionary(g => g.Key, g => g.ToList());
@@ -135,7 +135,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
     {
         var entity = await Mediator.Send(new ToTrinhThamDinhNhaThauUpdateCommand(model.ToEntity()), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhThamDinhNhaThau) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

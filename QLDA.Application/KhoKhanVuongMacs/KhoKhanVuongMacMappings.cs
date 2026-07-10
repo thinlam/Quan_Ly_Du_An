@@ -36,7 +36,7 @@ public static class KhoKhanVuongMacMappings {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
-            Ngay = entity.Ngay,
+            Ngay = entity.Ngay.ToDateOnlyVn(),
             NoiDung = entity.NoiDung,
             MucDoKhoKhanId = entity.MucDoKhoKhanId,
             TinhTrangId = entity.TinhTrangId,

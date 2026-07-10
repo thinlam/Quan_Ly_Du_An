@@ -61,7 +61,7 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
     public async Task<ResultApi> Create([FromBody] QuyetDinhDieuChinhInsertDto dto,
           [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhInsertCommand(dto), cancellationToken);
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(result.Id, GroupTypeConstants.QuyetDinhDieuChinh) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(result.Id, EGroupType.QuyetDinhDieuChinh) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = result.Id.ToString(),
@@ -82,7 +82,7 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
     public async Task<ResultApi> Update([FromBody] QuyetDinhDieuChinhUpdateDto dto,
         [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhUpdateCommand(dto), cancellationToken);
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(result.Id, GroupTypeConstants.QuyetDinhDieuChinh) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(result.Id, EGroupType.QuyetDinhDieuChinh) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = result.Id.ToString(),

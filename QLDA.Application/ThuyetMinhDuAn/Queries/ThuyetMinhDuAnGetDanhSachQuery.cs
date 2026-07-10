@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
+using QLDA.Application.Common;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.ThuyetMinhDuAns.Queries;
 
@@ -54,10 +56,10 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
                 MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThaiThamDinh = e.TrangThaiThamDinhId != null ? e.TrangThaiThamDinh.Ten : string.Empty,
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == GroupTypeConstants.ThuyetMinhDuAn)
+                    .WhereSignedScope(e.Id.ToString(), nameof(EGroupType.ThuyetMinhDuAn))
                     .Select(i => i.ToDto()).ToList(),
                 DanhSachTepThamDinh = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == GroupTypeConstants.ThuyetMinhDuAnThamDinh)
+                    .WhereSignedScope(e.Id.ToString(), nameof(EGroupType.ThuyetMinhDuAnThamDinh))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

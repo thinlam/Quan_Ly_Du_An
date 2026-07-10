@@ -56,7 +56,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Create([FromBody] BaoCaoKetQuaKhaoSatModel model)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatInsertCommand(model.ToInsertDto()));
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.BaoCaoKetQuaKhaoSat) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.BaoCaoKetQuaKhaoSat) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
@@ -73,7 +73,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Update([FromBody] BaoCaoKetQuaKhaoSatModel model)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatUpdateCommand(model.ToUpdateModel()));
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.BaoCaoKetQuaKhaoSat) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.BaoCaoKetQuaKhaoSat) ?? []];
         
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {

@@ -27,12 +27,12 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAn]
+            EGroupTypes = [nameof(EGroupType.ThuyetMinhDuAn)]
         });
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAnThamDinh]
+            EGroupTypes = [nameof(EGroupType.ThuyetMinhDuAnThamDinh)]
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepThamDinh));
     }
@@ -80,7 +80,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   );
        
         List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
-            entity.Id, GroupTypeConstants.ThuyetMinhDuAn) ?? []];
+            entity.Id, EGroupType.ThuyetMinhDuAn) ?? []];
         
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
@@ -88,7 +88,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             Entities = files
         });
         List<TepDinhKem> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
-            entity.Id, GroupTypeConstants.ThuyetMinhDuAnThamDinh) ?? []];
+            entity.Id, EGroupType.ThuyetMinhDuAnThamDinh) ?? []];
         
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {

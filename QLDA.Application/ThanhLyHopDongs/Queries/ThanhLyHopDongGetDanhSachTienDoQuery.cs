@@ -1,10 +1,11 @@
 using BuildingBlocks.Application.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
+using QLDA.Application.Common;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
-using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.ThanhLyHopDongs.Queries;
 
@@ -56,13 +57,13 @@ internal class ThanhLyHopDongGetDanhSachTienDoQueryHandler : IRequestHandler<Tha
                 TrangThaiTen = x.TrangThai!.Ten,
                 NghiemThuIds = x.DanhSachNghiemThus!.Select(j => j.RightId).ToList(),
                 BienBanNghiemThus = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu)
+                    .WhereSignedScope(x.Id.ToString(), nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu))
                     .Select(i => i.ToDto()).ToList(),
                 ThanhLyHopDongs = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong)
+                    .WhereSignedScope(x.Id.ToString(), nameof(EGroupType.ThanhLyHopDong))
                     .Select(i => i.ToDto()).ToList(),
                 Khacs = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong_Khac)
+                    .WhereSignedScope(x.Id.ToString(), nameof(EGroupType.ThanhLyHopDong_Khac))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
