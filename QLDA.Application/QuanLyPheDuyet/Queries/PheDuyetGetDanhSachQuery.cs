@@ -108,47 +108,16 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                   }).ToList()
               );
 
-        var pheDuyetQuery = _PheDuyetRepo.GetQueryableSet().AsNoTracking()
-            .Where(e => !e.IsDeleted)
-            .WhereIf(!string.IsNullOrEmpty(request.Type), e => e.EntityName == request.Type)
-            .WhereIf(!string.IsNullOrEmpty(request.TrangThai), e => e.TrangThai.Ma == request.TrangThai);
-        var duAnQuery = _duAnRepo.GetQueryableSet().AsNoTracking();
-        var pheDuyetHisQuery = _historyRepo.GetQueryableSet().AsNoTracking().Where(e => !e.IsDeleted && e.EntityName == request.Type && e.TrangThai.Ma == "ĐTr");
-        var duAnBuocQuery = _duAnBuocRepo.GetQueryableSet().AsNoTracking();
+        var finalQuery = PheDuyetQueryableExtensions.ApplyDanhSachFilters(
+            new PheDuyetDanhSachFilter(request.Type, request.TrangThai),
+            _PheDuyetRepo,
+            _duAnRepo,
+            _duAnBuocRepo,
+            _tepDinhKemRepo,
+            _authContext,
+            userId,
+            includeAttachments: true);
 
-        var query = from e in pheDuyetQuery
-                    join da in duAnQuery on e.DuAnId equals da.Id
-                    join b in duAnBuocQuery on e.BuocId equals b.Id into buocGroup
-                    from b in buocGroup.DefaultIfEmpty()
-                    select new { e, da, b }; 
-
-        if (!_authContext.HasKhtcBypass) {
-            query = query.Where(x => x.da.LanhDaoPhuTrachId == userId);
-        }
-
-        // 3. Cuối cùng mới Select ra DTO chuẩn
-        var finalQuery = query.Select(x => new PheDuyetListItemDto {
-            Id = x.e.Id,
-            Type = request.Type,
-            EntityId = x.e.EntityId.ToString(),
-            EntityName = x.e.EntityName,
-            DuAnId = x.e.DuAnId,
-            TenDuAn = x.da != null ? x.da.TenDuAn : null,
-            TenBuoc = x.da != null && x.da.BuocHienTai != null ? x.da.BuocHienTai.TenBuoc : (x.b.TenBuoc ?? ""),
-            TenGiaiDoan = x.b.Buoc != null && x.b.Buoc.GiaiDoan != null ? x.b.Buoc.GiaiDoan.Ten : "",
-            TrichYeu = x.e.NoiDung,
-            TrangThaiId = x.e.TrangThaiId,
-            MaTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG" ? x.e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-            TenTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG" ? x.e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-            NguoiDuyetId = x.e.TrangThai != null && x.e.TrangThai.Ma == "ĐD" ? x.e.NguoiXuLyId : 0,
-            NguoiTrinhId = x.e.NguoiTrinhId,
-            NgayXuLyMoiNhat = x.e.UpdatedAt,
-            DanhSachTepDinhKem = _tepDinhKemRepo.GetQueryableSet()
-                    .Where(i => i.GroupId == x.e.EntityId.ToString())
-                    .Select(i => i.ToDto()).ToList(),
-        }).OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue).ToList(); 
-
-        // var sorted = items.OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue).ToList();
         var pagiList =  new PaginatedList<PheDuyetListItemDto>(finalQuery.Skip(request.Skip()).Take(request.Take()).ToList(), finalQuery.Count, request.Skip(), request.Take());
         foreach (var item in pagiList.Data) {
             item.ThaoTacTiepTheo =  !string.IsNullOrEmpty(item.MaTrangThai)
