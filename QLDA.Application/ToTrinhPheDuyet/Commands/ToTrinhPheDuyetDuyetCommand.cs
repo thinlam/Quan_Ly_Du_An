@@ -5,6 +5,7 @@ using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Application.QuanLyPheDuyet.Commands;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
@@ -17,6 +18,9 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
     private readonly DbContext _dbContext;
     private readonly IRepository<ToTrinhPheDuyet, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
+    private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
+    private readonly IDapperRepository _dapper;
+    private readonly IRepository<DuAn, Guid> _duAnRepo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
@@ -28,6 +32,9 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         _dbContext = dbContext;
         _repository = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
+        _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
+        _duAnRepo = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -87,6 +94,29 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
       
         await _historyRepository.AddAsync(history, cancellationToken);
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var tenDuAn = await _duAnRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(d => d.Id == entity.DuAnId)
+            .Select(d => d.TenDuAn)
+            .FirstOrDefaultAsync(cancellationToken);
+        var createdBy = (entity as IMayHaveCreated)?.CreatedBy;
+
+        var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (affected > 0) {
+            await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
+                _dapper,
+                _historyRepository,
+                _pheDuyetRepo,
+                _userProvider.Info.UserID,
+                request.Loai,
+                request.Id,
+                tenDuAn,
+                createdBy,
+                PheDuyetNotificationAction.Duyet,
+                cancellationToken: cancellationToken);
+        }
+
+        return affected;
     }
 }

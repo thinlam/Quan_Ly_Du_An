@@ -4,6 +4,7 @@ using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Application.QuanLyPheDuyet.Commands;
 
 namespace QLDA.Application.ThoaThuanGiaoViecs.Commands;
 
@@ -17,6 +18,8 @@ internal class ThoaThuanGiaoViecChuyenCommandHandler : IRequestHandler<ThoaThuan
     private readonly IRepository<ThoaThuanGiaoViec, Guid> _repository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
+    private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
+    private readonly IDapperRepository _dapper;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -27,6 +30,8 @@ internal class ThoaThuanGiaoViecChuyenCommandHandler : IRequestHandler<ThoaThuan
         _repository = serviceProvider.GetRequiredService<IRepository<ThoaThuanGiaoViec, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
+        _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -70,6 +75,23 @@ internal class ThoaThuanGiaoViecChuyenCommandHandler : IRequestHandler<ThoaThuan
         };
 
         await _historyRepository.AddAsync(history, cancellationToken);
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+                var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (affected > 0) {
+            await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
+                _dapper,
+                _historyRepository,
+                _pheDuyetRepo,
+                _userProvider.Info.UserID,
+                PheDuyetEntityNames.ThoaThuanGiaoViec,
+                entity.Id,
+                entity.DuAn?.TenDuAn,
+                entity.CreatedBy,
+                PheDuyetNotificationAction.Chuyen,
+                maTrangThaiTrinh: TrangThaiPheDuyetCodes.TrangThaiPhongKHTCPhuTrach.DaTrinh,
+                cancellationToken: cancellationToken);
+        }
+
+        return affected;
     }
 }

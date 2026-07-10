@@ -5,6 +5,7 @@ using global::QLDA.Application.Authorization;
 using global::QLDA.Application.Providers;
 using global::QLDA.Domain.Constants;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.QuanLyPheDuyet.Commands;
 
 
 namespace QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
@@ -18,6 +19,8 @@ internal class QuyetDinhLapBanQldaDuyetCommandHandler : IRequestHandler<QuyetDin
     private readonly IRepository<QuyetDinhLapBanQLDA, Guid> _repository; 
     private readonly IRepository<VanBanQuyetDinh, Guid> _vanBanQuyetDinh; 
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
+    private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
+    private readonly IDapperRepository _dapper;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
@@ -31,6 +34,8 @@ internal class QuyetDinhLapBanQldaDuyetCommandHandler : IRequestHandler<QuyetDin
         _vanBanQuyetDinh = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapBanQLDA, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
+        _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -55,7 +60,8 @@ internal class QuyetDinhLapBanQldaDuyetCommandHandler : IRequestHandler<QuyetDin
 
       
         var entity = await _repository.GetQueryableSet()
-        .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        .Include(e => e.DuAn)
+            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật");
 
@@ -100,6 +106,22 @@ internal class QuyetDinhLapBanQldaDuyetCommandHandler : IRequestHandler<QuyetDin
 
         await _vanBanQuyetDinh.AddAsync(vb, cancellationToken);
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+                var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (affected > 0) {
+            await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
+                _dapper,
+                _historyRepository,
+                _pheDuyetRepo,
+                _userProvider.Info.UserID,
+                PheDuyetEntityNames.QuyetDinhLapBanQLDA,
+                entity.Id,
+                entity.DuAn?.TenDuAn,
+                entity.CreatedBy,
+                PheDuyetNotificationAction.Duyet,
+                cancellationToken: cancellationToken);
+        }
+
+        return affected;
     }
 }

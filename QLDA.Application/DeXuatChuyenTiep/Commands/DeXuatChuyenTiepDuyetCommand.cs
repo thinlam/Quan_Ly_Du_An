@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
+using QLDA.Application.QuanLyPheDuyet.Commands;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
@@ -18,7 +19,8 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
     private readonly IRepository<Domain.Entities.DeXuatChuyenTiep, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<PheDuyet, Guid> _PheDuyetRepository;
+    private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
+    private readonly IDapperRepository _dapper;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -29,6 +31,8 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuyenTiep, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
+        _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -37,7 +41,6 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
     }
 
     public async Task<int> Handle(DeXuatChuyenTiepDuyetCommand request, CancellationToken cancellationToken) {
-        // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -47,21 +50,19 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
         var entity = await _repository.GetQueryableSet()
+            .Include(e => e.DuAn)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
-        // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
-        // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet.Id;
-         
-        // Create history record
+
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.DeXuatChuTruongChuyenTiep,
@@ -71,23 +72,25 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-        // thông báo tới người dùng
-        try {
-            var body = $"Tờ trình/quyết định {PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()} số {entity.DuAn?.TenDuAn} vừa được duyệt";
-            var nguoiGuiId = (int)_userProvider.Info.UserID;
-            var pheDuyet = await _PheDuyetRepository.GetQueryableSet()
-                            .FirstOrDefaultAsync(e => e.EntityId == request.Id, cancellationToken);
-            if(pheDuyet != null) {
-                var nguoiNhanId = pheDuyet?.NguoiTrinhId ?? 0;
-                // exec thongBaoInsertCommand here
 
-            }
-        } catch (Exception ex) {
-
-        }
-       
         await _historyRepository.AddAsync(history, cancellationToken);
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (affected > 0) {
+            await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
+                _dapper,
+                _historyRepository,
+                _pheDuyetRepo,
+                _userProvider.Info.UserID,
+                PheDuyetEntityNames.DeXuatChuTruongChuyenTiep,
+                entity.Id,
+                entity.DuAn?.TenDuAn,
+                entity.CreatedBy,
+                PheDuyetNotificationAction.Duyet,
+                cancellationToken: cancellationToken);
+        }
+
+        return affected;
     }
 }

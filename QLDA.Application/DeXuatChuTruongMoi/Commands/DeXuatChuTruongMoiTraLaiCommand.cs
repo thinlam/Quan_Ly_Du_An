@@ -4,6 +4,7 @@ using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Application.QuanLyPheDuyet.Commands;
 
 namespace QLDA.Application.DeXuatChuTruongMois.Commands;
 
@@ -15,6 +16,8 @@ public record DeXuatChuTruongMoiTraLaiCommand(Guid Id, string NoiDung) : IReques
 internal class DeXuatChuTruongMoiTraLaiCommandHandler : IRequestHandler<DeXuatChuTruongMoiTraLaiCommand, int> {
     private readonly IRepository<Domain.Entities.DeXuatChuTruongMoi, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
+    private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
+    private readonly IDapperRepository _dapper;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,6 +26,8 @@ internal class DeXuatChuTruongMoiTraLaiCommandHandler : IRequestHandler<DeXuatCh
     public DeXuatChuTruongMoiTraLaiCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuTruongMoi, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
+        _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -47,6 +52,7 @@ internal class DeXuatChuTruongMoiTraLaiCommandHandler : IRequestHandler<DeXuatCh
         ManagedException.ThrowIfNull(trangThaiTraLai, "Không tìm thấy trạng thái 'Trả lại'");
 
         var entity = await _repository.GetQueryableSet()
+            .Include(e => e.DuAn)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
@@ -73,6 +79,23 @@ internal class DeXuatChuTruongMoiTraLaiCommandHandler : IRequestHandler<DeXuatCh
 
         await _historyRepository.AddAsync(history, cancellationToken);
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+                var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (affected > 0) {
+            await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
+                _dapper,
+                _historyRepository,
+                _pheDuyetRepo,
+                _userProvider.Info.UserID,
+                PheDuyetEntityNames.DeXuatChuTruongMoi,
+                entity.Id,
+                entity.DuAn?.TenDuAn,
+                entity.CreatedBy,
+                PheDuyetNotificationAction.TraLai,
+                request.NoiDung,
+                cancellationToken: cancellationToken);
+        }
+
+        return affected;
     }
 }

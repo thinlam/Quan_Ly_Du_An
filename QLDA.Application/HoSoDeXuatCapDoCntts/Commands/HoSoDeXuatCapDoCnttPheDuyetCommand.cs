@@ -5,6 +5,7 @@ using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Application.ToTrinhCoThamDinhs.Commands;
+using QLDA.Application.QuanLyPheDuyet.Commands;
 using QLDA.Domain.Constants;
 using Serilog;
 using System.Data;
@@ -30,6 +31,8 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
 {
     private readonly IRepository<Domain.Entities.HoSoDeXuatCapDoCntt, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
+    private readonly IRepository<PheDuyet, Guid> _pheDuyetRepo;
+    private readonly IDapperRepository _dapper;
 
     private readonly IRepository<UserMaster, long> _userMasterRepo; 
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
@@ -45,6 +48,8 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
     {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.HoSoDeXuatCapDoCntt, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _pheDuyetRepo = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
+        _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _userMasterRepo =  serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
         _duongDiRepo = serviceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
@@ -121,7 +126,36 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
 
             await _historyRepository.AddAsync(history, cancellationToken);
 
-            return await _unitOfWork.SaveChangesAsync(cancellationToken);
+            var notifyAction = request.TrangThaiTiepTheo switch {
+                TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DaDuyet => PheDuyetNotificationAction.Duyet,
+                TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.TuChoi => PheDuyetNotificationAction.TuChoi,
+                TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.TraLai => PheDuyetNotificationAction.TraLai,
+                TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DaChuyen => PheDuyetNotificationAction.Chuyen,
+                _ => (PheDuyetNotificationAction?)null
+            };
+
+            var affected = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (affected > 0 && notifyAction is { } action) {
+                var lyDo = action is PheDuyetNotificationAction.TraLai or PheDuyetNotificationAction.TuChoi
+                    ? request.noiDung
+                    : null;
+                await PheDuyetNotificationHelper.NotifyAfterSaveAsync(
+                    _dapper,
+                    _historyRepository,
+                    _pheDuyetRepo,
+                    _userProvider.Info.UserID,
+                    PheDuyetEntityNames.HoSoDeXuatCapDoCntt,
+                    entity.Id,
+                    entity.DuAn?.TenDuAn,
+                    entity.CreatedBy,
+                    action,
+                    lyDo,
+                    maTrangThaiTrinh: TrangThaiPheDuyetCodes.HoSoDeXuatCapDoCntt.DaTrinh,
+                    cancellationToken: cancellationToken);
+            }
+
+            return affected;
         }
         catch (Exception ex)
         {
