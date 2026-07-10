@@ -46,7 +46,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
-        var entity = await _repository.GetQueryableSet()
+        var entity = await _repository.GetQueryableSet().Include(x => x.DuAn).ThenInclude(x=> x.BuocHienTai)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
@@ -73,7 +73,9 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         };
         // thông báo tới người dùng
         try {
-            var body = $"Tờ trình/quyết định {PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()} số {entity.DuAn?.TenDuAn} vừa được duyệt";
+            var body = $"Tờ trình/phê duyệt <b>{PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()}" +
+                        $"</b> giá trị giải ngân <b>{entity.SoLieuGiaiNgan}</b> của dự án {entity.DuAn?.TenDuAn}</b> - " +
+                        $"<b>{entity.DuAn?.BuocHienTai?.TenBuoc}</b> đã được duyệt";
             var nguoiGuiId = (int)_userProvider.Info.UserID;
             var pheDuyet = await _PheDuyetRepository.GetQueryableSet()
                             .FirstOrDefaultAsync(e => e.EntityId == request.Id, cancellationToken);
