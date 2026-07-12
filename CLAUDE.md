@@ -67,81 +67,47 @@ var queryable = _buocAuth.FilterVisibleChildEntities(
 ```
 
 <!-- gitnexus:start -->
+# GitNexus — Code Intelligence
 
-## TepDinhKem Signed Flow (Ký số)
+This project is indexed by GitNexus as **Quan_Ly_Du_An** (20990 symbols, 42648 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-**Ký số** = file con của một file cha (`ParentId != null`). Những file này lưu với `GroupType = "KySo_<base>"` (ví dụ `"KySo_KhoKhanVuongMac"`). Đây là dynamic state, không phải entity riêng.
+> Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
-### Single Source of Truth
+## Always Do
 
-| Concern | Location |
-|---------|----------|
-| `KySo_` prefix constant | `QLDA.Application/Common/SignedHelper.cs` (`SignedHelper.Prefix`) |
-| GroupType enum | `QLDA.Domain/Enums/EGroupType.cs` |
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows. For regression review, compare against the default branch: `detect_changes({scope: "compare", base_ref: "main"})`.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `query({search_query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `context({name: "symbolName"})`.
+- For security review, `explain({target: "fileOrSymbol"})` lists taint findings (source→sink flows; needs `analyze --pdg`).
 
-### Rules
+## Never Do
 
-**RULE: Khi tạo TepDinhKem trong Application layer, PHẢI dùng `ResolveSignedGroupType()`**
+- NEVER edit a function, class, or method without first running `impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
+- NEVER commit changes without running `detect_changes()` to check affected scope.
 
-```csharp
-// ✅ CORRECT — stamp KySo_ khi ParentId != null
-GroupType = EGroupType.KhoKhanVuongMac.ToString().ResolveSignedGroupType(model.ParentId != null)
+## Resources
 
-// ❌ WRONG — không stamp prefix, file ký số sẽ không hiển thị trong query
-GroupType = EGroupType.KhoKhanVuongMac.ToString()
-```
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/Quan_Ly_Du_An/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/Quan_Ly_Du_An/clusters` | All functional areas |
+| `gitnexus://repo/Quan_Ly_Du_An/processes` | All execution flows |
+| `gitnexus://repo/Quan_Ly_Du_An/process/{name}` | Step-by-step execution trace |
 
-**RULE: Khi query TepDinhKem theo GroupType, PHẢI filter cả base + signed variant**
+## CLI
 
-```csharp
-// ✅ CORRECT — dùng WhereSignedScope hoặc tương đương
-.WhereSignedScope(entityId, nameof(EGroupType.KhoKhanVuongMac))
-// hoặc inline:
-.Where(t => t.GroupId == id && (t.GroupType == "KhoKhanVuongMac" || t.GroupType == "KySo_KhoKhanVuongMac"))
-
-// ❌ WRONG — thiếu KySo_ variant, file ký số bị mất
-.Where(t => t.GroupId == id && t.GroupType == "KhoKhanVuongMac")
-```
-
-**RULE: KHÔNG hardcode `"KySo_"` literal — dùng `SignedHelper.Prefix`**
-
-```csharp
-// ✅ CORRECT
-SignedHelper.Prefix + nameof(EGroupType.X)
-
-// ❌ WRONG — hardcoded prefix
-"KySo_" + nameof(EGroupType.X)
-```
-
-### SignedHelper Methods
-
-| Method | Use |
-|--------|-----|
-| `ResolveSignedGroupType(base, isChild)` | Stamp prefix khi write |
-| `ToBaseGroupType(groupType)` | Strip prefix — lấy base type |
-| `IsSignedVariant(groupType)` | Check có phải KySo_ variant |
-| `WithSignedVariant(base)` | Trả về `[base, KySo_base]` cho `.Contains()` |
-| `WhereSignedScope(q, groupId, base)` | Filter query theo GroupType + variant |
-
-### Exception Classes
-
-**DRI allowed**: Test files và data seeding được phép hardcode `"KySo_"` literals.
-
-### Anti-Patterns
-
-```csharp
-// ❌ Filter không cover signed variant
-.Where(t => t.GroupType == nameof(EGroupType.X))
-// ✅ Fix: cover cả variant
-.Where(t => t.GroupType == nameof(EGroupType.X) || t.GroupType == SignedHelper.Prefix + nameof(EGroupType.X))
-// hoặc dùng helper:
-// .WhereSignedScope(id, nameof(EGroupType.X))
-
-// ❌ Write-side không stamp prefix
-new TepDinhKem { GroupType = EGroupType.X.ToString(), ParentId = child.ParentId }
-// ✅ Fix: dùng ResolveSignedGroupType
-new TepDinhKem { GroupType = EGroupType.X.ToString().ResolveSignedGroupType(child.ParentId != null) }
-```
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
 # GitNexus — Code Intelligence
