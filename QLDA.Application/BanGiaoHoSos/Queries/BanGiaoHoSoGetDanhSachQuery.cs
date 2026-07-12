@@ -74,10 +74,14 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 TenNguoiTao = x.User != null ? x.User.HoTen : null,
                 CreatedAt = x.E.CreatedAt,
                 DanhSachTepHSBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .WhereSignedScope(x.E.Id.ToString(), nameof(EGroupType.BanGiaoHoSo))
+                    .Where(f => f.GroupId == x.E.Id.ToString()
+                        && (f.GroupType == nameof(EGroupType.BanGiaoHoSo)
+                            || f.GroupType == SignedHelper.Prefix + nameof(EGroupType.BanGiaoHoSo)))
                     .Select(f => f.ToDto()).ToList(),
                 DanhSachBienBanBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .WhereSignedScope(x.E.Id.ToString(), nameof(EGroupType.BienBanBanGiao))
+                    .Where(f => f.GroupId == x.E.Id.ToString()
+                        && (f.GroupType == nameof(EGroupType.BienBanBanGiao)
+                            || f.GroupType == SignedHelper.Prefix + nameof(EGroupType.BienBanBanGiao)))
                     .Select(f => f.ToDto()).ToList()
             });
 

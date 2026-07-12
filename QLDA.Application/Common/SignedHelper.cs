@@ -10,7 +10,7 @@ public static class SignedHelper {
             ? Prefix + baseGroupType
             : baseGroupType;
 
-    public static string ToBaseGroupType(this string groupType)
+    public static string? ToBaseGroupType(this string groupType)
         => groupType?.StartsWith(Prefix, StringComparison.Ordinal) == true
             ? groupType[Prefix.Length..]
             : groupType;

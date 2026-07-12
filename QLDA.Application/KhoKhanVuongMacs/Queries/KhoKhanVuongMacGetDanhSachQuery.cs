@@ -84,16 +84,14 @@ internal class
                 TinhTrangId = e.TinhTrangId,
                 MucDoKhoKhanId = e.MucDoKhoKhanId,
                 HuongXuLy = e.HuongXuLy,
-
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .WhereSignedScope(e.Id.ToString(), nameof(EGroupType.KhoKhanVuongMac))
+                    .Where(i => i.GroupId == e.Id.ToString() && (i.GroupType == nameof(EGroupType.KhoKhanVuongMac) || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.KhoKhanVuongMac)))
                     .Select(i => i.ToDto()).ToList(),
-
                 KetQua = new KetQuaXuLyDto() {
                     KetQuaXuLy = e.KetQuaXuLy,
                     NgayXuLy = e.NgayXuLy,
                     DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                        .WhereSignedScope(e.Id.ToString(), nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac))
+                        .Where(i => i.GroupId == e.Id.ToString() && (i.GroupType == nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac) || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac)))
                         .Select(i => i.ToDto()).ToList()
                 },
 
