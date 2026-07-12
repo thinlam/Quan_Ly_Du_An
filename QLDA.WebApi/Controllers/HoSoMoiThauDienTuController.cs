@@ -95,22 +95,23 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             EGroupType.HoSoMoiThauDienTu.ToString(),
             cancellationToken);
 
-       // if (entity.ToTrinh != null) {
+        if (entity.ToTrinh != null) {
             var toTrinhId = entity.ToTrinh.Id;
             await SyncTepDinhKemAsync(
                 toTrinhId.ToString(),
                 model.ToTrinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId) ?? [],
                 EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
                 cancellationToken);
-       // }
-       // if (entity.QuyetDinh != null) {
+        }
+        if (entity.QuyetDinh != null) {
             var quyetDinhId = entity.QuyetDinh.Id;
             await SyncTepDinhKemAsync(
                 quyetDinhId.ToString(),
                 model.QuyetDinh?.GetDanhSachTepDinhKemQuyetDinh(quyetDinhId) ?? [],
                 EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString(),
                 cancellationToken);
-        
+        }
+        if (model.HoSoMoiThauThamDinh == null) return;
         await SyncTepDinhKemAsync(
                entityId.ToString(),
                model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId),
