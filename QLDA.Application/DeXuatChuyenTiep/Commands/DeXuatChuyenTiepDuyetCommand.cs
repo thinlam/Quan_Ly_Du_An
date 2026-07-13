@@ -18,7 +18,6 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
     private readonly IRepository<Domain.Entities.DeXuatChuyenTiep, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<PheDuyet, Guid> _PheDuyetRepository;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -29,7 +28,6 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuyenTiep, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _PheDuyetRepository = serviceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -47,7 +45,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
-        var entity = await _repository.GetQueryableSet().Include(x => x.DuAn).ThenInclude(x=> x.BuocHienTai)
+        var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
@@ -61,7 +59,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
 
         // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet.Id;
-         
+
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
@@ -72,23 +70,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-        // thông báo tới người dùng
-        try {
-            var body = $"Tờ trình/phê duyệt <b>{PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()}" +
-                        $"</b> giá trị giải ngân <b>{entity.SoLieuGiaiNgan}</b> của dự án {entity.DuAn?.TenDuAn}</b> - " +
-                        $"<b>{entity.DuAn?.BuocHienTai?.TenBuoc}</b> đã được duyệt";
-            var nguoiGuiId = (int)_userProvider.Info.UserID;
-            var pheDuyet = await _PheDuyetRepository.GetQueryableSet()
-                            .FirstOrDefaultAsync(e => e.EntityId == request.Id, cancellationToken);
-            if(pheDuyet != null) {
-                var nguoiNhanId = pheDuyet?.NguoiTrinhId ?? 0;
-                // exec thongBaoInsertCommand here
 
-            }
-        } catch (Exception ex) {
-
-        }
-       
         await _historyRepository.AddAsync(history, cancellationToken);
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);

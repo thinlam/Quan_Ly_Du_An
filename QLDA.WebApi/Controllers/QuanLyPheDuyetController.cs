@@ -2,6 +2,7 @@ using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.QuanLyPheDuyet.Commands;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.QuanLyPheDuyet.Queries;
+using QLDA.Application.ThongBaos.Commands;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.PheDuyetDuToans;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
@@ -123,8 +124,13 @@ public class QuanLyPheDuyetController : AggregateRootController
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("{type}/{id}/duyet")]
-    public async Task<ResultApi> Duyet(string type, Guid id, [FromBody] TraLaiModel? model) {
-        var res = await Mediator.Send(new PheDuyetDispatchDuyetCommand(type, id, model?.NoiDung));
+    public async Task<ResultApi> Duyet(string type, Guid id, string? noiDung)
+    {
+        var res = await Mediator.Send(new PheDuyetDispatchDuyetCommand(type, id, noiDung));
+        if (res > 0)
+        {
+            await Mediator.Send(new ThongBaoInsertCommand(type, id, ThongBaoPheDuyetAction.Duyet));
+        }
         return ResultApi.Ok(res);
     }
 
@@ -138,6 +144,10 @@ public class QuanLyPheDuyetController : AggregateRootController
     public async Task<ResultApi> TraLai(string type, Guid id, [FromBody] TraLaiModel model)
     {
         var res = await Mediator.Send(new PheDuyetDispatchTraLaiCommand(type, id, model.NoiDung));
+        if (res > 0)
+        {
+            await Mediator.Send(new ThongBaoInsertCommand(type, id, ThongBaoPheDuyetAction.TraLai, model.NoiDung));
+        }
         return ResultApi.Ok(res);
     }
 
@@ -152,6 +162,10 @@ public class QuanLyPheDuyetController : AggregateRootController
     public async Task<ResultApi> TuChoi(string type, Guid id, [FromBody] TuChoiModel model)
     {
         var res = await Mediator.Send(new PheDuyetDispatchTuChoiCommand(type, id, model.NoiDung));
+        if (res > 0)
+        {
+            await Mediator.Send(new ThongBaoInsertCommand(type, id, ThongBaoPheDuyetAction.TuChoi, model.NoiDung));
+        }
         return ResultApi.Ok(res);
     }
 
