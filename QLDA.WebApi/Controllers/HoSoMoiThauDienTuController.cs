@@ -23,12 +23,16 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTu.ToString()]
         });
-        var filesToTrinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.ToTrinh != null ? entity.ToTrinh?.Id.ToString() : ""],
+        var filesToTrinh = new  List<TepDinhKem>();
+        if(entity.ToTrinh!= null)
+            filesToTrinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
+            GroupId = [entity.ToTrinh != null ? entity.ToTrinh.Id.ToString() : ""],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         });
-        var filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.QuyetDinh != null ? entity.QuyetDinh?.Id.ToString() : ""],
+        var filesQuyetDinh = new  List<TepDinhKem>();
+        if (entity.QuyetDinh != null)
+            filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
+            GroupId = [entity.QuyetDinh != null ? entity.QuyetDinh.Id.ToString() : ""],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()]
         });
         var fileCamKets = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
@@ -60,7 +64,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
         var entity = await Mediator.Send(new HoSoMoiThauDienTuInsertCommand(model.ToInsertDto()));
-        await SaveDanhSachTepDinhKemAsync(model, entity, cancellationToken);
+        await SaveDanhSachTepDinhKemAsync(model, entity,null, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
@@ -72,8 +76,11 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
     [HttpPut("cap-nhat")]
     public async Task<ResultApi> Update([FromBody] HoSoMoiThauDienTuModel model, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default) {
         using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        // remove file cũ đi trong trường hợp entity cũ có Thẩm định
+        var entityOld = await Mediator.Send(new HoSoMoiThauDienTuGetQuery { Id = model.GetId() });
         var entity = await Mediator.Send(new HoSoMoiThauDienTuUpdateCommand(model.ToUpdateModel()));
-        await SaveDanhSachTepDinhKemAsync(model, entity, cancellationToken);
+       
+        await SaveDanhSachTepDinhKemAsync(model, entity, entityOld, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -86,7 +93,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         await Mediator.Send(new HoSoMoiThauDienTuDeleteCommand(id));
         return ResultApi.Ok(1);
     }
-    private async Task SaveDanhSachTepDinhKemAsync(HoSoMoiThauDienTuModel model, HoSoMoiThauDienTu entity, CancellationToken cancellationToken) {
+    private async Task SaveDanhSachTepDinhKemAsync(HoSoMoiThauDienTuModel model, HoSoMoiThauDienTu entity, HoSoMoiThauDienTu? entityOld, CancellationToken cancellationToken) {
         var entityId = entity.Id;
 
         await SyncTepDinhKemAsync(
@@ -95,40 +102,41 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             EGroupType.HoSoMoiThauDienTu.ToString(),
             cancellationToken);
 
-        if (entity.ToTrinh != null) {
-            var toTrinhId = entity.ToTrinh.Id;
+        if (entity.ToTrinh != null && entityOld?.ToTrinh != null) {
+            var toTrinhId = entity.ToTrinh != null  ? entity.ToTrinh.Id : entityOld?.ToTrinh?.Id;
             await SyncTepDinhKemAsync(
-                toTrinhId.ToString(),
-                model.ToTrinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId) ?? [],
+                (toTrinhId??0).ToString(),
+                model.ToTrinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId??0) ?? [],
                 EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
                 cancellationToken);
         }
-        if (entity.QuyetDinh != null) {
-            var quyetDinhId = entity.QuyetDinh.Id;
+        if (entity.QuyetDinh != null && entityOld?.QuyetDinh != null) {
+            var quyetDinhId = entity.QuyetDinh != null ? entity.QuyetDinh.Id : entityOld?.QuyetDinh?.Id;
             await SyncTepDinhKemAsync(
-                quyetDinhId.ToString(),
-                model.QuyetDinh?.GetDanhSachTepDinhKemQuyetDinh(quyetDinhId) ?? [],
+                (quyetDinhId ?? 0).ToString(),
+                model.QuyetDinh?.GetDanhSachTepDinhKemQuyetDinh(quyetDinhId??0) ?? [],
                 EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString(),
                 cancellationToken);
         }
-        if (model.HoSoMoiThauThamDinh == null) return;
+       
         await SyncTepDinhKemAsync(
-               entityId.ToString(),
-               model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId),
-               EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
-               cancellationToken);
+                   entityId.ToString(),
+                    model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId) ?? [], 
+                   EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
+                   cancellationToken) ;
 
         await SyncTepDinhKemAsync(
             entityId.ToString(),
-            model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemCamKetThamDinh(entityId),
+            model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemCamKetThamDinh(entityId)??[],
             EGroupType.HoSoMoiThauDienTuCamKetTD.ToString(),
             cancellationToken);
 
         await SyncTepDinhKemAsync(
             entityId.ToString(),
-            model.HoSoMoiThauThamDinh.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId),
+            model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId) ?? [],
             EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
             cancellationToken);
+       
     }
 
     private Task SyncTepDinhKemAsync(

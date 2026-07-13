@@ -20,6 +20,8 @@ public class PheDuyetListItemDto {
     public string? NguoiKy { get; set; }
     public long? NguoiDuyetId { get; set; }
     public long? NguoiTrinhId { get; set; }
+    public string? NguoiDuyet { get; set; }
+    public string? NguoiTrinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public int? TrangThaiId { get; set; }

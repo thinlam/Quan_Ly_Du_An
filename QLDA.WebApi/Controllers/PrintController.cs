@@ -29,6 +29,9 @@ using QLDA.Application.KySos.DTOs;
 using QLDA.Application.KySos.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
+using QLDA.Application.QuanLyPheDuyet;
+using QLDA.Application.QuanLyPheDuyet.DTOs;
+using QLDA.Application.QuanLyPheDuyet.Queries;
 using QLDA.Application.QuyetDinhLapBanQLDAs.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
@@ -1159,6 +1162,52 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             TemplatePath = templatePath,
             Items = data,
             HiddenColumns = searchDto.HiddenColumns ?? [],
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
+    #region DanhSachQuanLyPheDuyet
+
+    /// <summary>
+    /// DanhSachQuanLyPheDuyet.xlsx — Export danh sách phê duyệt (theo filter type/trangThai, không phân trang)
+    /// </summary>
+    [HttpGet("api/print/danh-sach-quan-ly-phe-duyet")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachQuanLyPheDuyet(
+        [FromQuery] string? type,
+        [FromQuery] string? trangThai,
+        CancellationToken cancellationToken = default) {
+        var fileNameTemplate = "DanhSachQuanLyPheDuyet.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        // Cùng nguồn với GET /api/phe-duyet/danh-sach — PageSize=0 = lấy hết
+        var list = await Mediator.Send(new PheDuyetGetDanhSachQuery {
+            Type = type,
+            TrangThai = trangThai,
+            PageIndex = 1,
+            PageSize = 0,
+            IncludeAttachments = false,
+        }, cancellationToken);
+
+        ManagedException.ThrowIf(list.Data.Count == 0, "Không có dữ liệu để xuất");
+
+        var data = PheDuyetExportMappings.ToExportDtos(list.Data);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<PheDuyetExportDto> {
+            TemplatePath = templatePath,
+            Items = data,
             AutoFitColumnsAndRows = false,
         });
 
