@@ -30,18 +30,13 @@ internal static class PheDuyetQueryableExtensions
         var duAnQuery = duAnRepo.GetQueryableSet().AsNoTracking();
         var duAnBuocQuery = duAnBuocRepo.GetQueryableSet().AsNoTracking();
 
-        var query = from e in pheDuyetQuery
-                    join da in duAnQuery on e.DuAnId equals da.Id
-                    join b in duAnBuocQuery on e.BuocId equals b.Id into buocGroup
-                    from b in buocGroup.DefaultIfEmpty()
-                    select new { e, da, b };
-
-        if (!authContext.HasKhtcBypass) {
-            query = query.Where(x => x.da.LanhDaoPhuTrachId == userId);
-        }
-
         // Không load TepDinhKem trong EF Select — subquery có thể làm lệch số dòng giữa list và export.
-        var items = query.Select(x => new PheDuyetListItemDto {
+        var items = pheDuyetQuery
+            .Join(duAnQuery, e => e.DuAnId, da => da.Id, (e, da) => new { e, da })
+            .GroupJoin(duAnBuocQuery, x => x.e.BuocId, b => b.Id, (x, buocGroup) => new { x.e, x.da, buocGroup })
+            .SelectMany(x => x.buocGroup.DefaultIfEmpty(), (x, b) => new { x.e, x.da, b })
+            .WhereIf(!authContext.HasKhtcBypass, x => x.da.LanhDaoPhuTrachId == userId)
+            .Select(x => new PheDuyetListItemDto {
             Id = x.e.Id,
             Type = filter.Type,
             EntityId = x.e.EntityId.ToString(),

@@ -14,12 +14,17 @@ public class PheDuyetExportTests(WebApiFixture fixture)
     private HttpClient AuthedClient => fixture.CreateAuthenticatedClient();
 
     [Fact]
-    public async Task Handler_GetDanhSachExport_Translates()
+    public async Task Handler_GetDanhSach_Unpaged_Translates()
     {
         using var scope = fixture.Services.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        var ex = await Record.ExceptionAsync(() => mediator.Send(new PheDuyetGetDanhSachExportQuery()));
+        var ex = await Record.ExceptionAsync(() => mediator.Send(new PheDuyetGetDanhSachQuery
+        {
+            PageIndex = 1,
+            PageSize = 0,
+            IncludeAttachments = false,
+        }));
 
         // Direct MediatR call may lack auth context — only fail on unexpected errors
         if (ex != null)
@@ -71,7 +76,7 @@ public class PheDuyetExportTests(WebApiFixture fixture)
     }
 
     [Fact]
-    public async Task ExportPheDuyet_CountMatchesList_WhenSameFilter()
+    public async Task ExportPheDuyet_UnpagedCountMatchesListTotal_WhenSameFilter()
     {
         using var scope = fixture.Services.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -85,9 +90,12 @@ public class PheDuyetExportTests(WebApiFixture fixture)
             PageSize = 1000,
         }));
 
-        var exportEx = await Record.ExceptionAsync(() => mediator.Send(new PheDuyetGetDanhSachExportQuery
+        var exportEx = await Record.ExceptionAsync(() => mediator.Send(new PheDuyetGetDanhSachQuery
         {
             TrangThai = trangThai,
+            PageIndex = 1,
+            PageSize = 0,
+            IncludeAttachments = false,
         }));
 
         if (listEx != null || exportEx != null)
@@ -102,11 +110,14 @@ public class PheDuyetExportTests(WebApiFixture fixture)
             PageIndex = 1,
             PageSize = 1000,
         });
-        var export = await mediator.Send(new PheDuyetGetDanhSachExportQuery
+        var export = await mediator.Send(new PheDuyetGetDanhSachQuery
         {
             TrangThai = trangThai,
+            PageIndex = 1,
+            PageSize = 0,
+            IncludeAttachments = false,
         });
 
-        export.Count.Should().Be(list.TotalRows, "export phải khớp totalRows của danh sách với cùng filter");
+        export.Data.Count.Should().Be(list.TotalRows, "export (PageSize=0) phải khớp totalRows của danh sách với cùng filter");
     }
 }

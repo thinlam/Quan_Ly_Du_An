@@ -7,6 +7,7 @@ using QLDA.Application.Providers;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using UserMaster = BuildingBlocks.Domain.Entities.UserMaster;
 
 namespace QLDA.Application.QuanLyPheDuyet.Queries;
 
@@ -21,6 +22,9 @@ public record PheDuyetGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobal
 
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
+
+    /// <summary>False khi export Excel — không load tệp đính kèm.</summary>
+    public bool IncludeAttachments { get; set; } = true;
 }
 
 internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanhSachQuery, PaginatedList<PheDuyetListItemDto>>
@@ -42,6 +46,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private readonly IAppSettingsProvider _settings;
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepo;
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiTrangThaiToTrinh;
+    private readonly IRepository<UserMaster, long> _userMasterRepo;
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
@@ -60,6 +65,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         _tepDinhKemRepo = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _DmTrangThaiPheDuyetRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _duongDiTrangThaiToTrinh = serviceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
+        _userMasterRepo = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
@@ -113,12 +119,14 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             _PheDuyetRepo,
             _duAnRepo,
             _duAnBuocRepo,
-            _tepDinhKemRepo,
+            request.IncludeAttachments ? _tepDinhKemRepo : null,
             _authContext,
             userId,
-            includeAttachments: true);
+            includeAttachments: request.IncludeAttachments);
 
-        var pagiList =  new PaginatedList<PheDuyetListItemDto>(finalQuery.Skip(request.Skip()).Take(request.Take()).ToList(), finalQuery.Count, request.Skip(), request.Take());
+        // PageSize=0 / Take()=0 → lấy hết (dùng cho export Excel)
+        var pagiList = PaginatedList<PheDuyetListItemDto>.Create(finalQuery, request.Skip(), request.Take());
+        await ResolveUserNamesAsync(pagiList.Data, cancellationToken);
         foreach (var item in pagiList.Data) {
             item.ThaoTacTiepTheo =  !string.IsNullOrEmpty(item.MaTrangThai)
                                     && duongDiLookup.TryGetValue((
@@ -161,6 +169,35 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         // return new PaginatedList<PheDuyetListItemDto>(sorted.Skip(request.Skip()).Take(request.Take()).ToList(), sorted.Count, request.Skip(), request.Take());
         #endregion 
     }
+
+    private async Task ResolveUserNamesAsync(List<PheDuyetListItemDto> rows, CancellationToken cancellationToken)
+    {
+        var portalIds = rows
+            .SelectMany(r => new long?[] {
+                r.NguoiTrinhId,
+                r.NguoiDuyetId is > 0 ? r.NguoiDuyetId : null,
+            })
+            .Where(id => id is > 0)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        if (portalIds.Count == 0) {
+            return;
+        }
+
+        var userMap = await _userMasterRepo.GetQueryableSet().AsNoTracking()
+            .Where(u => u.UserPortalId != null && portalIds.Contains(u.UserPortalId.Value))
+            .ToDictionaryAsync(u => u.UserPortalId!.Value, u => u.HoTen ?? string.Empty, cancellationToken);
+
+        foreach (var row in rows) {
+            row.NguoiTrinh = ResolveUserName(userMap, row.NguoiTrinhId);
+            row.NguoiDuyet = ResolveUserName(userMap, row.NguoiDuyetId is > 0 ? row.NguoiDuyetId : null);
+        }
+    }
+
+    private static string? ResolveUserName(IReadOnlyDictionary<long, string> userMap, long? portalId) =>
+        portalId is > 0 && userMap.TryGetValue(portalId.Value, out var name) ? name : null;
 
     private async Task<List<PheDuyetListItemDto>> GetDuToanItems(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken)
     {

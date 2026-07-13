@@ -29,6 +29,9 @@ using QLDA.Application.KySos.DTOs;
 using QLDA.Application.KySos.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
+using QLDA.Application.QuanLyPheDuyet;
+using QLDA.Application.QuanLyPheDuyet.DTOs;
+using QLDA.Application.QuanLyPheDuyet.Queries;
 using QLDA.Application.QuyetDinhLapBanQLDAs.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
@@ -1189,10 +1192,18 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var data = await Mediator.Send(new PheDuyetGetDanhSachExportQuery {
+        // Cùng nguồn với GET /api/phe-duyet/danh-sach — PageSize=0 = lấy hết
+        var list = await Mediator.Send(new PheDuyetGetDanhSachQuery {
             Type = type,
             TrangThai = trangThai,
+            PageIndex = 1,
+            PageSize = 0,
+            IncludeAttachments = false,
         }, cancellationToken);
+
+        ManagedException.ThrowIf(list.Data.Count == 0, "Không có dữ liệu để xuất");
+
+        var data = PheDuyetExportMappings.ToExportDtos(list.Data);
 
         var exportResult = _excelExporter.Export(new AsposeInstruction<PheDuyetExportDto> {
             TemplatePath = templatePath,
