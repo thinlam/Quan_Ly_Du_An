@@ -1,8 +1,10 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
+using QLDA.Application.ThongBaos.Commands;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
@@ -24,6 +26,8 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
+    private readonly IMediator _mediator;
+    private readonly ILogger<DeXuatChuyenTiepDuyetCommandHandler> _logger;
 
     public DeXuatChuyenTiepDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuyenTiep, Guid>>();
@@ -34,6 +38,8 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
+        _mediator = serviceProvider.GetRequiredService<IMediator>();
+        _logger = serviceProvider.GetRequiredService<ILogger<DeXuatChuyenTiepDuyetCommandHandler>>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -47,7 +53,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
 
-        var entity = await _repository.GetQueryableSet().Include(x => x.DuAn).ThenInclude(x=> x.BuocHienTai)
+        var entity = await _repository.GetQueryableSet().Include(x => x.DuAn).ThenInclude(x => x.BuocHienTai)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
@@ -61,7 +67,7 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
 
         // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet.Id;
-         
+
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
@@ -72,25 +78,42 @@ internal class DeXuatChuyenTiepDuyetCommandHandler : IRequestHandler<DeXuatChuye
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-        // thông báo tới người dùng
-        try {
-            var body = $"Tờ trình/phê duyệt <b>{PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()}" +
-                        $"</b> giá trị giải ngân <b>{entity.SoLieuGiaiNgan}</b> của dự án {entity.DuAn?.TenDuAn}</b> - " +
-                        $"<b>{entity.DuAn?.BuocHienTai?.TenBuoc}</b> đã được duyệt";
-            var nguoiGuiId = (int)_userProvider.Info.UserID;
-            var pheDuyet = await _PheDuyetRepository.GetQueryableSet()
-                            .FirstOrDefaultAsync(e => e.EntityId == request.Id, cancellationToken);
-            if(pheDuyet != null) {
-                var nguoiNhanId = pheDuyet?.NguoiTrinhId ?? 0;
-                // exec thongBaoInsertCommand here
 
-            }
-        } catch (Exception ex) {
-
-        }
-       
         await _historyRepository.AddAsync(history, cancellationToken);
 
-        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var result = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (result <= 0) {
+            return result;
+        }
+
+        // thông báo tới người dùng (sau khi save thành công)
+        try {
+            var body = $"Tờ trình/phê duyệt <b>{PheDuyetEntityNames.DeXuatChuTruongChuyenTiep.GetDescriptionFromName()}" +
+                        $"</b> giá trị giải ngân <b>{entity.SoLieuGiaiNgan}</b> của dự án <b>{entity.DuAn?.TenDuAn}</b> - " +
+                        $"<b>{entity.DuAn?.BuocHienTai?.TenBuoc}</b> đã được duyệt";
+            var nguoiGuiId = _userProvider.Info.UserID;
+            var pheDuyet = await _PheDuyetRepository.GetQueryableSet()
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(
+                                e => e.EntityId == request.Id
+                                     && e.EntityName == PheDuyetEntityNames.DeXuatChuTruongChuyenTiep,
+                                cancellationToken);
+            if (pheDuyet != null) {
+                var nguoiNhanId = pheDuyet.NguoiTrinhId ?? 0;
+                if (nguoiNhanId > 0 && nguoiGuiId > 0) {
+                    await _mediator.Send(
+                        new ThongBaoInsertCommand(nguoiGuiId, nguoiNhanId, body),
+                        cancellationToken);
+                }
+            }
+        } catch (Exception ex) {
+            _logger.LogError(
+                ex,
+                "Không thể gửi thông báo sau khi phê duyệt đề xuất chuyển tiếp {EntityId}",
+                request.Id);
+        }
+
+        return result;
     }
 }

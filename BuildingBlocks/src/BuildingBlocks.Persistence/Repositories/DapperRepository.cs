@@ -41,6 +41,11 @@ public class DapperRepository(IDbConnectionFactory connectionFactory) : IDapperR
         return await connection.QueryAsync<T>(sql, param);
     }
 
+    public async Task<int> ExecuteStoredProcAsync(string procName, object? param = null, string? connectionName = "DefaultConnection") {
+        using var connection = connectionFactory.CreateConnection(connectionName ?? "DefaultConnection");
+        return await connection.ExecuteAsync(procName, param, commandType: CommandType.StoredProcedure);
+    }
+
     /// <summary>
     /// Extract parameter name từ SQL error message
     /// VD: "@ParamName is not a parameter for procedure..." -> return "@ParamName"
