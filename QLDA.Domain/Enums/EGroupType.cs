@@ -73,6 +73,23 @@ public enum EGroupType {
     ChuTruongLapKeHoach,
     ThoaThuanGiaoViec,
     KeHoachLuaChonNhaThauRutGon,
+    DuToanDauTu,
+    ThanhLyHopDong,
+    ThanhLyHopDong_BienBanNghiemThu,
+    ThanhLyHopDong_Khac,
+    BaoCaoKetQuaKhaoSat,
+    QuyetDinhDieuChinh,
+    ToTrinhPheDuyet,
+    PheDuyetKetQuaGoiThauDuAn,
+    KeHoachTrienKhaiHangMuc,
+    ToTrinhQuyetDinh,
+    KeHoachTrienKhaiChiTietDuAn,
+    QuyetDinhKeHoachThue,
+    QuyetDinhKeHoachThueThamDinh,
+    QuyetDinhDuyetDuToan_Khac,
+    NoiDungThamDinhNhaThau,
+    QuyetDinhDuyetDuToan,
+    ToTrinhCoThamDinh,
 
 
 }

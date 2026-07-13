@@ -1,5 +1,4 @@
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.ThanhLyHopDongs.DTOs;
@@ -41,9 +40,9 @@ public static class ThanhLyHopDongsMappings {
             TrangThaiId = entity.TrangThaiId,
             TrangThaiTen = entity.TrangThai?.Ten,
             NghiemThuIds = entity.DanhSachNghiemThus?.Select(j => j.RightId).ToList(),
-            BienBanNghiemThus = [.. files?.Where(o => o.GroupType == GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu).ToDtos() ?? []],
-            ThanhLyHopDongs = [.. files?.Where(o => o.GroupType == GroupTypeConstants.ThanhLyHopDong).ToDtos() ?? []],
-            Khacs = [.. files?.Where(o => o.GroupType == GroupTypeConstants.ThanhLyHopDong_Khac).ToDtos() ?? []]
+            BienBanNghiemThus = [.. files?.Where(o => o.GroupType == nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu)).ToDtos() ?? []],
+            ThanhLyHopDongs = [.. files?.Where(o => o.GroupType == nameof(EGroupType.ThanhLyHopDong)).ToDtos() ?? []],
+            Khacs = [.. files?.Where(o => o.GroupType == nameof(EGroupType.ThanhLyHopDong_Khac)).ToDtos() ?? []]
         };
     }
 

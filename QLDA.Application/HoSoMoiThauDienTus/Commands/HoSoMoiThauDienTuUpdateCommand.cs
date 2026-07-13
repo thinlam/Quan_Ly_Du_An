@@ -45,15 +45,20 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaDuyet && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
         var trangThaiDaTrinh = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaTrinh && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
+        var model = request.Model;
 
-        
         var currentStatus = entity.TrangThaiId;
         var allowEdit = currentStatus == trangThaiDuThao?.Id || currentStatus == trangThaiTra?.Id;
 
         if (allowEdit)
-            entity.Update(request.Model);
+            entity.Update(model);
         else
-            entity.TrangThaiDangTai = request.Model.TrangThaiDangTai;
+            entity.TrangThaiDangTai = model.TrangThaiDangTai;
+        //region thông tin thẩm định
+        entity.NhaThauId = (model.ThamDinh ?? false) ? model.HoSoMoiThauThamDinh?.NhaThauId : null;
+        entity.ThamDinh = model.ThamDinh;
+         
+
         if (request.Model.ToTrinh != null)
         {
             ToTrinhQuyetDinhDto dto = request.Model.ToTrinh;

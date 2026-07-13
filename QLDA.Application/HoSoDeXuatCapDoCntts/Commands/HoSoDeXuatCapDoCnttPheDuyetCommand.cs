@@ -113,7 +113,8 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
-                NoiDung = request.noiDung,
+                NoiDung = !string.IsNullOrEmpty(request.noiDung) ? request.noiDung
+                        : $"{PheDuyetEntityNames.HoSoDeXuatCapDoCntt.GetDescriptionFromName()} đã {trangThaiTiepTheoItems?.Ten}",
                 NguoiXuLyId = _userProvider.Info.UserID,
                 TrangThaiId = trangThaiTiepTheoItems?.Id,
                 NgayXuLy = DateTimeOffset.UtcNow

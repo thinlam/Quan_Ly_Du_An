@@ -91,6 +91,10 @@ public class AsposeHelper : IAsposeHelper
         {
             cell.PutValue(dt);
         }
+        else if (val is DateOnly dateOnly)
+        {
+            cell.PutValue(dateOnly.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
+        }
         else if (val is bool b)
         {
             cell.PutValue(b);

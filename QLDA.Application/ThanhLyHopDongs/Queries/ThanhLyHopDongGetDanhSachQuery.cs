@@ -1,9 +1,10 @@
 using BuildingBlocks.Application.ExtensionMethods;
 using QLDA.Application.Authorization;
+using QLDA.Application.Common;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
-using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.ThanhLyHopDongs.Queries;
 
@@ -55,13 +56,19 @@ internal class ThanhLyHopDongGetDanhSachQueryHandler : IRequestHandler<ThanhLyHo
                 TrangThaiTen = x.TrangThai != null ? x.TrangThai.Ten : null,
                 NghiemThuIds = x.DanhSachNghiemThus!.Select(j => j.RightId).ToList(),
                 BienBanNghiemThus = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu)
+                    .Where(i => i.GroupId == x.Id.ToString()
+                        && (i.GroupType == nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu)
+                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu)))
                     .Select(i => i.ToDto()).ToList(),
                 ThanhLyHopDongs = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong)
+                    .Where(i => i.GroupId == x.Id.ToString()
+                        && (i.GroupType == nameof(EGroupType.ThanhLyHopDong)
+                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThanhLyHopDong)))
                     .Select(i => i.ToDto()).ToList(),
                 Khacs = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString() && i.GroupType == GroupTypeConstants.ThanhLyHopDong_Khac)
+                    .Where(i => i.GroupId == x.Id.ToString()
+                        && (i.GroupType == nameof(EGroupType.ThanhLyHopDong_Khac)
+                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThanhLyHopDong_Khac)))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

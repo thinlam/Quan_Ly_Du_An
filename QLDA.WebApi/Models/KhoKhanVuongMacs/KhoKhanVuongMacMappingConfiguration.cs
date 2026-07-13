@@ -1,3 +1,4 @@
+using QLDA.Application.Common;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.KhoKhanVuongMacs;
@@ -18,11 +19,11 @@ public static class KhoKhanVuongMacMappingConfiguration {
                 KetQuaXuLy = entity.KetQuaXuLy,
                 NgayXuLy = entity.NgayXuLy,
                 DanhSachTepDinhKem = danhSachTepDinhKem?
-                    .Where(o => o.GroupType is nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac))
+                    .Where(o => SignedHelper.Prefix + nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac) == o.GroupType || o.GroupType == nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac))
                     .Select(o => o.ToModel()).ToList()
             },
             DanhSachTepDinhKem = danhSachTepDinhKem?
-                .Where(o => o.GroupType is nameof(EGroupType.KhoKhanVuongMac))
+                .Where(o => SignedHelper.Prefix + nameof(EGroupType.KhoKhanVuongMac) == o.GroupType || o.GroupType == nameof(EGroupType.KhoKhanVuongMac))
                 .Select(o => o.ToModel()).ToList()
         };
 

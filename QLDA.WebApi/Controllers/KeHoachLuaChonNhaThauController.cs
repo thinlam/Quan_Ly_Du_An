@@ -76,7 +76,7 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
         await Mediator.Send(new DuAnUpdatePhaseCommand(insertDto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauInsertCommand(insertDto), cancellationToken);
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KeHoachLuaChonNhaThau) ?? []];
+        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -107,7 +107,7 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
 
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.KeHoachLuaChonNhaThau) ?? []];
+        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

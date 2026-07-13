@@ -42,7 +42,7 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
     public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiNamModel model) {
         var savedEntity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamInsertCommand(model.ToInsertDto()));
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, GroupTypeConstants.NhuCauKinhPhi) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = savedEntity.Id.ToString(),
@@ -65,7 +65,7 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
 
         var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamUpdateCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.NhuCauKinhPhi) ?? []];
+        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
