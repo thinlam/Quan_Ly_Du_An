@@ -120,7 +120,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                 entity.QuyetDinh = null;
         }
 
-    await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
+        await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return entity;

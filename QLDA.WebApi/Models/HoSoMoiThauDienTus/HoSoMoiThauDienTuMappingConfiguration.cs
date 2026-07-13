@@ -237,12 +237,11 @@ public static class HoSoMoiThauDienTuMappingConfiguration
         ThoiGianThucHien = model.ThoiGianThucHien,
         TrangThaiDangTai = model.TrangThaiDangTai,
         TrangThaiId = model.TrangThaiId,
-        HoSoMoiThauThamDinh = model.ThamDinh == true ? new HoSoMoiThauThamDinhDto()
+        HoSoMoiThauThamDinh = model.ThamDinh == true && model.HoSoMoiThauThamDinh != null ? new HoSoMoiThauThamDinhDto()
         {
             NhaThauId = model.HoSoMoiThauThamDinh.GetId(),
         
         } : null,
-
         ToTrinh = model.ToTrinh != null ?   new ToTrinhQuyetDinhDto()
         {
             So = model.ToTrinh.So,
