@@ -88,6 +88,8 @@ class Program
             g => g.GenerateTemplate(CreateDescriptor<DanhSachFileBanGiaoHoSoExportDescriptor>(basePath))),
         new("danh-sach-noi-dung-da-ky",
             g => g.GenerateTemplate(CreateDescriptor<DanhSachNoiDungDaKyExportDescriptor>(basePath))),
+        new("danh-sach-quan-ly-phe-duyet",
+            g => g.GenerateTemplate(CreateDescriptor<DanhSachQuanLyPheDuyetExportDescriptor>(basePath))),
         new("import-phan-khai-kinh-phi",
             g => g.GenerateImportTemplate(CreateImportDescriptor<PhanKhaiKinhPhiImportDescriptor>(basePath))),
         new("import-ke-hoach-trien-khai-hang-muc",
