@@ -16,7 +16,7 @@ public record QuyetDinhDieuChinhDeleteCommand(Guid Id) : IRequest<int>;
 internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDinhDieuChinhDeleteCommand, int> {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -24,7 +24,7 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
     public QuyetDinhDieuChinhDeleteCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repository.UnitOfWork;
@@ -41,7 +41,7 @@ internal class QuyetDinhDieuChinhDeleteCommandHandler : IRequestHandler<QuyetDin
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định điều chỉnh");
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate: only allow delete when status is DT (Dự thảo)
         if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id) {

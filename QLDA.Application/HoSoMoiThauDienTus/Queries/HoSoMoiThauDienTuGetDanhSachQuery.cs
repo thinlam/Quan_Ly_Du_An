@@ -3,6 +3,7 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Queries;
 
@@ -29,6 +30,8 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
             .Include(e => e.HinhThucLuaChonNhaThau)
             .Include(e => e.GoiThau)
             .Include(e => e.TrangThaiPheDuyet)
+            .Include(e => e.ToTrinh)
+            .Include(e => e.QuyetDinh)
             .WhereGlobalFilter(
                 request,  // Truyền request (implement IMayHaveGlobalFilter)
                 e => e.ThoiGianThucHien
@@ -65,10 +68,24 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
                  TrangThaiDangTai = e.TrangThaiDangTai,
                  TrangThaiId = e.TrangThaiId,
                  TenTrangThai = e.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : e.TrangThaiPheDuyet.Ten,
-                
+
                  DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
-                    .Select(i => i.ToDto()).ToList()
+                .Where(i =>
+                    !i.IsDeleted &&
+                    (
+                        i.GroupId == e.Id.ToString()
+                        || (
+                            e.ToTrinh != null
+                            && i.GroupId == e.ToTrinh.Id.ToString()
+                            && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString()
+                        )
+                        || (
+                            e.QuyetDinh != null
+                            && i.GroupId == e.QuyetDinh.Id.ToString()
+                            && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()
+                        )
+                    )
+                ).Select(i => i.ToDto()).ToList()
              })
             //.Select(e => e.ToDto(e.))
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);

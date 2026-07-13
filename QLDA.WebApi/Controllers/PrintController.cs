@@ -1,5 +1,11 @@
+using System.Data;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using BuildingBlocks.Application.Common.Converters;
 using BuildingBlocks.CrossCutting.Offices;
 using BuildingBlocks.Infrastructure.Offices;
+using EntityFrameworkCore.SqlServer.SimpleBulks.Extensions;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
@@ -23,14 +29,19 @@ using QLDA.Application.KySos.DTOs;
 using QLDA.Application.KySos.Queries;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
+using QLDA.Application.QuanLyPheDuyet;
+using QLDA.Application.QuanLyPheDuyet.DTOs;
+using QLDA.Application.QuanLyPheDuyet.Queries;
+using QLDA.Application.QuyetDinhLapBanQLDAs.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
 using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
 using QLDA.Application.TongHopVanBanQuyetDinhs.Queries;
 using QLDA.Application.ToTrinhPheDuyets.Queries;
-using QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
+using QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Interfaces;
 using QLDA.Infrastructure.Offices;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
@@ -44,9 +55,6 @@ using QLDA.WebApi.Models.PhuLucHopDongs;
 using QLDA.WebApi.Models.TongHopDeXuatChuTruongs;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 using Serilog;
-using System.Globalization;
-using QLDA.Domain.Interfaces;
-using System.Text.RegularExpressions;
 
 
 namespace QLDA.WebApi.Controllers;
@@ -1164,6 +1172,52 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
+    #region DanhSachQuanLyPheDuyet
+
+    /// <summary>
+    /// DanhSachQuanLyPheDuyet.xlsx — Export danh sách phê duyệt (theo filter type/trangThai, không phân trang)
+    /// </summary>
+    [HttpGet("api/print/danh-sach-quan-ly-phe-duyet")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InDanhSachQuanLyPheDuyet(
+        [FromQuery] string? type,
+        [FromQuery] string? trangThai,
+        CancellationToken cancellationToken = default) {
+        var fileNameTemplate = "DanhSachQuanLyPheDuyet.xlsx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            fileNameTemplate
+        );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        // Cùng nguồn với GET /api/phe-duyet/danh-sach — PageSize=0 = lấy hết
+        var list = await Mediator.Send(new PheDuyetGetDanhSachQuery {
+            Type = type,
+            TrangThai = trangThai,
+            PageIndex = 1,
+            PageSize = 0,
+            IncludeAttachments = false,
+        }, cancellationToken);
+
+        ManagedException.ThrowIf(list.Data.Count == 0, "Không có dữ liệu để xuất");
+
+        var data = PheDuyetExportMappings.ToExportDtos(list.Data);
+
+        var exportResult = _excelExporter.Export(new AsposeInstruction<PheDuyetExportDto> {
+            TemplatePath = templatePath,
+            Items = data,
+            AutoFitColumnsAndRows = false,
+        });
+
+        return new FileContentResult(exportResult.FileBytes, exportResult.ContentType) {
+            FileDownloadName = GetDownloadFileName(fileNameTemplate)
+        };
+    }
+
+    #endregion
+
     #region FileBanGiaoHoSo
 
     /// <summary>
@@ -1255,6 +1309,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     }
 
     #endregion
+
     #region Xuất tờ trình kế hoạch lcnt
     [HttpGet("api/print/phieu-trinh-phe-duyet")]
     [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
@@ -1394,9 +1449,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     #endregion
 
 
-
-
-
     #region  Xuất tờ trình phân khai kinh phí
     [HttpGet("api/print/phieu-trinh-phan-khai-kinh-phi")]
     [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
@@ -1504,7 +1556,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
     #endregion
 
-
     #region Xuat To Trinh Ke Hoach Lua Chon Nha Thau  iss 9471
 
     [HttpGet("api/print/trien-khai-ke-hoach-lua-chon-nha-thau")]
@@ -1555,6 +1606,58 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     }
 
     #endregion
+
+    #region Xuất tờ trình thành lập ban qlda
+    [HttpGet("api/print/to-trinh-lap-ban-qlda")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InToTrinhThanhLapBanQLDA(
+       [FromQuery] Guid id, [FromQuery] bool isMauDuThao ,
+       CancellationToken cancellationToken = default) {
+        var fileNameTemplate = isMauDuThao? "MauDuTaoThanhLapBanQLDA.docx" : "ToTrinhThanhLapBanQLDA.docx";
+        var templatePath = Path.Combine(
+             AppContext.BaseDirectory,
+             "PrintTemplates",
+             "Word",
+             fileNameTemplate
+         );
+
+        ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
+
+        var rows = await Mediator.Send(new QuyetDinhLapBanQldaGetQuery {
+            Id = id,
+            IncludeThanhVien= true,
+        }, cancellationToken);
+
+        var doc = new Aspose.Words.Document(templatePath);
+        doc.MailMerge.UseNonMergeFields = true;
+        //   DateTime? ngayToTrinh = rows.NgayTrinh.ToOffset(TimeSpan.FromHours(7)).Date;
+        DateTime ngayHienTai = DateTime.Now;
+        var replacements = new Dictionary<string, string> {
+            { "So", rows.So},
+            { "TrichYeu", rows?.TrichYeu??"" },
+            { "SoDuThao", rows?.SoDuThao??rows.So},
+            { "TrichYeuDuThao", rows?.TrichYeuDuThao??rows?.TrichYeu},
+         //   { "ngayToTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
+            { "NgayThangNam", $"Ngày {ngayHienTai.ToString("dd")} tháng {ngayHienTai.ToString("MM") } năm {ngayHienTai.Year}"},
+            { "TenLanhDaoPhuTrach", ""}// rows.DuAn?.LanhDaoPhuTrachId
+
+        };
+       
+        DataTable dt = rows.ThanhViens?.ToDataTable()??
+               DataTableConvertExtensions.CreateDataTable<ThanhVienBanQLDA>("ThanhVien");
+        dt.TableName = "ThanhVien";
+        DataSet ds = new DataSet();
+        ds.Tables.Add(dt);
+        var bytes = _wordHelper.ExportFromTemplate(templatePath, ds, replacements);
+
+        return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            GetDownloadFileName(fileNameTemplate));
+
+
+    }
+
+    #endregion
+
 }
 
 /// <summary>

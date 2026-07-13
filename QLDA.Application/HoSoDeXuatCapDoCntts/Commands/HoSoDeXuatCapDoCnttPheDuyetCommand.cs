@@ -90,6 +90,7 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
             // get các trạng thái được phép xử lý
             var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
                        .Where(x => x.Used && !(x.IsDeleted ?? false)
+                       && x.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt
                        && x.MaTrangThaiHienTai == entity.TrangThai.Ma
                        && x.MaTrangThaiTiepTheo == request.TrangThaiTiepTheo
                        && (x.RoleLevel == 0
@@ -112,7 +113,8 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
-                NoiDung = request.noiDung,
+                NoiDung = !string.IsNullOrEmpty(request.noiDung) ? request.noiDung
+                        : $"{PheDuyetEntityNames.HoSoDeXuatCapDoCntt.GetDescriptionFromName()} đã {trangThaiTiepTheoItems?.Ten}",
                 NguoiXuLyId = _userProvider.Info.UserID,
                 TrangThaiId = trangThaiTiepTheoItems?.Id,
                 NgayXuLy = DateTimeOffset.UtcNow

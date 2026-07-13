@@ -15,6 +15,7 @@ internal class DuToanDauTuInsertCommandHandler : IRequestHandler<DuToanDauTuInse
     private readonly IRepository<DuToanDauTu, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -23,12 +24,14 @@ internal class DuToanDauTuInsertCommandHandler : IRequestHandler<DuToanDauTuInse
         _repo = serviceProvider.GetRequiredService<IRepository<DuToanDauTu, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<DuToanDauTu> Handle(DuToanDauTuInsertCommand request, CancellationToken cancellationToken = default)
     {
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 
         // Auto-assign Dự thảo status

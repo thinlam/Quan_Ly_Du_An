@@ -14,7 +14,7 @@ public record ThoaThuanGiaoViecDeleteCommandHandler : IRequestHandler<ThoaThuanG
     private readonly IRepository<ThoaThuanGiaoViec, Guid> ThoaThuanGiaoViec;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -23,7 +23,7 @@ public record ThoaThuanGiaoViecDeleteCommandHandler : IRequestHandler<ThoaThuanG
         ThoaThuanGiaoViec = serviceProvider.GetRequiredService<IRepository<ThoaThuanGiaoViec, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThoaThuanGiaoViec.UnitOfWork;
     }
@@ -38,7 +38,7 @@ public record ThoaThuanGiaoViecDeleteCommandHandler : IRequestHandler<ThoaThuanG
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

@@ -12,7 +12,7 @@ public record KhoKhanVuongMacDeleteCommandHandler : IRequestHandler<KhoKhanVuong
 {
     private readonly IRepository<BaoCaoKhoKhanVuongMac, Guid> KhoKhanVuongMac;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -20,7 +20,7 @@ public record KhoKhanVuongMacDeleteCommandHandler : IRequestHandler<KhoKhanVuong
     {
         KhoKhanVuongMac =serviceProvider.GetRequiredService<IRepository<BaoCaoKhoKhanVuongMac, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KhoKhanVuongMac.UnitOfWork;
     }
@@ -34,7 +34,7 @@ public record KhoKhanVuongMacDeleteCommandHandler : IRequestHandler<KhoKhanVuong
         ManagedException.ThrowIfNull(entity);
 
         // Phân quyền: chỉ Owner/LanhDao/KHTC mới được xóa
-        await _auth.EnsureCanManageStepFieldsAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

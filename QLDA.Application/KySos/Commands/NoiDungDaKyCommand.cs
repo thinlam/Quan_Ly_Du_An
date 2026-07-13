@@ -1,6 +1,5 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Constants;
 
 namespace QLDA.Application.KySos.Commands;
 
@@ -48,6 +47,4 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
         return toInsert.Count;
     }
 
-    private static bool IsSignedVersion(string? groupType) =>
-        groupType is GroupTypeConstants.KySo or GroupTypeConstants.NoiDungDaKySo;
 }

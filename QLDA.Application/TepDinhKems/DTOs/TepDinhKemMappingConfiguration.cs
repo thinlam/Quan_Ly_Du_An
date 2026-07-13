@@ -1,3 +1,4 @@
+using QLDA.Application.Common;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.TepDinhKems.DTOs;
@@ -23,7 +24,7 @@ public static class TepDinhKemMappingConfiguration {
         Id = GuidExtensions.GetSequentialGuidId(),
         ParentId = insertDto.ParentId,
         GroupId = groupId.ToString(),
-        GroupType = groupType.ToString(),
+        GroupType = groupType.ToString().ResolveSignedGroupType(insertDto.ParentId != null),
         Type = insertDto.Type,
         FileName = insertDto.FileName,
         OriginalName = insertDto.OriginalName,
@@ -35,7 +36,7 @@ public static class TepDinhKemMappingConfiguration {
         Id = GuidExtensions.GetSequentialGuidId(),
         ParentId = insertDto.ParentId,
         GroupId = groupId.ToString(),
-        GroupType = groupType,
+        GroupType = groupType.ResolveSignedGroupType(insertDto.ParentId != null),
         Type = insertDto.Type,
         FileName = insertDto.FileName,
         OriginalName = insertDto.OriginalName,
@@ -47,7 +48,7 @@ public static class TepDinhKemMappingConfiguration {
         Id = insertOrUpdateDto.Id.GetId(),
         ParentId = insertOrUpdateDto.ParentId,
         GroupId = groupId.ToString(),
-        GroupType = groupType.ToString(),
+        GroupType = groupType.ToString().ResolveSignedGroupType(insertOrUpdateDto.ParentId != null),
         Type = insertOrUpdateDto.Type,
         FileName = insertOrUpdateDto.FileName,
         OriginalName = insertOrUpdateDto.OriginalName,
@@ -59,7 +60,7 @@ public static class TepDinhKemMappingConfiguration {
         Id = insertOrUpdateDto.Id.GetId(),
         ParentId = insertOrUpdateDto.ParentId,
         GroupId = groupId.ToString(),
-        GroupType = groupType,
+        GroupType = groupType.ResolveSignedGroupType(insertOrUpdateDto.ParentId != null),
         Type = insertOrUpdateDto.Type,
         FileName = insertOrUpdateDto.FileName,
         OriginalName = insertOrUpdateDto.OriginalName,
@@ -104,7 +105,7 @@ public static class TepDinhKemMappingConfiguration {
                 Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = dto.ParentId,
                 GroupId = groupId.ToString(),
-                GroupType = groupType.ToString(),
+                GroupType = groupType.ToString().ResolveSignedGroupType(dto.ParentId != null),
                 Type = dto.Type,
                 FileName = dto.FileName,
                 OriginalName = dto.OriginalName,
@@ -123,7 +124,7 @@ public static class TepDinhKemMappingConfiguration {
                 Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = dto.ParentId,
                 GroupId = groupId.ToString(),
-                GroupType = groupType,
+                GroupType = groupType.ResolveSignedGroupType(dto.ParentId != null),
                 Type = dto.Type,
                 FileName = dto.FileName,
                 OriginalName = dto.OriginalName,

@@ -5,6 +5,7 @@ namespace QLDA.Domain.Entities;
 /// <summary>
 /// Lịch sử phê duyệt dùng chung (polymorphic) — thay thế per-entity history tables
 /// </summary>
+/// table này có trigger. nếu bug trong update/insert thì nên kiểm tra trigger
 public class PheDuyetHistory : Entity<Guid>, IAggregateRoot {
     public string EntityName { get; set; } = default!;
     public Guid EntityId { get; set; }

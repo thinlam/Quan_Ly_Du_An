@@ -15,6 +15,7 @@ internal class KeHoachTrienKhaiChiTietDuAnUpdateCommandHandler : IRequestHandler
 {
     private readonly IRepository<KeHoachTrienKhaiChiTietDuAn, Guid> _repo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,6 +23,7 @@ internal class KeHoachTrienKhaiChiTietDuAnUpdateCommandHandler : IRequestHandler
     {
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiChiTietDuAn, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
@@ -35,6 +37,7 @@ internal class KeHoachTrienKhaiChiTietDuAnUpdateCommandHandler : IRequestHandler
         var model = request.model;
         // Check step authorization
         await _auth.EnsureCanExecuteStepAsync(request.model.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.model.BuocId, request.model.DuAnId, _authContext, cancellationToken);
         entity.BuocId = model.BuocId;
         entity.DuAnId = model.DuAnId;
 

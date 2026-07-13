@@ -57,10 +57,10 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
       
         var entity = await Mediator.Send(new DuToanDauTuInsertCommand(dto), cancellationToken);
-        // nếu dùng DuToanDauTu cho nhìu màn hình thì lấy  GroupTypeConstants.DuToanDauTu theo Loai
+        // nếu dùng DuToanDauTu cho nhìu màn hình thì lấy  EGroupType.DuToanDauTu theo Loai
         //tạo contanst LoaiDuToanDauTu
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.DuToanDauTu) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DuToanDauTu) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -82,7 +82,7 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
     {
         var entity = await Mediator.Send(new DuToanDauTuUpdateCommand(dto), cancellationToken);
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.DuToanDauTu) ?? []];
+        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DuToanDauTu) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

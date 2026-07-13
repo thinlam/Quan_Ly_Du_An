@@ -106,9 +106,9 @@ internal class
            {
                Id = t.DeXuatNhuCauKinhPhiNam!.Id,
                TrangThaiId = t.DeXuatNhuCauKinhPhiNam.TrangThaiId,
-               NgayDuyet = t.DeXuatNhuCauKinhPhiNam.NgayDuyet,
+               NgayDuyet = t.DeXuatNhuCauKinhPhiNam.NgayDuyet.ToDateOnlyVn(),
                SoKeHoach = t.DeXuatNhuCauKinhPhiNam.So,
-               NgayKeHoach = t.DeXuatNhuCauKinhPhiNam.NgayKeHoach,
+               NgayKeHoach = t.DeXuatNhuCauKinhPhiNam.NgayKeHoach.ToDateOnlyVn(),  
            }).FirstOrDefault(),
             TenDonViDeXuat = DanhMucDonVi.GetQueryableSet()
            .Where(dv => dv.Id == x.DonViDeXuatId)
@@ -142,7 +142,7 @@ internal class
                 DonViDeXuatId = x.Entity.DonViDeXuatId,
                 TenDonViDeXuat = x.TenDonViDeXuat ?? "Không rõ",
                 SoPhieuChuyen = x.Entity.SoPhieuChuyen,
-                NgayPhieuChuyen = x.Entity.NgayPhieuChuyen,
+                NgayPhieuChuyen = x.Entity.NgayPhieuChuyen.ToDateOnlyVn(),
                 TrichYeu = x.Entity.TrichYeu,
                 KinhPhiDeXuat = x.Entity.KinhPhiDeXuat,
                 TrangThaiId = x.Entity.TrangThaiId,
@@ -151,7 +151,7 @@ internal class
                 TenTrangThaiKeHoachNam = kh?.TrangThaiId == trangThaiDaTrinh?.Id ? trangThaiDaTrinh.Ten : "--",
                 TenTrangThaiBanGiamDoc =   kh?.TrangThaiId == trangThaiDaDuyet?.Id ? trangThaiDaDuyet.Ten : "--",
                 SoKeHoach = kh?.SoKeHoach,
-                NgayKeHoach = kh?.NgayKeHoach!= null ? kh?.NgayKeHoach?.ToString("dd/MM/yyyy"):"",
+                NgayKeHoach = kh?.NgayKeHoach,
                 NgayDuyetKeHoach = kh?.NgayDuyet,
                 DanhSachTepToTrinh = x.DanhSachTepToTrinh,
                 DanhSachTepKeHoachNam =   kh != null && tepDict.TryGetValue(kh.Id.ToString(), out var teps)

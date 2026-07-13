@@ -15,7 +15,7 @@ internal class KhoKhanVuongMacUpdateCommandHandler : IRequestHandler<KhoKhanVuon
     private readonly IRepository<DanhMucLoaiVanBan, int> DanhMucLoaiVanBan;
     private readonly IRepository<DanhMucChuDauTu, int> DanhMucChuDauTu;
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<KhoKhanVuongMacUpdateCommandHandler> _logger;
@@ -28,7 +28,7 @@ internal class KhoKhanVuongMacUpdateCommandHandler : IRequestHandler<KhoKhanVuon
         DanhMucLoaiVanBan = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiVanBan, int>>();
         DanhMucChuDauTu = serviceProvider.GetRequiredService<IRepository<DanhMucChuDauTu, int>>();
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = KhoKhanVuongMac.UnitOfWork;
@@ -42,7 +42,7 @@ internal class KhoKhanVuongMacUpdateCommandHandler : IRequestHandler<KhoKhanVuon
             ManagedException.ThrowIfNull(existing);
 
             // Phân quyền: Owner/LanhDao/KHTC/PhongBanChinh/PhongBanPhoiHop-In-Scope
-            await _auth.EnsureCanExecuteStepAsync(existing.BuocId, _authContext, cancellationToken);
+            await _authManager.EnsureCanExecuteAsync(existing.BuocId, existing.DuAnId, _authContext, cancellationToken);
 
             var entity = request.Dto.ToEntity();
 

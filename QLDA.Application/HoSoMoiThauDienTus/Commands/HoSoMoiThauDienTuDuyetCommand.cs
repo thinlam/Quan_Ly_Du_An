@@ -6,6 +6,7 @@ using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -17,6 +18,7 @@ public record HoSoMoiThauDienTuDuyetCommand(Guid Id) : IRequest<int>;
 internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiThauDienTuDuyetCommand, int> {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
+    private readonly IRepository<VanBanQuyetDinh, Guid> _quyetDinhRepo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
@@ -27,6 +29,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
     public HoSoMoiThauDienTuDuyetCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
+        _quyetDinhRepo = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -59,7 +62,17 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
         }
 
         entity.TrangThaiId = trangThaiDaDuyet.Id;
-
+        var VanBanQuyetDinh = new VanBanQuyetDinh {
+            Id = entity.Id,
+            So = entity.QuyetDinh?.So,
+            TrichYeu = entity.QuyetDinh?.TrichYeu,
+            NguoiKy = entity.QuyetDinh?.NguoiKy,
+            Ngay = entity.QuyetDinh?.Ngay,
+            NgayKy = entity.QuyetDinh?.NgayKy,
+            DuAnId = entity.DuAnId ?? Guid.Empty,
+            BuocId = entity.BuocId,
+            Loai = EnumLoaiVanBanQuyetDinh.HoSoMoiThauDienTu.ToString(),
+        };
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.HoSoMoiThauDienTu,
@@ -69,6 +82,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
             TrangThaiId = trangThaiDaDuyet.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
+        await _quyetDinhRepo.AddAsync(VanBanQuyetDinh, cancellationToken);
 
         await _historyRepository.AddAsync(history, cancellationToken);
 

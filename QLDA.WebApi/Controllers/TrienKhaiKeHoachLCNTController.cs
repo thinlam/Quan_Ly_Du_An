@@ -36,7 +36,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [GroupTypeConstants.TrienKhaiKeHoachLCNT]
+            EGroupTypes= [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
         });
        ////
         var dvtvModel = entity.DonViTuVans.Select(o => new DonViTuVanKeHoachModel()
@@ -49,7 +49,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
                 GroupId = [item.Id.ToString()],
-                EGroupTypes = [GroupTypeConstants.DonViTuVan]
+                EGroupTypes = [nameof(EGroupType.DonViTuVan)]
             });
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
         }
@@ -117,7 +117,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         {
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepChinh,
-            ScopeGroupTypes = [GroupTypeConstants.TrienKhaiKeHoachLCNT]
+            ScopeGroupTypes = [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
         }, cancellationToken);
 
         foreach (var dv in model.DonViTuVans ?? [])
@@ -128,7 +128,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             {
                 GroupId = dvId.ToString(),
                 Entities = files,
-                ScopeGroupTypes = [GroupTypeConstants.DonViTuVan]
+                ScopeGroupTypes = [nameof(EGroupType.DonViTuVan)]
             }, cancellationToken);
         }
 

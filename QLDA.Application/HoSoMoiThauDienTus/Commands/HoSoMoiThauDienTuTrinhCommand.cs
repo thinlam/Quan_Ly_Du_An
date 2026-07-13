@@ -62,9 +62,10 @@ internal class HoSoMoiThauDienTuTrinhCommandHandler : IRequestHandler<HoSoMoiTha
             EntityName = PheDuyetEntityNames.HoSoMoiThauDienTu,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId ?? Guid.Empty,
-            NguoiXuLyId = _userProvider.Info.UserID,
+            BuocId = entity.BuocId,
+            NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
+                        : $" Gói thầu {entity.GoiThau?.Ten} đã trình ",
             TrangThaiId = trangThaiDaTrinh.Id,
-            NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

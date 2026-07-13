@@ -14,7 +14,7 @@ internal class ThanhLyHopDongDeleteCommandHandler : IRequestHandler<ThanhLyHopDo
     private readonly IRepository<ThanhLyHopDong, Guid> _thanhLy;
     private readonly IRepository<TepDinhKem, Guid> _tepDinhKem;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,7 +22,7 @@ internal class ThanhLyHopDongDeleteCommandHandler : IRequestHandler<ThanhLyHopDo
         _thanhLy = serviceProvider.GetRequiredService<IRepository<ThanhLyHopDong, Guid>>();
         _tepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _thanhLy.UnitOfWork;
     }
@@ -35,7 +35,7 @@ internal class ThanhLyHopDongDeleteCommandHandler : IRequestHandler<ThanhLyHopDo
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Status guard: chỉ cho phép xóa khi status = Dự thảo (UC63)
         var trangThaiDuThao = (await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThanhLyHopDong, cancellationToken))

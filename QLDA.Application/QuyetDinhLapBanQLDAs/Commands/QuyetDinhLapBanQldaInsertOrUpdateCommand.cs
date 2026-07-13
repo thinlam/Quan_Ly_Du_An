@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
 using System.Data;
@@ -18,6 +19,8 @@ internal class
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
     private readonly IUnitOfWork UnitOfWork;
     private readonly ILogger<QuyetDinhLapBanQldaInsertOrUpdateCommandHandler> Logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public QuyetDinhLapBanQldaInsertOrUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhLapBanQldaInsertOrUpdateCommandHandler> logger) {
@@ -28,10 +31,14 @@ internal class
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
         Logger = logger;
         UnitOfWork = QuyetDinhLapBanQLDA.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task Handle(QuyetDinhLapBanQldaInsertOrUpdateCommand request,
         CancellationToken cancellationToken = default) {
+        await _authManager.EnsureCanExecuteAsync(request.Entity.BuocId, request.Entity.DuAnId, _authContext, cancellationToken);
+
         try {
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");

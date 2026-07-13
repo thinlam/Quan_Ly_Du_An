@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.VanBanChuTruongs.Commands;
 
@@ -14,6 +15,8 @@ internal class VanBanChuTruongInsertOrUpdateCommandHandler : IRequestHandler<Van
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<VanBanChuTruongInsertOrUpdateCommandHandler> _logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public VanBanChuTruongInsertOrUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<VanBanChuTruongInsertOrUpdateCommandHandler> logger) {
@@ -24,11 +27,14 @@ internal class VanBanChuTruongInsertOrUpdateCommandHandler : IRequestHandler<Van
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
         _logger = logger;
         _unitOfWork = VanBanChuTruong.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task Handle(VanBanChuTruongInsertOrUpdateCommand request,
         CancellationToken cancellationToken = default) {
         try {
+            await _authManager.EnsureCanExecuteAsync(request.Entity.BuocId, request.Entity.DuAnId, _authContext, cancellationToken);
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");
 

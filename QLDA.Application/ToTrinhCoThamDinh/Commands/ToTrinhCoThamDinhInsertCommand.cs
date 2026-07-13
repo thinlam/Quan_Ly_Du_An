@@ -15,7 +15,7 @@ internal class ToTrinhCoThamDinhInsertCommandHandler : IRequestHandler<ToTrinhCo
 {
     private readonly IRepository<ToTrinhCoThamDinh, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -23,14 +23,14 @@ internal class ToTrinhCoThamDinhInsertCommandHandler : IRequestHandler<ToTrinhCo
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<ToTrinhCoThamDinh> Handle(ToTrinhCoThamDinhInsertCommand request, CancellationToken cancellationToken = default)
     {
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         // Auto-assign Dự thảo status
 

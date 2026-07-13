@@ -8,14 +8,14 @@ public record TamUngUpdateCommand(TamUngUpdateDto Dto) : IRequest<TamUng>;
 
 internal class TamUngUpdateCommandHandler : IRequestHandler<TamUngUpdateCommand, TamUng> {
     private readonly IRepository<TamUng, Guid> TamUng;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<TamUngUpdateCommandHandler>();
 
     public TamUngUpdateCommandHandler(IServiceProvider serviceProvider) {
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = TamUng.UnitOfWork;
     }
@@ -27,7 +27,7 @@ internal class TamUngUpdateCommandHandler : IRequestHandler<TamUngUpdateCommand,
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.Update(request.Dto);
 

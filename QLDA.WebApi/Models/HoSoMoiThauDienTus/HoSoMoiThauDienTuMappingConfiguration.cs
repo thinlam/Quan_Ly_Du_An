@@ -237,28 +237,27 @@ public static class HoSoMoiThauDienTuMappingConfiguration
         ThoiGianThucHien = model.ThoiGianThucHien,
         TrangThaiDangTai = model.TrangThaiDangTai,
         TrangThaiId = model.TrangThaiId,
-        HoSoMoiThauThamDinh = (model.ThamDinh ?? false) ? new HoSoMoiThauThamDinhDto()
+        HoSoMoiThauThamDinh = model.ThamDinh == true && model.HoSoMoiThauThamDinh != null ? new HoSoMoiThauThamDinhDto()
         {
             NhaThauId = model.HoSoMoiThauThamDinh.GetId(),
         
         } : null,
-
-        ToTrinh = new ToTrinhQuyetDinhDto()
+        ToTrinh = model.ToTrinh != null ?   new ToTrinhQuyetDinhDto()
         {
             So = model.ToTrinh.So,
             TrichYeu = model.ToTrinh.TrichYeu,
             Ngay = model.ToTrinh.Ngay,
             NguoiKy = model.ToTrinh.NguoiKy,
-            ChucVu = model.ToTrinh.ChucVu,
-        },
-        QuyetDinh = new ToTrinhQuyetDinhDto()
+            ChucVu = model.ToTrinh.ChucVu
+        }:null,
+        QuyetDinh = model.QuyetDinh != null ? new ToTrinhQuyetDinhDto()
         {
             So = model.QuyetDinh.So,
             TrichYeu = model.QuyetDinh.TrichYeu,
             Ngay = model.QuyetDinh.Ngay,
             NguoiKy = model.QuyetDinh.NguoiKy,
-            ChucVu = model.QuyetDinh.ChucVu,
-        }
+            ChucVu = model.QuyetDinh.ChucVu
+        } : null
     };
     public static List<TepDinhKem> GetDanhSachTepDinhKemBaoCaoThamDinh(
        this HoSoMoiThauThamDinhModel model, Guid groupId)
@@ -277,7 +276,7 @@ public static class HoSoMoiThauDienTuMappingConfiguration
        => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
     public static List<TepDinhKem> GetDanhSachTepDinhKemQuyetDinh(
       this ToTrinhQuyetDinhModel model, long groupId)
-      => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
+      => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuQuyetDinh).ToList() ?? [];
 
     public static List<TepDinhKem> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)

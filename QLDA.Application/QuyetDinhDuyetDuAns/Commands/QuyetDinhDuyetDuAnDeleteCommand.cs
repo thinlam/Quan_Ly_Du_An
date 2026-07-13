@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 
 namespace QLDA.Application.QuyetDinhDuyetDuAns.Commands;
@@ -12,12 +13,16 @@ public record QuyetDinhDuyetDuAnDeleteCommandHandler : IRequestHandler<QuyetDinh
     private readonly IRepository<QuyetDinhDuyetDuAn, Guid> QuyetDinhDuyetDuAn;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public QuyetDinhDuyetDuAnDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         QuyetDinhDuyetDuAn =serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuAn, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _unitOfWork = QuyetDinhDuyetDuAn.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<int> Handle(QuyetDinhDuyetDuAnDeleteCommand request, CancellationToken cancellationToken)
@@ -27,7 +32,9 @@ public record QuyetDinhDuyetDuAnDeleteCommandHandler : IRequestHandler<QuyetDinh
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
-        
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
+
         entity.IsDeleted = true;
 
         await SyncHelper.SetDeleteWithRelatedFiles(TepDinhKem, [entity.Id.ToString()], cancellationToken);

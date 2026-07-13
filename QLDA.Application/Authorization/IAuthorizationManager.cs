@@ -36,4 +36,12 @@ public interface IAuthorizationManager
     /// Noop khi duAnId là Guid.Empty (entity không gắn với DuAn nào).
     /// </summary>
     Task EnsureCanApproveDuAnAsync(Guid duAnId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Check quyền Insert/Update/Delete trên VanBanQuyetDinh-derived entity.
+    /// - Nếu buocId có giá trị: dùng BuocAuth.EnsureCanExecuteStepAsync (Owner/Lãnh đạo)
+    /// - Nếu buocId null: fallback check DuAn ownership qua DuAnAuthorizationProvider.EnsureCanExecuteAsync
+    /// User có role QLDA_QuanTri hoặc HasKhtcBypass bypass hoàn toàn.
+    /// </summary>
+    Task EnsureCanExecuteAsync(int? buocId, Guid duAnId, IAuthorizationContext ctx, CancellationToken ct = default);
 }

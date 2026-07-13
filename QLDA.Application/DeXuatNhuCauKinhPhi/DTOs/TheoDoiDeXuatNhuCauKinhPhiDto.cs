@@ -18,12 +18,12 @@ public class TheoDoiDeXuatNhuCauKinhPhiDto : IHasKey<Guid?>, IMustHaveId<Guid>, 
     public long? DonViDeXuatId { get; set; }
     public string? TenDonViDeXuat { get; set; }
     public string? SoPhieuChuyen { get; set; }
-    public DateTimeOffset? NgayPhieuChuyen { get; set; }
+    public DateOnly? NgayPhieuChuyen { get; set; }
     public string? TrichYeu { get; set; }
     public long? KinhPhiDeXuat { get; set; }
   
     public string? SoKeHoach { get; set; }// phía user đã trình
-    public string? NgayKeHoach { get; set; }// phía user đã trình
+    public DateOnly? NgayKeHoach { get; set; }// phía user đã trình
   
     public int? TrangThaiId { get; set; } // phía user đã trình
     public string? TenTrangThai { get; set; }// phía user đã trình
@@ -33,8 +33,8 @@ public class TheoDoiDeXuatNhuCauKinhPhiDto : IHasKey<Guid?>, IMustHaveId<Guid>, 
     public string? TenTrangThaiBanGiamDoc { get; set; } // phía ban GD đã duyệt/trả
 
     public DeXuatNhuCauKinhPhiNam? KeHoachNam { get; set; }
-    public DateTimeOffset? NgayDuyetDeXuat { get; set; }
-    public DateTimeOffset? NgayDuyetKeHoach { get; set; }
+    public DateOnly? NgayDuyetDeXuat { get; set; }
+    public DateOnly? NgayDuyetKeHoach { get; set; }
     public List<TepDinhKemDto>? DanhSachTepToTrinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepKeHoachNam { get; set; }
 }

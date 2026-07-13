@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.PheDuyetDuToans.DTOs;
 using QLDA.Domain.Constants;
 
@@ -16,6 +17,8 @@ internal class PheDuyetDuToanUpdateCommandHandler : IRequestHandler<PheDuyetDuTo
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PheDuyetDuToanUpdateCommandHandler> _logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public PheDuyetDuToanUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<PheDuyetDuToanUpdateCommandHandler> logger) {
@@ -26,6 +29,8 @@ internal class PheDuyetDuToanUpdateCommandHandler : IRequestHandler<PheDuyetDuTo
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _logger = logger;
         _unitOfWork = PheDuyetDuToan.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<PheDuyetDuToan> Handle(PheDuyetDuToanUpdateCommand request, CancellationToken cancellationToken = default) {
@@ -36,6 +41,8 @@ internal class PheDuyetDuToanUpdateCommandHandler : IRequestHandler<PheDuyetDuTo
             var entity = await PheDuyetDuToan.GetQueryableSet()
                 .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
             ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
+
+            await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
             // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
             if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThai?.Ma != "LEG") {

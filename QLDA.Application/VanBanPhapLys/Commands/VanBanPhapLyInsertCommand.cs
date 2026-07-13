@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.VanBanPhapLys.DTOs;
 
 namespace QLDA.Application.VanBanPhapLys.Commands;
@@ -15,6 +16,8 @@ internal class VanBanPhapLyInsertCommandHandler : IRequestHandler<VanBanPhapLyIn
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<VanBanPhapLyInsertCommandHandler> _logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public VanBanPhapLyInsertCommandHandler(IServiceProvider serviceProvider,
         ILogger<VanBanPhapLyInsertCommandHandler> logger) {
@@ -26,10 +29,13 @@ internal class VanBanPhapLyInsertCommandHandler : IRequestHandler<VanBanPhapLyIn
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
         _logger = logger;
         _unitOfWork = VanBanPhapLy.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<VanBanPhapLy> Handle(VanBanPhapLyInsertCommand request, CancellationToken cancellationToken = default) {
         try {
+            await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Dto.DuAnId),
                 "Không tồn tại dự án");
             ManagedException.ThrowIf(request.Dto.LoaiVanBanId > 0 && !DanhMucLoaiVanBan.GetQueryableSet().Any(e => e.Id == request.Dto.LoaiVanBanId),

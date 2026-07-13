@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities.DanhMuc;
@@ -14,12 +15,16 @@ internal class BaoCaoKetQuaKhaoSatUpdateCommandHandler
 {
     private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _repository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public BaoCaoKetQuaKhaoSatUpdateCommandHandler(IServiceProvider serviceProvider)
     {
         _repository = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
@@ -42,6 +47,8 @@ internal class BaoCaoKetQuaKhaoSatUpdateCommandHandler
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy báo cáo kết quả khảo sát");
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         if (entity.TrangThaiId != null &&
             entity.TrangThaiId != trangThaiDuThao?.Id &&

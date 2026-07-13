@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
@@ -16,6 +17,8 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
     private readonly IRepository<PheDuyetDuToan, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IAppSettingsProvider _settings;
     private readonly IUnitOfWork _unitOfWork;
@@ -24,13 +27,14 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
         _repository = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(PheDuyetDuToanTuChoiCommand request, CancellationToken cancellationToken) {
-        // Permission: QLDA_LD or QLDA_QuanTri
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do từ chối là bắt buộc");
@@ -48,6 +52,8 @@ internal class PheDuyetDuToanTuChoiCommandHandler : IRequestHandler<PheDuyetDuTo
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy phê duyệt dự toán");
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
             throw new ManagedException("Chỉ có thể từ chối khi trạng thái là Đã trình");

@@ -59,9 +59,9 @@ public class ThanhLyHopDongController : AggregateRootController {
         var entity = await Mediator.Send(new ThanhLyHopDongInsertCommand(insertDto), cancellationToken);
 
         List<TepDinhKem> files = [
-            .. insertDto.BienBanNghiemThus?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu) ?? [],
-            .. insertDto.ThanhLyHopDongs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong) ?? [],
-            .. insertDto.Khacs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_Khac) ?? []
+            .. insertDto.BienBanNghiemThus?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_BienBanNghiemThu) ?? [],
+            .. insertDto.ThanhLyHopDongs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong) ?? [],
+            .. insertDto.Khacs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_Khac) ?? []
         ];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
@@ -89,9 +89,9 @@ public class ThanhLyHopDongController : AggregateRootController {
         var entity = await Mediator.Send(new ThanhLyHopDongUpdateCommand(updateDto), cancellationToken);
 
         List<TepDinhKem> files = [
-            .. updateDto.BienBanNghiemThus?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_BienBanNghiemThu) ?? [],
-            .. updateDto.ThanhLyHopDongs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong) ?? [],
-            .. updateDto.Khacs?.ToEntities(entity.Id, GroupTypeConstants.ThanhLyHopDong_Khac) ?? []
+            .. updateDto.BienBanNghiemThus?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_BienBanNghiemThu) ?? [],
+            .. updateDto.ThanhLyHopDongs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong) ?? [],
+            .. updateDto.Khacs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_Khac) ?? []
         ];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),

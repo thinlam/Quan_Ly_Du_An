@@ -40,8 +40,8 @@ public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateComma
         ManagedException.ThrowIfNull(entity);
 
         // Phân quyền: tất cả field đều yêu cầu Owner/LanhDao/KHTC/role thuộc GroupAdminCatalog.
-        // Bypass GroupAdminCatalog đã được move vào EnsureCanManageStepFieldsAsync.
-        await _auth.EnsureCanManageStepFieldsAsync(entity.Id, _ctx, cancellationToken);
+        // Bypass GroupAdminCatalog đã được move vào EnsureCanExecuteStepAsync.
+        await _auth.EnsureCanExecuteStepAsync(entity.Id, _ctx, cancellationToken);
 
         entity.Update(request.Dto);
 

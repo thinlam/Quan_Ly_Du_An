@@ -14,12 +14,14 @@ public record ThanhToanUpdateCommand(ThanhToanUpdateDto Dto) : IRequest<ThanhToa
 internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCommand, ThanhToan>
 {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public ThanhToanUpdateCommandHandler(IServiceProvider serviceProvider)
     {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
     }
@@ -32,13 +34,11 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        // Phân quyền: Owner + Lãnh đạo + KHTC + PhongBanChinh (KHÔNG cho PhongBanPhoiHop)
-        // await _auth.EnsureCanExecuteThanhToanAsync(entity.BuocId, _authContext, cancellationToken);
+        // Chỉ Phòng Kế Hoạch - Tài chính mới có quyền thực hiện thao tác này
+        ManagedException.ThrowIf(!_authContext.HasKhtcBypass,
+            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này");
 
-        ManagedException.ThrowIf(
-            !_authContext.HasKhtcBypass,
-            "Chỉ Phòng Kế Hoạch - Tài chính có quyền thực hiện thao tác này"
-        );
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
         entity.Update(request.Dto);
 
         if (_unitOfWork.HasTransaction)

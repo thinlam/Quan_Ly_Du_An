@@ -38,7 +38,7 @@ public record DuAnBuocDuAnUpdateStateCommandHandler : IRequestHandler<DuAnBuocDu
         ManagedException.ThrowIfNull(entity);
 
         // Phân quyền: tất cả field đều yêu cầu Owner/LanhDao/KHTC
-        await _auth.EnsureCanManageStepFieldsAsync(entity.Id, _ctx, cancellationToken);
+        await _auth.EnsureCanExecuteStepAsync(entity.Id, _ctx, cancellationToken);
 
         // Validate PhongPhuTrachChinhId (nếu có) thuộc DuAn.DuAnChiuTrachNhiemXuLys hoặc DuAn.DonViPhuTrachChinhId
         if (request.Dto.PhongPhuTrachChinhId.HasValue) {

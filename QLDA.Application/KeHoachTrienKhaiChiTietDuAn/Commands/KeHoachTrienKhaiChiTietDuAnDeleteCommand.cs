@@ -14,6 +14,7 @@ public record KeHoachTrienKhaiChiTietDuAnDeleteCommandHandler : IRequestHandler<
     private readonly IRepository<KeHoachTrienKhaiChiTietDuAn, Guid> KeHoachTrienKhaiChiTietDuAn;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,6 +23,7 @@ public record KeHoachTrienKhaiChiTietDuAnDeleteCommandHandler : IRequestHandler<
         KeHoachTrienKhaiChiTietDuAn = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiChiTietDuAn, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KeHoachTrienKhaiChiTietDuAn.UnitOfWork;
     }
@@ -35,6 +37,7 @@ public record KeHoachTrienKhaiChiTietDuAnDeleteCommandHandler : IRequestHandler<
 
         // Check step authorization
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

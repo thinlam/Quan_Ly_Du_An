@@ -12,7 +12,7 @@ public record ThuyetMinhDuAnDeleteCommandHandler : IRequestHandler<ThuyetMinhDuA
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> ThuyetMinhDuAn;
     private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -20,7 +20,7 @@ public record ThuyetMinhDuAnDeleteCommandHandler : IRequestHandler<ThuyetMinhDuA
     {
         ThuyetMinhDuAn = serviceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThuyetMinhDuAn.UnitOfWork;
     }
@@ -32,7 +32,7 @@ public record ThuyetMinhDuAnDeleteCommandHandler : IRequestHandler<ThuyetMinhDuA
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

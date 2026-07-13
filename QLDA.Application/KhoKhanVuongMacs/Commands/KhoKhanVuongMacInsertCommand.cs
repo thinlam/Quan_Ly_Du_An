@@ -14,7 +14,7 @@ internal class KhoKhanVuongMacInsertCommandHandler : IRequestHandler<KhoKhanVuon
     private readonly IRepository<DanhMucLoaiVanBan, int> DanhMucLoaiVanBan;
     private readonly IRepository<DanhMucChuDauTu, int> DanhMucChuDauTu;
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<KhoKhanVuongMacInsertCommandHandler> _logger;
@@ -27,7 +27,7 @@ internal class KhoKhanVuongMacInsertCommandHandler : IRequestHandler<KhoKhanVuon
         DanhMucLoaiVanBan = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiVanBan, int>>();
         DanhMucChuDauTu = serviceProvider.GetRequiredService<IRepository<DanhMucChuDauTu, int>>();
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = KhoKhanVuongMac.UnitOfWork;
@@ -39,7 +39,7 @@ internal class KhoKhanVuongMacInsertCommandHandler : IRequestHandler<KhoKhanVuon
                 "Không tồn tại dự án");
 
             // Phân quyền: Owner/LanhDao/KHTC/PhongBanChinh/PhongBanPhoiHop-In-Scope
-            await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+            await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
             var entity = request.Dto.ToEntity();
 

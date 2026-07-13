@@ -1,3 +1,4 @@
+using QLDA.Application.Common;
 using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -32,7 +33,7 @@ public static class BanGiaoHoSoMappingConfiguration {
                 Id = f.Id ?? Guid.NewGuid(),
                 ParentId = f.ParentId,
                 GroupId = groupId.ToString(),
-                GroupType = EGroupType.BienBanBanGiao.ToString(),
+                GroupType = EGroupType.BienBanBanGiao.ToString().ResolveSignedGroupType(f.ParentId != null),
                 Type = f.Type,
                 FileName = f.FileName,
                 OriginalName = f.OriginalName,

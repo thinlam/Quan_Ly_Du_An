@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.QuyetDinhLapBenMoiThaus.Commands;
 
@@ -8,6 +9,8 @@ public record QuyetDinhLapBenMoiThauInsertOrUpdateCommand(QuyetDinhLapBenMoiThau
 
 internal class
     QuyetDinhLapBenMoiThauInsertOrUpdateCommandHandler : IRequestHandler<QuyetDinhLapBenMoiThauInsertOrUpdateCommand> {
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IRepository<QuyetDinhLapBenMoiThau, Guid> QuyetDinhLapBenMoiThau;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
@@ -16,6 +19,8 @@ internal class
 
     public QuyetDinhLapBenMoiThauInsertOrUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhLapBenMoiThauInsertOrUpdateCommandHandler> logger) {
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         QuyetDinhLapBenMoiThau = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapBenMoiThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
@@ -26,6 +31,8 @@ internal class
     public async Task Handle(QuyetDinhLapBenMoiThauInsertOrUpdateCommand request,
         CancellationToken cancellationToken = default) {
         try {
+            await _authManager.EnsureCanExecuteAsync(request.Entity.BuocId, request.Entity.DuAnId, _authContext, cancellationToken);
+
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");
 
