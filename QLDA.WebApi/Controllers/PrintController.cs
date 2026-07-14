@@ -1630,21 +1630,21 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         var doc = new Aspose.Words.Document(templatePath);
         doc.MailMerge.UseNonMergeFields = true;
-        //   DateTime? ngayToTrinh = rows.NgayTrinh.ToOffset(TimeSpan.FromHours(7)).Date;
         DateTime ngayHienTai = DateTime.Now;
         var replacements = new Dictionary<string, string> {
-            { "So", rows.So},
+            { "So", rows.So??""},
             { "TrichYeu", rows?.TrichYeu??"" },
-            { "SoDuThao", rows?.SoDuThao??rows.So},
-            { "TrichYeuDuThao", rows?.TrichYeuDuThao??rows?.TrichYeu},
-         //   { "ngayToTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
+            { "SoDuThao", rows?.SoDuThao ?? rows?.So ?? ""},
+            { "TrichYeuDuThao", rows?.TrichYeuDuThao??rows?.TrichYeu ?? ""},
             { "NgayThangNam", $"Ngày {ngayHienTai.ToString("dd")} tháng {ngayHienTai.ToString("MM") } năm {ngayHienTai.Year}"},
-            { "TenLanhDaoPhuTrach", ""}// rows.DuAn?.LanhDaoPhuTrachId
+            { "NguoiKy", rows?.NguoiKy?? ""}
 
         };
-       
-        DataTable dt = rows.ThanhViens?.ToDataTable()??
-               DataTableConvertExtensions.CreateDataTable<ThanhVienBanQLDA>("ThanhVien");
+        
+
+        DataTable dt = rows?.ThanhViens?.ToDataTable() ??
+                       DataTableConvertExtensions.CreateDataTable<ThanhVienBanQLDA>("ThanhVien");
+
         dt.TableName = "ThanhVien";
         DataSet ds = new DataSet();
         ds.Tables.Add(dt);

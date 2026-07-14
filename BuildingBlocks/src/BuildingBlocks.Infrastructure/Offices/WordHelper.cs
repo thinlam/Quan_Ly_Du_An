@@ -33,24 +33,22 @@ public class WordHelper(IAsposeHelper asposeHelper) : IWordHelper
             doc.MailMerge.Execute(new[] { kvp.Key }, new object[] { kvp.Value });
         }
         if (tables != null) {
-            doc.MailMerge.ExecuteWithRegions(tables);
             if (tables.Tables.Count > 0) {
                 foreach (DataTable item in tables.Tables) {
-                    // Check if STT column exists (case insensitive)
                     var sttColumn = item.Columns
                         .Cast<DataColumn>()
                         .FirstOrDefault(c =>
                             string.Equals(c.ColumnName, "STT", StringComparison.OrdinalIgnoreCase));
 
-                    // Create STT column if missing
-                    if (sttColumn == null) {
-                        item.Columns.Add("STT", typeof(int));
+                        // Create STT column if missing
+                        if (sttColumn == null) {
+                            item.Columns.Add("STT", typeof(int));
 
-                        for (int i = 0; i < item.Rows.Count; i++) {
-                            item.Rows[i]["STT"] = i + 1;
+                            for (int i = 0; i < item.Rows.Count; i++) {
+                                item.Rows[i]["STT"] = i + 1;
+                            }
                         }
-                    }
-                    doc.MailMerge.ExecuteWithRegions(item);// if otems.rows not have any title STT or stt pls add stt auto crea
+                        doc.MailMerge.ExecuteWithRegions(item);
                 }
             }
         }
