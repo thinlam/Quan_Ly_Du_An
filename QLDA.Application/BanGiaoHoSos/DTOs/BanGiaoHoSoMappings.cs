@@ -1,5 +1,4 @@
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 using QLDA.Application.TepDinhKems.DTOs;
 
@@ -27,10 +26,10 @@ public static class BanGiaoHoSoMappings {
     }
 
     public static BanGiaoHoSoDto ToDto(this BanGiaoHoSo entity,
-        List<TepDinhKem>? tepHSBanGiao = null,
-        List<TepDinhKem>? bienBanBanGiao = null) => new() {
+        List<Attachment>? tepHSBanGiao = null,
+        List<Attachment>? bienBanBanGiao = null) => new() {
         Id = entity.Id,
-        Ma = entity.Ma,
+        Ma = entity.Ma ?? string.Empty,
         TenHoSo = entity.TenHoSo,
         DuAnId = entity.DuAnId,
         TenDuAn = entity.DuAn?.TenDuAn,
@@ -50,10 +49,10 @@ public static class BanGiaoHoSoMappings {
     };
 
     /// <summary>Tệp HS bàn giao – extension trên InsertDto, gắn khi insert/update</summary>
-    public static List<TepDinhKem> GetDanhSachTepHSBanGiao(this BanGiaoHoSoInsertDto dto, Guid groupId) {
+    public static List<Attachment> GetDanhSachTepHSBanGiao(this BanGiaoHoSoInsertDto dto, Guid groupId) {
         if (dto.DanhSachTepDinhKem?.Any() != true) return [];
         return dto.DanhSachTepDinhKem
-            .Select(f => new TepDinhKem {
+            .Select(f => new Attachment {
                 Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = f.ParentId,
                 GroupId = groupId.ToString(),
@@ -67,10 +66,10 @@ public static class BanGiaoHoSoMappings {
     }
 
     /// <summary>Biên bản bàn giao – extension trên BanGiaoDto, gắn khi thực hiện bàn giao</summary>
-    public static List<TepDinhKem> GetDanhSachBienBanBanGiao(this BanGiaoHoSoBanGiaoDto dto, Guid groupId) {
+    public static List<Attachment> GetDanhSachBienBanBanGiao(this BanGiaoHoSoBanGiaoDto dto, Guid groupId) {
         if (dto.DanhSachBienBan?.Any() != true) return [];
         return dto.DanhSachBienBan
-            .Select(f => new TepDinhKem {
+            .Select(f => new Attachment {
                 Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = f.ParentId,
                 GroupId = groupId.ToString(),

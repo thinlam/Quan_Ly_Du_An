@@ -1,6 +1,4 @@
-using FluentValidation;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
-using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 
 namespace QLDA.Application.HoSoDeXuatCapDoCntts.Validators;
 

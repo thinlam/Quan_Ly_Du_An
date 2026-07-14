@@ -1,9 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using QLDA.Application.Authorization;
-using QLDA.Application.PhanQuyenChucNangs.Commands;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 using System.Data;
 
 namespace QLDA.Application.PhanQuyenChucNangs.Commands;

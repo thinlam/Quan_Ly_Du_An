@@ -1,10 +1,8 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 
@@ -51,12 +49,10 @@ internal class QuyetDinhLapBanQldaTraLaiCommandHandler : IRequestHandler<QuyetDi
         var entity = await _repository.GetQueryableSet()
                         .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy quyết định/tờ trình cần thao tác");
-
-        if (entity == null)
-            ManagedException.Throw("Không tìm thấy quyết định/tờ trình cần thao tác");
+        var entitySafe = entity!;
 
         #endregion
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _auth.EnsureCanExecuteStepAsync(entitySafe.BuocId, _authContext, cancellationToken);
         #region kiểm tra có tồn tại quá trình thuyên chuyển của entity này
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var statusDict = statuses
@@ -69,22 +65,22 @@ internal class QuyetDinhLapBanQldaTraLaiCommandHandler : IRequestHandler<QuyetDi
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entitySafe.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
         #endregion
 
         // Update status to Trả lại
-        entity.TrangThaiId = trangThaiTra.Id;
+        entitySafe.TrangThaiId = trangThaiTra!.Id;
 
         // Create history record with reason
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.QuyetDinhLapBanQLDA,
             EntityId = request.Id,
-            DuAnId = entity.DuAnId,
+            DuAnId = entitySafe.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiTra.Id,
+            TrangThaiId = trangThaiTra!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

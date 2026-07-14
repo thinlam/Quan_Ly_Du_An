@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DuAns.Queries;
 

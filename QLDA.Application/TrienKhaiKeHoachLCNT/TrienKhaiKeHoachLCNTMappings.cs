@@ -36,7 +36,7 @@ public static class TrienKhaiKeHoachLCNTMappings {
         }
     }
 
-    public static TrienKhaiKeHoachLCNTDto ToDto(this TrienKhaiKeHoachLCNT entity, List<TepDinhKem>? files = null) =>
+    public static TrienKhaiKeHoachLCNTDto ToDto(this TrienKhaiKeHoachLCNT entity, List<Attachment>? files = null) =>
         new() {
             Id = entity.Id,
             So = entity.So,

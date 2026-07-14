@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs;
 
@@ -130,9 +127,9 @@ internal static class KeHoachTrienKhaiHangMucExportMappings
             .ToDictionary(x => x.Id, x => x.i);
 
         var firstGroupIndexByGiaiDoanId = items
-            .Select((h, i) => (h.GiaiDoanId, i))
+            .Select((h, i) => new { GiaiDoanId = h.GiaiDoanId ?? 0, Index = i })
             .GroupBy(x => x.GiaiDoanId)
-            .ToDictionary(g => g.Key, g => g.Min(x => x.i));
+            .ToDictionary(g => g.Key, g => g.Min(x => x.Index));
 
         var groups = items
             .GroupBy(h => h.GiaiDoanId)
@@ -158,7 +155,7 @@ internal static class KeHoachTrienKhaiHangMucExportMappings
                 };
             })
             .OrderBy(g => g.SortOrder)
-            .ThenBy(g => firstGroupIndexByGiaiDoanId.GetValueOrDefault(g.GiaiDoanId, int.MaxValue))
+            .ThenBy(g => firstGroupIndexByGiaiDoanId.GetValueOrDefault(g.GiaiDoanId ?? 0, int.MaxValue))
             .ToList();
 
         var rows = new List<KeHoachTrienKhaiHangMucExportItemDto>();

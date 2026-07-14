@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 
 namespace QLDA.Application.DmHinhThucLuaChonNhaThaus.Queries;

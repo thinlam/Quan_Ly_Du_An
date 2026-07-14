@@ -1,10 +1,8 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
@@ -58,6 +56,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
 
         var entityType = _dbContext.Model.GetEntityTypes()
                 .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
+        ManagedException.ThrowIfNull(entityType, "Không tìm thấy entity type");
 
         var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật");
@@ -66,12 +65,12 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
     //    await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
         // Update status to Đã duyệt
-        entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.TrangThaiId = trangThaiDaDuyet!.Id;
 
         // Create history record
         var history = new PheDuyetHistory {
@@ -81,7 +80,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaDuyet.Id,
+            TrangThaiId = trangThaiDaDuyet!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
       

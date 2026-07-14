@@ -1,8 +1,6 @@
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
@@ -14,8 +12,8 @@ internal class BanGiaoHoSoGetFileExportQueryHandler(IServiceProvider serviceProv
 {
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository =
         serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepository =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth =
@@ -37,7 +35,7 @@ internal class BanGiaoHoSoGetFileExportQueryHandler(IServiceProvider serviceProv
             .Select(e => new
             {
                 e.Id,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
             })
             .FirstOrDefaultAsync(cancellationToken);
 

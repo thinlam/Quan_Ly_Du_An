@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.PhanKhaiKinhPhis.Commands;
 
@@ -49,7 +46,7 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
         }
 
         // Update status to Đã trình
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
         // Create history record
         var history = new PheDuyetHistory {
@@ -59,7 +56,7 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

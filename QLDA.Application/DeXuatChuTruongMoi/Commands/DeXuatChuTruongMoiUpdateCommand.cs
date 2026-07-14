@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.DeXuatChuTruongMois;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Domain.Constants;
 

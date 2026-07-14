@@ -1,5 +1,3 @@
-using BuildingBlocks.Domain.Providers;
-
 namespace QLDA.Application.Providers;
 
 /// <summary>

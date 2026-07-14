@@ -1,5 +1,4 @@
 using System.Globalization;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
@@ -21,8 +20,8 @@ internal class DeXuatNhuCauKinhPhiNamGetExportQueryHandler(IServiceProvider serv
     private readonly IRepository<DeXuatNhuCauKinhPhiNam, Guid> _deXuatNhuCauKinhPhiNam =
         serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhiNam, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     public async Task<List<TongHopNhuCauKinhPhiNamExportDto>> Handle(
         DeXuatNhuCauKinhPhiNamGetExportQuery request,
@@ -39,8 +38,8 @@ internal class DeXuatNhuCauKinhPhiNamGetExportQueryHandler(IServiceProvider serv
         }
 
         var queryable = _deXuatNhuCauKinhPhiNam.GetQueryableSet().AsNoTracking()
-            .WhereIf(request.So != null, e => e.So.Contains(request.So))
-            .WhereIf(request.TrichYeu != null, e => e.So.Contains(request.TrichYeu))
+            .WhereIf(request.So != null, e => e.So!.Contains(request.So!))
+            .WhereIf(request.TrichYeu != null, e => e.So!.Contains(request.TrichYeu!))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayKeHoach >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayKeHoach < denNgayExclusiveDto);
@@ -52,8 +51,8 @@ internal class DeXuatNhuCauKinhPhiNamGetExportQueryHandler(IServiceProvider serv
                 e.TrichYeu,
                 e.TongKinhPhiDeXuat,
                 e.NgayKeHoach,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                    ? e.TrangThai.Ten
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                    ? e.TrangThai!.Ten
                     : string.Empty,
                 SoLuongTepDinhKem = _tepDinhKem.GetQueryableSet()
                     .Count(i => i.GroupId == e.Id.ToString()),

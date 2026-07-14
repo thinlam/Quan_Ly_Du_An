@@ -1,11 +1,10 @@
-using QLDA.Application.Common;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuToans.DTOs;
 
 public static class DuToanMapping {
-    public static (DuToan, List<TepDinhKem>) ToEntity(this DuToanInsertModel model, Guid duAnId) {
+    public static (DuToan, List<Attachment>) ToEntity(this DuToanInsertModel model, Guid duAnId) {
         var id = GuidExtensions.GetSequentialGuidId();
         var duToan = new DuToan {
             Id = id,
@@ -34,7 +33,7 @@ public static class DuToanMapping {
         };
     }
 
-    public static (DuToan, List<TepDinhKem>) ToEntityWithFiles(this DuToanUpdateModel model, Guid duAnId) {
+    public static (DuToan, List<Attachment>) ToEntityWithFiles(this DuToanUpdateModel model, Guid duAnId) {
         var duToan = model.ToEntity(duAnId);
         var tepDinhKems = model.DanhSachTepDinhKem?.ToEntities(
             groupId: duToan.Id,

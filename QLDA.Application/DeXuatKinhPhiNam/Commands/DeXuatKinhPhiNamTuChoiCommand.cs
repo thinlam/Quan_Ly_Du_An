@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 
@@ -52,7 +49,7 @@ internal class DeXuatKinhPhiNamTuChoiCommandHandler : IRequestHandler<DeXuatKinh
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể từ chối khi trạng thái là Đã trình!");
         }
 

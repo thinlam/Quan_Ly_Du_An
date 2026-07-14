@@ -1,4 +1,3 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.PhanQuyenChucNangs.DTOs;
 using QLDA.Domain.Constants;
@@ -41,7 +40,7 @@ internal class PhanQuyenChucNangGetByIdHandler(IServiceProvider serviceProvider)
             MaChucNang = entity.MaChucNang,
             ChucNang = entity.ChucNang,
             Level = entity.Level,
-            DanhSachChiTiet = entity.DanhSachChiTiet.Select(x => new PhanQuyenChucNangCapDoDto()
+            DanhSachChiTiet = entity.DanhSachChiTiet!.Select(x => new PhanQuyenChucNangCapDoDto()
             {
                 LevelId = x.LevelId,
                 NguoiDungMacDinh = x.NguoiDungMacDinh,
@@ -57,7 +56,7 @@ internal class PhanQuyenChucNangGetByIdHandler(IServiceProvider serviceProvider)
         };
 
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

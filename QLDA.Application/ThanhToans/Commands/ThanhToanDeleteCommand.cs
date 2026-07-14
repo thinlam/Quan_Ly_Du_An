@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Providers;
 
 namespace QLDA.Application.ThanhToans.Commands;
 
@@ -10,7 +9,7 @@ public record ThanhToanDeleteCommand(Guid Id) : IRequest;
 public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCommand>
 {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -18,7 +17,7 @@ public record ThanhToanDeleteCommandHandler : IRequestHandler<ThanhToanDeleteCom
     public ThanhToanDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;

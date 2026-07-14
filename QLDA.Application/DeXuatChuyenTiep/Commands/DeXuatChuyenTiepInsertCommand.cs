@@ -1,10 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatChuyenTieps.Commands;
 
@@ -53,6 +50,6 @@ internal class DeXuatChuyenTiepInsertCommandHandler : IRequestHandler<DeXuatChuy
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

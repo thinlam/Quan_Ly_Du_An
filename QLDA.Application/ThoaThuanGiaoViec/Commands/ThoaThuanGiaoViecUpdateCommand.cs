@@ -60,7 +60,7 @@ internal class ThoaThuanGiaoViecUpdateCommandHandler : IRequestHandler<ThoaThuan
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

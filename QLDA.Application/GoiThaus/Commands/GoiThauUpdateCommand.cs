@@ -50,7 +50,7 @@ internal class GoiThauUpdateCommandHandler : IRequestHandler<GoiThauUpdateComman
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
-        return entity;
+        return entity!;
     }
     #region  Private helper methods
 

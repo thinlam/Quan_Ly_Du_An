@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Commands;
 
@@ -43,7 +42,7 @@ internal class KetQuaTrungThauUpdateCommandHandler : IRequestHandler<KetQuaTrung
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
-        return entity;
+        return entity!;
     }
     #region  Private helper methods
 

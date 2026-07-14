@@ -1,10 +1,7 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -123,6 +120,6 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
         await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

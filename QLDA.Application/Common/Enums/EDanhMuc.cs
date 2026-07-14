@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace QLDA.Application.Common.Enums;
 
 public enum EDanhMuc

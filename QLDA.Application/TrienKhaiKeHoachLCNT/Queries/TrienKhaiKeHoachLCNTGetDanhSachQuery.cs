@@ -4,7 +4,6 @@ using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
-using QLDA.Domain.Constants;
 
 namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
 
@@ -31,7 +30,7 @@ internal class TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Service
 {
     private readonly IRepository<Domain.Entities.TrienKhaiKeHoachLCNT, Guid> TrienKhaiKeHoachLCNT = ServiceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
@@ -81,8 +80,8 @@ internal class TrienKhaiKeHoachLCNTDanhSachQueryHandler(IServiceProvider Service
                 GoiThauId = e.GoiThauId,
                 // trả thêm tên dự án
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

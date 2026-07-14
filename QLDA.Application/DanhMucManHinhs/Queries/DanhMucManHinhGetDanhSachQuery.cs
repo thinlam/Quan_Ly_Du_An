@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Constants;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DanhMucManHinhs.DTOs;
 
 namespace QLDA.Application.DanhMucManHinhs.Queries;
@@ -37,7 +36,7 @@ public record DanhMucManHinhGetDanhSachQueryHandler(IServiceProvider ServiceProv
 
         var dtos = ordered.Select(entity => new DanhMucManHinhDto() {
             Id = entity.Id,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             Label = entity.Label,
             Title = entity.Title,
             Used = entity.Used,

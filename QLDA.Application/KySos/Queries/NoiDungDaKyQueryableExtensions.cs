@@ -1,16 +1,13 @@
 using BuildingBlocks.CrossCutting.DateTimes;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DuAns.Queries;
 using QLDA.Application.KySos.DTOs;
-using QLDA.Domain.Constants;
-using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
+
 
 namespace QLDA.Application.KySos.Queries;
 
 internal sealed class NoiDungDaKyJoinedRow {
-    public TepDinhKem E { get; init; } = null!;
+    public Attachment E { get; init; } = null!;
     public UserMaster? User { get; init; }
 }
 
@@ -32,7 +29,7 @@ internal static class NoiDungDaKyQueryableExtensions {
     }
 
     internal static async Task<List<NoiDungDaKyJoinedRow>> ApplyFiltersAsync(
-        this IQueryable<TepDinhKem> query,
+        this IQueryable<Attachment> query,
         NoiDungDaKySearchDto search,
         IQueryable<UserMaster> users,
         IServiceProvider serviceProvider,

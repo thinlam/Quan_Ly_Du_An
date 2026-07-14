@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 

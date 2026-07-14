@@ -1,9 +1,7 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.DTOs;
 using QLDA.Application.Authorization;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 
@@ -61,7 +59,7 @@ internal class KeHoachLuaChonNhaThauRutGonUpdateCommandHandler : IRequestHandler
         await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

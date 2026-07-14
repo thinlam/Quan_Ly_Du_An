@@ -1,11 +1,8 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThanhLyHopDongs.Commands;
 
@@ -65,7 +62,7 @@ internal class ThanhLyHopDongTrinhCommandHandler : IRequestHandler<ThanhLyHopDon
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc Trả lại");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
         var history = new PheDuyetHistory
         {
@@ -75,7 +72,7 @@ internal class ThanhLyHopDongTrinhCommandHandler : IRequestHandler<ThanhLyHopDon
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

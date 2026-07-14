@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
-using QLDA.Application.Providers;
 using QLDA.Application.QuyetDinhDieuChinhs.DTOs;
 using QLDA.Domain.Constants;
 using System.Data;
@@ -87,6 +85,6 @@ internal class QuyetDinhDieuChinhInsertCommandHandler : IRequestHandler<QuyetDin
         //await _unitOfWork.SaveChangesAsync(cancellationToken);
         //await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

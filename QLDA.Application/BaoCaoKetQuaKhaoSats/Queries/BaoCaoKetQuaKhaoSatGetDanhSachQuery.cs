@@ -3,7 +3,6 @@ using QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.BaoCaoKetQuaKhaoSats.Queries;
 
@@ -25,11 +24,11 @@ internal class BaoCaoKetQuaKhaoSatGetDanhSachQueryHandler
 {
     private readonly IRepository<BaoCaoKetQuaKhaoSat, Guid> _repository;
 
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem;
+    private readonly IRepository<Attachment, Guid> _tepDinhKem;
     public BaoCaoKetQuaKhaoSatGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         _repository = serviceProvider.GetRequiredService<IRepository<BaoCaoKetQuaKhaoSat, Guid>>();
-        _tepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _tepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<BaoCaoKetQuaKhaoSatDto>> Handle(
@@ -56,9 +55,9 @@ internal class BaoCaoKetQuaKhaoSatGetDanhSachQueryHandler
                 NoiDungNghiemThu = e.NoiDungNghiemThu,
                 NgayKhaoSat = DateOnly.FromDateTime(
                     TimeZoneInfo.ConvertTime(e.NgayKhaoSat, zone).DateTime),
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
                    .Where(i => i.GroupId == e.Id.ToString())

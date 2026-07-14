@@ -1,5 +1,4 @@
 using System.Globalization;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
@@ -54,7 +53,7 @@ internal class TheoDoiDeXuatNhuCauKinhPhiGetExportQueryHandler(IServiceProvider 
                 && !x.DeXuatNhuCauKinhPhiNam.IsDeleted
                 && x.DeXuatNhuCauKinhPhiNam.TrangThaiId == request.TrangThaiKeHoachId))
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
-            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
+            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen!.Contains(request.SoPhieuChuyen!))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayPhieuChuyen >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayPhieuChuyen < denNgayExclusiveDto)

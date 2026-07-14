@@ -1,12 +1,9 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.PhuLucHopDongs.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.PhuLucHopDongs.Queries;
 
@@ -36,7 +33,7 @@ internal class
     PaginatedList<PhuLucHopDongDto>>
 {
     private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _buocAuth;
     private readonly IAuthorizationContext _authContext;
@@ -44,7 +41,7 @@ internal class
     public PhuLucHopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         PhuLucHopDong = serviceProvider.GetRequiredService<IRepository<PhuLucHopDong, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();

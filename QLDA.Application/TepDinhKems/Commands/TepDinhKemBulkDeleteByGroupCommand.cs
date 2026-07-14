@@ -6,7 +6,7 @@ public class TepDinhKemBulkDeleteByGroupCommand : IRequest {
 }
 
 internal class TepDinhKemBulkDeleteByGroupCommandHandler(
-    IRepository<TepDinhKem, Guid> tepDinhKemRepository,
+    IRepository<Attachment, Guid> tepDinhKemRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<TepDinhKemBulkDeleteByGroupCommand> {
     public async Task Handle(TepDinhKemBulkDeleteByGroupCommand request,

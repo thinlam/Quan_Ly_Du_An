@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Mapping;
@@ -25,7 +24,7 @@ internal class
     PaginatedList<TamUngDto>>
 {
     private readonly IRepository<TamUng, Guid> _tamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     private readonly IAuthorizationContext _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();

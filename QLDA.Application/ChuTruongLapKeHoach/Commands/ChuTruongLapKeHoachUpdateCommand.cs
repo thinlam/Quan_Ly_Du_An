@@ -1,10 +1,6 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.ChuTruongLapKeHoachs;
 using QLDA.Application.Authorization;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 
@@ -45,7 +41,7 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         //   throw new ManagedException("Chỉ có thể cập nhật khi trạng thái là dự thảo");
-        if ( entity.TrangThaiId == trangThaiDaTrinh.Id  || entity.TrangThaiId == trangThaiDuyet.Id ) //chưa duyệt cứ cho upd
+        if ( entity.TrangThaiId == trangThaiDaTrinh!.Id  || entity.TrangThaiId == trangThaiDuyet!.Id ) //chưa duyệt cứ cho upd
         {
             entity.ButPhe = request.Dto.ButPhe;
         }
@@ -62,6 +58,6 @@ internal class ChuTruongLapKeHoachUpdateCommandHandler : IRequestHandler<ChuTruo
         await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

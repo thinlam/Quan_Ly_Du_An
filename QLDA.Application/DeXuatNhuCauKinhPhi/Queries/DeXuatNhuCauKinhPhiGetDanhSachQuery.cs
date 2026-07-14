@@ -25,8 +25,8 @@ internal class
     DeXuatNhuCauKinhPhiQueryHandler(IServiceProvider ServiceProvider)
     : IRequestHandler<DeXuatNhuCauKinhPhiQuery, PaginatedList<DeXuatNhuCauKinhPhiDto>> {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository =
       ServiceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
@@ -57,12 +57,12 @@ internal class
             .Where(e => !e.DuAn!.IsDeleted)
 
             .WhereIf(
-                request.DaDuyetTongHop ?? false, e => e.TrangThaiId == trangThaiDaDuyet.Id
+                request.DaDuyetTongHop ?? false, e => e.TrangThaiId == trangThaiDaDuyet!.Id
             )
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
-            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
+            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen!.Contains(request.SoPhieuChuyen!))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId )
             .WhereIf(tuNgayDto != null, e => e.NgayPhieuChuyen >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayPhieuChuyen < denNgayExclusiveDto);
@@ -79,8 +79,8 @@ internal class
                 KinhPhiDeXuat = e.KinhPhiDeXuat,
                 TrangThaiId = e.TrangThaiId,
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DeXuatNhuCauKinhPhiNamMappings;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 

@@ -1,9 +1,5 @@
-using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Providers;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.BanGiaoHoSos.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
@@ -12,12 +8,12 @@ public record BanGiaoHoSoPrintQuery(Guid Id) : IRequest<BanGiaoHoSoPrintDto>;
 
 internal class BanGiaoHoSoPrintQueryHandler : IRequestHandler<BanGiaoHoSoPrintQuery, BanGiaoHoSoPrintDto> {
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
-    private readonly IRepository<Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepository;
     private readonly IRepository<DmDonVi, long> _donViRepository;
 
     public BanGiaoHoSoPrintQueryHandler(IServiceProvider serviceProvider) {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
-        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.TepDinhKem, Guid>>();
+        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _donViRepository = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     }
 

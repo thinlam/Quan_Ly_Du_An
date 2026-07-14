@@ -1,9 +1,6 @@
 using System.Data;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.BanGiaoHoSos.Commands;
 
@@ -36,6 +33,6 @@ internal class BanGiaoHoSoInsertCommandHandler : IRequestHandler<BanGiaoHoSoInse
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

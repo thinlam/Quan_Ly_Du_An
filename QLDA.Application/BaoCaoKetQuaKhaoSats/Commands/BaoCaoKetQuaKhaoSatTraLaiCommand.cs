@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 
@@ -54,12 +51,12 @@ internal class BaoCaoKetQuaKhaoSatTraLaiCommandHandler : IRequestHandler<BaoCaoK
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy báo cáo kết quả khảo sát");
 
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id)
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id)
         {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
 
-        entity.TrangThaiId = trangThaiTraLai.Id;
+        entity.TrangThaiId = trangThaiTraLai!.Id;
 
         var history = new PheDuyetHistory
         {
@@ -68,7 +65,7 @@ internal class BaoCaoKetQuaKhaoSatTraLaiCommandHandler : IRequestHandler<BaoCaoK
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiTraLai.Id,
+            TrangThaiId = trangThaiTraLai!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

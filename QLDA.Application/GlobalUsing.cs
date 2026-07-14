@@ -17,5 +17,5 @@ global using BuildingBlocks.CrossCutting.ExtensionMethods;
 global using BuildingBlocks.Application.Common.DTOs;
 global using BuildingBlocks.Application.Common.Services;
 global using BuildingBlocks.Application.ExtensionMethods;
-
+global using BuildingBlocks.Domain.Entities;
 global using Microsoft.Extensions.DependencyInjection;

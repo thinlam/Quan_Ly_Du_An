@@ -6,7 +6,7 @@ namespace QLDA.Application.ToTrinhPheDuyets;
 public static class ToTrinhPheDuyetMappings {
     
 
-    public static ToTrinhPheDuyetDto ToDto(this ToTrinhPheDuyet entity, List<TepDinhKem>? files = null) {
+    public static ToTrinhPheDuyetDto ToDto(this ToTrinhPheDuyet entity, List<Attachment>? files = null) {
         return new ToTrinhPheDuyetDto
         {
             Id = entity.Id,
@@ -15,8 +15,8 @@ public static class ToTrinhPheDuyetMappings {
             NgayToTrinh = entity.NgayToTrinh,
             TrichYeu = entity.TrichYeu,
             So = entity.So,
-            Ten = entity.Ten,
-            Loai = entity.Loai,
+            Ten = entity.Ten ?? string.Empty,
+            Loai = entity.Loai ?? string.Empty,
             TrangThaiId = entity.TrangThaiId,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
         };

@@ -18,12 +18,12 @@ public static class KeHoachLuaChonNhaThauMappings {
         };
     }
 
-    public static KeHoachLuaChonNhaThauDto ToDto(this KeHoachLuaChonNhaThau entity, IEnumerable<TepDinhKem>? files = null) {
+    public static KeHoachLuaChonNhaThauDto ToDto(this KeHoachLuaChonNhaThau entity, IEnumerable<Attachment>? files = null) {
         return new KeHoachLuaChonNhaThauDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             SoQuyetDinh = entity.So,
             NgayQuyetDinh = entity.Ngay,
             TrichYeu = entity.TrichYeu,

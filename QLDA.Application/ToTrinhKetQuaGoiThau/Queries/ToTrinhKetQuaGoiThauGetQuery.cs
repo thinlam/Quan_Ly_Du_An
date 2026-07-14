@@ -13,8 +13,8 @@ internal class ToTrinhKetQuaGoiThauGetQueryHandler(IServiceProvider serviceProvi
     private readonly IRepository<ToTrinhKetQuaGoiThau, Guid> ToTrinhKetQuaGoiThau =
         serviceProvider.GetRequiredService<IRepository<ToTrinhKetQuaGoiThau, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<ToTrinhKetQuaGoiThau> Handle(ToTrinhKetQuaGoiThauGetQuery request,

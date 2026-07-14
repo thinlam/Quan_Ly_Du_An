@@ -1,6 +1,5 @@
 using QLDA.Application.Common.Interfaces;
 using System.Text.Json.Serialization;
-using QLDA.Application.Common.Constants;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;

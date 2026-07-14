@@ -11,8 +11,8 @@ internal class DuAnGetDanhSachTepDinhKemQueryHandler(
     IServiceProvider serviceProvider)
     : IRequestHandler<DuAnGetDanhSachTepDinhKemQuery, List<TepDinhKemDto>> {
 
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepo =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepo =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     public async Task<List<TepDinhKemDto>> Handle(
         DuAnGetDanhSachTepDinhKemQuery request,

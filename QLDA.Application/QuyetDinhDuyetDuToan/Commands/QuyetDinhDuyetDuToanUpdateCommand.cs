@@ -1,9 +1,7 @@
-using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.QuyetDinhDuyetDuToanDtos.DTOs;
 using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
 using QLDA.Domain.Constants;
 using System.Data;

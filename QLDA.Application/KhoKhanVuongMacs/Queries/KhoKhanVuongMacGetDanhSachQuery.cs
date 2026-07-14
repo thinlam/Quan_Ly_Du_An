@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Common.Interfaces;
@@ -44,12 +43,12 @@ internal class
     KhoKhanVuongMacGetDanhSachQueryHandler : IRequestHandler<KhoKhanVuongMacGetDanhSachQuery,
     PaginatedList<KhoKhanVuongMacDto>> {
     private readonly IRepository<BaoCaoKhoKhanVuongMac, Guid> KhoKhanVuongMac;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
 
     public KhoKhanVuongMacGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         KhoKhanVuongMac = serviceProvider.GetRequiredService<IRepository<BaoCaoKhoKhanVuongMac, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
@@ -98,7 +97,7 @@ internal class
                 #region Thông tin dự án
                 LoaiDuAnId = e.DuAn!.LoaiDuAnId,
                 NgayBatDau = e.DuAn.NgayBatDau,
-                LanhDaoPhuTrachId = e.DuAn.LanhDaoPhuTrachId,
+                LanhDaoPhuTrachId = e.DuAn!.LanhDaoPhuTrachId,
                 DonViPhuTrachChinhId = e.DuAn.DonViPhuTrachChinhId,
                 DonViPhoiHopId = e.DuAn.DuAnChiuTrachNhiemXuLys!.Where(i => i.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop).Select(i => i.RightId).FirstOrDefault(),
 

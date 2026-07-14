@@ -1,6 +1,4 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Domain.Constants;
 
@@ -43,13 +41,13 @@ internal class TongHopDeXuatChuTruongGetExportQueryHandler(IServiceProvider serv
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "Không rõ",
+                TenDuAn = e.DuAn != null ? (e.DuAn!.TenDuAn ?? "") : "Không rõ",
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                    ? e.TrangThai.Ma
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                    ? e.TrangThai!.Ma
                     : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                    ? e.TrangThai.Ten
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                    ? e.TrangThai!.Ten
                     : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenPhongBanPhuTrach = e.CreatedBy != null
                     ? dmDonViQuery.Where(dv => dv.Id == userQuery
@@ -72,7 +70,7 @@ internal class TongHopDeXuatChuTruongGetExportQueryHandler(IServiceProvider serv
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "Không rõ",
+                TenDuAn = e.DuAn != null ? (e.DuAn!.TenDuAn ?? "") : "Không rõ",
                 TenPhongBanPhuTrach = e.CreatedBy != null
                     ? dmDonViQuery.Where(dv => dv.Id == userQuery
                             .Where(us => us.UserPortalId == Convert.ToInt64(e.CreatedBy))
@@ -82,11 +80,11 @@ internal class TongHopDeXuatChuTruongGetExportQueryHandler(IServiceProvider serv
                         .FirstOrDefault() ?? "Không rõ"
                     : "Không rõ",
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                    ? e.TrangThai.Ma
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                    ? e.TrangThai!.Ma
                     : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                    ? e.TrangThai.Ten
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                    ? e.TrangThai!.Ten
                     : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 Loai = "ChuyenTiep",
             });

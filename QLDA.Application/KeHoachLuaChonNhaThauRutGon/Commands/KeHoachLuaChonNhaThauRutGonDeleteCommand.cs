@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 
@@ -14,7 +13,7 @@ public record KeHoachLuaChonNhaThauRutGonDeleteCommandHandler : IRequestHandler<
 {
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> KeHoachLuaChonNhaThauRutGon;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
@@ -23,7 +22,7 @@ public record KeHoachLuaChonNhaThauRutGonDeleteCommandHandler : IRequestHandler<
     public KeHoachLuaChonNhaThauRutGonDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         KeHoachLuaChonNhaThauRutGon = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();

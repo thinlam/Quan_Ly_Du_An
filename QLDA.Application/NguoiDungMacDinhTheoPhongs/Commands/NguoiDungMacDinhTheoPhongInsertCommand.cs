@@ -1,5 +1,4 @@
 using System.Data;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Application.NguoiDungMacDinhTheoPhongs.DTOs;
 using QLDA.Application.NguoiDungMacDinhTheoPhongs.Queries;
 

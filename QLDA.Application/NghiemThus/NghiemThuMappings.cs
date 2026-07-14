@@ -39,7 +39,7 @@ public static class NghiemThuMappings {
         };
     }
 
-    public static NghiemThuDto ToDto(this NghiemThu entity, IEnumerable<TepDinhKem>? files = null) {
+    public static NghiemThuDto ToDto(this NghiemThu entity, IEnumerable<Attachment>? files = null) {
         return new NghiemThuDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

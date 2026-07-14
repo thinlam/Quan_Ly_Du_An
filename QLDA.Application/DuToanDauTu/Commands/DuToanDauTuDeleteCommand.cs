@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DuToanDauTus.Commands;
 
@@ -12,7 +11,7 @@ public record DuToanDauTuDeleteCommand(Guid Id) : IRequest<int>
 public record DuToanDauTuDeleteCommandHandler : IRequestHandler<DuToanDauTuDeleteCommand, int>
 {
     private readonly IRepository<DuToanDauTu, Guid> DuToanDauTu;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
@@ -21,7 +20,7 @@ public record DuToanDauTuDeleteCommandHandler : IRequestHandler<DuToanDauTuDelet
     public DuToanDauTuDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         DuToanDauTu = serviceProvider.GetRequiredService<IRepository<DuToanDauTu, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();

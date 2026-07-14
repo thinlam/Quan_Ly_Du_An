@@ -1,10 +1,7 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
-using QLDA.Application.ToTrinhCoThamDinhs.Commands;
 using QLDA.Domain.Constants;
 using Serilog;
 using System.Data;
@@ -76,26 +73,27 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
 
             var entity = await _repository.GetQueryableSet().Include(e => e.TrangThai).Include(e => e.DuAn)
                 .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+            ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ đề xuất cấp độ CNTT");
             var userId = _userProvider.Info.UserID;
-            var maTrangThai = entity.TrangThai.Ma;
+            var maTrangThai = entity.TrangThai!.Ma;
 
             await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
-            // Get PhongBanPhuTrachChinh/PhoiHop ở bước này 
+            // Get PhongBanPhuTrachChinh/PhoiHop ở bước này
             // var buoc = _buocDuAnRepo.GetQueryableSet().
             long createUserId = 0;
             long.TryParse(entity.CreatedBy, out createUserId);
-            var userChuTri = _userMasterRepo.GetQueryableSet().AsNoTracking().Where(x => x.UserPortalId == createUserId).FirstOrDefault();
-            
-            
+            var userChuTri = _userMasterRepo.GetQueryableSet().AsNoTracking().Where(x => x.UserPortalId == createUserId).FirstOrDefault() ?? new UserMaster();
+
+
             // get các trạng thái được phép xử lý
             var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
                        .Where(x => x.Used && !(x.IsDeleted ?? false)
                        && x.Loai == PheDuyetEntityNames.HoSoDeXuatCapDoCntt
-                       && x.MaTrangThaiHienTai == entity.TrangThai.Ma
+                       && x.MaTrangThaiHienTai == entity.TrangThai!.Ma
                        && x.MaTrangThaiTiepTheo == request.TrangThaiTiepTheo
                        && (x.RoleLevel == 0
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == userChuTri.PhongBanId)
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh &&  _userProvider.Info.UserID == entity.DuAn.LanhDaoPhuTrachId )
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == userChuTri!.PhongBanId)
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh &&  _userProvider.Info.UserID == entity.DuAn!.LanhDaoPhuTrachId )
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // chuyển chỉ định phòng hạ tầng nhận
                        )).ToListAsync(cancellationToken);
 

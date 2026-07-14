@@ -1,6 +1,4 @@
 using System.Globalization;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Domain.Constants;
@@ -52,8 +50,8 @@ internal class DeXuatNhuCauKinhPhiGetDanhSachExportQueryHandler(IServiceProvider
                     .Where(dv => dv.Id == e.DonViDeXuatId)
                     .Select(dv => dv.TenDonVi)
                     .FirstOrDefault(),
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                    ? e.TrangThai.Ten
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                    ? e.TrangThai!.Ten
                     : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .ToListAsync(cancellationToken);

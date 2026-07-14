@@ -1,10 +1,6 @@
 using System.Collections.Concurrent;
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Providers;
-using QLDA.Domain.Entities;
-using PermissionConstants = QLDA.Domain.Constants.PermissionConstants;
-using RoleConstants = QLDA.Domain.Constants.RoleConstants;
 
 namespace QLDA.Application.Authorization;
 

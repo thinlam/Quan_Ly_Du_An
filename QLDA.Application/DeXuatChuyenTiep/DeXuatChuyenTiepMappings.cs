@@ -20,7 +20,7 @@ public static class DeXuatChuyenTiepMappings
         };
     }
 
-    public static DeXuatChuyenTiepDto ToDto(this DeXuatChuyenTiep entity, List<TepDinhKem>? files = null)
+    public static DeXuatChuyenTiepDto ToDto(this DeXuatChuyenTiep entity, List<Attachment>? files = null)
     {
         return new DeXuatChuyenTiepDto
         {

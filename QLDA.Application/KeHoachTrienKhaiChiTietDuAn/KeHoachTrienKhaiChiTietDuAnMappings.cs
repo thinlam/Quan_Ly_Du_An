@@ -1,7 +1,6 @@
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 
 namespace QLDA.Application.KeHoachTrienKhaiChiTietDuAnMappings;
 
@@ -24,14 +23,14 @@ public static class KeHoachTrienKhaiChiTietDuAnMappings {
 
 
 
-    public static KeHoachTrienKhaiChiTietDuAnDto ToDto(this KeHoachTrienKhaiChiTietDuAn entity, List<TepDinhKem>? files = null) =>
+    public static KeHoachTrienKhaiChiTietDuAnDto ToDto(this KeHoachTrienKhaiChiTietDuAn entity, List<Attachment>? files = null) =>
         new() {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
 
             TrangThaiId = entity.TrangThaiId,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             MaMoc = entity.MaMoc,
             GhiChu = entity.GhiChu,
             TiLeHoanThanh = entity.TiLeHoanThanh,

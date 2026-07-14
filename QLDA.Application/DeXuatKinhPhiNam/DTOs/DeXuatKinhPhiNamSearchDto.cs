@@ -1,5 +1,3 @@
-using QLDA.Application.Common.Interfaces;
-
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
 
 public record DeXuatNhuCauKinhPhiNamSearchDto 

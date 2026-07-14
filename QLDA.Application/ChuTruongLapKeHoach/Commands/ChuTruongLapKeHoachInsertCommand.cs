@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using QLDA.Domain.Constants;
 using System.Data;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 

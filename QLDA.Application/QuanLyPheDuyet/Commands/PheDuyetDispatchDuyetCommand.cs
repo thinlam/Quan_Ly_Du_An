@@ -1,13 +1,11 @@
 using QLDA.Application.Authorization;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
-using QLDA.Application.Common;
 using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 using QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
 using QLDA.Application.DuToanDauTus.Commands;
-using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;

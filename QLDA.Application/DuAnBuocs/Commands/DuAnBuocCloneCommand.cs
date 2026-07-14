@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucBuocs.DTOs;
 using QLDA.Application.DuAnBuocs.Extensions;
 
@@ -108,7 +107,6 @@ internal class DuAnBuocCloneCommandHandler : IRequestHandler<DuAnBuocCloneComman
 
 
         var toAdd = new List<DuAnBuoc>();
-        var firstNode = true;
 
         var orderedSteps = buocs.ToSteps().ToTreeList();
 

@@ -9,14 +9,14 @@ public static class DanhMucBuocMappingConfiguration {
             ParentId = entity.ParentId,
             GiaiDoanId = entity.GiaiDoanId,
             Level = entity.Level,
-            Ma = entity.Ma,
-            MoTa = entity.MoTa,
+            Ma = entity.Ma ?? string.Empty,
+            MoTa = entity.MoTa ?? string.Empty,
             Path = entity.Path,
             QuyTrinhId = entity.QuyTrinhId,
             SoNgayThucHien = entity.SoNgayThucHien,
             Stt = entity.Stt,
             Used = entity.Used,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             DanhSachManHinh = entity.BuocManHinhs?.OrderByDefault().Select(e => e.RightId).ToList(),
         };
 

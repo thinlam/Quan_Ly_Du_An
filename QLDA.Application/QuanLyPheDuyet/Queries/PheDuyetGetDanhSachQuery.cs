@@ -1,11 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 using QLDA.Application.Providers;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
 using UserMaster = BuildingBlocks.Domain.Entities.UserMaster;
 
@@ -44,7 +41,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
     private readonly IBuocAuthorizationProvider _buocAuth;
     private readonly IAuthorizationContext _authContext;
     private readonly IAppSettingsProvider _settings;
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepo;
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepo;
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiTrangThaiToTrinh;
     private readonly IRepository<UserMaster, long> _userMasterRepo;
     public PheDuyetGetDanhSachQueryHandler(IServiceProvider serviceProvider)
@@ -62,7 +59,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         _quyetDinhDieuChinhRepo = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
         _historyRepo = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
-        _tepDinhKemRepo = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _tepDinhKemRepo = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _DmTrangThaiPheDuyetRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _duongDiTrangThaiToTrinh = serviceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
         _userMasterRepo = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
@@ -213,23 +210,23 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         var query = _duToanRepo.GetQueryableSet().AsNoTracking()
             .Include(e => e.TrangThai)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
-            .WhereIf(request.TrangThai != null, e => e.TrangThai.Ma == request.TrangThai)
+            .WhereIf(request.TrangThai != null, e => e.TrangThai!.Ma == request.TrangThai)
             .WhereGlobalFilter(request, e => e.So, e => e.NguoiKy, e => e.TrichYeu)
             .Select(e => new PheDuyetListItemDto
             {
                 Id = e.Id,
                 Type = PheDuyetEntityNames.PheDuyetDuToan,
                 DuAnId = e.DuAnId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
-                TenBuoc = e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : string.Empty,
-                TenGiaiDoan = e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : string.Empty,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : string.Empty,
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : string.Empty,
                 SoVanBan = e.So,
                 TrichYeu = e.TrichYeu,
                 NguoiKy = e.NguoiKy,
                 NgayKy = e.NgayKy,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);
@@ -259,11 +256,11 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 Id = e.Id,
                 Type = PheDuyetEntityNames.HoSoDeXuatCapDoCntt,
                 DuAnId = e.DuAnId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
                 TrichYeu = e.NoiDungDeNghi,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);
@@ -293,7 +290,7 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 Id = e.Id,
                 Type = PheDuyetEntityNames.HoSoMoiThauDienTu,
                 DuAnId = e.DuAnId ?? Guid.Empty,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
@@ -326,11 +323,11 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
                 Id = e.Id,
                 Type = PheDuyetEntityNames.BaoCaoKetQuaKhaoSat,
                 DuAnId = e.DuAnId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
                 TrichYeu = e.NoiDungBaoCao,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             });
 
         var items = await query.ToListAsync(cancellationToken);

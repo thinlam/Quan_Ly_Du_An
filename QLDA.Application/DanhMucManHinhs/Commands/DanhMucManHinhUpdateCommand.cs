@@ -24,7 +24,7 @@ internal class DanhMucManHinhUpdateCommandHandler : IRequestHandler<DanhMucManHi
 
         await DanhMucManHinh.UpdateAsync(entity, cancellationToken);
         await DanhMucManHinh.UnitOfWork.SaveChangesAsync(cancellationToken);
-        return entity;
+        return entity!;
     }
     #region  Private helper methods
 
