@@ -1,8 +1,8 @@
 # Task – Export Excel màn hình Quản lý phê duyệt
 
 **Ngày tạo:** 10/07/2026  
-**Cập nhật:** 10/07/2026  
-**Trạng thái:** ✅ **IMPLEMENTED** — đã code + fix lệch số dòng list/export  
+**Cập nhật:** 14/07/2026  
+**Trạng thái:** ✅ **IMPLEMENTED** — đã code + fix lệch số dòng list/export; template là SOT layout  
 **Module:** `QuanLyPheDuyet`  
 **Màn hình:** Quản lý dự án → Quản lý phê duyệt (`/quan-ly-du-an/quan-ly-phe-duyet`)  
 **Pattern tham chiếu:**
@@ -11,6 +11,7 @@
 - Export flat (Aspose): `BanGiaoHoSoGetDanhSachExportQuery` + `PrintController`
 - Export + test: `NoiDungDaKyGetDanhSachExportQuery`, `NoiDungDaKyExportTests`
 - Workflow nghiệp vụ: [docs/workflow-quan-ly-phe-duyet.md](../../workflow-quan-ly-phe-duyet.md)
+- Design template-driven: [docs/superpowers/specs/2026-07-14-export-template-driven-quan-ly-phe-duyet-design.md](../../superpowers/specs/2026-07-14-export-template-driven-quan-ly-phe-duyet-design.md)
 
 **Liên quan:** [task-export-excel-ban-giao-ho-so.md](../BanGiaoHoSo/task-export-excel-ban-giao-ho-so.md), [task-export-excel-noi-dung-da-ky.md](../KySo/task-export-excel-noi-dung-da-ky.md)
 
@@ -28,6 +29,24 @@ Bổ sung **xuất Excel danh sách phê duyệt** trên màn hình **Quản lý
 | Filter dùng chung | `PheDuyetQueryableExtensions.ApplyDanhSachFilters` |
 
 **Không sửa migration.** **Không tạo model/DTO trong WebApi.** **Không tạo Service trong Application layer.**
+
+---
+
+## Template là nguồn cấu hình layout (SOT)
+
+Runtime export **không** đọc `DanhSachQuanLyPheDuyetExportDescriptor.Columns`
+để sắp cột / width / align. Engine (`ExporterHelper`) đọc placeholder `$Field`
+trên `PrintTemplates/DanhSachQuanLyPheDuyet.xlsx`.
+
+| Muốn | Làm |
+|------|-----|
+| Đổi thứ tự cột | Sửa hàng header + hàng `$Field` trong `.xlsx` |
+| Đổi canh lề / width / font / border | Format trong Excel |
+| Thêm cột đã có trên DTO | Thêm header + `$PropertyName` trong template |
+| Thêm dữ liệu mới | Thêm property DTO + map trong `PheDuyetExportMappings` + `$Field` trên template |
+| Chạy Gen `--force` | **Bị chặn** (`HandMaintainedTemplate = true`) |
+
+**Không** hard-code `ColumnAlign` / width / thứ tự layout trong descriptor.
 
 ---
 
@@ -324,7 +343,11 @@ const response = await api.get('/api/print/danh-sach-quan-ly-phe-duyet', {
 
 **Regenerate template:**
 
+> Template **hand-maintained**. Không regenerate bằng Gen.
+> Chỉnh trực tiếp: `QLDA.WebApi/PrintTemplates/DanhSachQuanLyPheDuyet.xlsx`
+
 ```powershell
+# Sẽ bị [SKIP] — HandMaintainedTemplate = true (kể cả --force)
 dotnet run --project e:\SER\QLDA.Gen\QLDA.Gen.csproj -- danh-sach-quan-ly-phe-duyet --force e:\SER\QLDA.WebApi\PrintTemplates
 ```
 
@@ -356,8 +379,9 @@ docs/workflow-quan-ly-phe-duyet.md
 | **1.0** | 10/07/2026 | Spec ban đầu |
 | **1.1** | 10/07/2026 | **Implemented** — export API, extension, template, tests |
 | **1.2** | 10/07/2026 | **Fix** lệch 36/35 dòng — tách `AttachTepDinhKem` khỏi EF Select; thêm test parity; bổ sung bảng mã `trangThai` |
+| **1.3** | 14/07/2026 | Refactor docs + Gen: template-driven SOT; descriptor bỏ width/align; HandMaintainedTemplate |
 
 ---
 
-**Version:** 1.2  
-**Trạng thái:** ✅ Implemented — chờ FE tích hợp nút export + verify trên môi trường deploy
+**Version:** 1.3  
+**Trạng thái:** ✅ Implemented — template là SOT layout; chờ FE tích hợp nút export + verify trên môi trường deploy

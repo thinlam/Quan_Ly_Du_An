@@ -3,8 +3,18 @@ using QLDA.Gen.Metadata;
 namespace QLDA.Gen.Descriptors;
 
 /// <summary>
-/// Descriptor for "DanhSachQuanLyPheDuyet.xlsx" — LetterheadExport.
-/// Template row = R5. Field names match <see cref="QLDA.Application.QuanLyPheDuyet.DTOs.PheDuyetExportDto"/>.
+/// Descriptor cho DanhSachQuanLyPheDuyet.xlsx.
+/// <para>
+/// <b>Runtime SOT:</b> <c>QLDA.WebApi/PrintTemplates/DanhSachQuanLyPheDuyet.xlsx</c>
+/// — thứ tự cột, header, width, align, font, border, wrap, merge do template quyết định.
+/// Export dùng <c>ExporterHelper.Export</c> + placeholder <c>$PropertyName</c>
+/// khớp <see cref="QLDA.Application.QuanLyPheDuyet.DTOs.PheDuyetExportDto"/>.
+/// </para>
+/// <para>
+/// <b>Columns dưới đây</b> chỉ là catalog tên field (bootstrap / docs cho Gen).
+/// Không dùng order / width / alignment của list này lúc export.
+/// Template row layout LetterheadExport = R5 khi generate lần đầu.
+/// </para>
 /// </summary>
 public class DanhSachQuanLyPheDuyetExportDescriptor : IExportDescriptor
 {
@@ -16,14 +26,21 @@ public class DanhSachQuanLyPheDuyetExportDescriptor : IExportDescriptor
 
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
 
+    /// <inheritdoc />
+    public bool HandMaintainedTemplate => true;
+
+    /// <summary>
+    /// Catalog field names chỉ dùng nếu template chưa tồn tại và Gen tạo mới.
+    /// Header text ở đây không phải SOT runtime — sửa header trên file .xlsx.
+    /// </summary>
     public List<ExportColumn> Columns { get; } =
     [
-        new("Stt", "STT", 8, null, false, ColumnAlign.Center),
-        new("TenDuAn", "Dự án", 36, null, true, ColumnAlign.Left),
-        new("TenGiaiDoan", "Giai đoạn", 24, null, true, ColumnAlign.Left),
-        new("TenBuoc", "Tên bước", 28, null, true, ColumnAlign.Left),
-        new("NguoiTrinh", "Người trình", 24, null, true, ColumnAlign.Left),
-        new("NguoiDuyet", "Người duyệt", 24, null, true, ColumnAlign.Left),
-        new("TenTrangThai", "Trạng thái", 18, null, true, ColumnAlign.Center),
+        new("Stt", "STT"),
+        new("TenDuAn", "Dự án"),
+        new("TenGiaiDoan", "Giai đoạn"),
+        new("TenBuoc", "Tên bước"),
+        new("NguoiTrinh", "Người trình"),
+        new("NguoiDuyet", "Người duyệt"),
+        new("TenTrangThai", "Trạng thái"),
     ];
 }

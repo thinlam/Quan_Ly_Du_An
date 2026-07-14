@@ -20,17 +20,19 @@ public class DanhSachDuAnExportDescriptor : IExportDescriptor
 
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
 
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
+
     public List<ExportColumn> Columns { get; } =
     [
-        new("stt",                   "STT",                   6, null, false, ColumnAlign.Center),
-        new("maDuAn",                "Mã dự án",             12, null, false, ColumnAlign.Center),
-        new("tenDuAn",               "Tên dự án",            42, null, true,  ColumnAlign.Left),
-        new("thoiGianKhoiCong",      "Thời gian khởi công",  16, null, false, ColumnAlign.Center),
-        new("lanhDaoPhuTrachId",     "Lãnh đạo phụ trách",   24, null, true,  ColumnAlign.Left),
-        new("donViPhuTrachChinhId",  "Đơn vị phụ trách",     22, null, true,  ColumnAlign.Left),
-        new("donViPhoiHopIds",       "Đơn vị phối hợp",      22, null, true,  ColumnAlign.Left),
-        new("hinhThucDauTuId",       "Hình thức đầu tư",     20, null, true,  ColumnAlign.Left),
-        new("hinhThucQuanLyDuAnId",  "Hình thức quản lý",    20, null, true,  ColumnAlign.Left),
-        new("tongMucDauTu",          "Tổng mức đầu tư",      18, "#,##0", false, ColumnAlign.Right),
+        new("stt", "STT"),
+        new("maDuAn", "Mã dự án"),
+        new("tenDuAn", "Tên dự án"),
+        new("thoiGianKhoiCong", "Thời gian khởi công"),
+        new("lanhDaoPhuTrachId", "Lãnh đạo phụ trách"),
+        new("donViPhuTrachChinhId", "Đơn vị phụ trách"),
+        new("donViPhoiHopIds", "Đơn vị phối hợp"),
+        new("hinhThucDauTuId", "Hình thức đầu tư"),
+        new("hinhThucQuanLyDuAnId", "Hình thức quản lý"),
+        new("tongMucDauTu", "Tổng mức đầu tư"),
     ];
 }

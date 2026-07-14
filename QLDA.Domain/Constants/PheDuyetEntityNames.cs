@@ -154,15 +154,44 @@ public static class LoaiToTrinhKhongDuyetExtensions
 
         return false;
     }
-    public static string GetDescriptionFromName(this string fieldName) {
-        var field = typeof(PheDuyetEntityNames).GetField(fieldName);
+    /// <summary>
+    /// Resolve Description của const trong <see cref="PheDuyetEntityNames"/>.
+    /// Chấp nhận cả tên field (<c>DeXuatChuTruongChuyenTiep</c>) lẫn giá trị const (<c>DeXuatChuyenTiep</c>)
+    /// vì API phê duyệt truyền <c>type</c> = giá trị EntityName.
+    /// </summary>
+    public static string GetDescriptionFromName(this string nameOrValue)
+    {
+        if (string.IsNullOrWhiteSpace(nameOrValue))
+            return nameOrValue ?? string.Empty;
 
-        if (field == null)
-            return fieldName;
+        const BindingFlags flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
+        var type = typeof(PheDuyetEntityNames);
 
-        var attr = field.GetCustomAttribute<DescriptionAttribute>();
+        // 1) Match theo tên field C#
+        var byName = type.GetField(nameOrValue, flags);
+        if (byName != null)
+        {
+            var attr = byName.GetCustomAttribute<DescriptionAttribute>();
+            return attr?.Description ?? nameOrValue;
+        }
 
-        return attr?.Description ?? fieldName;
+        // 2) Match theo giá trị const (EntityName / route type)
+        foreach (var field in type.GetFields(flags))
+        {
+            if (field.FieldType != typeof(string))
+                continue;
+
+            if (field.GetValue(null) is not string value)
+                continue;
+
+            if (!string.Equals(value, nameOrValue, StringComparison.Ordinal))
+                continue;
+
+            var attr = field.GetCustomAttribute<DescriptionAttribute>();
+            return attr?.Description ?? nameOrValue;
+        }
+
+        return nameOrValue;
     }
 
 }

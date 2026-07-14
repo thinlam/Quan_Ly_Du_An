@@ -18,7 +18,10 @@ public class PheDuyet : Entity<Guid>, IAggregateRoot {
 
     public int? TrangThaiId { get; set; }
     public string? NoiDung { get; set; }
-    public int? NguoiTrinhId { get; set; }
+    /// <summary>
+    /// USER_MASTER.UserPortalId — DB column is bigint
+    /// </summary>
+    public long? NguoiTrinhId { get; set; }
     public DateTimeOffset NgayXuLy { get; set; }
 
     #region Navigation Properties

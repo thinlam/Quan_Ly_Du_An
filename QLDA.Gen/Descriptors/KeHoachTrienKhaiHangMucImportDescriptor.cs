@@ -11,7 +11,6 @@ public class KeHoachTrienKhaiHangMucImportDescriptor : IImportDescriptor {
     public string? HintText =>
         "Nhập dữ liệu vào bảng bên dưới. Dự án / Giai đoạn / Đơn vị / Cán bộ chọn từ danh sách. "
         + "Đơn vị phối hợp và Cán bộ phối hợp: chọn từ danh sách, nhiều giá trị cách nhau dấu phẩy (vd: Phòng A, Phòng B). Ngày nhập dd/MM/yyyy.";
-
     public List<ImportColumn> Columns { get; } =
     [
         new() { Header = "Dự án", Description = "Chọn từ danh sách", Placeholder = "$cbo1", ComboIndex = 1, Width = 40,
