@@ -39,6 +39,7 @@ internal sealed class ThongBaoInsertCommandHandler
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
     private readonly IRepository<Domain.Entities.DeXuatChuyenTiep, Guid> _deXuatChuyenTiepRepository;
+    private readonly IRepository<DuAnBuoc, int> _duAnBuocRepository;
     private readonly ILogger<ThongBaoInsertCommandHandler> _logger;
 
     public ThongBaoInsertCommandHandler(IServiceProvider serviceProvider)
@@ -49,6 +50,7 @@ internal sealed class ThongBaoInsertCommandHandler
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _deXuatChuyenTiepRepository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.DeXuatChuyenTiep, Guid>>();
+        _duAnBuocRepository = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _logger = serviceProvider.GetRequiredService<ILogger<ThongBaoInsertCommandHandler>>();
     }
 
@@ -160,10 +162,22 @@ internal sealed class ThongBaoInsertCommandHandler
                 .ThenInclude(x => x!.BuocHienTai)
                 .FirstOrDefaultAsync(e => e.Id == request.EntityId, cancellationToken);
 
+            string? tenBuoc = null;
+            if (entity?.BuocId is int buocId)
+            {
+                tenBuoc = await _duAnBuocRepository.GetQueryableSet()
+                    .AsNoTracking()
+                    .Where(b => b.Id == buocId)
+                    .Select(b => b.TenBuoc)
+                    .FirstOrDefaultAsync(cancellationToken);
+            }
+
+            tenBuoc ??= entity?.DuAn?.BuocHienTai?.TenBuoc;
+
             return $"Tờ trình/phê duyệt <b>{tenLoai}</b>" +
                    $" giá trị giải ngân <b>{entity?.SoLieuGiaiNgan}</b>" +
                    $" của dự án <b>{entity?.DuAn?.TenDuAn}</b> - " +
-                   $"<b>{entity?.DuAn?.BuocHienTai?.TenBuoc}</b> {ketQua}";
+                   $"<b>{tenBuoc}</b> {ketQua}";
         }
 
         return $"Tờ trình/phê duyệt <b>{tenLoai}</b> {ketQua}";

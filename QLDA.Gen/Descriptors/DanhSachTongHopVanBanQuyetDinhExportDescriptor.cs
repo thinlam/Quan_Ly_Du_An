@@ -13,12 +13,12 @@ public class DanhSachTongHopVanBanQuyetDinhExportDescriptor : IExportDescriptor
     public string TemplateFileName => "DanhSachTongHopVanBanQuyetDinh.xlsx";
     public List<ExportColumn> Columns { get; } =
     [
-        new("Stt",      "STT",           6,  null, false, ColumnAlign.Center),
-        new("TenDuAn",  "Dự án",        36,  null, true,  ColumnAlign.Left),
-        new("So",       "Số văn bản",   20,  null, false, ColumnAlign.Left),
-        new("Ngay",     "Ngày",         32,  "dd/MM/yyyy", false, ColumnAlign.Center),
-        new("Loai",     "Loại văn bản", 39,  null, false, ColumnAlign.Left),
-        new("TrichYeu", "Trích yếu",    49,  null, true,  ColumnAlign.Left),
+        new("Stt", "STT"),
+        new("TenDuAn", "Dự án"),
+        new("So", "Số văn bản"),
+        new("Ngay", "Ngày"),
+        new("Loai", "Loại văn bản"),
+        new("TrichYeu", "Trích yếu"),
     ];
 
     public string OutputPath { get; set; } = string.Empty;
@@ -26,4 +26,6 @@ public class DanhSachTongHopVanBanQuyetDinhExportDescriptor : IExportDescriptor
     public string Title => "TỔNG HỢP VĂN BẢN QUYẾT ĐỊNH";
 
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
+
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
 }

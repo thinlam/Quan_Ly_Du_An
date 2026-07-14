@@ -32,6 +32,7 @@ using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.QuanLyPheDuyet;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.QuanLyPheDuyet.Queries;
+using QLDA.Application.QuyetDinhLapBanQLDAs.DTOs;
 using QLDA.Application.QuyetDinhLapBanQLDAs.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
@@ -1623,28 +1624,27 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        var rows = await Mediator.Send(new QuyetDinhLapBanQldaGetQuery {
+        var rows = await Mediator.Send(new QuyetDinhLapBanQldaGetPrintQuery {
             Id = id,
-            IncludeThanhVien= true,
+            ThrowIfNull = true,
         }, cancellationToken);
 
         var doc = new Aspose.Words.Document(templatePath);
         doc.MailMerge.UseNonMergeFields = true;
         DateTime ngayHienTai = DateTime.Now;
         var replacements = new Dictionary<string, string> {
-            { "So", rows.So??""},
-            { "TrichYeu", rows?.TrichYeu??"" },
-            { "SoDuThao", rows?.SoDuThao ?? rows?.So ?? ""},
-            { "TrichYeuDuThao", rows?.TrichYeuDuThao??rows?.TrichYeu ?? ""},
-            { "NgayThangNam", $"Ngày {ngayHienTai.ToString("dd")} tháng {ngayHienTai.ToString("MM") } năm {ngayHienTai.Year}"},
-            { "NguoiKy", rows?.NguoiKy?? ""}
-
+            { "So", rows?.So ?? string.Empty },
+            { "TrichYeu", rows?.TrichYeu ?? string.Empty },
+            { "SoDuThao", rows?.SoDuThao ?? rows?.So ?? string.Empty },
+            { "TrichYeuDuThao", rows?.TrichYeuDuThao ?? rows?.TrichYeu ?? string.Empty },
+            { "NgayThangNam", $"Ngày {ngayHienTai:dd} tháng {ngayHienTai:MM} năm {ngayHienTai:yyyy}" },
+            { "TenLanhDaoPhuTrach", rows?.TenLanhDaoPhuTrach ?? string.Empty },
         };
-        
 
-        DataTable dt = rows?.ThanhViens?.ToDataTable() ??
-                       DataTableConvertExtensions.CreateDataTable<ThanhVienBanQLDA>("ThanhVien");
-
+        var thanhViens = rows!.ThanhViens ?? [];
+        DataTable dt = thanhViens.Count > 0
+            ? thanhViens.ToDataTable()
+            : DataTableConvertExtensions.CreateDataTable<ThanhVienBanQldaDto>("ThanhVien");
         dt.TableName = "ThanhVien";
         DataSet ds = new DataSet();
         ds.Tables.Add(dt);
@@ -1652,8 +1652,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             GetDownloadFileName(fileNameTemplate));
-
-
     }
 
     #endregion

@@ -16,13 +16,17 @@ public class DanhSachNoiDungDaKyExportDescriptor : IExportDescriptor
 
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
 
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
+    
+    
+
     public List<ExportColumn> Columns { get; } =
     [
-        new("Stt", "STT", 8, null, false, ColumnAlign.Center),
-        new("TenFile", "Tên file", 36, null, true, ColumnAlign.Left),
-        new("TenGoc", "Tên gốc", 41, null, true, ColumnAlign.Left),
-        new("LoaiFile", "Loại file", 48, null, true, ColumnAlign.Center),
-        new("DungLuong", "Dung lượng", 11, null, false, ColumnAlign.Right),
-        new("NguoiTao", "Người tạo", 24, null, true, ColumnAlign.Left),
+        new("Stt", "STT"),
+        new("TenFile", "Tên file"),
+        new("TenGoc", "Tên gốc"),
+        new("LoaiFile", "Loại file"),
+        new("DungLuong", "Dung lượng"),
+        new("NguoiTao", "Người tạo"),
     ];
 }

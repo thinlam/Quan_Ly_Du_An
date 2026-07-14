@@ -29,6 +29,14 @@ public class TemplateGenerator
 
     public void GenerateTemplate(IExportDescriptor descriptor)
     {
+        if (descriptor.HandMaintainedTemplate && File.Exists(descriptor.OutputPath))
+        {
+            Console.WriteLine(
+                $"[SKIP] {descriptor.TemplateFileName} is hand-maintained. " +
+                "Edit the .xlsx template directly; Gen will not overwrite (including --force).");
+            return;
+        }
+
         if (File.Exists(descriptor.OutputPath) && !_force)
         {
             Console.WriteLine($"Skipped (already exists): {descriptor.OutputPath}");

@@ -12,19 +12,20 @@ public class KeHoachTrienKhaiHangMucExportDescriptor : IExportDescriptor
     public string EntityName => "KeHoachTrienKhaiHangMuc";
     public string TemplateFileName => "KeHoachTrienKhaiHangMuc.xlsx";
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
     public List<ExportColumn> Columns { get; } =
     [
-        new("Stt", "STT", 6, null, false, ColumnAlign.Center),
-        new("GiaiDoan", "Giai đoạn", 22, null, false, ColumnAlign.Left),
-        new("TenHangMuc", "Hạng mục công việc", 42, null, true, ColumnAlign.Left),
-        new("DonViChuTri", "Đơn vị chủ trì", 18, null, true, ColumnAlign.Left),
-        new("DonViPhoiHop", "Đơn vị phối hợp", 24, null, true, ColumnAlign.Left),
-        new("NgayBatDau", "Thời gian bắt đầu", 16, "dd/MM/yyyy", false, ColumnAlign.Center),
-        new("NgayKetThuc", "thời gian kết thúc", 16, "dd/MM/yyyy", false, ColumnAlign.Center),
-        new("ThoiHan", "Thời hạn", 10, null, false, ColumnAlign.Center),
-        new("CanBoChuTri", "Cán bộ chủ trì", 24, null, true, ColumnAlign.Left),
-        new("CanBoPhoiHop", "Cán bộ phối hợp", 25, null, true, ColumnAlign.Left),
-        new("KinhPhi", "kinh phí", 16, "#,##0", false, ColumnAlign.Right),
+        new("Stt", "STT"),
+        new("GiaiDoan", "Giai đoạn"),
+        new("TenHangMuc", "Hạng mục công việc"),
+        new("DonViChuTri", "Đơn vị chủ trì"),
+        new("DonViPhoiHop", "Đơn vị phối hợp"),
+        new("NgayBatDau", "Thời gian bắt đầu"),
+        new("NgayKetThuc", "thời gian kết thúc"),
+        new("ThoiHan", "Thời hạn"),
+        new("CanBoChuTri", "Cán bộ chủ trì"),
+        new("CanBoPhoiHop", "Cán bộ phối hợp"),
+        new("KinhPhi", "kinh phí"),
     ];
 
     public string OutputPath { get; set; } = string.Empty;
