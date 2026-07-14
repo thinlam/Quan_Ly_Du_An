@@ -1,14 +1,13 @@
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Enums;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.BanGiaoHoSos;
 
 public static class BanGiaoHoSoMappingConfiguration {
     public static BanGiaoHoSoModel ToModel(this BanGiaoHoSo entity,
-        List<TepDinhKem>? tepHSBanGiao = null,
-        List<TepDinhKem>? bienBanBanGiao = null,
+        List<Attachment>? tepHSBanGiao = null,
+        List<Attachment>? bienBanBanGiao = null,
         string? tenPhongBanNhan = null) => new() {
         Id = entity.Id,
         Ma = entity.Ma,
@@ -26,10 +25,10 @@ public static class BanGiaoHoSoMappingConfiguration {
     };
 
     /// <summary>Biên bản bàn giao (EGroupType.BienBanBanGiao) – gắn khi thực hiện bàn giao</summary>
-    public static List<TepDinhKem> GetDanhSachBienBanBanGiao(this BanGiaoHoSoBanGiaoModel model, Guid groupId) {
+    public static List<Attachment> GetDanhSachBienBanBanGiao(this BanGiaoHoSoBanGiaoModel model, Guid groupId) {
         if (model.DanhSachBienBan?.Any() != true) return [];
         return model.DanhSachBienBan
-            .Select(f => new TepDinhKem {
+            .Select(f => new Attachment {
                 Id = f.Id ?? Guid.NewGuid(),
                 ParentId = f.ParentId,
                 GroupId = groupId.ToString(),

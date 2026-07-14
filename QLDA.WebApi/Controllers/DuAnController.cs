@@ -1,6 +1,7 @@
 using System.Data;
 using System.Net.Mime;
 using QLDA.Application.Common;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DuAnBuocs.Commands;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.DuAns.DTOs;
@@ -12,7 +13,6 @@ using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.DuAns;
 
 namespace QLDA.WebApi.Controllers
@@ -218,7 +218,7 @@ namespace QLDA.WebApi.Controllers
             ), cancellationToken);
 
             // Handle DuToan files
-            List<(DuToan, List<TepDinhKem>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
+            List<(DuToan, List<Attachment>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
             if (duToans.Count != 0)
             {
 
@@ -306,7 +306,7 @@ namespace QLDA.WebApi.Controllers
             await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
 
             // Xử lý DuToan và TepDinhKem tương tự như trong hàm tạo mới
-            List<(DuToan, List<TepDinhKem>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
+            List<(DuToan, List<Attachment>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
 
             // Cập nhật dự toán và files
             foreach (var (duToan, files) in duToans)
@@ -382,7 +382,7 @@ namespace QLDA.WebApi.Controllers
             }
             groupIds.Add(entity.Id.ToString());
 
-            List<TepDinhKem>? files = null;
+            List<Attachment>? files = null;
             if (groupIds.Count != 0)
             {
                 files = await Mediator.Send(new GetDanhSachTepDinhKemQuery()

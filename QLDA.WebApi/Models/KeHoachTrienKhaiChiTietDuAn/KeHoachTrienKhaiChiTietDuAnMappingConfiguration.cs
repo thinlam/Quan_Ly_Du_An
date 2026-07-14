@@ -1,6 +1,4 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
 using QLDA.WebApi.Models.CanBoTrienKhaiHangMucs;
-using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.KeHoachTrienKhaiChiTietDuAns;
 
@@ -15,8 +13,8 @@ public static class KeHoachTrienKhaiChiTietDuAnMappingConfiguration
             BuocId = model.BuocId,
             DuAnId = model.DuAnId,
 
-            GhiChu = model.GhiChu,
-            MaMoc = model.MaMoc,
+            GhiChu = model.GhiChu ?? string.Empty,
+            MaMoc = model.MaMoc ?? string.Empty,
             Ten = model.Ten,
             NgayBatDauKeHoach = model.NgayBatDauKeHoach,
             NgayBatDauThucTe = model.NgayBatDauThucTe,

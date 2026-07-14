@@ -1,13 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Application.ToTrinhCoThamDinhs.Commands;
-using QLDA.Domain.Interfaces;
-using QLDA.WebApi.Models;
 using QLDA.WebApi.Models.HoSoDeXuatCapDoCntts;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
 using System.Net.Mime;

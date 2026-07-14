@@ -1,13 +1,11 @@
-using System.Data;
 using System.Net.Mime;
-using QLDA.Domain.Constants;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -73,7 +71,7 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
             }
         ), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -108,7 +106,7 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
             }
         ), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

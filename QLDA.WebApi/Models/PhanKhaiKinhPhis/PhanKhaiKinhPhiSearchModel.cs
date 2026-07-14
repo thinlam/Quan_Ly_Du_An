@@ -1,5 +1,3 @@
-using QLDA.WebApi.Models.Common;
-
 namespace QLDA.WebApi.Models.PhanKhaiKinhPhis;
 
 public record PhanKhaiKinhPhiSearchModel : CommonSearchModel {

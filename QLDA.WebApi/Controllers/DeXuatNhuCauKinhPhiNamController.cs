@@ -1,10 +1,10 @@
 using System.Net.Mime;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -42,7 +42,7 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
     public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiNamModel model) {
         var savedEntity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamInsertCommand(model.ToInsertDto()));
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = savedEntity.Id.ToString(),
@@ -65,7 +65,7 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
 
         var entity = await Mediator.Send(new DeXuatNhuCauKinhPhiNamUpdateCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

@@ -1,7 +1,3 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
-using QLDA.WebApi.Models.CanBoTrienKhaiHangMucs;
-using QLDA.WebApi.Models.TepDinhKems;
-
 namespace QLDA.WebApi.Models.KeHoachTrienKhaiHangMucs;
 
 public static class KeHoachTrienKhaiHangMucMappingConfiguration
@@ -17,7 +13,7 @@ public static class KeHoachTrienKhaiHangMucMappingConfiguration
             TrichYeu = model.TrichYeu,
             So = model.So,
             NgayToTrinh = model.NgayToTrinh,
-            DanhSachHangMuc = model.DanhSachHangMuc.Select(o => new HangMucKeHoach() {
+            DanhSachHangMuc = model.DanhSachHangMuc!.Select(o => new HangMucKeHoach() {
                 KeHoachId = id,
                 GiaiDoanId = o.GiaiDoanId,
                 TenHangMuc = o.TenHangMuc,

@@ -1,12 +1,10 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
-using static Dapper.SqlMapper;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
 
 public static class DeXuatChuyenTiepMappingConfiguration {
-    public static DeXuatChuyenTiepModel ToModel(this DeXuatChuyenTiep entity, List<TepDinhKem>? danhSachTepDinhKem = null) =>
+    public static DeXuatChuyenTiepModel ToModel(this DeXuatChuyenTiep entity, List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

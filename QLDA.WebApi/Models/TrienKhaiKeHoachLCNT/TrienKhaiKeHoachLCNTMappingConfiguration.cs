@@ -1,4 +1,5 @@
 using QLDA.WebApi.Models.DonViTuVanKeHoachs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -6,7 +7,7 @@ namespace QLDA.WebApi.Models.TrienKhaiKeHoachLCNTs;
 
 public static class TrienKhaiKeHoachLCNTMappingConfiguration {
     public static TrienKhaiKeHoachLCNTModel ToModel(this TrienKhaiKeHoachLCNT entity, List<DonViTuVanKeHoachModel>? donViTuVan = null,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

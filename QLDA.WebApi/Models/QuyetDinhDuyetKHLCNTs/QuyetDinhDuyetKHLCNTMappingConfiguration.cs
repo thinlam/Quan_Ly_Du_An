@@ -1,25 +1,25 @@
 using QLDA.WebApi.Models.TepDinhKems;
-using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.QuyetDinhDuyetKHLCNTs;
 
 public static class QuyetDinhDuyetKHLCNTMappingConfiguration
 {
     public static QuyetDinhDuyetKHLCNTModel ToModel(this QuyetDinhDuyetKHLCNT entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new()
         {
             Id = entity.Id,
             KeHoachLuaChonNhaThauId = entity.KeHoachLuaChonNhaThauId,
             VanBanQuyetDinh = new TongHopVanBanQuyetDinhs.VanBanQuyetDinhModel()
             {
-                DuAnId = entity.VanBanQuyetDinh.DuAnId,
-                BuocId = entity.VanBanQuyetDinh.BuocId,
-                So = entity.VanBanQuyetDinh.So,
-                Ngay = entity.VanBanQuyetDinh.Ngay,
-                CoQuanQuyetDinh = entity.VanBanQuyetDinh.CoQuanQuyetDinh,
-                TrichYeu = entity.VanBanQuyetDinh.TrichYeu,
-                NgayKy = entity.VanBanQuyetDinh.NgayKy,
+                DuAnId = entity.VanBanQuyetDinh!.DuAnId,
+                BuocId = entity.VanBanQuyetDinh!.BuocId,
+                So = entity.VanBanQuyetDinh!.So ?? string.Empty,
+                Ngay = entity.VanBanQuyetDinh!.Ngay,
+                CoQuanQuyetDinh = entity.VanBanQuyetDinh!.CoQuanQuyetDinh ?? string.Empty,
+                TrichYeu = entity.VanBanQuyetDinh!.TrichYeu ?? string.Empty,
+                NgayKy = entity.VanBanQuyetDinh!.NgayKy,
                 NguoiKy = entity.VanBanQuyetDinh.NguoiKy,
             },
             DanhSachTepDinhKem = danhSachTepDinhKem?
@@ -38,14 +38,14 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
             VanBanQuyetDinh = new VanBanQuyetDinh()
             {
                 Id = id,
-                DuAnId = model.VanBanQuyetDinh.DuAnId,
-                BuocId = model.VanBanQuyetDinh.BuocId,
-                So = model.VanBanQuyetDinh.So,
-                Ngay = model.VanBanQuyetDinh.Ngay,
-                CoQuanQuyetDinh = model.VanBanQuyetDinh.CoQuanQuyetDinh,
-                TrichYeu = model.VanBanQuyetDinh.TrichYeu,
-                NgayKy = model.VanBanQuyetDinh.NgayKy,
-                NguoiKy = model.VanBanQuyetDinh.NguoiKy,
+                DuAnId = model.VanBanQuyetDinh!.DuAnId,
+                BuocId = model.VanBanQuyetDinh!.BuocId,
+                So = model.VanBanQuyetDinh!.So,
+                Ngay = model.VanBanQuyetDinh!.Ngay,
+                CoQuanQuyetDinh = model.VanBanQuyetDinh!.CoQuanQuyetDinh,
+                TrichYeu = model.VanBanQuyetDinh!.TrichYeu,
+                NgayKy = model.VanBanQuyetDinh!.NgayKy,
+                NguoiKy = model.VanBanQuyetDinh!.NguoiKy,
                 Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
             }
         };
@@ -56,14 +56,14 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
         entity.VanBanQuyetDinh = new VanBanQuyetDinh()
         {
             Id = entity.Id,
-            DuAnId = model.VanBanQuyetDinh.DuAnId,
-            BuocId = model.VanBanQuyetDinh.BuocId,
-            So = model.VanBanQuyetDinh.So,
-            Ngay = model.VanBanQuyetDinh.Ngay,
-            CoQuanQuyetDinh = model.VanBanQuyetDinh.CoQuanQuyetDinh,
-            TrichYeu = model.VanBanQuyetDinh.TrichYeu,
-            NgayKy = model.VanBanQuyetDinh.NgayKy,
-            NguoiKy = model.VanBanQuyetDinh.NguoiKy,
+            DuAnId = model.VanBanQuyetDinh!.DuAnId,
+            BuocId = model.VanBanQuyetDinh!.BuocId,
+            So = model.VanBanQuyetDinh!.So,
+            Ngay = model.VanBanQuyetDinh!.Ngay,
+            CoQuanQuyetDinh = model.VanBanQuyetDinh!.CoQuanQuyetDinh,
+            TrichYeu = model.VanBanQuyetDinh!.TrichYeu,
+            NgayKy = model.VanBanQuyetDinh!.NgayKy,
+            NguoiKy = model.VanBanQuyetDinh!.NguoiKy,
             Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
         };
         entity.KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId;

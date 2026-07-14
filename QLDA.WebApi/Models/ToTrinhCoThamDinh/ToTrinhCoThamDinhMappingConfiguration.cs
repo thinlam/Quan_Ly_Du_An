@@ -1,11 +1,12 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.ToTrinhCoThamDinhModels;
 
 namespace QLDA.WebApi.Models.ToTrinhCoThamDinhs;
 
 public static class ToTrinhCoThamDinhMappingConfiguration {
     public static ToTrinhCoThamDinhModel ToModel(this ToTrinhCoThamDinh entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,
@@ -13,7 +14,7 @@ public static class ToTrinhCoThamDinhMappingConfiguration {
             TrichYeu = entity.TrichYeu,
             So = entity.So,
             Ngay = entity.NgayToTrinh,
-            Loai= entity.Loai,
+            Loai= entity.Loai ?? string.Empty,
             DanhSachTepDinhKem = danhSachTepDinhKem?
                 .Select(o => o.ToModel()).ToList()
         };

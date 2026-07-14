@@ -1,8 +1,3 @@
-using System.ComponentModel;
-using QLDA.Domain.Interfaces;
-using QLDA.WebApi.Models.TepDinhKems;
-using SequentialGuid;
-
 namespace QLDA.WebApi.Models.CanBoTrienKhaiHangMucs;
 
 

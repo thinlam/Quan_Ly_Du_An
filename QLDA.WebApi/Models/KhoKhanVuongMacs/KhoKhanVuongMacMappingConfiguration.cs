@@ -1,11 +1,12 @@
 using QLDA.Application.Common;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.KhoKhanVuongMacs;
 
 public static class KhoKhanVuongMacMappingConfiguration {
     public static KhoKhanVuongMacModel ToModel(this BaoCaoKhoKhanVuongMac entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

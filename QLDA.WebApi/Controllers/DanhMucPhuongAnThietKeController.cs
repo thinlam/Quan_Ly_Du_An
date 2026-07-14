@@ -1,6 +1,5 @@
 using System.Net.Mime;
 using QLDA.Domain.Constants;
-using QLDA.WebApi.Models.DanhMucNhaThaus;
 
 namespace QLDA.WebApi.Controllers {
     [Tags("Danh mục phương án thiết kế")]

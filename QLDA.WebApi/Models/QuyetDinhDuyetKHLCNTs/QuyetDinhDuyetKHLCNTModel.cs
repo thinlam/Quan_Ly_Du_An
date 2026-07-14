@@ -1,4 +1,3 @@
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 using SequentialGuid;

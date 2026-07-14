@@ -1,6 +1,6 @@
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
-using QLDA.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.PhanKhaiKinhPhis;
@@ -33,7 +33,7 @@ public static class PhanKhaiKinhPhiMappingConfiguration {
         TenTrangThai = entity.TrangThai != null ? entity.TrangThai.Ten : null,
     };
 
-    public static PhanKhaiKinhPhiModel ToModel(this PhanKhaiKinhPhi entity, List<TepDinhKem>? files) => new() {
+    public static PhanKhaiKinhPhiModel ToModel(this PhanKhaiKinhPhi entity, List<Attachment>? files) => new() {
         Id = entity.Id,
         DuAnId = entity.DuAnId,
         SoToTrinh = entity.SoToTrinh,

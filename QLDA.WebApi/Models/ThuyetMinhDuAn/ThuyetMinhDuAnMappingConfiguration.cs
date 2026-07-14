@@ -1,13 +1,11 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
-using static Dapper.SqlMapper;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.ThuyetMinhDuAns;
 
 public static class ThuyetMinhDuAnMappingConfiguration
 {
-    public static ThuyetMinhDuAnModel ToModel(this ThuyetMinhDuAn entity, List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem>? danhSachTepThamDinh = null) =>
+    public static ThuyetMinhDuAnModel ToModel(this ThuyetMinhDuAn entity, List<Attachment>? danhSachTepDinhKem = null, List<Attachment>? danhSachTepThamDinh = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

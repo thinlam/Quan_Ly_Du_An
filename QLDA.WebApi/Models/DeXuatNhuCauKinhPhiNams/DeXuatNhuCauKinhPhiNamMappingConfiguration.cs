@@ -1,11 +1,12 @@
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.DTOs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.DeXuatNhuCauKinhPhiNams;
 
 public static class DeXuatNhuCauKinhPhiNamMappingConfiguration {
     public static DeXuatNhuCauKinhPhiNamModel ToModel(this DeXuatNhuCauKinhPhiNam entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             So = entity.So,

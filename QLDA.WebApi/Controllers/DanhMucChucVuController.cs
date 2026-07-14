@@ -1,6 +1,3 @@
-
-using BuildingBlocks.Application.UserMasters.Queries;
-using QLDA.Application.DanhMucDonVis.Queries;
 using QLDA.Application.DmChucVus.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DmChucVus;
