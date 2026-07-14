@@ -1,6 +1,3 @@
-using QLDA.Domain.Enums;
-using QLDA.Domain.Interfaces;
-
 namespace QLDA.Domain.Entities;
 
 public class DeXuatDonViXuLy : IJunctionEntity<Guid, long>, IAggregateRoot {

@@ -1,4 +1,3 @@
-using QLDA.Domain.Entities;
 using System.ComponentModel;
 using System.Reflection;
 
