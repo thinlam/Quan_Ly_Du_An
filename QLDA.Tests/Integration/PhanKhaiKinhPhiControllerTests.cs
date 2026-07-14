@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using BuildingBlocks.Application.Common.DTOs;
 using FluentAssertions;
-using QLDA.Domain.Entities;
 using QLDA.Tests.Fixtures;
 using QLDA.WebApi.Models.PheDuyetDuToans;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
