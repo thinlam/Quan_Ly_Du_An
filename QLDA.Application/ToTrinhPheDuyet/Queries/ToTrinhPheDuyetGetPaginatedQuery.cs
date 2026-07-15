@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Interfaces;
@@ -33,7 +32,7 @@ internal class
     : IRequestHandler<ToTrinhPheDuyetGetPaginatedQuery, PaginatedList<ToTrinhPheDuyetDto>>
 {
     private readonly IRepository<ToTrinhPheDuyet, Guid> _toTrinhPheDuyet = ServiceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
@@ -69,8 +68,8 @@ internal class
                 TrichYeu = e.TrichYeu,
                 NgayToTrinh = e.NgayToTrinh,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
 
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())

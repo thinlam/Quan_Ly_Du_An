@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common;
@@ -22,7 +21,7 @@ public record ThuyetMinhDuAnGetDanhSachQuery : AggregateRootPagination, IMayHave
 
 internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServiceProvider) : IRequestHandler<ThuyetMinhDuAnGetDanhSachQuery, PaginatedList<ThuyetMinhDuAnDto>> {
     private readonly IRepository<ThuyetMinhDuAn, Guid> _thuyetMinhDuAn = ServiceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
 
@@ -47,9 +46,9 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
                 TrichYeu = e.TrichYeu,
                 KetQuaThamDinh = e.KetQuaThamDinh,
                 TrangThaiThamDinhId = e.TrangThaiThamDinhId,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThaiThamDinh = e.TrangThaiThamDinh!.Ten,
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString()

@@ -7,13 +7,11 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Persistence;
-using QLDA.WebApi.ConfigurationOptions;
 using Xunit;
 
 namespace QLDA.Tests.Fixtures;

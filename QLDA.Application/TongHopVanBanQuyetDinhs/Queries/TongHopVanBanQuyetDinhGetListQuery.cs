@@ -5,7 +5,6 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
 using QLDA.Domain.Enums;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.TongHopVanBanQuyetDinhs.Queries;
 
@@ -34,7 +33,7 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
     private readonly IRepository<VanBanQuyetDinh, Guid> VanBanQuyetDinh = ServiceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
     private readonly IRepository<VanBanPhapLy, Guid> VanBanPhapLy = ServiceProvider.GetRequiredService<IRepository<VanBanPhapLy, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IAuthorizationManager _authManager = ServiceProvider.GetRequiredService<IAuthorizationManager>();
 
     public async Task<PaginatedList<TongHopVanBanQuyetDinhDto>> Handle(TongHopVanBanQuyetDinhGetListQuery request,
@@ -47,7 +46,7 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
                 .WhereIf(request.DuAnId.HasValue, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
-                .WhereIf(!string.IsNullOrEmpty(request.CoQuanQuyetDinh), e => e.CoQuanQuyetDinh.Contains(request.CoQuanQuyetDinh))  
+                .WhereIf(!string.IsNullOrEmpty(request.CoQuanQuyetDinh), e => e.CoQuanQuyetDinh!.Contains(request.CoQuanQuyetDinh!))
                 .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(), e => e.TrichYeu!.ToLower().Contains(request.TrichYeu!.ToLower()))
                 .WhereIf(request.TuNgay.HasValue,
                     e => e.Ngay.HasValue && e.Ngay.Value >= request.TuNgay!.Value.ToStartOfDayUtc())

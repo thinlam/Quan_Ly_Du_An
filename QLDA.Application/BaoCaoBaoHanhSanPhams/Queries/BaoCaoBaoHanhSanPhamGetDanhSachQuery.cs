@@ -29,8 +29,8 @@ internal class
     private readonly IRepository<BaoCaoBaoHanhSanPham, Guid> BaoCaoBaoHanhSanPham =
         ServiceProvider.GetRequiredService<IRepository<BaoCaoBaoHanhSanPham, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 

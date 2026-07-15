@@ -1,6 +1,3 @@
-using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
-
 namespace QLDA.Application.HoSoMoiThauDienTus.DTOs;
 
 public static class HoSoMoiThauDienTuMappings
@@ -21,7 +18,7 @@ public static class HoSoMoiThauDienTuMappings
             TrangThaiDangTai = dto.TrangThaiDangTai,
             TrangThaiId = dto.TrangThaiId,
             ThamDinh = dto.ThamDinh,
-            NhaThauId = dto.ThamDinh ==true ? dto.HoSoMoiThauThamDinh.NhaThauId : null,
+            NhaThauId = dto.ThamDinh ==true ? dto.HoSoMoiThauThamDinh!.NhaThauId : null,
 
         };
         if (dto.ToTrinh == null || string.IsNullOrEmpty(dto.ToTrinh.So))

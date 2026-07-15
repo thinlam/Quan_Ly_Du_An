@@ -1,15 +1,10 @@
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using QLDA.Application.BanGiaoHoSos.Commands;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.WebApi.Models;
 using QLDA.WebApi.Models.BanGiaoHoSos;
-using QLDA.Domain.Entities;
 
 namespace QLDA.WebApi.Controllers;
 

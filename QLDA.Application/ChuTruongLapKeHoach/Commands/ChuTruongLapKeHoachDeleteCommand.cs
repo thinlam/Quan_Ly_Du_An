@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 
@@ -10,14 +9,14 @@ public record ChuTruongLapKeHoachDeleteCommand(Guid Id) : IRequest<int> {
 
 public record ChuTruongLapKeHoachDeleteCommandHandler : IRequestHandler<ChuTruongLapKeHoachDeleteCommand, int> {
     private readonly IRepository<ChuTruongLapKeHoach, Guid> ChuTruongLapKeHoach;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public ChuTruongLapKeHoachDeleteCommandHandler(IServiceProvider serviceProvider) {
         ChuTruongLapKeHoach = serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ChuTruongLapKeHoach.UnitOfWork;

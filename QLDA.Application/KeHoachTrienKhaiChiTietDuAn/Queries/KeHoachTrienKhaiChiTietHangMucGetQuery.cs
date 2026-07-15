@@ -1,7 +1,4 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.KeHoachTrienKhaiChiTietDuAns.Queries;
 
@@ -17,8 +14,8 @@ internal class KeHoachTrienKhaiChiTietDuAnGetQueryHandler(IServiceProvider servi
         serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     private readonly IRepository<KeHoachTrienKhaiChiTietDuAn, Guid> KeHoachTrienKhaiChiTietDuAn =
         serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiChiTietDuAn, Guid>>();
-    private readonly IRepository<Domain.Entities.TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<Domain.Entities.TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     public async Task<KeHoachTrienKhaiChiTietDuAn> Handle(KeHoachTrienKhaiChiTietDuAnGetQuery request,
         CancellationToken cancellationToken = default) {

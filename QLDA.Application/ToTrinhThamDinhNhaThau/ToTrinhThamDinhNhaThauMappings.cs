@@ -25,7 +25,7 @@ public static class ToTrinhThamDinhNhaThauMappings
         }
     }
 
-    public static ToTrinhThamDinhNhaThauDto ToDto(this ToTrinhThamDinhNhaThau entity, List<TepDinhKem>? files = null, List<TepDinhKem>? filesThamDinh = null) =>
+    public static ToTrinhThamDinhNhaThauDto ToDto(this ToTrinhThamDinhNhaThau entity, List<Attachment>? files = null, List<Attachment>? filesThamDinh = null) =>
         new() {
             Id = entity.Id,
             So = entity.So,

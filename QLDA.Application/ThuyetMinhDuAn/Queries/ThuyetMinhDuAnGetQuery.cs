@@ -18,8 +18,8 @@ internal class ThuyetMinhDuAnGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<ThuyetMinhDuAn, Guid> ThuyetMinhDuAn =
         serviceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnGetQuery request, CancellationToken cancellationToken = default) {

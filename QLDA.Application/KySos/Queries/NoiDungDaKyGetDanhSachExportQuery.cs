@@ -1,8 +1,7 @@
 using BuildingBlocks.CrossCutting.DateTimes;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.KySos.DTOs;
-using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
+
 
 namespace QLDA.Application.KySos.Queries;
 
@@ -13,8 +12,8 @@ internal class NoiDungDaKyGetDanhSachExportQueryHandler(
     IServiceProvider serviceProvider)
     : IRequestHandler<NoiDungDaKyGetDanhSachExportQuery, List<NoiDungDaKyExportDto>>
 {
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepository =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<UserMaster, long> _userRepository =
         serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     private readonly IDateTimeProvider _clock =

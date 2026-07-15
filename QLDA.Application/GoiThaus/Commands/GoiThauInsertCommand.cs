@@ -52,7 +52,7 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

@@ -55,8 +55,8 @@ public class PhanQuyenChucNangController : AggregateRootController
         var entity = new PhanQuyenChucNang()
         {
             Level = (PhanQuyenChucNangLevel?)model.Level,// phương thức phòng ban/vai trò/ng dùng
-            ChucNang = model.ChucNang,
-            MaChucNang = model.MaChucNang,
+            ChucNang = model.ChucNang ?? string.Empty,
+            MaChucNang = model.MaChucNang ?? string.Empty,
             SuDung = model.SuDung,
             DanhSachChiTiet = model.DanhSachChiTiet?.Select(x=> x.ToEntity(model.Id??0)).ToList(),
           

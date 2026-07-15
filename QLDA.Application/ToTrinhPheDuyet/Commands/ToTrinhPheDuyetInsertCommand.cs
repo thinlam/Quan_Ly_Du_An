@@ -1,10 +1,8 @@
 using System.Data;
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.ToTrinhPheDuyets.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
@@ -31,11 +29,12 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
 
     public async Task<ToTrinhPheDuyet> Handle(ToTrinhPheDuyetInsertCommand request, CancellationToken cancellationToken = default)
     {
-        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
+        var dto = request.Dto ?? new ToTrinhPheDuyetInsUpdDto();
+        await _authManager.EnsureCanExecuteAsync(dto.BuocId, dto.DuAnId, _authContext, cancellationToken);
 
         // Auto-assign Dự thảo status
         // hiện tại tờ trình có 2 loại trạng thái là ToTrinhKhongDuyet & DeXuatMacDinh -> lấy trạng thái đúng loại
-        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Dto.Loai);
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai);
 
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepo.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
@@ -47,13 +46,13 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
 
         var entity = new ToTrinhPheDuyet
         {
-            DuAnId = request.Dto.DuAnId,
-            Ten = request.Dto.Ten,
-            BuocId = request.Dto.BuocId,
-            So = request.Dto.So,
-            NgayToTrinh = request.Dto.NgayToTrinh,
-            TrichYeu = request.Dto.TrichYeu,
-            Loai = request.Dto.Loai,
+            DuAnId = dto.DuAnId,
+            Ten = dto.Ten ?? string.Empty,
+            BuocId = dto.BuocId,
+            So = dto.So ?? string.Empty,
+            NgayToTrinh = dto.NgayToTrinh,
+            TrichYeu = dto.TrichYeu ?? string.Empty,
+            Loai = dto.Loai ?? string.Empty,
             TrangThaiId = trangThaiDuThao?.Id,
         };
 
@@ -62,6 +61,6 @@ internal class ToTrinhPheDuyetInsertCommandHandler : IRequestHandler<ToTrinhPheD
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

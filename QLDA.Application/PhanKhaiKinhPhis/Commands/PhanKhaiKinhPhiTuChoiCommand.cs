@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.PhanKhaiKinhPhis.Commands;
 
@@ -49,7 +46,7 @@ internal class PhanKhaiKinhPhiTuChoiCommandHandler : IRequestHandler<PhanKhaiKin
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
 
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể từ chối khi trạng thái là Đã trình");
         }
 

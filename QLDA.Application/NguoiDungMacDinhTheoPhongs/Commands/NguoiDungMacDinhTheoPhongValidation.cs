@@ -1,6 +1,4 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.NguoiDungMacDinhTheoPhongs.DTOs;
 
 namespace QLDA.Application.NguoiDungMacDinhTheoPhongs.Commands;
 

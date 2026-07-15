@@ -1,5 +1,4 @@
-﻿using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
+﻿using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Domain.Entities;
 

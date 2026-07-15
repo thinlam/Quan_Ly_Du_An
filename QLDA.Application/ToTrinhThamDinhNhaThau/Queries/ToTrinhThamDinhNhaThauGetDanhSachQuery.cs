@@ -3,7 +3,6 @@ using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
-using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Queries;
 
@@ -32,7 +31,7 @@ public record ToTrinhThamDinhNhaThauDanhSachQuery : AggregateRootPagination, IMa
 internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<ToTrinhThamDinhNhaThauDanhSachQuery, PaginatedList<ToTrinhThamDinhNhaThauDto>> {
     private readonly IRepository<ToTrinhThamDinhNhaThau, Guid> ToTrinhThamDinhNhaThau =  ServiceProvider.GetRequiredService<IRepository<ToTrinhThamDinhNhaThau, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
@@ -54,7 +53,7 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
-            .WhereIf(request.So != null, e => e.So.Contains(request.So))
+            .WhereIf(request.So != null, e => e.So!.Contains(request.So!))
             .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayTrinh >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayTrinh < denNgayExclusiveDto);
@@ -70,8 +69,8 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
                 DaThamDinh = e.DaThamDinh,
                 // trả thêm tên dự án
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

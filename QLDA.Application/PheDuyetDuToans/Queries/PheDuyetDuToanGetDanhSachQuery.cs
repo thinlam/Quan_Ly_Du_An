@@ -17,11 +17,11 @@ internal class
     PheDuyetDuToanGetDanhSachQueryHandler : IRequestHandler<PheDuyetDuToanGetDanhSachQuery,
     PaginatedList<PheDuyetDuToanDto>> {
     private readonly IRepository<PheDuyetDuToan, Guid> PheDuyetDuToan;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
 
     public PheDuyetDuToanGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         PheDuyetDuToan = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
 
@@ -51,8 +51,8 @@ internal class
                 GiaTriDuThau = e.GiaTriDuThau,
                 TrichYeu = e.TrichYeu,
                 TrangThaiId = e.TrangThaiId,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

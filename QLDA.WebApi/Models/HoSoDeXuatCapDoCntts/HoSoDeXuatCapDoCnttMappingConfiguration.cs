@@ -1,8 +1,7 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.Common;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.HoSoDeXuatCapDoCntts;
@@ -11,7 +10,7 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
     
     public static HoSoDeXuatCapDoCnttModel ToModel(
         this HoSoDeXuatCapDoCntt entity,
-        List<TepDinhKem>? files = null) => new() {
+        List<Attachment>? files = null) => new() {
         
         Id = entity.Id,
         DuAnId = entity.DuAnId,
@@ -72,10 +71,10 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
         NoiDungDuThao = model.NoiDungDuThao
     };
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(
+    public static List<Attachment> GetDanhSachTepDinhKem(
         this HoSoDeXuatCapDoCnttModel model, Guid groupId)
         => model.DanhSachTepDinhKem?  
-            .Select(m => new TepDinhKem {
+            .Select(m => new Attachment {
                 Id = m.Id ?? Guid.NewGuid(),
                 ParentId = m.ParentId,
                 GroupId = groupId.ToString(),

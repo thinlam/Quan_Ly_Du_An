@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Interfaces;
@@ -24,8 +23,8 @@ internal class ThoaThuanGiaoViecGetDanhSachQueryHandler(IServiceProvider Service
     private readonly IRepository<ThoaThuanGiaoViec, Guid> ThoaThuanGiaoViec =
         ServiceProvider.GetRequiredService<IRepository<ThoaThuanGiaoViec, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
@@ -55,11 +54,11 @@ internal class ThoaThuanGiaoViecGetDanhSachQueryHandler(IServiceProvider Service
                 NoiDung = e.NoiDung,
                 ThoiGian = e.ThoiGian,
                 GiaTri = e.GiaTri,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
-                TenGoiThau = e.GoiThau != null ? e.GoiThau.Ten : null,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
+                TenGoiThau = e.GoiThau != null ? e.GoiThau!.Ten : null,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
 
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())

@@ -1,4 +1,5 @@
 using QLDA.WebApi.Models.QuyetDinhLapBenMoiThaus;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.QuyetDinhLapBenMoiThaus;
@@ -6,7 +7,7 @@ namespace QLDA.WebApi.Models.QuyetDinhLapBenMoiThaus;
 public static class QuyetDinhLapBenMoiThauMappingConfiguration
 {
     public static QuyetDinhLapBenMoiThauModel ToModel(this QuyetDinhLapBenMoiThau entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new()
         {
             Id = entity.Id,

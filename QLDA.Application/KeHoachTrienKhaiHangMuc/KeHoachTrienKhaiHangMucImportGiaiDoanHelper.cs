@@ -1,7 +1,5 @@
 using BuildingBlocks.CrossCutting.Offices;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs;
 

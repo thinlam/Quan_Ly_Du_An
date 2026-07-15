@@ -1,13 +1,12 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using QLDA.Application.Common;
 
 namespace QLDA.Application.TepDinhKems.Commands;
 
 /// <summary>
 /// Bulk insert/update file attachments for a logical group.
-/// Synchronizes the persisted set of <see cref="TepDinhKem"/> rows under <c>GroupId</c>
+/// Synchronizes the persisted set of <see cref="Attachment"/> rows under <c>GroupId</c>
 /// (optionally narrowed by <c>GroupType</c>) with the supplied <c>Entities</c>:
 ///   - Rows missing from the request are deleted (cascaded through <c>SyncCollection</c>).
 ///   - Rows present in both have their mutable fields overwritten from the request.
@@ -17,7 +16,7 @@ namespace QLDA.Application.TepDinhKems.Commands;
 public record TepDinhKemBulkInsertOrUpdateCommand() : IRequest
 {
     public required string GroupId { get; set; }
-    public required List<TepDinhKem> Entities { get; set; }
+    public required List<Attachment> Entities { get; set; }
 
     /// <summary>
     /// Khi <see cref="Entities"/> rỗng, giới hạn phạm vi xóa mềm theo GroupType
@@ -26,9 +25,9 @@ public record TepDinhKemBulkInsertOrUpdateCommand() : IRequest
     public List<string>? ScopeGroupTypes { get; set; }
 }
 
-internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<TepDinhKem, Guid> repository, IUnitOfWork unitOfWork) : IRequestHandler<TepDinhKemBulkInsertOrUpdateCommand>
+internal class TepDinhKemBulkInsertOrUpdateCommandHandler(IRepository<Attachment, Guid> repository, IUnitOfWork unitOfWork) : IRequestHandler<TepDinhKemBulkInsertOrUpdateCommand>
 {
-    private readonly IRepository<TepDinhKem, Guid> _repository = repository;
+    private readonly IRepository<Attachment, Guid> _repository = repository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task Handle(TepDinhKemBulkInsertOrUpdateCommand request,

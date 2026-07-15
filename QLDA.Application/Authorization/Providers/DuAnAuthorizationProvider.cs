@@ -1,8 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
-using BuildingBlocks.CrossCutting.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.Authorization;

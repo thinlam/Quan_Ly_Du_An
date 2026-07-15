@@ -1,10 +1,4 @@
-using Aspose.Cells.Drawing;
-using BuildingBlocks.Domain.Entities.Abstractions;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Interfaces;
-using QLDA.WebApi.Models.TepDinhKems;
-using QLDA.WebApi.Models.VanBanChuTruongs;
-using static Dapper.SqlMapper;
 
 namespace QLDA.WebApi.Models.PhanQuyenChucNangs;
 
@@ -21,11 +15,11 @@ public static class PhanQuyenChucNangMappingConfiguration
        };
     public static void Update(this PhanQuyenChucNang entity, PhanQuyenChucNangModel model)
     {
-        entity.ChucNang = model.ChucNang;
-        entity.MaChucNang = model.MaChucNang;
+        entity.ChucNang = model.ChucNang ?? string.Empty;
+        entity.MaChucNang = model.MaChucNang ?? string.Empty;
         entity.SuDung = model.SuDung;
         entity.Level = (PhanQuyenChucNangLevel?)model.Level;
-        entity.DanhSachChiTiet = model.DanhSachChiTiet?.Select(x => x.ToEntity(model.Id ?? 0)).ToList();
-         
+        entity.DanhSachChiTiet = model.DanhSachChiTiet?.Select(x => x.ToEntity(model.Id ?? 0)).ToList() ?? new List<PhanQuyenChucNangCapDo>();
+
     }
 }

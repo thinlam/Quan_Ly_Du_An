@@ -1,11 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
@@ -57,11 +53,11 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
-        entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.TrangThaiId = trangThaiDaDuyet!.Id;
         var VanBanQuyetDinh = new VanBanQuyetDinh {
             Id = entity.Id,
             So = entity.QuyetDinh?.So,
@@ -79,7 +75,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
             EntityId = entity.Id,
             DuAnId = entity.DuAnId ?? Guid.Empty,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaDuyet.Id,
+            TrangThaiId = trangThaiDaDuyet!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
         await _quyetDinhRepo.AddAsync(VanBanQuyetDinh, cancellationToken);

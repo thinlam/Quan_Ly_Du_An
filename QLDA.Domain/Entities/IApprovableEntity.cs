@@ -1,5 +1,3 @@
-using QLDA.Domain.Enums;
-
 namespace QLDA.Domain.Entities;
 
 public interface IApprovableEntity

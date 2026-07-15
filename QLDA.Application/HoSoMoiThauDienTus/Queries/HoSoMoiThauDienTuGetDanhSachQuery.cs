@@ -14,11 +14,11 @@ public record HoSoMoiThauDienTuGetDanhSachQuery(HoSoMoiThauDienTuSearchDto Searc
 
 internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMoiThauDienTuGetDanhSachQuery, PaginatedList<HoSoMoiThauDienTuDto>> {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem ;
+    private readonly IRepository<Attachment, Guid> TepDinhKem ;
 
     public HoSoMoiThauDienTuGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<HoSoMoiThauDienTuDto>> Handle(HoSoMoiThauDienTuGetDanhSachQuery request,
@@ -56,18 +56,18 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
                  Id = e.Id,
                  DuAnId = e.DuAnId,
                  BuocId = e.BuocId,
-                 TenDuAn = e.DuAn.TenDuAn,
-                 TenBuoc = e.Buoc.TenBuoc,
+                 TenDuAn = e.DuAn!.TenDuAn,
+                 TenBuoc = e.Buoc!.TenBuoc,
                  HinhThucLuaChonNhaThauId = e.HinhThucLuaChonNhaThauId,
                  ThamDinh = e.ThamDinh??false,
-                 TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau.Ten,
+                 TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau!.Ten,
                  GoiThauId = e.GoiThauId,
-                 TenGoiThau = e.GoiThau.Ten,
+                 TenGoiThau = e.GoiThau!.Ten,
                  GiaTri = e.GiaTri,
                  ThoiGianThucHien = e.ThoiGianThucHien,
                  TrangThaiDangTai = e.TrangThaiDangTai,
                  TrangThaiId = e.TrangThaiId,
-                 TenTrangThai = e.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : e.TrangThaiPheDuyet.Ten,
+                 TenTrangThai = e.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : e.TrangThaiPheDuyet!.Ten,
 
                  DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                 .Where(i =>

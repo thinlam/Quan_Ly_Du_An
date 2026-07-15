@@ -13,8 +13,8 @@ internal class VanBanChuTruongGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<VanBanChuTruong, Guid> VanBanChuTruong =
         serviceProvider.GetRequiredService<IRepository<VanBanChuTruong, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<VanBanChuTruong> Handle(VanBanChuTruongGetQuery request,

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
 using QLDA.Application.PheDuyetDuToans.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.PheDuyetDuToans.Commands;
 

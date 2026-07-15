@@ -123,8 +123,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _ToTrinhKetQuaGoiThau.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -132,12 +132,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -145,8 +145,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _ThoaThuanGiaoViec.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -154,12 +154,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -168,8 +168,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _chuTruongLapKeHoach.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -177,12 +177,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -190,8 +190,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _chuTruongLapKeHoach.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -199,12 +199,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -212,8 +212,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _quyetDinhDieuChiRepo.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -221,12 +221,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -235,8 +235,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _trienKhaiHangMuc.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -244,12 +244,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -258,8 +258,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
         return await _keHoachNhaThauRutGon.GetQueryableSet()
             .Include(e => e.TrangThai)
 
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -267,12 +267,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -294,8 +294,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.GiaTriDuThau,
                 e.TrichYeu,
                 e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 e.NguoiXuLyId,
                 TenChucVu = e.ChucVu != null ? e.ChucVu.Ten : null
             })
@@ -305,8 +305,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _toTrinhPheDuyet.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Where(e => e.Id == id)
             .Select(e => new
             {
@@ -314,20 +314,20 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
     private async Task<object?> GetToTrinhThamDinhNhaThauDetail(Guid id, CancellationToken cancellationToken)
     {
         return await _toTrinhThamDinhRepo.GetQueryableSet()
-              .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Include(e => e.DuAn)
+              .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Include(e => e.DuAn!)
             .Include(e => e.TrangThai)
             .Where(e => e.Id == id)
             .Select(e => new
@@ -336,12 +336,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -349,8 +349,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _duToanDauTuRepo.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!)
             .Where(e => e.Id == id && !e.IsDeleted)
             .Where(e => e.Id == id)
             .Select(e => new
@@ -359,12 +359,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -386,8 +386,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.NoiDungDeNghi,
                 e.NoiDungBaoCao,
                 e.NoiDungDuThao,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenCapDo = e.CapDo != null ? e.CapDo.Ten : null
             })
             .FirstOrDefaultAsync(cancellationToken);
@@ -412,7 +412,7 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.TrangThaiDangTai,
                 MaTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThai = e.TrangThaiPheDuyet != null && e.TrangThaiPheDuyet.Ma != "LEG" ? e.TrangThaiPheDuyet.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
-                TenHinhThuc = e.HinhThucLuaChonNhaThau != null ? e.HinhThucLuaChonNhaThau.Ten : null
+                TenHinhThuc = e.HinhThucLuaChonNhaThau != null ? e.HinhThucLuaChonNhaThau!.Ten : null
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -420,8 +420,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _dxNhuCauKinhPhi.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!)
             .Where(e => e.Id == id && !e.IsDeleted)
             .Select(e => new
             {
@@ -429,12 +429,12 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.DuAnId,
                 e.BuocId,
                 e.TrangThaiId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -442,8 +442,8 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
     {
         return await _baoCaoKhaoSatRepo.GetQueryableSet()
             .Include(e => e.TrangThai)
-            .Include(e => e.DuAn).ThenInclude(x => x.BuocHienTai)
-            .Include(e => e.DuAn).ThenInclude(x => x.GiaiDoanHienTai).Where(e => e.Id == id && !e.IsDeleted)
+            .Include(e => e.DuAn!).ThenInclude(x => x.BuocHienTai!)
+            .Include(e => e.DuAn!).ThenInclude(x => x.GiaiDoanHienTai!).Where(e => e.Id == id && !e.IsDeleted)
             .Select(e => new
             {
                 e.Id,
@@ -451,15 +451,15 @@ internal class PheDuyetGetChiTietQueryHandler : IRequestHandler<PheDuyetGetChiTi
                 e.BuocId,
                 e.TrangThaiId,
                 e.NgayTrinh,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "",
-                TenGiaiDoan = e.DuAn != null && e.DuAn.GiaiDoanHienTai != null ? e.DuAn.GiaiDoanHienTai.Ten : "",
-                TenBuoc = e.DuAn != null && e.DuAn.BuocHienTai != null ? e.DuAn.BuocHienTai.TenBuoc : "",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "",
+                TenGiaiDoan = e.DuAn != null && e.DuAn!.GiaiDoanHienTai != null ? e.DuAn!.GiaiDoanHienTai.Ten : "",
+                TenBuoc = e.DuAn != null && e.DuAn!.BuocHienTai != null ? e.DuAn!.BuocHienTai.TenBuoc : "",
 
                 e.NoiDungBaoCao,
                 e.NoiDungNghiemThu,
                 NgayKhaoSat = e.NgayKhaoSat,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
             })
             .FirstOrDefaultAsync(cancellationToken);
     }

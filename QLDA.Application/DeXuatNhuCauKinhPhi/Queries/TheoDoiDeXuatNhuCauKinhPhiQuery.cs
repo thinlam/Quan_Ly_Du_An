@@ -1,12 +1,9 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 
@@ -34,7 +31,7 @@ internal class
 
     private readonly IRepository<PheDuyet, Guid> pheDuyet = ServiceProvider.GetRequiredService<IRepository<PheDuyet, Guid>>();
     private readonly IRepository<DeXuatNhuCauKinhPhiNam, Guid> keHoachNam = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhiNam, Guid>>();
-    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository = ServiceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
     private readonly IRepository<DmDonVi, long> DanhMucDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     //  private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> __tepDinhKemRepository = ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
@@ -90,7 +87,7 @@ internal class
                     && !x.DeXuatNhuCauKinhPhiNam.IsDeleted
                     && x.DeXuatNhuCauKinhPhiNam.TrangThaiId == request.TrangThaiKeHoachId))
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
-            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
+            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen!.Contains(request.SoPhieuChuyen!))
             .WhereIf(request.TrangThaiId != null, e => e.TrangThaiId == request.TrangThaiId)
             .WhereIf(tuNgayDto != null, e => e.NgayPhieuChuyen >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayPhieuChuyen < denNgayExclusiveDto)
@@ -148,8 +145,8 @@ internal class
                 TrangThaiId = x.Entity.TrangThaiId,
                 TenTrangThai = x.Entity.TrangThai?.Ten ?? "---",
                 TrangThaiKeHoachNamId = kh?.TrangThaiId,
-                TenTrangThaiKeHoachNam = kh?.TrangThaiId == trangThaiDaTrinh?.Id ? trangThaiDaTrinh.Ten : "--",
-                TenTrangThaiBanGiamDoc =   kh?.TrangThaiId == trangThaiDaDuyet?.Id ? trangThaiDaDuyet.Ten : "--",
+                TenTrangThaiKeHoachNam = kh?.TrangThaiId == trangThaiDaTrinh?.Id ? trangThaiDaTrinh!.Ten : "--",
+                TenTrangThaiBanGiamDoc =   kh?.TrangThaiId == trangThaiDaDuyet?.Id ? trangThaiDaDuyet!.Ten : "--",
                 SoKeHoach = kh?.SoKeHoach,
                 NgayKeHoach = kh?.NgayKeHoach,
                 NgayDuyetKeHoach = kh?.NgayDuyet,

@@ -1,11 +1,4 @@
-using System.Data;
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.KeHoachTrienKhaiChiTietDuAnMappings;
-using QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiChiTietDuAns.Commands;
 

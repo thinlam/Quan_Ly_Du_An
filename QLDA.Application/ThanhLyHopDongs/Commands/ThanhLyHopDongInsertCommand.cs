@@ -2,11 +2,8 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Providers;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThanhLyHopDongs.Commands;
 
@@ -46,7 +43,7 @@ internal class ThanhLyHopDongInsertCommandHandler : IRequestHandler<ThanhLyHopDo
         var trangThaiDuThao = (await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThanhLyHopDong, cancellationToken))
             .FirstOrDefault(s => s.Ma == TrangThaiPheDuyetCodes.ThanhLyHopDong.DuThao);
         if (trangThaiDuThao != null) {
-            entity.TrangThaiId = trangThaiDuThao.Id;
+            entity.TrangThaiId = trangThaiDuThao!.Id;
         }
 
         if (request.Dto.NghiemThuIds != null && request.Dto.NghiemThuIds.Count > 0) {
@@ -66,7 +63,7 @@ internal class ThanhLyHopDongInsertCommandHandler : IRequestHandler<ThanhLyHopDo
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
 
     #region Private helper methods

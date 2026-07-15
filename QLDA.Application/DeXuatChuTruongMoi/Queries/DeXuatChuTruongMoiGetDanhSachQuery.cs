@@ -1,11 +1,9 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DeXuatChuTruongMois.Queries;
 
@@ -27,7 +25,7 @@ internal class
     DeXuatChuTruongMoiQueryHandler(IServiceProvider ServiceProvider)    : IRequestHandler<DeXuatChuTruongMoiQuery, PaginatedList<DeXuatChuTruongMoiDto>> {
     private readonly IRepository<DeXuatChuTruongMoi, Guid> DeXuatChuTruongMoi =  ServiceProvider.GetRequiredService<IRepository<DeXuatChuTruongMoi, Guid>>();
     private readonly IRepository<DmDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>()   ;
-    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
     public async Task<PaginatedList<DeXuatChuTruongMoiDto>> Handle(DeXuatChuTruongMoiQuery request,  CancellationToken cancellationToken = default) {
@@ -57,8 +55,8 @@ internal class
                 NguoiXuLyChinhId = e.NguoiXuLyChinhId,
 
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 DanhSachDonViPhoiHop = DmDonVi.GetQueryableSet().Join( e.DeXuatDonViXuLys!,   dm => dm.Id,  dx => dx.RightId,
                     (dm, dx) => new DTOs.DanhMucDonViCbo {
                         Id = dm.Id,

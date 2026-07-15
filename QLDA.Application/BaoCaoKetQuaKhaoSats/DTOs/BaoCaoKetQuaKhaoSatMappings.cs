@@ -1,7 +1,5 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
 
@@ -24,7 +22,7 @@ public static class BaoCaoKetQuaKhaoSatMappings
         entity.NgayKhaoSat = model.NgayKhaoSat.ToStartOfDayUtc();
     }
 
-    public static BaoCaoKetQuaKhaoSatDto ToDto(this BaoCaoKetQuaKhaoSat entity, List<TepDinhKem>? files) => new() {
+    public static BaoCaoKetQuaKhaoSatDto ToDto(this BaoCaoKetQuaKhaoSat entity, List<Attachment>? files) => new() {
         Id = entity.Id,
         DuAnId = entity.DuAnId,
         BuocId = entity.BuocId,

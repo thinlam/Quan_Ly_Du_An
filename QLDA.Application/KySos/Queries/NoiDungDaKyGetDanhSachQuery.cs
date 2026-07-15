@@ -1,17 +1,16 @@
 using BuildingBlocks.CrossCutting.DateTimes;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using TepDinhKem = QLDA.Domain.Entities.TepDinhKem;
+
 
 namespace QLDA.Application.KySos.Queries;
 
 public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto) : AggregateRootSearch, IRequest<PaginatedList<TepDinhKemDto>>;
 
 internal class NoiDungDaKyGetDanhSachQueryHandler(IServiceProvider serviceProvider) : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>> {
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKemRepository =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepository =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<UserMaster, long> _userRepository =
         serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
     private readonly IDateTimeProvider _clock =

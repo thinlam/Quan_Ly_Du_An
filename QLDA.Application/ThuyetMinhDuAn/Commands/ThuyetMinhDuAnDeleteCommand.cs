@@ -11,7 +11,7 @@ public record ThuyetMinhDuAnDeleteCommand(Guid Id) : IRequest<int>
 public record ThuyetMinhDuAnDeleteCommandHandler : IRequestHandler<ThuyetMinhDuAnDeleteCommand, int>
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> ThuyetMinhDuAn;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -19,7 +19,7 @@ public record ThuyetMinhDuAnDeleteCommandHandler : IRequestHandler<ThuyetMinhDuA
     public ThuyetMinhDuAnDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         ThuyetMinhDuAn = serviceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThuyetMinhDuAn.UnitOfWork;

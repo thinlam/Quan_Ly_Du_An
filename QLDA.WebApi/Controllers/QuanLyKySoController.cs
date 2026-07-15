@@ -2,7 +2,6 @@ using System.Net.Mime;
 using QLDA.Application.KySos.Commands;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Application.KySos.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KySos;
 using QLDA.WebApi.Models.TepDinhKems;
 

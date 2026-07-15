@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities;
-
 namespace QLDA.Application.GoiThaus;
 
 internal static class GoiThauTinhHinhDauThauQueryableExtensions
@@ -18,7 +16,7 @@ internal static class GoiThauTinhHinhDauThauQueryableExtensions
 
         if (giaiDoanId is > 0)
             queryable = queryable.Where(e => e.DuAn != null
-                && e.DuAn.GiaiDoanHienTaiId == giaiDoanId.Value);
+                && e.DuAn!.GiaiDoanHienTaiId == giaiDoanId.Value);
 
         return queryable;
     }

@@ -1,12 +1,12 @@
-using QLDA.Application.Common.Constants;
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.VanBanPhapLys;
 
 public static class VanBanPhapLyMappingConfiguration
 {
     public static VanBanPhapLyModel ToModel(this VanBanPhapLy entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new()
         {
             Id = entity.Id,

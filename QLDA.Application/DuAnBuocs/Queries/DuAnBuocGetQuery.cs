@@ -34,6 +34,6 @@ internal class DuAnBuocGetDQueryHandler(IServiceProvider serviceProvider)
 
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu");
 
-        return entity;
+        return entity!;
     }
 }

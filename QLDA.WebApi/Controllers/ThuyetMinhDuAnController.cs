@@ -1,11 +1,10 @@
-using QLDA.Application.DanhMucDonVis.Queries;
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Application.ThuyetMinhDuAns.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.ThuyetMinhDuAns;
 using System.Net.Mime;
@@ -79,7 +78,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         var entity = model.ToEntity();
         entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   );
        
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(
             entity.Id, EGroupType.ThuyetMinhDuAn) ?? []];
         
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
@@ -87,7 +86,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             GroupId = entity.Id.ToString(),
             Entities = files
         });
-        List<TepDinhKem> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
+        List<Attachment> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
             entity.Id, EGroupType.ThuyetMinhDuAnThamDinh) ?? []];
         
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand

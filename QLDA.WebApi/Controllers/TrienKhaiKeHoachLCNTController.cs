@@ -1,14 +1,12 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Application.TrienKhaiKeHoachLCNTMappings;
-using QLDA.Application.TrienKhaiKeHoachLCNTs;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DonViTuVanKeHoachs;
 using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -39,19 +37,19 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             EGroupTypes= [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
         });
        ////
-        var dvtvModel = entity.DonViTuVans.Select(o => new DonViTuVanKeHoachModel()
+        var dvtvModel = entity.DonViTuVans!.Select(o => new DonViTuVanKeHoachModel()
         {
             Id = o.Id,
-            TenDonVi = o.TenDonVi,
+            TenDonVi = o.TenDonVi ?? string.Empty,
         }).ToList();
         foreach ( var item in dvtvModel)
         {
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
-                GroupId = [item.Id.ToString()],
+                GroupId = [item.Id.ToString() ?? ""],
                 EGroupTypes = [nameof(EGroupType.DonViTuVan)]
             });
-            item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
+            item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList() ?? new List<TepDinhKemModel>(); // i need ways
         }
 
 
@@ -86,8 +84,8 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             Entities = danhSachTepDinhKem
         }, cancellationToken);
        
-        var danhSachFileKetQua = new List<TepDinhKem>();
-        foreach (var dv in dto.DonViTuVans)
+        var danhSachFileKetQua = new List<Attachment>();
+        foreach (var dv in dto.DonViTuVans!)
         {
             var id = dv.GetId();
             danhSachFileKetQua = dv.GetDanhSachTep(id).ToList();

@@ -15,8 +15,8 @@ internal class NghiemThuGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<NghiemThu, Guid> NghiemThu =
         serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<NghiemThu> Handle(NghiemThuGetQuery request,

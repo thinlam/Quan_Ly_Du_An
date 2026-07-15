@@ -24,7 +24,7 @@ public static class KetQuaTrungThauMappings {
         };
     }
 
-    public static KetQuaTrungThauDto ToDto(this KetQuaTrungThau entity, IEnumerable<TepDinhKem>? files = null) {
+    public static KetQuaTrungThauDto ToDto(this KetQuaTrungThau entity, IEnumerable<Attachment>? files = null) {
         return new KetQuaTrungThauDto {
             Id = entity.Id,
             BuocId = entity.BuocId,

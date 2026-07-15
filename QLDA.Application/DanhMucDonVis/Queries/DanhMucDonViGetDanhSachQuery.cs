@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DanhMucDonVis.Queries;
 

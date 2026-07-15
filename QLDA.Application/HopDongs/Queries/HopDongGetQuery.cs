@@ -13,8 +13,8 @@ internal class HopDongGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<HopDong, Guid> HopDong =
         serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<HopDong> Handle(HopDongGetQuery request,

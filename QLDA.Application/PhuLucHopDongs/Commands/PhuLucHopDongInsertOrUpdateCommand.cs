@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
-using QLDA.Application.Providers;
 
 namespace QLDA.Application.PhuLucHopDongs.Commands;
 

@@ -49,13 +49,13 @@ public static class GoiThauMappings {
         };
     }
 
-    public static GoiThauDto ToDto(this GoiThau entity, IEnumerable<TepDinhKem>? files = null) {
+    public static GoiThauDto ToDto(this GoiThau entity, IEnumerable<Attachment>? files = null) {
         return new GoiThauDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             KeHoachLuaChonNhaThauId = entity.KeHoachLuaChonNhaThauId,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             GiaTri = entity.GiaTri,
             NguonVonId = entity.NguonVonId,
             LoaiCongViecId = entity.LoaiCongViecId,

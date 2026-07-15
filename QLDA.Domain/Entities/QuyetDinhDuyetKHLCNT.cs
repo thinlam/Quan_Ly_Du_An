@@ -15,7 +15,7 @@ public class QuyetDinhDuyetKHLCNT :  Entity<Guid>, IAggregateRoot
     #region Navigation Properties
 
     public KeHoachLuaChonNhaThau? KeHoachLuaChonNhaThau { get; set; }
-    public VanBanQuyetDinh VanBanQuyetDinh { get; set; }
+    public VanBanQuyetDinh VanBanQuyetDinh { get; set; } = null!;
 
     #endregion
 }   

@@ -1,7 +1,4 @@
 ﻿using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
-using System.ComponentModel;
 
 namespace QLDA.Domain.Entities;
 

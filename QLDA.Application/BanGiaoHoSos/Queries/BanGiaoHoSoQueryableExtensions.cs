@@ -1,8 +1,5 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;

@@ -1,13 +1,11 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
-using static Dapper.SqlMapper;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 
 public static class DeXuatNhuCauKinhPhiMappingConfiguration
 {
-    public static DeXuatNhuCauKinhPhiModel ToModel(this DeXuatNhuCauKinhPhi entity, List<TepDinhKem>? danhSachTepDinhKem = null) =>
+    public static DeXuatNhuCauKinhPhiModel ToModel(this DeXuatNhuCauKinhPhi entity, List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

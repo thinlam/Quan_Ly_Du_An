@@ -4,7 +4,6 @@ using QLDA.Application.Authorization;
 using QLDA.Application.ToTrinhKetQuaGoiThauMappings;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 
@@ -34,13 +33,14 @@ internal class ToTrinhKetQuaGoiThauInsertCommandHandler : IRequestHandler<ToTrin
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
+        var dto = request.Dto ?? new ToTrinhKetQuaGoiThauInsertDto();
         var entity = new ToTrinhKetQuaGoiThau {
-            So = request.Dto.So,
-            BuocId = request.Dto.BuocId,
-            DuAnId = request.Dto.DuAnId,
-            NgayTrinh = request.Dto.NgayTrinh,
-            TrichYeu = request.Dto.TrichYeu,
-            TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId,
+            So = dto.So ?? string.Empty,
+            BuocId = dto.BuocId,
+            DuAnId = dto.DuAnId,
+            NgayTrinh = dto.NgayTrinh,
+            TrichYeu = dto.TrichYeu ?? string.Empty,
+            TrangThaiDangTaiId = dto.TrangThaiDangTaiId,
             TrangThaiId = trangThaiDuThao?.Id
 
         };
@@ -48,9 +48,9 @@ internal class ToTrinhKetQuaGoiThauInsertCommandHandler : IRequestHandler<ToTrin
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        entity.SyncGoiThauIds(request.Dto.DanhSachGoiThau);
+        entity.SyncGoiThauIds(dto.DanhSachGoiThau ?? new List<Guid>());
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        return entity;
+        return entity!;
     }
 }

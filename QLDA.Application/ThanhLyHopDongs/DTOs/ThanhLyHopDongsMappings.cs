@@ -27,7 +27,7 @@ public static class ThanhLyHopDongsMappings {
         };
     }
 
-    public static ThanhLyHopDongDto ToDto(this ThanhLyHopDong entity, IEnumerable<TepDinhKem>? files = null) {
+    public static ThanhLyHopDongDto ToDto(this ThanhLyHopDong entity, IEnumerable<Attachment>? files = null) {
         return new ThanhLyHopDongDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

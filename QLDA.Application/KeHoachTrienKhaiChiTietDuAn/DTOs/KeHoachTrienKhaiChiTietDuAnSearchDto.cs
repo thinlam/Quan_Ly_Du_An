@@ -1,5 +1,3 @@
-using QLDA.Application.Common.Interfaces;
-
 namespace QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
 
 public record KeHoachTrienKhaiChiTietDuAnSearchDto

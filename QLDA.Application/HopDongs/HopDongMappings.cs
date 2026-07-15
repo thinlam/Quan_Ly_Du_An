@@ -1,4 +1,3 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.HopDongs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 
@@ -43,13 +42,13 @@ public static class HopDongMappings {
         };
     }
 
-    public static HopDongDto ToDto(this HopDong entity, IEnumerable<TepDinhKem>? files = null) {
+    public static HopDongDto ToDto(this HopDong entity, IEnumerable<Attachment>? files = null) {
         return new HopDongDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             GoiThauId = entity.GoiThauId,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             SoHopDong = entity.SoHopDong,
             NoiDung = entity.NoiDung,
             DonViThucHienId = entity.DonViThucHienId,

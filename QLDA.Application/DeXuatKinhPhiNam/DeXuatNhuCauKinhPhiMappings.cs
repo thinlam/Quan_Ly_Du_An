@@ -20,7 +20,7 @@ public static class DeXuatNhuCauKinhPhiNamMappings {
         }
     }
 
-    public static DeXuatNhuCauKinhPhiNamDto ToDto(this DeXuatNhuCauKinhPhiNam entity, List<TepDinhKem>? files = null) =>
+    public static DeXuatNhuCauKinhPhiNamDto ToDto(this DeXuatNhuCauKinhPhiNam entity, List<Attachment>? files = null) =>
         new() {
             Id = entity.Id,
             So = entity.So,

@@ -1,13 +1,8 @@
 using System.Data;
-using BuildingBlocks.Domain.Interfaces;
 using BuildingBlocks.Persistence.Configurations;
-using BuildingBlocks.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
-using QLDA.Domain.Entities;
-using QLDA.Persistence.Repositories;
 using QLDA.Persistence.Configurations.ViMaster;
 
 namespace QLDA.Persistence;

@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.DonViTuVanKeHoachs;
 using QLDA.WebApi.Models.TepDinhKems;

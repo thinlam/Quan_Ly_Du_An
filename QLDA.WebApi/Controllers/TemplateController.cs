@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.PhanKhaiKinhPhis;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.WebApi.Controllers;
 

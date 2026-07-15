@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DanhMucLoaiDieuChinhs.DTOs;
 
@@ -19,8 +18,8 @@ internal class DanhMucLoaiDieuChinhGetDanhSachQueryHandler : IRequestHandler<Dan
             .Select(e => new DanhMucLoaiDieuChinhDto {
                 Id = e.Id,
                 Ma = e.Ma!,
-                Ten = e.Ten,
-                MoTa = e.MoTa,
+                Ten = e.Ten ?? string.Empty,
+                MoTa = e.MoTa ?? string.Empty,
                 Stt = e.Stt,
                 Used = e.Used,
             });

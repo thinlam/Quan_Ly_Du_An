@@ -1,11 +1,7 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TongHopDeXuatChuTruongs.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Enums;
 
 namespace QLDA.Application.TongHopDeXuatChuTruongs.Queries;
 
@@ -27,7 +23,7 @@ internal class
     private readonly IRepository<DmDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>()   ;
     private readonly IRepository<UserMaster, long> userMaster = ServiceProvider.GetRequiredService<IRepository<UserMaster, long>>()   ;
     //private readonly IRepository<DmDonVi, Guid> PheDuyet = ServiceProvider.GetRequiredService<IRepository<DmDonVi, Guid>>()   ;
-    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =  ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
     public async Task<TongHopDeXuatChuTruongResponseDto> Handle(TongHopDeXuatChuTruongGetDanhSachQuery request,  CancellationToken cancellationToken = default) {
@@ -48,10 +44,10 @@ internal class
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                TenDuAn =e.DuAn != null ? e.DuAn.TenDuAn : "Không rõ",
+                TenDuAn = e.DuAn != null ? (e.DuAn!.TenDuAn ?? "") : "Không rõ",
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
 
                 TenPhongBanPhuTrach = e.CreatedBy != null
                 ? dmDonViQuery.Where(dv => dv.Id == userQuery.Where(us => us.UserPortalId == Convert.ToInt64(e.CreatedBy)).Select(us => us.PhongBanId).FirstOrDefault())
@@ -75,7 +71,7 @@ internal class
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                TenDuAn =e.DuAn != null ? e.DuAn.TenDuAn : "Không rõ",
+                TenDuAn = e.DuAn != null ? (e.DuAn!.TenDuAn ?? "") : "Không rõ",
                 TenPhongBanPhuTrach = e.CreatedBy != null
             ? dmDonViQuery.Where(dv => dv.Id == userQuery.Where(us => us.UserPortalId == Convert.ToInt64(e.CreatedBy))
                 .Select(us => us.PhongBanId).FirstOrDefault())
@@ -83,8 +79,8 @@ internal class
                           .FirstOrDefault() ?? "Không rõ"
             : "Không rõ",
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 Loai = "ChuyenTiep", 
             });
         var finalQueryable = queryableMoi.Concat(queryableCT);

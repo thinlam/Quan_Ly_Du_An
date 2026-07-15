@@ -1,6 +1,4 @@
-using MediatR;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 
@@ -20,6 +18,6 @@ internal class BanGiaoHoSoGetQueryHandler : IRequestHandler<BanGiaoHoSoGetQuery,
             .Include(e => e.Buoc)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
-        return entity;
+        return entity!;
     }
 }

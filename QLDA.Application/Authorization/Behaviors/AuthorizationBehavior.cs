@@ -1,6 +1,4 @@
 using System.Reflection;
-using BuildingBlocks.CrossCutting.Exceptions;
-using MediatR;
 using QLDA.Application.Authorization.Markers;
 
 namespace QLDA.Application.Authorization.Behaviors;

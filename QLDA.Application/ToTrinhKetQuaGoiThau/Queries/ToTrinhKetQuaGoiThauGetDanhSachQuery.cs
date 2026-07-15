@@ -1,11 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.DTOs;
-using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhKetQuaGoiThaus.Queries;
 
@@ -36,7 +34,7 @@ internal class ToTrinhKetQuaGoiThauDanhSachQueryHandler(IServiceProvider Service
 {
     private readonly IRepository<ToTrinhKetQuaGoiThau, Guid> _toTrinhKetQuaGoiThau = ServiceProvider.GetRequiredService<IRepository<ToTrinhKetQuaGoiThau, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
@@ -78,8 +76,8 @@ internal class ToTrinhKetQuaGoiThauDanhSachQueryHandler(IServiceProvider Service
                 TrangThaiDangTaiId = e.TrangThaiDangTaiId,
                 // trả thêm tên dự án
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

@@ -1,12 +1,5 @@
-using System.Data;
-using System.Drawing;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
-using QLDA.Application.KeHoachTrienKhaiChiTietDuAnMappings;
-using QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 namespace QLDA.Application.KeHoachTrienKhaiChiTietDuAns.Commands;
 
 public record KeHoachTrienKhaiChiTietDuAnUpdateCommand(KeHoachTrienKhaiChiTietDuAn model) : IRequest<KeHoachTrienKhaiChiTietDuAn>;
@@ -54,7 +47,7 @@ internal class KeHoachTrienKhaiChiTietDuAnUpdateCommandHandler : IRequestHandler
         await UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
     private async Task UpdateAsync(KeHoachTrienKhaiChiTietDuAn entity, CancellationToken cancellationToken)
     {

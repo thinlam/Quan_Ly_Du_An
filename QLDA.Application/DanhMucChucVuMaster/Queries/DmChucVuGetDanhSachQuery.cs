@@ -1,7 +1,5 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DmChucVus.Queries;
 
@@ -29,7 +27,7 @@ public record DmChucVuGetDanhSachQueryueryHandler(IServiceProvider ServiceProvid
             return await query
                 .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

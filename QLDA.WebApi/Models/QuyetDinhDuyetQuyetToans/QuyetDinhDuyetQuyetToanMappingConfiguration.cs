@@ -1,10 +1,11 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.QuyetDinhDuyetQuyetToans;
 
 public static class QuyetDinhDuyetQuyetToanMappingConfiguration {
     public static QuyetDinhDuyetQuyetToanModel ToModel(this QuyetDinhDuyetQuyetToan entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

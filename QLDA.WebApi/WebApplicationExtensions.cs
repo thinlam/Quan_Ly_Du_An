@@ -1,7 +1,6 @@
 using BuildingBlocks.Application.Middlewares;
 using Microsoft.OpenApi.Models;
 using QLDA.Application.Providers;
-using QLDA.WebApi.ConfigurationOptions;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System.Reflection;

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Domain.Constants;
 
@@ -58,8 +57,8 @@ internal class PhanKhaiKinhPhiGetDanhSachExportQueryHandler(IServiceProvider ser
             TongMucDauTu = e.DuAn?.TongMucDauTu,
             SoToTrinh = e.SoToTrinh,
             NgayToTrinh = e.NgayToTrinh,
-            TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG"
-                ? e.TrangThai.Ten
+            TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG"
+                ? e.TrangThai!.Ten
                 : TrangThaiPheDuyetCodes.Default.TenDuThao,
         }).ToList();
     }

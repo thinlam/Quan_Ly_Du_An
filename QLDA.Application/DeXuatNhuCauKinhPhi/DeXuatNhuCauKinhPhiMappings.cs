@@ -1,4 +1,3 @@
-using Azure.Core;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 
@@ -18,7 +17,7 @@ public static class DeXuatNhuCauKinhPhiMappings
         };
     }
 
-    public static DeXuatNhuCauKinhPhiDto ToDto(this DeXuatNhuCauKinhPhi entity, List<TepDinhKem>? files = null) {
+    public static DeXuatNhuCauKinhPhiDto ToDto(this DeXuatNhuCauKinhPhi entity, List<Attachment>? files = null) {
         return new DeXuatNhuCauKinhPhiDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

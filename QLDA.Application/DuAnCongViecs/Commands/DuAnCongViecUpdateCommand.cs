@@ -27,6 +27,6 @@ internal class DuAnCongViecUpdateCommandHandler : IRequestHandler<DuAnCongViecUp
         entity.Update(request.Dto);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

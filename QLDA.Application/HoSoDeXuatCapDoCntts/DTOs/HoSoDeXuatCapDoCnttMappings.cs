@@ -1,6 +1,4 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 

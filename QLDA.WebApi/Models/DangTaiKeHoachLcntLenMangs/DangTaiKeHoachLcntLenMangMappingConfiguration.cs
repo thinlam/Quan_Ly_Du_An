@@ -1,10 +1,11 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.DangTaiKeHoachLcntLenMangs;
 
 public static class DangTaiKeHoachLcntLenMangMappingConfiguration {
     public static DangTaiKeHoachLcntLenMangModel ToModel(this DangTaiKeHoachLcntLenMang entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.Authorization;
@@ -17,14 +15,14 @@ internal class
     GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetDanhSachQuery,
     PaginatedList<GoiThauDto>> {
     private readonly IRepository<GoiThau, Guid> GoiThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IAuthorizationManager _authManager;
 
     public GoiThauGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();

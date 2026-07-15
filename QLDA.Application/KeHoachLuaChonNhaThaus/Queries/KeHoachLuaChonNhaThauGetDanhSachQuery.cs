@@ -3,7 +3,6 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachLuaChonNhaThaus.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThaus.Queries;
 
@@ -19,11 +18,11 @@ internal class
     KeHoachLuaChonNhaThauGetDanhSachQueryHandler : IRequestHandler<KeHoachLuaChonNhaThauGetDanhSachQuery,
     PaginatedList<KeHoachLuaChonNhaThauDto>> {
     private readonly IRepository<KeHoachLuaChonNhaThau, Guid> KeHoachLuaChonNhaThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
 
     public KeHoachLuaChonNhaThauGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         KeHoachLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<KeHoachLuaChonNhaThauDto>> Handle(KeHoachLuaChonNhaThauGetDanhSachQuery request,

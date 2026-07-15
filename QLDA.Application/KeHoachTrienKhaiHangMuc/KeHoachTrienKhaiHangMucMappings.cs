@@ -1,7 +1,6 @@
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucMappings;
 
@@ -123,9 +122,9 @@ public static class KeHoachTrienKhaiHangMucMappings
             Id= dto.Id??Guid.NewGuid(),
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
-            So = dto.So,
+            So = dto.So ?? string.Empty,
             NgayToTrinh = dto.NgayTrinh,
-            TrichYeu = dto.TrichYeu,
+            TrichYeu = dto.TrichYeu ?? string.Empty,
             TrangThaiId = dto.TrangThaiId,
         };
 
@@ -135,7 +134,7 @@ public static class KeHoachTrienKhaiHangMucMappings
     }
 
 
-    public static KeHoachTrienKhaiHangMucDto ToDto(this KeHoachTrienKhaiHangMuc entity, List<TepDinhKem>? files = null) =>
+    public static KeHoachTrienKhaiHangMucDto ToDto(this KeHoachTrienKhaiHangMuc entity, List<Attachment>? files = null) =>
         new()
         {
             Id = entity.Id,

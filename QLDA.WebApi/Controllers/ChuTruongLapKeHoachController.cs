@@ -1,5 +1,5 @@
-using QLDA.Application.BaoCaoBanGiaoSanPhams.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.DTOs;
 using QLDA.Application.ChuTruongLapKeHoachs.Queries;
@@ -7,7 +7,6 @@ using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.ChuTruongLapKeHoachs;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Data;
@@ -90,7 +89,7 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
 
         await Mediator.Send(new ChuTruongLapKeHoachUpdateCommand(entity));
         
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ChuTruongLapKeHoach) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ChuTruongLapKeHoach) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

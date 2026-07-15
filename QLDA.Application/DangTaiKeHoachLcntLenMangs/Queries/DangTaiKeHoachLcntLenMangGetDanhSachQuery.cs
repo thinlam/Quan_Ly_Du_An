@@ -13,8 +13,8 @@ internal class DangTaiKeHoachLcntLenMangGetQueryHandler(IServiceProvider service
     private readonly IRepository<DangTaiKeHoachLcntLenMang, Guid> DangTaiKeHoachLcntLenMang =
         serviceProvider.GetRequiredService<IRepository<DangTaiKeHoachLcntLenMang, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<DangTaiKeHoachLcntLenMang> Handle(DangTaiKeHoachLcntLenMangGetQuery request,

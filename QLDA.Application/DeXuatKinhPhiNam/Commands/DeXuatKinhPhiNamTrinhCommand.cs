@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 
@@ -48,7 +45,7 @@ internal class DeXuatNhuCauKinhPhiNamTrinhCommandHandler : IRequestHandler<DeXua
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
        // entity.NgayTrinh = DateTime.UtcNow;
 
         var history = new PheDuyetHistory
@@ -57,7 +54,7 @@ internal class DeXuatNhuCauKinhPhiNamTrinhCommandHandler : IRequestHandler<DeXua
             EntityName = PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
             EntityId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

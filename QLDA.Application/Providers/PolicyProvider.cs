@@ -1,7 +1,4 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.Providers;
 

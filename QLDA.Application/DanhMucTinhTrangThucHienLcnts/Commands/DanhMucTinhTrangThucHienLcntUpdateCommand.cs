@@ -36,7 +36,7 @@ internal class DanhMucTinhTrangThucHienLcntUpdateCommandHandler : IRequestHandle
 
         _logger.Information("Updated {EntityName} with Id {Id}", nameof(DanhMucTinhTrangThucHienLcnt), entity.Id);
 
-        return entity;
+        return entity!;
     }
 
     private async Task ValidateAsync(DanhMucTinhTrangThucHienLcntUpdateCommand request, CancellationToken cancellationToken)

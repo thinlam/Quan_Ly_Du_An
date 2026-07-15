@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DeXuatChuyenTieps.Commands;
 
@@ -12,7 +11,7 @@ public record DeXuatChuyenTiepDeleteCommand(Guid Id) : IRequest<int>
 public record DeXuatChuyenTiepDeleteCommandHandler : IRequestHandler<DeXuatChuyenTiepDeleteCommand, int>
 {
     private readonly IRepository<DeXuatChuyenTiep, Guid> DeXuatChuyenTiep;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -20,7 +19,7 @@ public record DeXuatChuyenTiepDeleteCommandHandler : IRequestHandler<DeXuatChuye
     public DeXuatChuyenTiepDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         DeXuatChuyenTiep = serviceProvider.GetRequiredService<IRepository<DeXuatChuyenTiep, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = DeXuatChuyenTiep.UnitOfWork;

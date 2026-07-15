@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.QuyetDinhDieuChinhs.Queries;
 
@@ -40,11 +37,11 @@ public record PagedResultDto<T>(List<T> Items, int TotalCount, int Page, int Pag
 
 internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<QuyetDinhDieuChinhGetDanhSachQuery, PagedResultDto<QuyetDinhDieuChinhListItemDto>> {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
-    private readonly IRepository<TepDinhKem, Guid> _tepRepo;
+    private readonly IRepository<Attachment, Guid> _tepRepo;
 
     public QuyetDinhDieuChinhGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
-        _tepRepo = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _tepRepo = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PagedResultDto<QuyetDinhDieuChinhListItemDto>> Handle(QuyetDinhDieuChinhGetDanhSachQuery request, CancellationToken cancellationToken) {
@@ -96,8 +93,8 @@ internal class QuyetDinhDieuChinhGetDanhSachQueryHandler : IRequestHandler<Quyet
                 LoaiDieuChinhId = e.LoaiDieuChinhId,
                 TenLoaiDieuChinh = e.LoaiDieuChinh != null ? e.LoaiDieuChinh.Ten : null,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null ? e.TrangThai.Ma : null,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : null,
+                MaTrangThai = e.TrangThai != null ? e.TrangThai!.Ma : null,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai!.Ten : null,
                 Lan = e.Lan,
                 CreatedAt = e.CreatedAt,
                 DanhSachTepDinhKem = _tepRepo.GetQueryableSet()

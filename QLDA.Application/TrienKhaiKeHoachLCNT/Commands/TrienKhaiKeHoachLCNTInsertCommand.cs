@@ -1,10 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.TrienKhaiKeHoachLCNTMappings;
-using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 
@@ -42,6 +39,6 @@ internal class TrienKhaiKeHoachLCNTInsertCommandHandler : IRequestHandler<TrienK
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     //    entity.SyncDonViTuVan(request.Dto.DonViTuVans);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        return entity;
+        return entity!;
     }
 }

@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
-using QLDA.Application.Providers;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAns.Queries;

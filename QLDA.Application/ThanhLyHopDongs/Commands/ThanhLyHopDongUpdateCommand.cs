@@ -2,11 +2,8 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Providers;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThanhLyHopDongs.Commands;
 
@@ -95,7 +92,7 @@ internal class ThanhLyHopDongUpdateCommandHandler : IRequestHandler<ThanhLyHopDo
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
 
     #region Private helper methods

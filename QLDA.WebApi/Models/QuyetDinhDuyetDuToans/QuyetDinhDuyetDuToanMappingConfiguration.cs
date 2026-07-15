@@ -1,14 +1,14 @@
 
 using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
-using SequentialGuid;
 
 namespace QLDA.WebApi.Models.QuyetDinhDuyetDuToans;
 
 public static class QuyetDinhDuyetDuToanMappingConfiguration
 {
     public static QuyetDinhDuyetDuToanModel ToModel(this QuyetDinhDuyetDuToan entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem>? danhSachTepDinhKemKhac = null) =>
+        List<Attachment>? danhSachTepDinhKem = null, List<Attachment>? danhSachTepDinhKemKhac = null) =>
         new()
         {
             Id = entity.Id,

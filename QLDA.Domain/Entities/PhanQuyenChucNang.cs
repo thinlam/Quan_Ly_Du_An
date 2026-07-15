@@ -1,7 +1,4 @@
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
-using QLDA.Domain.Entities.ViMaster;
-using System.ComponentModel;
 
 namespace QLDA.Domain.Entities;
 
@@ -14,13 +11,12 @@ public class PhanQuyenChucNang : Entity<int>, IAggregateRoot {
     /// Bật/tắt quyền cho vai trò
     public bool SuDung { get; set; }
     public string MaChucNang { get; set; } = string.Empty;
-    public string ChucNang { get; set; }     // ko dùng
+    public string ChucNang { get; set; } = string.Empty;
     public PhanQuyenChucNangLevel? Level { get; set; }   // NguoiDungMacDinhID, NguoiDungChiDinh, TheoChucVu
     public ICollection<PhanQuyenChucNangCapDo>? DanhSachChiTiet { get; set; } = [];
 
 }
-public class PhanQuyenChucNangCapDo
-{
+public class PhanQuyenChucNangCapDo {
     public int QuyenId { get; set; }
     public long LevelId { get; set; }//PhongBanId,ChucVuid,User_porttalId
     public bool? NguoiDungMacDinh { get; set; } // nếu là phòng ban thì có thẻ chọn ng dùng măc định

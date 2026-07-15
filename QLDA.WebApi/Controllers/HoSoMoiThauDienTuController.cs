@@ -1,15 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
 using QLDA.Application.HoSoMoiThauDienTus.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Application.HoSoMoiThauDienTus.Queries;
-using QLDA.Application.KeHoachLuaChonNhaThaus.DTOs;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.HoSoMoiThauDienTus;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Data;
-using System.Net.Mime;
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Hồ sơ mời thầu điện tử")]
@@ -23,13 +20,13 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTu.ToString()]
         });
-        var filesToTrinh = new  List<TepDinhKem>();
+        var filesToTrinh = new  List<Attachment>();
         if(entity.ToTrinh!= null)
             filesToTrinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
             GroupId = [entity.ToTrinh != null ? entity.ToTrinh.Id.ToString() : ""],
             EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         });
-        var filesQuyetDinh = new  List<TepDinhKem>();
+        var filesQuyetDinh = new  List<Attachment>();
         if (entity.QuyetDinh != null)
             filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
             GroupId = [entity.QuyetDinh != null ? entity.QuyetDinh.Id.ToString() : ""],
@@ -141,7 +138,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
 
     private Task SyncTepDinhKemAsync(
         string groupId,
-        List<TepDinhKem> entities,
+        List<Attachment> entities,
         string scopeGroupType,
         CancellationToken cancellationToken)
         => Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {

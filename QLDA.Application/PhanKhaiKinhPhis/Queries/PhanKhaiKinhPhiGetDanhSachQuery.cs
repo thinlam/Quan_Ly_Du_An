@@ -13,11 +13,11 @@ public record PhanKhaiKinhPhiGetDanhSachQuery(PhanKhaiKinhPhiSearchDto SearchDto
 
 internal class PhanKhaiKinhPhiGetDanhSachQueryHandler : IRequestHandler<PhanKhaiKinhPhiGetDanhSachQuery, PaginatedList<PhanKhaiKinhPhiDto>> {
     private readonly IRepository<PhanKhaiKinhPhi, Guid> _repo;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
 
     public PhanKhaiKinhPhiGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<PhanKhaiKinhPhi, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<PhanKhaiKinhPhiDto>> Handle(PhanKhaiKinhPhiGetDanhSachQuery request, CancellationToken cancellationToken = default) {
@@ -57,8 +57,8 @@ internal class PhanKhaiKinhPhiGetDanhSachQueryHandler : IRequestHandler<PhanKhai
                 TrichYeu = e.TrichYeu,
                 ThuyetMinh = e.ThuyetMinh,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

@@ -1,4 +1,3 @@
-using FluentValidation;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 
 namespace QLDA.Application.BaoCaoKetQuaKhaoSats.Validators;

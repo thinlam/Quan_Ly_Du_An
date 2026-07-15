@@ -13,7 +13,7 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
 {
     private readonly IRepository<ToTrinhPheDuyet, Guid> ToTrinhPheDuyet;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -23,7 +23,7 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
     {
         ToTrinhPheDuyet = serviceProvider.GetRequiredService<IRepository<ToTrinhPheDuyet, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -34,7 +34,8 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
     {
         var entity = await ToTrinhPheDuyet.GetOrderedSet()
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
-        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(entity.Loai);
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(entity!.Loai);
 
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepo.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
@@ -47,9 +48,8 @@ public record ToTrinhPheDuyetDeleteCommandHandler : IRequestHandler<ToTrinhPheDu
         {
             throw new ManagedException("Không thể xóa khi đã duyệt");
         }
-        ManagedException.ThrowIfNull(entity);
 
-        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity!.BuocId, entity!.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

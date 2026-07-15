@@ -25,6 +25,6 @@ internal class HoSoMoiThauDienTuGetQueryHandler : IRequestHandler<HoSoMoiThauDie
             .Include(e => e.QuyetDinh)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
-        return entity;
+        return entity!;
     }
 }

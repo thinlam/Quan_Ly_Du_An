@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
 
@@ -12,7 +11,7 @@ public record DeXuatNhuCauKinhPhiDeleteCommand(Guid Id) : IRequest<int>
 public record DeXuatNhuCauKinhPhiDeleteCommandHandler : IRequestHandler<DeXuatNhuCauKinhPhiDeleteCommand, int>
 {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -20,7 +19,7 @@ public record DeXuatNhuCauKinhPhiDeleteCommandHandler : IRequestHandler<DeXuatNh
     public DeXuatNhuCauKinhPhiDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         DeXuatNhuCauKinhPhi = serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = DeXuatNhuCauKinhPhi.UnitOfWork;

@@ -1,5 +1,3 @@
-using BuildingBlocks.Domain.Interfaces;
-
 namespace QLDA.Domain.Entities;
 
 public class DuAnBuocPhongBanPhoiHop : IJunctionEntity<int, long> {

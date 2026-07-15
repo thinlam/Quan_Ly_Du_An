@@ -1,4 +1,3 @@
-using FluentValidation;
 using QLDA.Application.ThanhLyHopDongs.Commands;
 
 namespace QLDA.Application.ThanhLyHopDongs.Validators;

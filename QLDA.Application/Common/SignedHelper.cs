@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities;
-
 namespace QLDA.Application.Common;
 
 public static class SignedHelper {
@@ -21,8 +19,8 @@ public static class SignedHelper {
     public static string[] WithSignedVariant(this string baseGroupType)
         => [baseGroupType, Prefix + baseGroupType];
 
-    public static IQueryable<TepDinhKem> WhereSignedScope(
-        this IQueryable<TepDinhKem> q,
+    public static IQueryable<Attachment> WhereSignedScope(
+        this IQueryable<Attachment> q,
         string groupId,
         string baseGroupType)
         => q.Where(t =>
