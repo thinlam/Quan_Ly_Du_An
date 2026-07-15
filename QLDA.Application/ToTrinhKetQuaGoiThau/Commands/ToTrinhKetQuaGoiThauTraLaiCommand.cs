@@ -1,10 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 
@@ -36,11 +33,6 @@ internal class ToTrinhKetQuaGoiThauTraLaiCommandHandler : IRequestHandler<ToTrin
 
     public async Task<int> Handle(ToTrinhKetQuaGoiThauTraLaiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
@@ -64,12 +56,12 @@ internal class ToTrinhKetQuaGoiThauTraLaiCommandHandler : IRequestHandler<ToTrin
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
 
         // Update status to Trả lại
-        entity.TrangThaiId = trangThaiTraLai.Id;
+        entity.TrangThaiId = trangThaiTraLai!.Id;
 
         // Create history record with reason
         var history = new PheDuyetHistory {
@@ -78,7 +70,7 @@ internal class ToTrinhKetQuaGoiThauTraLaiCommandHandler : IRequestHandler<ToTrin
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiTraLai.Id,
+            TrangThaiId = trangThaiTraLai!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

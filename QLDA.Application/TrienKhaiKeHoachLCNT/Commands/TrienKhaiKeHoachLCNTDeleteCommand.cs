@@ -12,8 +12,8 @@ public record TrienKhaiKeHoachLCNTDeleteCommand(Guid Id) : IRequest<int>
 public record TrienKhaiKeHoachLCNTDeleteCommandHandler : IRequestHandler<TrienKhaiKeHoachLCNTDeleteCommand, int>
 {
     private readonly IRepository<TrienKhaiKeHoachLCNT, Guid> TrienKhaiKeHoachLCNT;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,9 +22,9 @@ public record TrienKhaiKeHoachLCNTDeleteCommandHandler : IRequestHandler<TrienKh
     public TrienKhaiKeHoachLCNTDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         TrienKhaiKeHoachLCNT = serviceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _user = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = TrienKhaiKeHoachLCNT.UnitOfWork;
@@ -37,7 +37,7 @@ public record TrienKhaiKeHoachLCNTDeleteCommandHandler : IRequestHandler<TrienKh
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
           .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);

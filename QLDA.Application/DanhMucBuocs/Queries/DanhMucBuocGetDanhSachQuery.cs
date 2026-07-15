@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Constants;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DanhMucBuocs.DTOs;
 
 namespace QLDA.Application.DanhMucBuocs.Queries;
@@ -50,13 +49,13 @@ public record DanhMucBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvide
             ParentId = entity.ParentId,
             GiaiDoanId = entity.GiaiDoanId,
             Level = entity.Level,
-            Ma = entity.Ma,
-            MoTa = entity.MoTa,
+            Ma = entity.Ma ?? string.Empty,
+            MoTa = entity.MoTa ?? string.Empty,
             Path = entity.Path,
             QuyTrinhId = entity.QuyTrinhId,
             Stt = entity.Stt,
             Used = entity.Used,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             DanhSachManHinh = entity.BuocManHinhs?.OrderByDefault().Select(i => i.RightId).ToList(),
         });
 

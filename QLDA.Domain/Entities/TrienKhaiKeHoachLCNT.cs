@@ -1,5 +1,4 @@
-﻿using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
+﻿using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Domain.Entities;
 
@@ -24,6 +23,7 @@ public class TrienKhaiKeHoachLCNT : Entity<Guid>, IAggregateRoot
     public List<DonViTuVanKeHoach>? DonViTuVans { get; set; }
 
     #region Navigation Properties
+    public DanhMucHinhThucLuaChonNhaThau? DmHinhThucLCNT { get; set; }
     public DuAn? DuAn { get; set; }
     public GoiThau? GoiThau { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }

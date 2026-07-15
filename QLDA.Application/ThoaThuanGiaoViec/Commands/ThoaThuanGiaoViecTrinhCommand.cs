@@ -1,20 +1,17 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThoaThuanGiaoViecs.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record ThoaThuanGiaoViecTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
-internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanGiaoViecTrinhCommand, int>
-{
+internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanGiaoViecTrinhCommand, int> {
     private readonly IRepository<ThoaThuanGiaoViec, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
@@ -24,8 +21,7 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
 
-    public ThoaThuanGiaoViecTrinhCommandHandler(IServiceProvider serviceProvider)
-    {
+    public ThoaThuanGiaoViecTrinhCommandHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<ThoaThuanGiaoViec, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
@@ -36,12 +32,7 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
         _unitOfWork = _repository.UnitOfWork;
     }
 
-    public async Task<int> Handle(ThoaThuanGiaoViecTrinhCommand request, CancellationToken cancellationToken)
-    {
-       // chỉ user Phòng KHTC mới dc trình
-       var isHcth = _userProvider.Info.PhongBanID == _settings.PhongKHTCId;
-        if (!isHcth)
-            throw new ManagedException("Tài khoản không có quyền.");
+    public async Task<int> Handle(ThoaThuanGiaoViecTrinhCommand request, CancellationToken cancellationToken) {
 
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
         var statusDict = statuses
@@ -59,16 +50,14 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
-        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDaChuyen?.Id)
-        {
+        if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDaChuyen?.Id) {
             throw new ManagedException("Trạng thái không thể trình!");
         }
 
         entity.TrangThaiId = trangThaiTrinh.Id;
-       // entity.NgayTrinh = DateTime.UtcNow;
+        // entity.NgayTrinh = DateTime.UtcNow;
 
-        var history = new PheDuyetHistory
-        {
+        var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ThoaThuanGiaoViec,
             EntityId = entity.Id,

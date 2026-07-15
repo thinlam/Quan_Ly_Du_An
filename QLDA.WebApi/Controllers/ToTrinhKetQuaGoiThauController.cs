@@ -1,13 +1,12 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Application.ToTrinhKetQuaGoiThauMappings;
-using QLDA.Application.ToTrinhKetQuaGoiThaus;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.DTOs;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.ToTrinhKetQuaGoiThaus;
 using System.Net.Mime;
 
@@ -56,7 +55,7 @@ public class ToTrinhKetQuaGoiThauController(IServiceProvider serviceProvider) : 
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
 
         var entity = await Mediator.Send(new ToTrinhKetQuaGoiThauInsertCommand(dto), cancellationToken);
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PheDuyetKetQuaGoiThauDuAn) ?? []];
+        List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PheDuyetKetQuaGoiThauDuAn) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -75,7 +74,7 @@ public class ToTrinhKetQuaGoiThauController(IServiceProvider serviceProvider) : 
     {
         var entity = await Mediator.Send(new ToTrinhKetQuaGoiThauUpdateCommand(dto), cancellationToken);
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PheDuyetKetQuaGoiThauDuAn) ?? []];
+        List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PheDuyetKetQuaGoiThauDuAn) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

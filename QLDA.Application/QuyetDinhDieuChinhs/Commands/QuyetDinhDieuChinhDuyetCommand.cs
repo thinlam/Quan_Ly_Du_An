@@ -1,11 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 
@@ -42,11 +38,6 @@ internal class QuyetDinhDieuChinhDuyetCommandHandler : IRequestHandler<QuyetDinh
 
     public async Task<int> Handle(QuyetDinhDieuChinhDuyetCommand request, CancellationToken cancellationToken)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -67,7 +58,7 @@ internal class QuyetDinhDieuChinhDuyetCommandHandler : IRequestHandler<QuyetDinh
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
-        entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.TrangThaiId = trangThaiDaDuyet!.Id;
 
         var history = new PheDuyetHistory
         {
@@ -76,7 +67,7 @@ internal class QuyetDinhDieuChinhDuyetCommandHandler : IRequestHandler<QuyetDinh
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaDuyet.Id,
+            TrangThaiId = trangThaiDaDuyet!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

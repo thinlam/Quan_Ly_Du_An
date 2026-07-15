@@ -1,14 +1,9 @@
-using Azure.Core;
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 
@@ -40,7 +35,7 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
     private readonly IRepository<Domain.Entities.KeHoachTrienKhaiHangMuc, Guid> KeHoachTrienKhaiHangMuc = ServiceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
     private readonly IRepository<DuAn, Guid> DuAn = ServiceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<GoiThau, Guid> GoiThau = ServiceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
 
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
@@ -118,16 +113,16 @@ internal class KeHoachTrienKhaiHangMucDanhSachQueryHandler(IServiceProvider Serv
                 NgayTrinh = e.NgayToTrinh,
                 TrichYeu = e.TrichYeu,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : string.Empty,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : string.Empty,
-                SoHangMuc = e.DanhSachHangMuc.Count(),
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,
+                SoHangMuc = e.DanhSachHangMuc!=null ? e.DanhSachHangMuc.Where(x=> !x.IsDeleted).Count() :0,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

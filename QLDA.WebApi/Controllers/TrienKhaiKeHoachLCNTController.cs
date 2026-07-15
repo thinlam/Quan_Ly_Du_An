@@ -1,14 +1,12 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Application.TrienKhaiKeHoachLCNTMappings;
-using QLDA.Application.TrienKhaiKeHoachLCNTs;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DonViTuVanKeHoachs;
 using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -36,22 +34,22 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [GroupTypeConstants.TrienKhaiKeHoachLCNT]
+            EGroupTypes= [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
         });
        ////
-        var dvtvModel = entity.DonViTuVans.Select(o => new DonViTuVanKeHoachModel()
+        var dvtvModel = entity.DonViTuVans!.Select(o => new DonViTuVanKeHoachModel()
         {
             Id = o.Id,
-            TenDonVi = o.TenDonVi,
+            TenDonVi = o.TenDonVi ?? string.Empty,
         }).ToList();
         foreach ( var item in dvtvModel)
         {
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
-                GroupId = [item.Id.ToString()],
-                EGroupTypes = [GroupTypeConstants.DonViTuVan]
+                GroupId = [item.Id.ToString() ?? ""],
+                EGroupTypes = [nameof(EGroupType.DonViTuVan)]
             });
-            item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
+            item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList() ?? new List<TepDinhKemModel>(); // i need ways
         }
 
 
@@ -74,8 +72,8 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create( [FromBody] TrienKhaiKeHoachLCNTModel dto, [FromServices] IUnitOfWork unitOfWork,  CancellationToken cancellationToken = default)
     {
-        var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
-        await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
+        var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId), cancellationToken);
+        await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTInsertCommand(dto.ToEntity()), cancellationToken);
         var danhSachTepDinhKem = dto.GetDanhSachTep(entity.Id).ToList();
@@ -84,10 +82,10 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         {
             GroupId = entity.Id.ToString(),
             Entities = danhSachTepDinhKem
-        });
+        }, cancellationToken);
        
-        var danhSachFileKetQua = new List<TepDinhKem>();
-        foreach (var dv in dto.DonViTuVans)
+        var danhSachFileKetQua = new List<Attachment>();
+        foreach (var dv in dto.DonViTuVans!)
         {
             var id = dv.GetId();
             danhSachFileKetQua = dv.GetDanhSachTep(id).ToList();
@@ -96,7 +94,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             {
                 GroupId = id.ToString(),
                 Entities = danhSachFileKetQua
-            });
+            }, cancellationToken);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -109,27 +107,33 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Update([FromBody] TrienKhaiKeHoachLCNTModel model, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default)
     {
-        using var tx = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken); 
+        using var tx = await unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken);
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTUpdateCommand(model.ToEntity()), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.TrienKhaiKeHoachLCNT) ?? []];
+        var danhSachTepChinh = model.GetDanhSachTep(entity.Id).ToList();
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            Entities = danhSachTepChinh,
+            ScopeGroupTypes = [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
         }, cancellationToken);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        var danhSachTepDinhKem = model.GetDanhSachTep(entity.Id);
-
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        foreach (var dv in model.DonViTuVans ?? [])
         {
-            GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
-        });
+            var dvId = dv.Id ?? dv.GetId();
+            var files = dv.GetDanhSachTep(dvId).ToList();
+            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            {
+                GroupId = dvId.ToString(),
+                Entities = files,
+                ScopeGroupTypes = [nameof(EGroupType.DonViTuVan)]
+            }, cancellationToken);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
+        return ResultApi.Ok(entity.ToDto(danhSachTepChinh));
     }
 
     [ProducesResponseType<ResultApi<PaginatedList<TrienKhaiKeHoachLCNTDto>>>(StatusCodes.Status200OK)]

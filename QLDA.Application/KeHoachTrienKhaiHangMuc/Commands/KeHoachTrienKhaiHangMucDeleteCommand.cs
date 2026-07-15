@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 
@@ -12,16 +11,18 @@ public record KeHoachTrienKhaiHangMucDeleteCommand(Guid Id) : IRequest<int>
 public record KeHoachTrienKhaiHangMucDeleteCommandHandler : IRequestHandler<KeHoachTrienKhaiHangMucDeleteCommand, int>
 {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> KeHoachTrienKhaiHangMuc;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public KeHoachTrienKhaiHangMucDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         KeHoachTrienKhaiHangMuc = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KeHoachTrienKhaiHangMuc.UnitOfWork;
     }
@@ -34,6 +35,7 @@ public record KeHoachTrienKhaiHangMucDeleteCommandHandler : IRequestHandler<KeHo
         ManagedException.ThrowIfNull(entity);
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

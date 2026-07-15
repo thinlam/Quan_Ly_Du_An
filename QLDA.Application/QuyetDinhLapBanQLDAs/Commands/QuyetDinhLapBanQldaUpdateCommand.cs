@@ -1,7 +1,10 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
+using QLDA.Application.Common;
 using QLDA.Application.QuyetDinhLapBanQLDAs.DTOs;
+using QLDA.Domain.Constants;
+using System.Data;
 
 namespace QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 
@@ -10,10 +13,13 @@ public record QuyetDinhLapBanQldaUpdateCommand(QuyetDinhLapBanQldaUpdateDto Dto)
 internal class QuyetDinhLapBanQldaUpdateCommandHandler : IRequestHandler<QuyetDinhLapBanQldaUpdateCommand, QuyetDinhLapBanQLDA> {
     private readonly IRepository<QuyetDinhLapBanQLDA, Guid> QuyetDinhLapBanQLDA;
     private readonly IRepository<ThanhVienBanQLDA, int> ThanhVienBanQLDA;
+    private readonly IRepository<DanhMucTrangThaiPheDuyet, int> StatusRepo;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
     private readonly IUnitOfWork UnitOfWork;
     private readonly ILogger<QuyetDinhLapBanQldaUpdateCommandHandler> Logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public QuyetDinhLapBanQldaUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<QuyetDinhLapBanQldaUpdateCommandHandler> logger) {
@@ -21,13 +27,36 @@ internal class QuyetDinhLapBanQldaUpdateCommandHandler : IRequestHandler<QuyetDi
         ThanhVienBanQLDA = serviceProvider.GetRequiredService<IRepository<ThanhVienBanQLDA, int>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+        StatusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         Logger = logger;
         UnitOfWork = QuyetDinhLapBanQLDA.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<QuyetDinhLapBanQLDA> Handle(QuyetDinhLapBanQldaUpdateCommand request, CancellationToken cancellationToken = default) {
+        var entity = await QuyetDinhLapBanQLDA.GetQueryableSet().AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+        ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
+
         try {
-            var entity = request.Dto.ToEntity();
+            var entityUpd = request.Dto.ToEntity();
+            entityUpd.TrangThaiId = entity.TrangThaiId;
+
+            var statuses = await StatusRepo.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
+            var statusDict = statuses
+                .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+                .ToDictionary(x => x.Ma!, x => x);
+
+            var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
+            var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
+            if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
+            {
+                throw new ManagedException("Trạng thái không thể cập nhật!");
+            }
+
 
             using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await HandleThanhVien(entity, cancellationToken);

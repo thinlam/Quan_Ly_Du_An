@@ -10,14 +10,12 @@ public class PhanQuyenChucNangGetQuery : IRequest<PhanQuyenChucNang> {
 
 internal class PhanQuyenChucNangGetQueryHandler(IServiceProvider serviceProvider)
     : IRequestHandler<PhanQuyenChucNangGetQuery, PhanQuyenChucNang> {
-    private readonly IRepository<PhanQuyenChucNang, int> PhanQuyenChucNang =
+    private readonly IRepository<PhanQuyenChucNang, int> _phanQuyenChucNang =
         serviceProvider.GetRequiredService<IRepository<PhanQuyenChucNang, int>>();
-
-
 
     public async Task<PhanQuyenChucNang> Handle(PhanQuyenChucNangGetQuery request,
         CancellationToken cancellationToken = default) {
-        var queryable = PhanQuyenChucNang.GetOrderedSet()
+        var queryable = _phanQuyenChucNang.GetOrderedSet().Include(x=>x.DanhSachChiTiet)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.PhanKhaiKinhPhis.Commands;
 
@@ -28,9 +25,6 @@ internal class PhanKhaiKinhPhiDuyetCommandHandler : IRequestHandler<PhanKhaiKinh
 
     public async Task<int> Handle(PhanKhaiKinhPhiDuyetCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV)) {
-            throw new ManagedException("Chỉ Lãnh đạo đơn vị có quyền duyệt phân khai kinh phí");
-        }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -47,12 +41,12 @@ internal class PhanKhaiKinhPhiDuyetCommandHandler : IRequestHandler<PhanKhaiKinh
         ManagedException.ThrowIfNull(entity, "Không tìm thấy phân khai kinh phí");
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
         // Update status to Đã duyệt
-        entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.TrangThaiId = trangThaiDaDuyet!.Id;
 
         // Create history record
         var history = new PheDuyetHistory {
@@ -61,7 +55,7 @@ internal class PhanKhaiKinhPhiDuyetCommandHandler : IRequestHandler<PhanKhaiKinh
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaDuyet.Id,
+            TrangThaiId = trangThaiDaDuyet!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

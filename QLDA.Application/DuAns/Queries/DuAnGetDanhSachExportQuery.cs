@@ -1,7 +1,5 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Domain.Enums;
 
@@ -76,15 +74,13 @@ internal class DuAnGetDanhSachExportQueryHandler(IServiceProvider serviceProvide
             .WhereIf(searchDto.LoaiDuAnTheoNamId > 0, e => e.LoaiDuAnTheoNamId == searchDto.LoaiDuAnTheoNamId)
             .WhereGlobalFilter(searchDto, e => e.TenDuAn);
 
-        // Project all rows (no pagination) — load FK ids, then resolve display names in-memory via legacy table joins.
+        // Project all rows (no pagination) — same order as DuAnGetDanhSachQuery (GetQueryableSet → Index DESC).
         var rows = await queryable
-            .OrderBy(e => e.TenDuAn)
             .Select(e => new
             {
                 e.MaDuAn,
                 e.TenDuAn,
                 e.ThoiGianKhoiCong,
-                e.NgayBatDau,
                 e.TongMucDauTu,
                 e.LanhDaoPhuTrachId,
                 e.DonViPhuTrachChinhId,
@@ -105,12 +101,13 @@ internal class DuAnGetDanhSachExportQueryHandler(IServiceProvider serviceProvide
             .Select(r => r.DonViPhuTrachChinhId!.Value).Distinct().ToList();
         var phoiHopIds = rows.SelectMany(r => r.PhoiHopIds).Distinct().ToList();
 
+        // LanhDaoPhuTrachId on DuAn stores UserPortalId (see DuAnSearchDto XML).
         var lanhDaoDict = lanhDaoIds.Count == 0
             ? new Dictionary<long, string>()
             : await userMasterSet
-                .Where(u => lanhDaoIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.HoTen })
-                .ToDictionaryAsync(u => u.Id, u => u.HoTen ?? string.Empty, cancellationToken);
+                .Where(u => u.UserPortalId.HasValue && lanhDaoIds.Contains(u.UserPortalId.Value))
+                .Select(u => new { PortalId = u.UserPortalId!.Value, u.HoTen })
+                .ToDictionaryAsync(u => u.PortalId, u => u.HoTen ?? string.Empty, cancellationToken);
 
         var allDonViIds = donViChinhIds.Concat(phoiHopIds).Distinct().ToList();
         var donViDict = allDonViIds.Count == 0
@@ -126,7 +123,6 @@ internal class DuAnGetDanhSachExportQueryHandler(IServiceProvider serviceProvide
             MaDuAn = row.MaDuAn,
             TenDuAn = row.TenDuAn,
             ThoiGianKhoiCong = row.ThoiGianKhoiCong,
-            NgayBatDau = row.NgayBatDau?.Date,
             LanhDaoPhuTrach = row.LanhDaoPhuTrachId.HasValue
                 && lanhDaoDict.TryGetValue(row.LanhDaoPhuTrachId.Value, out var lanhDao)
                 ? lanhDao : null,

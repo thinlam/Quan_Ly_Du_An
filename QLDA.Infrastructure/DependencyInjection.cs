@@ -4,6 +4,7 @@ using BuildingBlocks.CrossCutting.Offices;
 using BuildingBlocks.Infrastructure.DateTimes;
 using BuildingBlocks.Infrastructure.Offices;
 using BuildingBlocks.Persistence.Interceptors;
+using QLDA.Infrastructure.Offices;
 
 namespace QLDA.Infrastructure;
 
@@ -19,6 +20,7 @@ public static class DependencyInjection {
         services.AddScoped<IImporterHelper, ImporterHelper>();
         services.AddScoped<IAsposeHelper, AsposeHelper>();
         services.AddScoped<IWordHelper, WordHelper>();
+        services.AddScoped<KeHoachTrienKhaiHangMucWordExporter>();
         return services;
     }
 }

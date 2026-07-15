@@ -14,6 +14,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
     private readonly IRepository<DanhMucLoaiHopDong, int> DanhMucLoaiHopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<HopDongUpdateCommandHandler> _logger;
@@ -25,6 +26,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
         DanhMucLoaiHopDong = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = HopDong.UnitOfWork;
@@ -39,6 +41,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
 
         // Check step authorization
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.Update(request.Dto);
 
@@ -54,7 +57,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
     #region Private helper methods
 

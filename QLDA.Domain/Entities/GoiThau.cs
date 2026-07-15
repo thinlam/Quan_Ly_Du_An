@@ -16,6 +16,8 @@ public class GoiThau : Entity<Guid>, IAggregateRoot, ITienDo {
     public string? Ten { get; set; }
     public long? GiaTri { get; set; }
     public int? LoaiHopDongId { get; set; }
+    public int? LoaiCongViecId { get; set; }
+    
     public int? HinhThucLuaChonNhaThauId { get; set; }
     public int? PhuongThucLuaChonNhaThauId { get; set; }
     public string? ThoiGianLuaNhaThau { get; set; }
@@ -37,6 +39,7 @@ public class GoiThau : Entity<Guid>, IAggregateRoot, ITienDo {
     public DuAn? DuAn { get; set; }
     public DuAnBuoc? DuAnBuoc { get; set; }
     public KeHoachLuaChonNhaThau? KeHoachLuaChonNhaThau { get; set; }
+    public DanhMucLoaiCongViec? LoaiCongViec { get; set; }
     public DanhMucHinhThucLuaChonNhaThau? HinhThucLuaChonNhaThau { get; set; }
     public DanhMucPhuongThucLuaChonNhaThau? PhuongThucLuaChonNhaThau { get; set; }
     public DanhMucLoaiHopDong? LoaiHopDong { get; set; }

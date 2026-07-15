@@ -10,8 +10,7 @@ using QLDA.WebApi.Models.VanBanPhapLys;
 
 namespace QLDA.WebApi.Controllers;
 
-[Tags("Văn bản pháp lý")]
-[Route("api/van-ban-phap-ly")]
+[Tags("Văn bản pháp lý(van-ban-phap-ly)")]
 public class VanBanPhapLyController : AggregateRootController {
     // GET
     public VanBanPhapLyController(IServiceProvider serviceProvider) : base(serviceProvider) {
@@ -24,7 +23,7 @@ public class VanBanPhapLyController : AggregateRootController {
     /// <returns></returns>
     [ProducesResponseType<ResultApi<VanBanPhapLyModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    [HttpGet("{id}/chi-tiet")]
+    [HttpGet("api/van-ban-phap-ly/{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id) {
         var entity = await Mediator.Send(new VanBanPhapLyGetQuery() {
             Id = id,
@@ -39,27 +38,27 @@ public class VanBanPhapLyController : AggregateRootController {
     }
 
 
-    [HttpDelete("{id}/xoa")]
+    [HttpDelete("api/van-ban-phap-ly/{id}/xoa")]
     public async Task<ResultApi> Delete(Guid id) {
         var res = await Mediator.Send(new VanBanPhapLyDeleteCommand(id));
         return ResultApi.Ok(res);
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// Quy trình id là bắt buộc
     /// </remarks>
     /// <param name="model"></param>
     /// <returns></returns>
-    [HttpPost("them-moi")]
+    [HttpPost("api/van-ban-phap-ly/them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] VanBanPhapLyModel model) {
         //Cập nhật bước hiện tại của dự án
-        
+
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
 
@@ -81,7 +80,7 @@ public class VanBanPhapLyController : AggregateRootController {
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    [HttpPut("cap-nhat")]
+    [HttpPut("api/van-ban-phap-ly/cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<VanBanPhapLyModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -111,7 +110,7 @@ public class VanBanPhapLyController : AggregateRootController {
     /// <param name="pageIndex"></param>
     /// <param name="pageSize"></param>
     /// <returns></returns>
-    [HttpGet("danh-sach-tien-do")]
+    [HttpGet("api/van-ban-phap-ly/danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<VanBanPhapLyDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {

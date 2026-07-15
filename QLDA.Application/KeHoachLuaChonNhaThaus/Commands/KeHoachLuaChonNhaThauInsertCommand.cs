@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.KeHoachLuaChonNhaThaus.DTOs;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThaus.Commands;
@@ -10,14 +11,19 @@ internal class KeHoachLuaChonNhaThauInsertCommandHandler : IRequestHandler<KeHoa
     private readonly IRepository<KeHoachLuaChonNhaThau, Guid> KeHoachLuaChonNhaThau;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public KeHoachLuaChonNhaThauInsertCommandHandler(IServiceProvider serviceProvider) {
         KeHoachLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         _unitOfWork = KeHoachLuaChonNhaThau.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<KeHoachLuaChonNhaThau> Handle(KeHoachLuaChonNhaThauInsertCommand request, CancellationToken cancellationToken = default) {
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         await ValidateAsync(request, cancellationToken);
 
@@ -33,7 +39,7 @@ internal class KeHoachLuaChonNhaThauInsertCommandHandler : IRequestHandler<KeHoa
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

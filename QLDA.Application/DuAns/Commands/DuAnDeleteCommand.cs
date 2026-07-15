@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Common.Constants;
 
@@ -10,14 +11,16 @@ public record DuAnDeleteCommand(Guid Id) : IRequest;
 
 internal class DuAnDeleteCommandHandler : IRequestHandler<DuAnDeleteCommand> {
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DuAnDeleteCommandHandler> _logger;
 
     public DuAnDeleteCommandHandler(IServiceProvider serviceProvider,
         ILogger<DuAnDeleteCommandHandler> logger) {
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+        _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _logger = logger;
         _unitOfWork = DuAn.UnitOfWork;
     }
@@ -68,6 +71,11 @@ internal class DuAnDeleteCommandHandler : IRequestHandler<DuAnDeleteCommand> {
             .FirstOrDefaultAsync(cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
+
+        // Ownership: chỉ Lãnh đạo phụ trách / Người tạo / Phòng ban phụ trách chính /
+        // Phòng ban phối hợp (thuộc DuAnChiuTrachNhiemXuLys, Loai=DonViPhoiHop) mới được xóa.
+        if (!await _auth.CanExecuteAsync(AuthorizationResourceKeys.DuAn, entity, cancellationToken))
+            throw new ForbiddenException("User không có quyền xóa dự án này");
 
         // Check for related entities that prevent deletion
         ManagedException.ThrowIf(entity.VanBanQuyetDinhs != null && entity.VanBanQuyetDinhs.Any(e => !e.IsDeleted), DeleteMessageConstants.VanBanQuyetDinh);

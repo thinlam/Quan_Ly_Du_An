@@ -13,8 +13,8 @@ internal class ChuTruongLapKeHoachGetQueryHandler(IServiceProvider serviceProvid
     private readonly IRepository<ChuTruongLapKeHoach, Guid> ChuTruongLapKeHoach =
         serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<ChuTruongLapKeHoach> Handle(ChuTruongLapKeHoachGetQuery request,

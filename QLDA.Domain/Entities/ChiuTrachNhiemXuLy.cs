@@ -1,5 +1,4 @@
 using QLDA.Domain.Enums;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Domain.Entities;
 

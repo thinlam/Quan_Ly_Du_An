@@ -2,8 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.NghiemThus.DTOs;
-using QLDA.Application.Providers;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Commands;
 
@@ -14,7 +12,7 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<NghiemThuInsertCommandHandler>();
 
@@ -23,7 +21,7 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         _unitOfWork = NghiemThu.UnitOfWork;
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
@@ -31,7 +29,7 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
         await ValidateAsync(request, cancellationToken);
 
         // Authorization check on BuocId from DTO
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 
@@ -44,7 +42,7 @@ internal class NghiemThuInsertCommandHandler : IRequestHandler<NghiemThuInsertCo
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
     #region  Private helper methods
 

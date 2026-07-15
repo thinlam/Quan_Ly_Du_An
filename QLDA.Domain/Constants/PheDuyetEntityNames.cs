@@ -42,6 +42,7 @@ public static class PheDuyetEntityNames
     [Description("Đề xuất chủ trương mới")]
     public const string DeXuatChuTruongMoi = "DeXuatChuTruongMoi";
    
+    [ExcludeFromTypeList]
     [Description("Đề xuất chủ trương chuyển tiếp")]
     public const string DeXuatChuTruongChuyenTiep = "DeXuatChuyenTiep";
 
@@ -56,7 +57,8 @@ public static class PheDuyetEntityNames
     [ExcludeFromTypeList]
     [Description("Đề xuất")]
     public const string DeXuatMacDinhStt = "DeXuatMacDinh";// đối tượng dùng chung 
- 
+
+    [ExcludeFromTypeList]
     [Description("Tờ trình có thẩm định")]
     public const string ToTrinhCoThamDinh = "ToTrinhCoThamDinh"; // đối tượng dùng chung 
 
@@ -73,13 +75,11 @@ public static class PheDuyetEntityNames
     [Description("Thuyết minh dự án")]
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
 
-    [Description("Thẩm định")]
-    public const string ThamDinh = "ThamDinh";
 
     [Description("Tờ trình kết quả gói thầu")]
     public const string ToTrinhKetQuaGoiThau = "ToTrinhKetQuaGoiThau";
 
-    [Description("Tờ trình thẩm định nhà thầu")]
+    [Description("Tờ trình thẩm định và phê duyệt KQLCNT")]
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
 
     [Description("Tờ trình triển khai kế hoạch LCNT")]
@@ -95,7 +95,9 @@ public static class PheDuyetEntityNames
     public const string DuToanDauTu = "DuToanDauTu";
     [Description("Chủ trương lập kế hoạch")]
     public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";
-    [Description("Tờ trình không duyệt")]
+
+    [ExcludeFromTypeList]
+    [Description("ToTrinhKhongCanDuyet-UseForCoding")]
     public const string ToTrinhKhongDuyet = "ToTrinhKhongDuyet";
 
     [Description("Kế hoạch lcnt dự toán hoặc sẵn có")]
@@ -105,7 +107,8 @@ public static class PheDuyetEntityNames
     public const string KHLCNTDuToanYeuCauRieng = "KHLCNTDuToanYeuCauRieng";
     
     [Description("Kế hoạch tổng thể lựa chọn nhà thầu")]
-        public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
+    public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
+
     [Description("Kế hoạch LCNT giai đoạn CBĐT")]
     public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
     [Description("Thỏa thuận giao việc")]
@@ -114,6 +117,17 @@ public static class PheDuyetEntityNames
     public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
     [Description("Quyết định duyệt dự toán")] //issue #9478
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
+    [Description("Quyết định lập ban quản lý dự án")] //issue #9636
+    public const string QuyetDinhLapBanQLDA = "QuyetDinhLapBanQLDA";
+    [Description("Kế hoạch thuê dịch vụ CNTT")]//issue #9480
+    public const string QuyetDinhKeHoachThueCNTT = "QuyetDinhKeHoachThueCNTT";
+    
+    /// <summary>
+    /// UC63 — Thanh lý hợp đồng (Nghiệm thu thanh lý) (#9644)
+    /// </summary>
+    [Description("Thanh lý hợp đồng")]
+    public const string ThanhLyHopDong = "ThanhLyHopDong";
+
 
 }
 public static class LoaiToTrinhKhongDuyetExtensions
@@ -140,6 +154,46 @@ public static class LoaiToTrinhKhongDuyetExtensions
 
         return false;
     }
+    /// <summary>
+    /// Resolve Description của const trong <see cref="PheDuyetEntityNames"/>.
+    /// Chấp nhận cả tên field (<c>DeXuatChuTruongChuyenTiep</c>) lẫn giá trị const (<c>DeXuatChuyenTiep</c>)
+    /// vì API phê duyệt truyền <c>type</c> = giá trị EntityName.
+    /// </summary>
+    public static string GetDescriptionFromName(this string nameOrValue)
+    {
+        if (string.IsNullOrWhiteSpace(nameOrValue))
+            return nameOrValue ?? string.Empty;
+
+        const BindingFlags flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
+        var type = typeof(PheDuyetEntityNames);
+
+        // 1) Match theo tên field C#
+        var byName = type.GetField(nameOrValue, flags);
+        if (byName != null)
+        {
+            var attr = byName.GetCustomAttribute<DescriptionAttribute>();
+            return attr?.Description ?? nameOrValue;
+        }
+
+        // 2) Match theo giá trị const (EntityName / route type)
+        foreach (var field in type.GetFields(flags))
+        {
+            if (field.FieldType != typeof(string))
+                continue;
+
+            if (field.GetValue(null) is not string value)
+                continue;
+
+            if (!string.Equals(value, nameOrValue, StringComparison.Ordinal))
+                continue;
+
+            var attr = field.GetCustomAttribute<DescriptionAttribute>();
+            return attr?.Description ?? nameOrValue;
+        }
+
+        return nameOrValue;
+    }
+
 }
 // Mục đích để loại trừ các loại ko hiển thị trong quản lý phê duyệt api/phe-duyet/types
 [AttributeUsage(AttributeTargets.Field)]

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.NghiemThus.DTOs;
 
 namespace QLDA.Application.NghiemThus.Queries;

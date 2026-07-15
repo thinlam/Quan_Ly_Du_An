@@ -1,19 +1,14 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 
 /// <summary>
 /// Duyệt phân khai kinh phí - LDDV role
 /// </summary>
-public record ChuTruongLapKeHoachDuyetCommand(Guid Id, string NoiDung) : IRequest<int>;
+public record ChuTruongLapKeHoachDuyetCommand(Guid Id, string? NoiDung) : IRequest<int>;
 
 internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruongLapKeHoachDuyetCommand, int> {
     private readonly IRepository<Domain.Entities.ChuTruongLapKeHoach, Guid> _repository;
@@ -37,15 +32,10 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
     }
 
     public async Task<int> Handle(ChuTruongLapKeHoachDuyetCommand request, CancellationToken cancellationToken) {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Get status IDs from DB by code
         var trangThaiDaTrinh = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh 
+            .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh
             && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var trangThaiDaDuyet = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaDuyet && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
@@ -61,28 +51,32 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
         // Update status to Đã duyệt
-        entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.TrangThaiId = trangThaiDaDuyet!.Id;
         entity.ButPhe = request.NoiDung;
-
+        var ngayToTrinh = entity.NgayToTrinh.ToDateOnlyVn();
         // Create history record
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ChuTruongLapKeHoach,
-            NoiDung = request.NoiDung,
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
+            NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
+                        : $"{entity.SoToTrinh} - {(ngayToTrinh.HasValue ? ngayToTrinh.Value.ToString("dd/MM/yyyy") : "")}",
             EntityId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaDuyet.Id,
+            TrangThaiId = trangThaiDaDuyet!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
-
+       
         await _repository.UpdateAsync(entity, cancellationToken);
-        await _historyRepository.AddAsync(history, cancellationToken);
+        await _historyRepository.AddAsync(history, cancellationToken);// has trigger của table PheDuyetHistory
 
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
+
     }
 }

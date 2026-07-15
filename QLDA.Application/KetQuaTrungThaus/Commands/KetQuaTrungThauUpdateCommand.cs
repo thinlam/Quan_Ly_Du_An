@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Commands;
 
@@ -11,7 +10,7 @@ public record KetQuaTrungThauUpdateCommand(KetQuaTrungThauUpdateDto Dto) : IRequ
 internal class KetQuaTrungThauUpdateCommandHandler : IRequestHandler<KetQuaTrungThauUpdateCommand, KetQuaTrungThau> {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<KetQuaTrungThauUpdateCommandHandler>();
@@ -19,7 +18,7 @@ internal class KetQuaTrungThauUpdateCommandHandler : IRequestHandler<KetQuaTrung
     public KetQuaTrungThauUpdateCommandHandler(IServiceProvider serviceProvider) {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KetQuaTrungThau.UnitOfWork;
     }
@@ -31,7 +30,7 @@ internal class KetQuaTrungThauUpdateCommandHandler : IRequestHandler<KetQuaTrung
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.Update(request.Dto);
 
@@ -43,7 +42,7 @@ internal class KetQuaTrungThauUpdateCommandHandler : IRequestHandler<KetQuaTrung
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
-        return entity;
+        return entity!;
     }
     #region  Private helper methods
 

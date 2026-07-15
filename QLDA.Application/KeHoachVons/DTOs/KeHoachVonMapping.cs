@@ -1,5 +1,4 @@
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.KeHoachVons.DTOs;
@@ -37,7 +36,7 @@ public static class KeHoachVonMapping {
     /// <summary>
     /// Tạo entity KeHoachVon kèm danh sách tệp đính kèm (dùng cho update)
     /// </summary>
-    public static (KeHoachVon, List<TepDinhKem>) ToEntityWithFiles(this KeHoachVonUpdateModel model, Guid duAnId) {
+    public static (KeHoachVon, List<Attachment>) ToEntityWithFiles(this KeHoachVonUpdateModel model, Guid duAnId) {
         var khv = model.ToEntity(duAnId);
         var files = model.DanhSachTepDinhKem?.ToEntities(
             groupId: khv.Id,

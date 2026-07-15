@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.VanBanPhapLys.DTOs;
 using QLDA.Application.Authorization;
@@ -25,13 +23,13 @@ internal class
     PaginatedList<VanBanPhapLyDto>>
 {
     private readonly IRepository<VanBanPhapLy, Guid> VanBanPhapLy;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
 
     public VanBanPhapLyGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         VanBanPhapLy = serviceProvider.GetRequiredService<IRepository<VanBanPhapLy, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
@@ -63,6 +61,7 @@ internal class
                 NguoiKy = e.NguoiKy,
                 LoaiVanBanId = e.LoaiVanBanId,
                 NgayVanBan = e.Ngay,
+                CoQuanQuyetDinh =  e.CoQuanQuyetDinh,
                 SoVanBan = e.So,
                 TrichYeu = e.TrichYeu,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()

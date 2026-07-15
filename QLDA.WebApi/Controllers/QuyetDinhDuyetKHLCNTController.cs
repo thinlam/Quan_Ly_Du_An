@@ -60,10 +60,11 @@ public class QuyetDinhDuyetKHLCNTController : AggregateRootController {
     public async Task<ResultApi> Create([FromBody] QuyetDinhDuyetKHLCNTModel model) {
         //Cập nhật bước hiện tại của dự án
 
-        var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
-        await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
+        var step = await Mediator.Send(new DuAnUpdateStepCommand(model.VanBanQuyetDinh!.DuAnId, model.VanBanQuyetDinh!.BuocId));
+        await Mediator.Send(new DuAnUpdatePhaseCommand(model.VanBanQuyetDinh!.DuAnId, step));
         var entity = model.ToEntity();
         await Mediator.Send(new QuyetDinhDuyetKHLCNTInsertOrUpdateCommand(entity));
+
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 

@@ -1,11 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ChuTruongLapKeHoachs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Queries;
 
@@ -29,7 +27,7 @@ internal class
     PaginatedList<ChuTruongLapKeHoachDto>>
 {
     private readonly IRepository<ChuTruongLapKeHoach, Guid> _chuTruongLapKeHoach = serviceProvider.GetRequiredService<IRepository<ChuTruongLapKeHoach, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     private readonly IAuthorizationContext _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -54,9 +52,9 @@ internal class
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : "Không rõ",
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : "Không rõ",
                 TrangThaiId = e.TrangThaiId,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : string.Empty,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai!.Ten : string.Empty,
 
                 LoaiDeXuat = e.LoaiDeXuat,
                 TenLoaiDeXuat = e.LoaiDeXuat == (int)LoaiDeXuatLCNTonstants.LoaiDeXuatMacDinh.KhongLap ?

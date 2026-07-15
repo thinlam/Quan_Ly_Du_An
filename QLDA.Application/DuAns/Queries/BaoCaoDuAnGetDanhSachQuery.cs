@@ -75,8 +75,8 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
                 KhaiToanKinhPhi = e.KhaiToanKinhPhi,
                 ThoiGianKhoiCong = e.ThoiGianKhoiCong,
                 ThoiGianHoanThanh = e.ThoiGianHoanThanh,
-                GiaiDoanHienTaiId =     e.GiaiDoanHienTaiId  ?? e.BuocHienTai.Buoc.GiaiDoanId,
-                TienDo =  (e.GiaiDoanHienTai.Ten ?? "") +  ((e.GiaiDoanHienTai.Ten != null && e.BuocHienTai.TenBuoc != null) ? " - " : "") +        (e.BuocHienTai.TenBuoc ?? ""),
+                GiaiDoanHienTaiId =     e.GiaiDoanHienTaiId  ?? e.BuocHienTai!.Buoc!.GiaiDoanId,
+                TienDo =  (e.GiaiDoanHienTai!.Ten ?? "") +  ((e.GiaiDoanHienTai!.Ten != null && e.BuocHienTai!.TenBuoc != null) ? " - " : "") +        (e.BuocHienTai!.TenBuoc ?? ""),
                 GiaTriNghiemThu = _nghiemThu.GetQueryableSet()
                     .Where(x => !x.IsDeleted && x.DuAnId == e.Id)
                     .Sum(x => (long?)x.GiaTri),
@@ -85,8 +85,8 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
                     .Sum(x => (long?)x.GiaTri) ?? 0,
                 SoQuyetDinhPheDuyet= e.SoQuyetDinhPheDuyet,
                 NgayQuyetDinhPheDuyet = e.NgayQuyetDinhPheDuyet,
-                DuToanBanDau = e.DuToans.OrderBy(x => x.Index).Select(x => x.SoDuToan) .FirstOrDefault(),
-                DuToanDieuChinh = e.DuToans.OrderByDescending(x => x.Index) .Select(x => x.SoDuToan).FirstOrDefault(),
+                DuToanBanDau = e.DuToans!.OrderBy(x => x.Index).Select(x => x.SoDuToan) .FirstOrDefault(),
+                DuToanDieuChinh = e.DuToans!.OrderByDescending(x => x.Index) .Select(x => x.SoDuToan).FirstOrDefault(),
                 HinhThucDauTuId = e.HinhThucDauTuId,
                 LoaiDuAnId = e.LoaiDuAnId
             })
@@ -94,7 +94,7 @@ internal class BaoCaoDuAnGetDanhSachQueryHandler
 
         return new PaginatedList<BaoCaoDuAnDto>(
             result, totalCount,
-            search.PageIndex,
+            search.Skip(),
             search.PageSize);
     }
 

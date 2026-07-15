@@ -1,6 +1,3 @@
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
-
 namespace QLDA.Application.Common.Constants;
 
 /// <summary>

@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 
@@ -31,11 +28,6 @@ internal class DeXuatNhuCauKinhPhiNamTraLaiCommandHandler : IRequestHandler<DeXu
 
     public async Task<int> Handle(DeXuatNhuCauKinhPhiNamTraLaiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
@@ -57,12 +49,12 @@ internal class DeXuatNhuCauKinhPhiNamTraLaiCommandHandler : IRequestHandler<DeXu
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
 
         // Update status to Trả lại
-        entity.TrangThaiId = trangThaiTraLai.Id;
+        entity.TrangThaiId = trangThaiTraLai!.Id;
 
         // Create history record with reason
         var history = new PheDuyetHistory {
@@ -70,7 +62,7 @@ internal class DeXuatNhuCauKinhPhiNamTraLaiCommandHandler : IRequestHandler<DeXu
             EntityName = PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
             EntityId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiTraLai.Id,
+            TrangThaiId = trangThaiTraLai!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

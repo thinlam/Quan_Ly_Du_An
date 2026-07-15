@@ -1,6 +1,5 @@
 using System.Reflection;
 using BuildingBlocks.Application;
-using MediatR;
 using QLDA.Application.Authorization;
 using QLDA.Application.Authorization.Behaviors;
 

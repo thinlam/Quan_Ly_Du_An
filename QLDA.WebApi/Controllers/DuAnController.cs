@@ -1,6 +1,7 @@
 using System.Data;
 using System.Net.Mime;
 using QLDA.Application.Common;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DuAnBuocs.Commands;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.DuAns.DTOs;
@@ -12,12 +13,11 @@ using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.DuAns;
 
 namespace QLDA.WebApi.Controllers
 {
-    [Tags("api/du-an/Dự án")]
+    [Tags("Dự án")]
     public class DuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
     {
         /// <summary>
@@ -109,6 +109,32 @@ namespace QLDA.WebApi.Controllers
             });
             return ResultApi.Ok(res);
         }
+        /// <summary>
+        /// Theo dõi dự án theo phòng được phân công — 4 panel thống kê + danh sách phân trang
+        /// </summary>
+        [HttpGet("api/du-an/theo-doi-du-an-phong-phan-cong")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<ResultApi<TheoDoiDuAnPhongPhanCongResultDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetTheoDoiDuAnPhongPhanCong([FromQuery] TheoDoiDuAnPhongPhanCongSearchDto searchDto)
+        {
+            var res = await Mediator.Send(new TheoDoiDuAnPhongPhanCongQuery(searchDto));
+            return ResultApi.Ok(res);
+        }
+
+        /// <summary>
+        /// Thống kê theo dõi dự án theo giai đoạn — 4 panel thống kê + danh sách phân trang
+        /// </summary>
+        [HttpGet("api/du-an/theo-doi-du-an-theo-giai-doan")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType<ResultApi<TheoDoiDuAnTheoGiaiDoanResultDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        public async Task<ResultApi> GetTheoDoiDuAnTheoGiaiDoan([FromQuery] TheoDoiDuAnTheoGiaiDoanSearchDto searchDto)
+        {
+            var res = await Mediator.Send(new TheoDoiDuAnTheoGiaiDoanQuery(searchDto));
+            return ResultApi.Ok(res);
+        }
+
         [HttpGet("api/du-an/danh-sach-theo-phong-ban")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType<ResultApi<PaginatedList<DuAn>>>(StatusCodes.Status200OK)]
@@ -192,7 +218,7 @@ namespace QLDA.WebApi.Controllers
             ), cancellationToken);
 
             // Handle DuToan files
-            List<(DuToan, List<TepDinhKem>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
+            List<(DuToan, List<Attachment>)> duToans = [.. model.DuToans?.Select(e => e.ToEntity(entity.Id)) ?? []];
             if (duToans.Count != 0)
             {
 
@@ -280,7 +306,7 @@ namespace QLDA.WebApi.Controllers
             await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
 
             // Xử lý DuToan và TepDinhKem tương tự như trong hàm tạo mới
-            List<(DuToan, List<TepDinhKem>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
+            List<(DuToan, List<Attachment>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
 
             // Cập nhật dự toán và files
             foreach (var (duToan, files) in duToans)
@@ -356,7 +382,7 @@ namespace QLDA.WebApi.Controllers
             }
             groupIds.Add(entity.Id.ToString());
 
-            List<TepDinhKem>? files = null;
+            List<Attachment>? files = null;
             if (groupIds.Count != 0)
             {
                 files = await Mediator.Send(new GetDanhSachTepDinhKemQuery()

@@ -7,13 +7,11 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
 using QLDA.Domain.Entities;
 using QLDA.Persistence;
-using QLDA.WebApi.ConfigurationOptions;
 using Xunit;
 
 namespace QLDA.Tests.Fixtures;
@@ -118,9 +116,8 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     /// </summary>
     private class TestAppSettingsProvider : IAppSettingsProvider
     {
-        public long PhongKHTCId => 0;
+        public long PhongKHTCId => 219; // Match hardcoded PhongBanId=219 in Trinh commands
         public long PhongHCTHId => 300; // Match PhongBanId in CreateHcthClient()
-        public long PhongKHTCID => 219; // Match hardcoded PhongBanId=219 in Trinh commands
     }
 
     public async Task InitializeAsync()

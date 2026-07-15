@@ -1,7 +1,4 @@
-using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DuAnBuocs.Extensions;
 

@@ -11,11 +11,17 @@ public class TrienKhaiKeHoachLCNTConfiguration : AggregateRootConfiguration<Trie
         .WithMany()
         .HasForeignKey(e => e.DuAnId)
         .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(e => e.GoiThau)
         .WithMany()
         .HasForeignKey(e => e.GoiThauId)
         .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(e => e.DmHinhThucLCNT)
+      .WithMany()
+      .HasForeignKey(e => e.HinhThucLCNT)
+      .OnDelete(DeleteBehavior.Restrict); 
+        
         builder.Property(e => e.BuocId)
             .HasConversion(
                 toDb => toDb == 0 ? null : toDb,

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
+using QLDA.Application.Authorization;
 using QLDA.Domain.Constants;
 using System.Data;
 
@@ -14,6 +14,8 @@ internal class QuyetDinhDuyetDuToanInsertCommandHandler : IRequestHandler<QuyetD
     private readonly IRepository<QuyetDinhDuyetDuToanChiPhi, Guid> KeHoachChiPhis;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork UnitOfWork;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> StatusRepo;
     private readonly ILogger<QuyetDinhDuyetDuToanInsertCommandHandler> Logger;
@@ -25,12 +27,16 @@ internal class QuyetDinhDuyetDuToanInsertCommandHandler : IRequestHandler<QuyetD
         KeHoachChiPhis = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuToanChiPhi, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         StatusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         Logger = logger;
         UnitOfWork = QuyetDinhDuyetDuToan.UnitOfWork;
     }
 
     public async Task<QuyetDinhDuyetDuToan> Handle(QuyetDinhDuyetDuToanInsertCommand request, CancellationToken cancellationToken = default) {
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
+
         try {
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Dto.DuAnId),
                 "Không tồn tại dự án");
@@ -39,7 +45,7 @@ internal class QuyetDinhDuyetDuToanInsertCommandHandler : IRequestHandler<QuyetD
             var trangThaiDuThao = await StatusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
                                 .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
-            entity.TrangThaiId = trangThaiDuThao.Id;
+            entity.TrangThaiId = trangThaiDuThao!.Id;
 
             using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetDuToan.AddAsync(entity, cancellationToken);

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Providers;
 
 namespace QLDA.Application.PhuLucHopDongs.Commands;
 
@@ -10,15 +9,15 @@ public record PhuLucHopDongDeleteCommand(Guid Id) : IRequest {
 
 public record PhuLucHopDongDeleteCommandHandler : IRequestHandler<PhuLucHopDongDeleteCommand> {
     private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public PhuLucHopDongDeleteCommandHandler(IServiceProvider serviceProvider) {
         PhuLucHopDong = serviceProvider.GetRequiredService<IRepository<PhuLucHopDong, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = PhuLucHopDong.UnitOfWork;
     }
@@ -29,7 +28,7 @@ public record PhuLucHopDongDeleteCommandHandler : IRequestHandler<PhuLucHopDongD
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

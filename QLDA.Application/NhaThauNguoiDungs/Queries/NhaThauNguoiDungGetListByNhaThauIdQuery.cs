@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Application.NhaThauNguoiDungs.DTOs;
 
 namespace QLDA.Application.NhaThauNguoiDungs.Queries;

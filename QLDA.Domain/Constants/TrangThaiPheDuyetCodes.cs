@@ -38,9 +38,12 @@ public static class TrangThaiPheDuyetCodes
     {
         public const string DuThao = "DT";
         public const string DaTrinh = "ĐTr";
+        public const string DaChuyen = "ĐC";// bs  quy trình iss #9488
         public const string DaDuyet = "ĐD";
         public const string TraLai = "TL";
         public const string TuChoi = "TC";
+        public const string Sua = "Sua";
+        public const string Xoa = "Xoa";
     }
 
     public static class HoSoMoiThauDienTu
@@ -120,5 +123,16 @@ public static class TrangThaiPheDuyetCodes
         public const string DaTrinh = "ĐTr";
         public const string DaDuyet = "ĐD";
         public const string TuChoi = "TC";
+    }
+
+    /// <summary>
+    /// UC63 — Thanh lý hợp đồng (#9644). Không có TuChoi — workflow chỉ kết thúc qua Duyệt hoặc Trả lại.
+    /// </summary>
+    public static class ThanhLyHopDong
+    {
+        public const string DuThao = "DT";
+        public const string DaTrinh = "ĐTr";
+        public const string DaDuyet = "ĐD";
+        public const string TraLai = "TL";
     }
 }

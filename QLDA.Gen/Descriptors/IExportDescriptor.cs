@@ -65,6 +65,13 @@ public interface IExportDescriptor
     TemplateLayoutType Layout => TemplateLayoutType.Standard3Row;
 
     /// <summary>
+    /// When true, the .xlsx under PrintTemplates is the source of truth for layout.
+    /// <see cref="QLDA.Gen.Generators.TemplateGenerator"/> must not overwrite an existing file (including --force).
+    /// Columns on the descriptor are field catalog / documentation only.
+    /// </summary>
+    bool HandMaintainedTemplate => false;
+
+    /// <summary>
     /// 1-based start column of the title row merge. Default 1 (column A).
     /// </summary>
     int TitleMergeStartColumn => 1;

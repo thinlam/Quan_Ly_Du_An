@@ -60,7 +60,12 @@ public class AsposeHelper : IAsposeHelper
                 return cell.StringValue ?? string.Empty;
 
             case CellValueType.IsNumeric:
+            {
+                var style = cell.GetStyle();
+                if (style.IsDateTime)
+                    return cell.DateTimeValue.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
                 return cell.DoubleValue.ToString(CultureInfo.InvariantCulture);
+            }
 
             case CellValueType.IsBool:
                 return cell.BoolValue.ToString();
@@ -85,6 +90,10 @@ public class AsposeHelper : IAsposeHelper
         else if (val is DateTime dt)
         {
             cell.PutValue(dt);
+        }
+        else if (val is DateOnly dateOnly)
+        {
+            cell.PutValue(dateOnly.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
         }
         else if (val is bool b)
         {

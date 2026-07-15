@@ -39,56 +39,73 @@ public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateComma
                     .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
-        // Phân quyền: tất cả field đều yêu cầu Owner/LanhDao/KHTC
-        await _auth.EnsureCanManageStepFieldsAsync(entity.Id, _ctx, cancellationToken);
+        // Phân quyền: tất cả field đều yêu cầu Owner/LanhDao/KHTC/role thuộc GroupAdminCatalog.
+        // Bypass GroupAdminCatalog đã được move vào EnsureCanExecuteStepAsync.
+        await _auth.EnsureCanExecuteStepAsync(entity.Id, _ctx, cancellationToken);
 
         entity.Update(request.Dto);
 
-        // Update PhongPhuTrachChinhId (validate thuộc DuAn.DuAnChiuTrachNhiemXuLys hoặc DuAn.DonViPhuTrachChinhId)
+        // Update PhongPhuTrachChinhId
+        // Validate: phải thuộc DuAn.DuAnChiuTrachNhiemXuLys HOẶC trùng DuAn.DonViPhuTrachChinhId.
         if (request.Dto.PhongPhuTrachChinhId.HasValue) {
-            var allowedPhongBanIds = await _duAnRepo.GetQueryableSet()
+            var target = request.Dto.PhongPhuTrachChinhId.Value;
+            var allowed = await _duAnRepo.GetQueryableSet()
                 .Where(d => d.Id == entity.DuAnId)
                 .Select(d => new {
-                    ChiuTrachNhiemIds = d.DuAnChiuTrachNhiemXuLys!.Select(x => x.RightId),
-                    d.DonViPhuTrachChinhId
+                    d.DonViPhuTrachChinhId,
+                    InChiuTrachNhiem = d.DuAnChiuTrachNhiemXuLys!.Any(x => x.RightId == target)
                 })
-                .Select(d => new { All = d.ChiuTrachNhiemIds.Concat(new[] { d.DonViPhuTrachChinhId ?? 0 }) })
                 .FirstOrDefaultAsync(cancellationToken);
 
-            var allowedSet = (allowedPhongBanIds?.All ?? Enumerable.Empty<long>()).ToHashSet();
-            if (!allowedSet.Contains(request.Dto.PhongPhuTrachChinhId.Value))
+            var matches = allowed is not null
+                && (allowed.DonViPhuTrachChinhId == target || allowed.InChiuTrachNhiem);
+
+            if (!matches)
                 throw new ManagedException(
-                    $"Phòng ban phụ trách chính ({request.Dto.PhongPhuTrachChinhId}) không thuộc phạm vi chịu trách nhiệm xử lý của dự án.");
+                    $"Phòng ban phụ trách chính ({target}) không thuộc phạm vi chịu trách nhiệm xử lý của dự án.");
         }
 
         entity.PhongPhuTrachChinhId = request.Dto.PhongPhuTrachChinhId;
 
         // Update DuAnBuocPhongBanPhoiHops
-        if (request.Dto.DanhSachPhongBanPhoiHopIds != null) {
-            // (1) Validate IDs thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
-            var allowedPhongBanIds = await _duAnRepo.GetQueryableSet()
-                .Where(d => d.Id == entity.DuAnId)
-                .SelectMany(d => d.DuAnChiuTrachNhiemXuLys!
+        // - null  : không thay đổi
+        // - []    : xoá hết
+        // - [ids] : validate + replace
+        request.Dto.DanhSachPhongBanPhoiHopIds ??= [];
+
+        // (1) Validate IDs thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
+        //     HOẶC trùng DuAn.DonViPhuTrachChinhId (phòng ban phụ trách chính cũng được phép thêm vào danh sách phối hợp).
+        //     Bỏ qua khi rỗng.
+        var allowedPhongBanInfo = await _duAnRepo.GetQueryableSet()
+            .Where(d => d.Id == entity.DuAnId)
+            .Select(d => new {
+                PhoiHopIds = d.DuAnChiuTrachNhiemXuLys!
                     .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
-                    .Select(x => x.RightId))
-                .ToListAsync(cancellationToken);
+                    .Select(x => x.RightId),
+                d.DonViPhuTrachChinhId
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
-            var invalid = request.Dto.DanhSachPhongBanPhoiHopIds
-                .Where(id => !allowedPhongBanIds.Contains(id))
-                .ToList();
+        var allowedSet = new HashSet<long>(allowedPhongBanInfo?.PhoiHopIds ?? []);
+        if (allowedPhongBanInfo?.DonViPhuTrachChinhId.HasValue == true)
+            allowedSet.Add(allowedPhongBanInfo.DonViPhuTrachChinhId.Value);
 
-            if (invalid.Count > 0)
-                throw new ManagedException(
-                    $"Các phòng ban sau không thuộc phạm vi chịu trách nhiệm xử lý của dự án: {string.Join(", ", invalid)}");
+        var invalid = request.Dto.DanhSachPhongBanPhoiHopIds
+            .Where(id => !allowedSet.Contains(id))
+            .ToList();
 
-            // (2) Replace collection
-            entity.DuAnBuocPhongBanPhoiHops?.Clear();
-            foreach (var phongBanId in request.Dto.DanhSachPhongBanPhoiHopIds) {
-                entity.DuAnBuocPhongBanPhoiHops!.Add(new DuAnBuocPhongBanPhoiHop {
-                    LeftId = entity.Id,
-                    RightId = phongBanId
-                });
-            }
+        if (invalid.Count > 0)
+            throw new ManagedException(
+                $"Các phòng ban sau không thuộc phạm vi chịu trách nhiệm xử lý của dự án: {string.Join(", ", invalid)}");
+
+        // (2) Replace collection (Clear() + Add — empty list = clear all)
+        entity.DuAnBuocPhongBanPhoiHops ??= [];
+        entity.DuAnBuocPhongBanPhoiHops.Clear();
+        foreach (var phongBanId in request.Dto.DanhSachPhongBanPhoiHopIds) {
+            entity.DuAnBuocPhongBanPhoiHops.Add(new DuAnBuocPhongBanPhoiHop {
+                LeftId = entity.Id,
+                RightId = phongBanId
+            });
         }
 
         if (request.Dto.DanhSachManHinh?.Count > 0) {
@@ -118,6 +135,6 @@ public record DuAnBuocUpdateCommandHandler : IRequestHandler<DuAnBuocUpdateComma
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
-        return entity;
+        return entity!;
     }
 }

@@ -19,6 +19,6 @@ internal class HoSoDeXuatCapDoCnttGetQueryHandler : IRequestHandler<HoSoDeXuatCa
             .Include(e => e.CapDo)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
-        return entity;
+        return entity!;
     }
 }

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Providers;
-using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Domain.Constants;
 using System.Data;
 
@@ -13,7 +12,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvider _userProvider;
@@ -25,14 +24,13 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _settings = serviceProvider.GetRequiredService<IAppSettingsProvider>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var traLaiStt = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -44,7 +42,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         //if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != traLaiStt?.Id)
@@ -61,7 +59,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
             entity.BuocId = request.Dto.BuocId;
 
         }
-        else if((entity.TrangThaiId == daDuyetStt?.Id || entity.TrangThaiId == traLaiStt?.Id) && isHcth)
+        else if(entity.TrangThaiId == daDuyetStt?.Id || entity.TrangThaiId == traLaiStt?.Id)
         {
             entity.TrangThaiThamDinhId = request.Dto.TrangThaiThamDinhId;
             entity.KetQuaThamDinh = request.Dto.KetQuaThamDinh;
@@ -71,7 +69,7 @@ internal class ThuyetMinhDuAnUpdateCommandHandler : IRequestHandler<ThuyetMinhDu
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

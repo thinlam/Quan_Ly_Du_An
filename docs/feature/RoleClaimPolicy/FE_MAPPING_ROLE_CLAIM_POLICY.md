@@ -246,5 +246,5 @@ export const PERMISSION_GROUPS = [
 
 1. **Permissions từ JWT vs DB:** JWT chứa permissions tại thời điểm login. Nếu admin thay đổi quyền, user cần re-login hoặc FE cần refresh token.
 2. **Data visibility tự động:** FE không cần gửi permission parameter — BE tự filter dựa trên role của user.
-3. **PhongKHTCId vẫn hoạt động:** Hardcode cũ vẫn giữ song song, sẽ remove sau.
+3. **PhongKHTCId là config duy nhất:** Hardcode/alias cũ đã được remove. `PhongKHTCId` (camelCase + Id) là key JSON duy nhất trong `appsettings.json`, đọc qua `IAppSettingsProvider.PhongKHTCId`.
 4. **Cache:** PolicyProvider cache role-permission mapping trong request scope. Thay đổi DB sẽ có hiệu lực ở request tiếp theo.

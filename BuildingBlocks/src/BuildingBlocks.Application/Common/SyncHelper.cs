@@ -220,7 +220,7 @@ public static class SyncHelper {
     /// Sets IsDeleted = true on Attachment entities by groupIds.
     /// </summary>
     public static async Task SetDeleteWithRelatedFiles(
-        IRepository<BuildingBlocks.Domain.Entities.Attachment, Guid> attachmentRepository,
+        IRepository<Attachment, Guid> attachmentRepository,
         List<string> groupIds,
         bool disableAudit = false,
         CancellationToken cancellationToken = default

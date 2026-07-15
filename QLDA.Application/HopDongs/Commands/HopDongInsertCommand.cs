@@ -14,6 +14,7 @@ internal class HopDongInsertCommandHandler : IRequestHandler<HopDongInsertComman
     private readonly IRepository<DanhMucLoaiHopDong, int> DanhMucLoaiHopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<HopDongInsertCommandHandler>();
@@ -25,6 +26,7 @@ internal class HopDongInsertCommandHandler : IRequestHandler<HopDongInsertComman
         DanhMucLoaiHopDong = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiHopDong, int>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HopDong.UnitOfWork;
     }
@@ -35,6 +37,7 @@ internal class HopDongInsertCommandHandler : IRequestHandler<HopDongInsertComman
 
         // Check step authorization
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 
@@ -50,7 +53,7 @@ internal class HopDongInsertCommandHandler : IRequestHandler<HopDongInsertComman
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
     #region Private helper methods
 

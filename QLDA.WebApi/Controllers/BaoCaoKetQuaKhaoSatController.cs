@@ -1,13 +1,9 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
-using QLDA.WebApi.Models;
 using QLDA.WebApi.Models.BaoCaoKetQuaKhaoSats;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -56,7 +52,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Create([FromBody] BaoCaoKetQuaKhaoSatModel model)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatInsertCommand(model.ToInsertDto()));
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.BaoCaoKetQuaKhaoSat) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.BaoCaoKetQuaKhaoSat) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
@@ -73,7 +69,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Update([FromBody] BaoCaoKetQuaKhaoSatModel model)
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatUpdateCommand(model.ToUpdateModel()));
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.BaoCaoKetQuaKhaoSat) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.BaoCaoKetQuaKhaoSat) ?? []];
         
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {

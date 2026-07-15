@@ -11,9 +11,9 @@ public static class QuyetDinhDuyetDuToanMappings
             Id = id,
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
-            So = dto.So,
+            So = dto.So ?? string.Empty,
             Ngay = dto.Ngay,
-            TrichYeu = dto.TrichYeu,
+            TrichYeu = dto.TrichYeu ?? string.Empty,
             ThoiGianThucHien = dto.ThoiGianThucHien,
             GiaTri = dto.GiaTri,
             HinhThucQuanLyId = dto.HinhThucQuanLyId,
@@ -35,11 +35,11 @@ public static class QuyetDinhDuyetDuToanMappings
             entity.ChiPhis = [.. dto.ChiPhis.Select(cp => new QuyetDinhDuyetDuToanChiPhi {
                 Id = cp.GetId(),
                 QuyetDinhDuToanId= entity.Id,
-                ChiPhi = cp.TenChiPhi,
+                ChiPhi = cp.TenChiPhi ?? string.Empty,
                 GiaTri = cp.GiaTri??0
            })];
         }
-        return entity;
+        return entity!;
     }
 
     public static QuyetDinhDuyetDuToanDto ToDto(this QuyetDinhDuyetDuToan entity) {
@@ -48,60 +48,54 @@ public static class QuyetDinhDuyetDuToanMappings
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
-            SoQuyetDinh = entity.So,
+            SoQuyetDinh = entity.So ?? string.Empty,
             NgayQuyetDinh = entity.Ngay,
-            TrichYeu = entity.TrichYeu,
+            TrichYeu = entity.TrichYeu ?? string.Empty,
             GiaTri = entity.GiaTri,
-            ThoiGian    = entity.ThoiGianThucHien,
-            TenHinhThucQuanLy = entity.HinhThucQuanLyDuAn.Ten,
-            TenKeHoachLuaChonNhaThau = entity.KeHoachLuaChonNhaThau.Ten,
+            ThoiGian    = entity.ThoiGianThucHien ?? string.Empty,
+            TenHinhThucQuanLy = entity.HinhThucQuanLyDuAn!.Ten ?? string.Empty,
+            TenKeHoachLuaChonNhaThau = entity.KeHoachLuaChonNhaThau!.Ten ?? string.Empty,
         };
     }
+
     public static void UpdateToEntity(this QuyetDinhDuyetDuToanInsUpdDto dto, QuyetDinhDuyetDuToan entity)
     {
-        // 1. Cập nhật các thuộc tính cha (Master)
         entity.DuAnId = dto.DuAnId;
         entity.BuocId = dto.BuocId;
-        entity.So = dto.So;
+        entity.So = dto.So ?? string.Empty;
         entity.Ngay = dto.Ngay;
-        entity.TrichYeu = dto.TrichYeu;
+        entity.TrichYeu = dto.TrichYeu ?? string.Empty;
         entity.ThoiGianThucHien = dto.ThoiGianThucHien;
         entity.GiaTri = dto.GiaTri;
         entity.HinhThucQuanLyId = dto.HinhThucQuanLyId;
         entity.KeHoachLuaChonNhaThauId = dto.KeHoachLuaChonNhaThauId;
 
-        // 2. CẬP NHẬT ĐỘNG CHI PHÍ (Thêm, Sửa, Xóa)
         if (dto.ChiPhis != null)
         {
             var incomingChiPhiIds = dto.ChiPhis.Select(cp => cp.GetId()).ToList();
-
-            // Bước A: Xóa những chi phí cũ không còn tồn tại trong DTO gửi lên
-            var chiPhisToRemove = entity.ChiPhis.Where(cp => !incomingChiPhiIds.Contains(cp.Id)).ToList();
+            var chiPhisToRemove = entity.ChiPhis!.Where(cp => !incomingChiPhiIds.Contains(cp.Id)).ToList();
             foreach (var rm in chiPhisToRemove)
             {
-                entity.ChiPhis.Remove(rm);
+                entity.ChiPhis!.Remove(rm);
             }
 
-            // Bước B: Thêm mới hoặc Cập nhật những cái còn lại
             foreach (var cpDto in dto.ChiPhis)
             {
                 var cpId = cpDto.GetId();
-                var existingChiPhi = entity.ChiPhis.FirstOrDefault(cp => cp.Id == cpId);
+                var existingChiPhi = entity.ChiPhis!.FirstOrDefault(cp => cp.Id == cpId);
 
                 if (existingChiPhi != null)
                 {
-                    // Nếu đã có -> Cập nhật giá trị (SỬA)
-                    existingChiPhi.ChiPhi = cpDto.TenChiPhi;
+                    existingChiPhi.ChiPhi = cpDto.TenChiPhi ?? string.Empty;
                     existingChiPhi.GiaTri = cpDto.GiaTri ?? 0;
                 }
                 else
                 {
-                    // Nếu chưa có -> THÊM MỚI
-                    entity.ChiPhis.Add(new QuyetDinhDuyetDuToanChiPhi
+                    entity.ChiPhis!.Add(new QuyetDinhDuyetDuToanChiPhi
                     {
                         Id = cpId,
                         QuyetDinhDuToanId = entity.Id,
-                        ChiPhi = cpDto.TenChiPhi,
+                        ChiPhi = cpDto.TenChiPhi ?? string.Empty,
                         GiaTri = cpDto.GiaTri ?? 0
                     });
                 }
@@ -109,26 +103,22 @@ public static class QuyetDinhDuyetDuToanMappings
         }
         else
         {
-            entity.ChiPhis.Clear(); // Nếu dto truyền lên null/trống -> Xóa sạch chi phí cũ
+            entity.ChiPhis!.Clear();
         }
 
-        // 3. CẬP NHẬT ĐỘNG NGUỒN VỐN (Thêm, Sửa, Xóa tương tự Chi Phí)
         if (dto.KeHoachVons != null)
         {
             var incomingVonIds = dto.KeHoachVons.Select(v => v.GetId()).ToList();
-
-            // Xóa nguồn vốn cũ thừa
-            var vonsToRemove = entity.KeHoachVons.Where(v => !incomingVonIds.Contains(v.Id)).ToList();
+            var vonsToRemove = entity.KeHoachVons!.Where(v => !incomingVonIds.Contains(v.Id)).ToList();
             foreach (var rm in vonsToRemove)
             {
-                entity.KeHoachVons.Remove(rm);
+                entity.KeHoachVons!.Remove(rm);
             }
 
-            // Thêm/Sửa nguồn vốn
             foreach (var vDto in dto.KeHoachVons)
             {
                 var vId = vDto.GetId();
-                var existingVon = entity.KeHoachVons.FirstOrDefault(v => v.Id == vId);
+                var existingVon = entity.KeHoachVons!.FirstOrDefault(v => v.Id == vId);
 
                 if (existingVon != null)
                 {
@@ -138,7 +128,7 @@ public static class QuyetDinhDuyetDuToanMappings
                 }
                 else
                 {
-                    entity.KeHoachVons.Add(new QuyetDinhDuyetDuToanNguonVon
+                    entity.KeHoachVons!.Add(new QuyetDinhDuyetDuToanNguonVon
                     {
                         Id = vId,
                         QuyetDinhDuToanId = entity.Id,
@@ -151,8 +141,7 @@ public static class QuyetDinhDuyetDuToanMappings
         }
         else
         {
-            entity.KeHoachVons.Clear();
+            entity.KeHoachVons!.Clear();
         }
     }
-
 }

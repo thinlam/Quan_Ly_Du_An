@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\QLDA.Persistence\QLDA.Persistence.csproj" />
     <ProjectReference Include="..\QLDA.Application\QLDA.Application.csproj" />
+    <ProjectReference Include="..\QLDA.Infrastructure\QLDA.Infrastructure.csproj" />
     <ProjectReference Include="..\QLDA.WebApi\QLDA.WebApi.csproj" />
   </ItemGroup>
 

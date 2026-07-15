@@ -28,9 +28,9 @@ internal class DanhMucLoaiDieuChinhUpdateCommandHandler : IRequestHandler<DanhMu
 
         return new DanhMucLoaiDieuChinhDto {
             Id = entity.Id,
-            Ma = entity.Ma,
-            Ten = entity.Ten,
-            MoTa = entity.MoTa,
+            Ma = entity.Ma ?? string.Empty,
+            Ten = entity.Ten ?? string.Empty,
+            MoTa = entity.MoTa ?? string.Empty,
             Stt = entity.Stt,
             Used = entity.Used,
         };

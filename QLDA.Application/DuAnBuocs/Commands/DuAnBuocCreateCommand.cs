@@ -19,7 +19,7 @@ public class DuAnBuocCreateCommandHandler(
         var (_, danhMucBuoc) = await ValidateAndGetAsync(request.Dto, cancellationToken);
         var entity = CreateEntity(request.Dto, danhMucBuoc);
         await SaveEntityAsync(entity, cancellationToken);
-        return entity;
+        return entity!;
     }
 
     private async Task<(dynamic, DanhMucBuoc)> ValidateAndGetAsync(DuAnBuocCreateDto Dto, CancellationToken cancellationToken) {
@@ -47,17 +47,26 @@ public class DuAnBuocCreateCommandHandler(
         ManagedException.ThrowIf(Dto.NgayDuKienBatDau.HasValue && Dto.NgayDuKienKetThuc.HasValue && Dto.NgayDuKienBatDau > Dto.NgayDuKienKetThuc,
             "Ngày dự kiến bắt đầu phải trước ngày dự kiến kết thúc");
 
-        // Validate DanhSachPhongBanPhoiHopIds thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
+        // Validate DanhSachPhongBanPhoiHopIds:
+        //   Hợp lệ khi ID thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop)
+        //   HOẶC trùng DuAn.DonViPhuTrachChinhId (phòng ban phụ trách chính cũng được phép thêm vào danh sách phối hợp).
         if (Dto.DanhSachPhongBanPhoiHopIds?.Count > 0) {
-            var allowedPhongBanIds = await _duAnRepository.GetQueryableSet()
+            var allowedPhongBanInfo = await _duAnRepository.GetQueryableSet()
                 .Where(d => d.Id == Dto.DuAnId)
-                .SelectMany(d => d.DuAnChiuTrachNhiemXuLys!
-                    .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
-                    .Select(x => x.RightId))
-                .ToListAsync(cancellationToken);
+                .Select(d => new {
+                    PhoiHopIds = d.DuAnChiuTrachNhiemXuLys!
+                        .Where(x => x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop)
+                        .Select(x => x.RightId),
+                    d.DonViPhuTrachChinhId
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var allowedSet = new HashSet<long>(allowedPhongBanInfo?.PhoiHopIds ?? Enumerable.Empty<long>());
+            if (allowedPhongBanInfo?.DonViPhuTrachChinhId.HasValue == true)
+                allowedSet.Add(allowedPhongBanInfo.DonViPhuTrachChinhId.Value);
 
             var invalid = Dto.DanhSachPhongBanPhoiHopIds
-                .Where(id => !allowedPhongBanIds.Contains(id))
+                .Where(id => !allowedSet.Contains(id))
                 .ToList();
 
             if (invalid.Count > 0)

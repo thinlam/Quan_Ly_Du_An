@@ -3,6 +3,7 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Queries;
 
@@ -13,11 +14,11 @@ public record HoSoMoiThauDienTuGetDanhSachQuery(HoSoMoiThauDienTuSearchDto Searc
 
 internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMoiThauDienTuGetDanhSachQuery, PaginatedList<HoSoMoiThauDienTuDto>> {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem ;
+    private readonly IRepository<Attachment, Guid> TepDinhKem ;
 
     public HoSoMoiThauDienTuGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<HoSoMoiThauDienTuDto>> Handle(HoSoMoiThauDienTuGetDanhSachQuery request,
@@ -29,6 +30,8 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
             .Include(e => e.HinhThucLuaChonNhaThau)
             .Include(e => e.GoiThau)
             .Include(e => e.TrangThaiPheDuyet)
+            .Include(e => e.ToTrinh)
+            .Include(e => e.QuyetDinh)
             .WhereGlobalFilter(
                 request,  // Truyền request (implement IMayHaveGlobalFilter)
                 e => e.ThoiGianThucHien
@@ -53,22 +56,36 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
                  Id = e.Id,
                  DuAnId = e.DuAnId,
                  BuocId = e.BuocId,
-                 TenDuAn = e.DuAn.TenDuAn,
-                 TenBuoc = e.Buoc.TenBuoc,
+                 TenDuAn = e.DuAn!.TenDuAn,
+                 TenBuoc = e.Buoc!.TenBuoc,
                  HinhThucLuaChonNhaThauId = e.HinhThucLuaChonNhaThauId,
                  ThamDinh = e.ThamDinh??false,
-                 TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau.Ten,
+                 TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau!.Ten,
                  GoiThauId = e.GoiThauId,
-                 TenGoiThau = e.GoiThau.Ten,
+                 TenGoiThau = e.GoiThau!.Ten,
                  GiaTri = e.GiaTri,
                  ThoiGianThucHien = e.ThoiGianThucHien,
                  TrangThaiDangTai = e.TrangThaiDangTai,
                  TrangThaiId = e.TrangThaiId,
-                 TenTrangThai = e.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : e.TrangThaiPheDuyet.Ten,
-                
+                 TenTrangThai = e.TrangThaiId == null ? TrangThaiPheDuyetCodes.Default.TenDuThao : e.TrangThaiPheDuyet!.Ten,
+
                  DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
-                    .Select(i => i.ToDto()).ToList()
+                .Where(i =>
+                    !i.IsDeleted &&
+                    (
+                        i.GroupId == e.Id.ToString()
+                        || (
+                            e.ToTrinh != null
+                            && i.GroupId == e.ToTrinh.Id.ToString()
+                            && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString()
+                        )
+                        || (
+                            e.QuyetDinh != null
+                            && i.GroupId == e.QuyetDinh.Id.ToString()
+                            && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()
+                        )
+                    )
+                ).Select(i => i.ToDto()).ToList()
              })
             //.Select(e => e.ToDto(e.))
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);

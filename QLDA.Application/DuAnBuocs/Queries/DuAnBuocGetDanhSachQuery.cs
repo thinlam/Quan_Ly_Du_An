@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common.Constants;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAnBuocs.DTOs;
 
 namespace QLDA.Application.DuAnBuocs.Queries;
@@ -66,7 +65,7 @@ public record DuAnBuocGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
                 TenBuoc = entity.TenBuoc ?? entity.Buoc.Ten,
                 PartialView = entity.PartialView,
                 DanhSachManHinh = manHinhs,
-                PhongBanPhoiHopIds = phongBanPhoiHopIds
+                DanhSachPhongBanPhoiHopIds = phongBanPhoiHopIds
             };
         });
 

@@ -1,0 +1,64 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using BuildingBlocks.Application.Common.DTOs;
+using FluentAssertions;
+using QLDA.Tests.Fixtures;
+using Xunit;
+
+namespace QLDA.Tests.Integration;
+
+[Collection("WebApi")]
+public class KeHoachTrienKhaiHangMucImportTests(WebApiFixture fixture) {
+    private HttpClient AuthedClient => fixture.CreateAuthenticatedClient();
+
+    [Fact]
+    public async Task GetImportTemplate_ReturnsFileResult() {
+        var response = await AuthedClient.GetAsync("/api/template/import-ke-hoach-trien-khai-hang-muc");
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetImportTemplate_WithDuAnId_ReturnsExcelFile() {
+        var response = await AuthedClient.GetAsync(
+            "/api/template/import-ke-hoach-trien-khai-hang-muc?duAnId=08ded5f5-3b4e-5676-687a-7b278006675e");
+
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.BadRequest);
+        if (response.StatusCode == HttpStatusCode.OK) {
+            response.Content.Headers.ContentType!.MediaType.Should()
+                .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+    }
+
+    [Fact]
+    public async Task Import_NoFile_ReturnsBadRequest() {
+        var response = await AuthedClient.PostAsync("/api/import/ke-hoach-trien-khai-hang-muc", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Import_FileOnly_DoesNotRequireDuAnIdOrBuocIdInForm() {
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            "Import_KeHoachTrienKhaiHangMuc.xlsx");
+
+        if (!File.Exists(templatePath))
+            return;
+
+        var content = new MultipartFormDataContent();
+        await using var stream = File.OpenRead(templatePath);
+        var fileContent = new StreamContent(stream);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        content.Add(fileContent, "file", "Import_KeHoachTrienKhaiHangMuc.xlsx");
+
+        var response = await AuthedClient.PostAsync("/api/import/ke-hoach-trien-khai-hang-muc", content);
+        var body = await response.Content.ReadFromJsonAsync<ResultApi>();
+
+        body.Should().NotBeNull();
+        body!.ErrorMessage.Should().NotContain("Thiếu duAnId hoặc buocId");
+    }
+}

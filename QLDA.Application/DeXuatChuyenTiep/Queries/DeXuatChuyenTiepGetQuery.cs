@@ -18,8 +18,8 @@ internal class DeXuatChuyenTiepGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<DeXuatChuyenTiep, Guid> DeXuatChuyenTiep =
         serviceProvider.GetRequiredService<IRepository<DeXuatChuyenTiep, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<DeXuatChuyenTiep> Handle(DeXuatChuyenTiepGetQuery request,        CancellationToken cancellationToken = default) {

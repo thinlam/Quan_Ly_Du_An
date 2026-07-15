@@ -1,8 +1,7 @@
-using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.QuyetDinhDuyetDuToanDtos.DTOs;
 using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
 using QLDA.Domain.Constants;
 using System.Data;
@@ -18,6 +17,8 @@ internal class
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork UnitOfWork;
     private readonly ILogger<QuyetDinhDuyetDuToanUpdateCommandHandler> Logger;
 
@@ -28,6 +29,8 @@ internal class
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         Logger = logger;
         UnitOfWork = QuyetDinhDuyetDuToan.UnitOfWork;
     }
@@ -53,6 +56,8 @@ internal class
                 .FirstOrDefaultAsync(e => e.Id == request.Entity.Id, cancellationToken);
 
             ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
+
+            await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
             // Validate trạng thái
             if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)

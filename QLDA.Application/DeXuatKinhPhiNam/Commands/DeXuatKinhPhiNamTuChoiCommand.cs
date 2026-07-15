@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
 
@@ -31,11 +28,6 @@ internal class DeXuatKinhPhiNamTuChoiCommandHandler : IRequestHandler<DeXuatKinh
 
     public async Task<int> Handle(DeXuatKinhPhiNamTuChoiCommand request, CancellationToken cancellationToken) {
         // Permission check: LDDV role only
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && !isHcth)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
@@ -57,7 +49,7 @@ internal class DeXuatKinhPhiNamTuChoiCommandHandler : IRequestHandler<DeXuatKinh
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể từ chối khi trạng thái là Đã trình!");
         }
 

@@ -1,6 +1,4 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Application.ToTrinhPheDuyets.DTOs;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Queries;
@@ -29,7 +27,7 @@ internal class ToTrinhPheDuyetGetExportQueryHandler(IServiceProvider serviceProv
 
         if (request.IsNoTracking)
             queryable = queryable.AsNoTracking();
-        var DuAn = queryable.FirstOrDefault().DuAn;
+        var DuAn = queryable.FirstOrDefault()?.DuAn;
         var entity = await queryable
             .Select(x => new ToTrinhPheDuyetExportDto
             {
@@ -38,15 +36,15 @@ internal class ToTrinhPheDuyetGetExportQueryHandler(IServiceProvider serviceProv
                 NgayToTrinh = x.NgayToTrinh,
                 DuAnId = x.DuAnId,
                 TrangThaiId = x.TrangThaiId,
-                MaTrangThai = x.TrangThai.Ma,
-                TenTrangThai = x.TrangThai.Ten,
+                MaTrangThai = x.TrangThai!.Ma,
+                TenTrangThai = x.TrangThai!.Ten,
                 BuocId = x.BuocId,
                 Loai = x.Loai,
                 Ten = x.Ten,
-                TenDuAn = x.DuAn.TenDuAn,
+                TenDuAn = x.DuAn!.TenDuAn,
                 CreatedBy = x.CreatedBy,
                 TenLanhDaoPhuTrach = userMaster.GetQueryableSet()
-                                        .Where(u => u.UserPortalId == x.DuAn.LanhDaoPhuTrachId)
+                                        .Where(u => u.UserPortalId == x.DuAn!.LanhDaoPhuTrachId)
                                         .Select(u => u.HoTen).FirstOrDefault(),
                 
 

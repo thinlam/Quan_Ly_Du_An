@@ -14,6 +14,7 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
     private readonly IRepository<DanhMucHinhThucLuaChonNhaThau, int> DanhMucHinhThucLuaChonNhaThau;
     private readonly IRepository<DanhMucPhuongThucLuaChonNhaThau, int> DanhMucPhuongThucLuaChonNhaThau;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
 
     private readonly IUnitOfWork _unitOfWork;
@@ -26,6 +27,7 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
         DanhMucHinhThucLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<DanhMucHinhThucLuaChonNhaThau, int>>();
         DanhMucPhuongThucLuaChonNhaThau = serviceProvider.GetRequiredService<IRepository<DanhMucPhuongThucLuaChonNhaThau, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = GoiThau.UnitOfWork;
     }
@@ -36,6 +38,7 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
 
         // Check step authorization
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();
 
@@ -49,7 +52,7 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

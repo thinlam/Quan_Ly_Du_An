@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.QuyetDinhDuyetDuToanDtos.DTOs;
-using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.QuyetDinhDuyetDuToans.Queries;
@@ -27,11 +26,11 @@ internal class
     QuyetDinhDuyetDuToanGetDanhSachQueryHandler : IRequestHandler<QuyetDinhDuyetDuToanGetDanhSachQuery,
     PaginatedList<QuyetDinhDuyetDuToanDto>> {
     private readonly IRepository<QuyetDinhDuyetDuToan, Guid> QuyetDinhDuyetDuToan;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
 
     public QuyetDinhDuyetDuToanGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         QuyetDinhDuyetDuToan = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetDuToan, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<QuyetDinhDuyetDuToanDto>> Handle(QuyetDinhDuyetDuToanGetDanhSachQuery request,
@@ -60,11 +59,11 @@ internal class
                 NgayQuyetDinh = e.Ngay,
                 TrichYeu = e.TrichYeu,
                 TrangThaiId  = e.TrangThaiId,
-                TenTrangThai = e.TrangThai.Ten,
+                TenTrangThai = e.TrangThai!.Ten ?? string.Empty,
                 GiaTri = e.GiaTri,
-                TenHinhThucQuanLy = e.HinhThucQuanLyDuAn.Ten,
-                TenDuAn = e.DuAn.TenDuAn,
-                TenKeHoachLuaChonNhaThau = e.KeHoachLuaChonNhaThau.Ten,
+                TenHinhThucQuanLy = e.HinhThucQuanLyDuAn!.Ten ?? string.Empty,
+                TenDuAn = e.DuAn!.TenDuAn ?? string.Empty,
+                TenKeHoachLuaChonNhaThau = e.KeHoachLuaChonNhaThau!.Ten ?? string.Empty,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

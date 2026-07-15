@@ -1,11 +1,6 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.KeHoachTrienKhaiHangMucMappings;
-using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 
@@ -15,6 +10,7 @@ internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeH
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,6 +19,7 @@ internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeH
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
@@ -31,6 +28,7 @@ internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeH
     public async Task<KeHoachTrienKhaiHangMuc> Handle(KeHoachTrienKhaiHangMucInsertCommand request,
         CancellationToken cancellationToken = default) {
         await _auth.EnsureCanExecuteStepAsync(request.entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.entity.BuocId, request.entity.DuAnId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
@@ -41,6 +39,6 @@ internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeH
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

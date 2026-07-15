@@ -13,14 +13,16 @@ internal class TrienKhaiKeHoachLCNTGetQueryHandler(IServiceProvider serviceProvi
     private readonly IRepository<TrienKhaiKeHoachLCNT, Guid> TrienKhaiKeHoachLCNT =
         serviceProvider.GetRequiredService<IRepository<TrienKhaiKeHoachLCNT, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<TrienKhaiKeHoachLCNT> Handle(TrienKhaiKeHoachLCNTGetQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = TrienKhaiKeHoachLCNT.GetOrderedSet()
             .Include(e => e.DonViTuVans)
+            .Include(e => e.DmHinhThucLCNT)
+            .Include(e => e.GoiThau)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

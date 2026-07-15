@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Constants;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using QLDA.Application.Common.Mapping;
 
 namespace QLDA.Application.DuAns.Queries;

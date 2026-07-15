@@ -2,8 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.NghiemThus.DTOs;
-using QLDA.Application.Providers;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Commands;
 
@@ -13,7 +11,7 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<NghiemThuUpdateCommandHandler>();
 
@@ -21,7 +19,7 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         _unitOfWork = NghiemThu.UnitOfWork;
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
@@ -35,7 +33,7 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
         ManagedException.ThrowIfNull(entity);
 
         // Authorization check on existing entity's BuocId
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Update scalar properties only (not navigation collections)
         entity.HopDongId = request.Dto.HopDongId;
@@ -56,7 +54,7 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
-        return entity;
+        return entity!;
     }
 
     private async Task SyncNghiemThuPhuLucHopDongAsync(Guid nghiemThuId, List<Guid>? newPhuLucHopDongIds, CancellationToken cancellationToken) {

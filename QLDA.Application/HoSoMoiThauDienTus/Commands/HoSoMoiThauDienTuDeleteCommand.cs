@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -10,12 +9,14 @@ public record HoSoMoiThauDienTuDeleteCommand(Guid Id) : IRequest;
 internal class HoSoMoiThauDienTuDeleteCommandHandler : IRequestHandler<HoSoMoiThauDienTuDeleteCommand> {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public HoSoMoiThauDienTuDeleteCommandHandler(IServiceProvider serviceProvider) {
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HoSoMoiThauDienTu.UnitOfWork;
     }
@@ -26,6 +27,7 @@ internal class HoSoMoiThauDienTuDeleteCommandHandler : IRequestHandler<HoSoMoiTh
         ManagedException.ThrowIfNull(entity);
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId ?? Guid.Empty, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

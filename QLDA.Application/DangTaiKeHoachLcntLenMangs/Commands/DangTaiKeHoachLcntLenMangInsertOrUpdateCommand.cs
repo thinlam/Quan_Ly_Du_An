@@ -1,8 +1,6 @@
 using System.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DangTaiKeHoachLcntLenMangs.Commands;
 

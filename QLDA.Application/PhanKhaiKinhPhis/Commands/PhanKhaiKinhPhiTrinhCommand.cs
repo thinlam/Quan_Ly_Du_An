@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.PhanKhaiKinhPhis.Commands;
 
@@ -27,11 +24,6 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
     }
 
     public async Task<int> Handle(PhanKhaiKinhPhiTrinhCommand request, CancellationToken cancellationToken) {
-        // Permission check: KH-TC only (PhongBanId = 219)
-        //var phongBanId = _userProvider.Info.PhongBanID;
-        //if (phongBanId != 219) {
-        //    throw new ManagedException("Chỉ phòng KH-TC có quyền trình phân khai kinh phí");
-        //}
 
         // Get status IDs from DB by code
         var trangThaiDuThao = await _statusRepository.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -54,7 +46,7 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
         }
 
         // Update status to Đã trình
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
         // Create history record
         var history = new PheDuyetHistory {
@@ -62,8 +54,9 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
             EntityName = PheDuyetEntityNames.PhanKhaiKinhPhi,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

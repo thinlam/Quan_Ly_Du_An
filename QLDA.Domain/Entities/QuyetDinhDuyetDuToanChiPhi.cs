@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities.DanhMuc;
-
 namespace QLDA.Domain.Entities;
 
 public class QuyetDinhDuyetDuToanChiPhi : Entity<Guid>, IAggregateRoot

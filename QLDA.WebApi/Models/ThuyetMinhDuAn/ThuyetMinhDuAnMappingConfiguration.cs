@@ -1,13 +1,11 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
-using static Dapper.SqlMapper;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.ThuyetMinhDuAns;
 
 public static class ThuyetMinhDuAnMappingConfiguration
 {
-    public static ThuyetMinhDuAnModel ToModel(this ThuyetMinhDuAn entity, List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem>? danhSachTepThamDinh = null) =>
+    public static ThuyetMinhDuAnModel ToModel(this ThuyetMinhDuAn entity, List<Attachment>? danhSachTepDinhKem = null, List<Attachment>? danhSachTepThamDinh = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,
@@ -39,5 +37,11 @@ public static class ThuyetMinhDuAnMappingConfiguration
     public static void Update(this ThuyetMinhDuAn entity, ThuyetMinhDuAnModel model) {
         entity.BuocId = model.BuocId;
         entity.DuAnId = model.DuAnId;
+        entity.So = model.So;
+        entity.NgayTrinh = model.NgayTrinh;
+        entity.TrichYeu = model.TrichYeu;
+        entity.KetQuaThamDinh = model.KetQuaThamDinh;
+        entity.TrangThaiThamDinhId = model.TrangThaiThamDinhId;
+     
     }
 }

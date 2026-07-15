@@ -1,5 +1,3 @@
-using QLDA.WebApi.Models.Common;
-
 namespace QLDA.WebApi.Models.DmCapDoCntts;
 
 public class DmCapDoCnttModel : DanhMucModel 

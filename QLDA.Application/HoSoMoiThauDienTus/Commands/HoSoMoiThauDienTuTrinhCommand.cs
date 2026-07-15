@@ -1,10 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -55,16 +51,17 @@ internal class HoSoMoiThauDienTuTrinhCommandHandler : IRequestHandler<HoSoMoiTha
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.HoSoMoiThauDienTu,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId ?? Guid.Empty,
-            NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
-            NoiDung = request.NoiDung,
+            BuocId = entity.BuocId,
+            NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
+                        : $" Gói thầu {entity.GoiThau?.Ten} đã trình ",
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

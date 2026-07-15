@@ -12,7 +12,7 @@ internal class ThoaThuanGiaoViecUpdateCommandHandler : IRequestHandler<ThoaThuan
 {
     private readonly IRepository<ThoaThuanGiaoViec, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -20,7 +20,7 @@ internal class ThoaThuanGiaoViecUpdateCommandHandler : IRequestHandler<ThoaThuan
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ThoaThuanGiaoViec, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
@@ -37,7 +37,7 @@ internal class ThoaThuanGiaoViecUpdateCommandHandler : IRequestHandler<ThoaThuan
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDaChuyen?.Id && entity.TrangThaiId != trangThaiDuThao?.Id)
@@ -60,7 +60,7 @@ internal class ThoaThuanGiaoViecUpdateCommandHandler : IRequestHandler<ThoaThuan
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

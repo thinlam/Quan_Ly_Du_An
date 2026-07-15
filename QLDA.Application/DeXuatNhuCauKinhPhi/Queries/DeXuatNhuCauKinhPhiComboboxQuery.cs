@@ -2,10 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using static Azure.Core.HttpHeader;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 
@@ -26,8 +23,8 @@ internal class
     DeXuatNhuCauKinhPhiComboboxQueryHandler(IServiceProvider ServiceProvider)
     : IRequestHandler<DeXuatNhuCauKinhPhiComboboxQuery, PaginatedList<DeXuatNhuCauKinhPhiDto>> {
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi = ServiceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository =
       ServiceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
 
@@ -62,10 +59,10 @@ internal class
         */
         var queryable = DeXuatNhuCauKinhPhi.GetQueryableSet().AsNoTracking()
             .Where(e => !e.DuAn!.IsDeleted)
-            .Where(    e => e.TrangThaiId == trangThaiDaDuyetDx.Id  )
+            .Where(    e => e.TrangThaiId == trangThaiDaDuyetDx!.Id  )
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
-            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen.Contains(request.SoPhieuChuyen))
+            .WhereIf(request.SoPhieuChuyen != null, e => e.SoPhieuChuyen!.Contains(request.SoPhieuChuyen!))
             .WhereIf(tuNgayDto != null, e => e.NgayPhieuChuyen >= tuNgayDto)
             .WhereIf(denNgayExclusiveDto != null, e => e.NgayPhieuChuyen < denNgayExclusiveDto)
         // --- THÊM BỘ LỌC MỚI CỦA BẠN VÀO ĐÂY ---
@@ -76,21 +73,41 @@ internal class
         3 thuộc kehoachNam nhưng keHoachNam.TrangThai = Từ chối || keHoachNam.IsDeleted = true
         */
         // Case 1: Thuộc chính kế hoạch năm đang truyền lên trong request (Nếu có truyền KeHoachId)
+       
         .Where(e =>
         // Nếu Đề xuất thuộc chính kế hoạch này thì luôn được lấy (để giữ liên kết cũ khi sửa)
-        (request.KeHoachId.HasValue &&
-        e.DeXuatDaTrinhKeHoachNam!.Any(x => x.DeXuatNhuCauKinhPhiNam != null
-        && x.DeXuatNhuCauKinhPhiNam.Id == request.KeHoachId.Value))
+        #region way 1
+        //(request.KeHoachId.HasValue &&
+        //e.DeXuatDaTrinhKeHoachNam!.Any(x => x.DeXuatNhuCauKinhPhiNam != null
+        //&& x.DeXuatNhuCauKinhPhiNam.Id == request.KeHoachId.Value))
 
-        // HOẶC: Đề xuất này KHÔNG ĐƯỢC TỒN TẠI trong một Kế hoạch năm nào khác đang "Hợp lệ" (Chưa xóa và Chưa bị từ chối)
-        || !e.DeXuatDaTrinhKeHoachNam!.Any(x =>
-            x.DeXuatNhuCauKinhPhiNam != null
-            && x.DeXuatNhuCauKinhPhiNam.IsDeleted                                      // Kế hoạch đang hoạt động
-            && x.DeXuatNhuCauKinhPhiNam.TrangThaiId == trangThaiTuChoiKH!.Id             // Trạng thái KHÁC Từ chối (ví dụ: Chờ duyệt, Đã duyệt)
-            
-            )
+        //// HOẶC: Đề xuất này KHÔNG ĐƯỢC TỒN TẠI trong một Kế hoạch năm nào khác đang "Hợp lệ" (Chưa xóa và Chưa bị từ chối)
+        //|| !e.DeXuatDaTrinhKeHoachNam!.Any(x =>
+        //    x.DeXuatNhuCauKinhPhiNam != null
+        //    && x.DeXuatNhuCauKinhPhiNam.IsDeleted                                      // Kế hoạch đang hoạt động
+        //    && x.DeXuatNhuCauKinhPhiNam.TrangThaiId != trangThaiTuChoiKH!.Id             // Trạng thái KHÁC Từ chối (ví dụ: Chờ duyệt, Đã duyệt)
+
+        //    )
+        //
+        #endregion
+        #region way2
+
+    // Nếu đang sửa thì luôn giữ bản ghi thuộc kế hoạch hiện tại
+    (request.KeHoachId.HasValue &&
+     e.DeXuatDaTrinhKeHoachNam!.Any(x =>
+         x.DeXuatNhuCauKinhPhiNam!.Id == request.KeHoachId.Value))
+
+    ||
+
+    // Không tồn tại kế hoạch nào còn hoạt động
+    !e.DeXuatDaTrinhKeHoachNam!.Any(x =>
+        x.DeXuatNhuCauKinhPhiNam != null &&
+        !x.DeXuatNhuCauKinhPhiNam.IsDeleted &&
+        x.DeXuatNhuCauKinhPhiNam.TrangThaiId != trangThaiTuChoiKH!.Id)
+
+        #endregion
         );
-      
+
         return await queryable
             .Select(e => new DeXuatNhuCauKinhPhiDto() {
                 Id = e.Id,
@@ -99,7 +116,7 @@ internal class
                 SoPhieuChuyen = e.SoPhieuChuyen,
                 NgayPhieuChuyen = e.NgayPhieuChuyen,
                 KinhPhiDeXuat = e.KinhPhiDeXuat,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
               
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

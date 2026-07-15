@@ -5,7 +5,7 @@ namespace QLDA.Application.ToTrinhCoThamDinhs;
 
 public static class ToTrinhCoThamDinhMappings
 {
-    public static ToTrinhCoThamDinhDto ToDto(this ToTrinhCoThamDinh entity, List<TepDinhKem>? files = null, List<TepDinhKem>? fileThamDinhs = null) {
+    public static ToTrinhCoThamDinhDto ToDto(this ToTrinhCoThamDinh entity, List<Attachment>? files = null, List<Attachment>? fileThamDinhs = null) {
         return new ToTrinhCoThamDinhDto
         {
             Id = entity.Id,
@@ -14,7 +14,7 @@ public static class ToTrinhCoThamDinhMappings
             NgayToTrinh = entity.NgayToTrinh,
             TrichYeu = entity.TrichYeu,
             So = entity.So,
-            Loai = entity.Loai,
+            Loai = entity.Loai ?? string.Empty,
             TrangThaiId = entity.TrangThaiId,
             TrangThaiThamTraId = entity.TrangThaiThamTraId,
             KetQuaThamDinh = entity.KetQuaThamDinh,
@@ -23,7 +23,7 @@ public static class ToTrinhCoThamDinhMappings
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
         };
     }
-    public static ToTrinhCoThamDinh ToEntity(this ToTrinhCoThamDinhDto entity, List<TepDinhKem>? files = null, List<TepDinhKem>? fileThamDinhs = null)
+    public static ToTrinhCoThamDinh ToEntity(this ToTrinhCoThamDinhDto entity, List<Attachment>? files = null, List<Attachment>? fileThamDinhs = null)
     {
         return new ToTrinhCoThamDinh
         {
@@ -33,13 +33,25 @@ public static class ToTrinhCoThamDinhMappings
             NgayToTrinh = entity.NgayToTrinh,
             TrichYeu = entity.TrichYeu,
             So = entity.So,
-            Loai = entity.Loai,
+            Loai = entity.Loai ?? string.Empty,
             TrangThaiId = entity.TrangThaiId,
             TrangThaiThamTraId = entity.TrangThaiThamTraId,
             KetQuaThamDinh = entity.KetQuaThamDinh,
             KetQuaThamTra = entity.KetQuaThamTra,
         };
     }
+    public static void MapToEntity( this ToTrinhCoThamDinhInsUpdDto dto,ToTrinhCoThamDinh entity) {
+
+        entity.DuAnId = dto.DuAnId;
+        entity.BuocId = dto.BuocId;
+        entity.NgayToTrinh = dto.NgayToTrinh;
+        entity.TrichYeu = dto.TrichYeu ?? string.Empty;
+        entity.So = dto.So ?? string.Empty;
+        entity.Loai = dto.Loai;
+        entity.TrangThaiThamTraId = dto.TrangThaiThamTraId;
+        entity.KetQuaThamDinh = dto.KetQuaThamDinh;
+        entity.KetQuaThamTra = dto.KetQuaThamTra;
+      }
     public static ToTrinhCoThamDinh ToEntity(this ToTrinhCoThamDinhInsUpdDto entity)
     {
         return new ToTrinhCoThamDinh
@@ -48,9 +60,9 @@ public static class ToTrinhCoThamDinhMappings
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NgayToTrinh = entity.NgayToTrinh,
-            TrichYeu = entity.TrichYeu,
-            So = entity.So,
-            Loai = entity.Loai,
+            TrichYeu = entity.TrichYeu ?? string.Empty,
+            So = entity.So ?? string.Empty,
+            Loai = entity.Loai ?? string.Empty,
             TrangThaiThamTraId = entity.TrangThaiThamTraId,
             KetQuaThamDinh = entity.KetQuaThamDinh,
             KetQuaThamTra = entity.KetQuaThamTra,

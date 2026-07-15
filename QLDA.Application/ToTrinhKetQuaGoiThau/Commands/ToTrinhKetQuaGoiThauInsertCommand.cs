@@ -4,7 +4,6 @@ using QLDA.Application.Authorization;
 using QLDA.Application.ToTrinhKetQuaGoiThauMappings;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 
@@ -13,7 +12,7 @@ public record ToTrinhKetQuaGoiThauInsertCommand(ToTrinhKetQuaGoiThauInsertDto Dt
 internal class ToTrinhKetQuaGoiThauInsertCommandHandler : IRequestHandler<ToTrinhKetQuaGoiThauInsertCommand, ToTrinhKetQuaGoiThau> {
     private readonly IRepository<ToTrinhKetQuaGoiThau, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,7 +20,7 @@ internal class ToTrinhKetQuaGoiThauInsertCommandHandler : IRequestHandler<ToTrin
     public ToTrinhKetQuaGoiThauInsertCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<ToTrinhKetQuaGoiThau, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _user = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
@@ -29,18 +28,19 @@ internal class ToTrinhKetQuaGoiThauInsertCommandHandler : IRequestHandler<ToTrin
 
     public async Task<ToTrinhKetQuaGoiThau> Handle(ToTrinhKetQuaGoiThauInsertCommand request,
         CancellationToken cancellationToken = default) {
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
+        var dto = request.Dto ?? new ToTrinhKetQuaGoiThauInsertDto();
         var entity = new ToTrinhKetQuaGoiThau {
-            So = request.Dto.So,
-            BuocId = request.Dto.BuocId,
-            DuAnId = request.Dto.DuAnId,
-            NgayTrinh = request.Dto.NgayTrinh,
-            TrichYeu = request.Dto.TrichYeu,
-            TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId,
+            So = dto.So ?? string.Empty,
+            BuocId = dto.BuocId,
+            DuAnId = dto.DuAnId,
+            NgayTrinh = dto.NgayTrinh,
+            TrichYeu = dto.TrichYeu ?? string.Empty,
+            TrangThaiDangTaiId = dto.TrangThaiDangTaiId,
             TrangThaiId = trangThaiDuThao?.Id
 
         };
@@ -48,9 +48,9 @@ internal class ToTrinhKetQuaGoiThauInsertCommandHandler : IRequestHandler<ToTrin
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        entity.SyncGoiThauIds(request.Dto.DanhSachGoiThau);
+        entity.SyncGoiThauIds(dto.DanhSachGoiThau ?? new List<Guid>());
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        return entity;
+        return entity!;
     }
 }

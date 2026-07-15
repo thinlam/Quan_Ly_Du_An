@@ -6,9 +6,9 @@ public static class DanhMucMappingConfiguration {
         where TDto : DanhMucDto<TKey>, new()
         => new() {
             Id = entity.Id,
-            Ma = entity.Ma,
-            Ten = entity.Ten,
-            MoTa = entity.MoTa,
+            Ma = entity.Ma ?? string.Empty,
+            Ten = entity.Ten ?? string.Empty,
+            MoTa = entity.MoTa ?? string.Empty,
             Stt = entity.Stt,
             Used = entity.Used,
         };

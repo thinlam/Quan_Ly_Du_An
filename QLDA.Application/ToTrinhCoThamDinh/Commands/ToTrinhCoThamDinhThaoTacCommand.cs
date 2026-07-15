@@ -1,11 +1,8 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
@@ -25,8 +22,10 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAppSettingsProvider _settings;
     private readonly IUserProvider _userProvider;
+    private readonly IRepository<UserMaster, long> _userMasterRepo;
 
     public ToTrinhCoThamDinhThaoTacCommandHandler(IServiceProvider serviceProvider) {
+        _userMasterRepo =  serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhCoThamDinh, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
@@ -51,21 +50,26 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
 
             var entity = await _repository.GetQueryableSet().Include(e => e.TrangThai).Include(e => e.DuAn)
                 .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+            ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
             var userId = _userProvider.Info.UserID;
-            var maTrangThai = entity.TrangThai.Ma;
+            var maTrangThai = entity.TrangThai!.Ma;
 
             await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+            long createUserId = 0;
+            long.TryParse(entity.CreatedBy, out createUserId);
+            var userThucHien = _userMasterRepo.GetQueryableSet().AsNoTracking().Where(x => x.UserPortalId == createUserId).FirstOrDefault() ?? new UserMaster();
 
             // get các trạng thái được phép xử lý
             var duongDi = await _duongDiRepo.GetQueryableSet().AsNoTracking()
                        .Where(x => x.Used && !(x.IsDeleted ?? false)
-                       && x.MaTrangThaiHienTai == entity.TrangThai.Ma
+                       && x.Loai == request.Loai
+                       && x.MaTrangThaiHienTai == entity.TrangThai!.Ma
                        && x.MaTrangThaiTiepTheo == request.TrangThaiTiepTheo
                        && (x.RoleLevel == 0
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && _userProvider.Info.PhongBanID == entity.DuAn.DonViPhuTrachChinhId)
-                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && _userProvider.Info.UserID == entity.DuAn.LanhDaoPhuTrachId)
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri && (_userProvider.Info.PhongBanID == userThucHien.PhongBanId))//entity.DuAn.DonViPhuTrachChinhId)
+                       || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh && _userProvider.Info.UserID == entity.DuAn!.LanhDaoPhuTrachId)
                        || (x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh && _userProvider.Info.PhongBanID == x.RoleId) // ví dụ phòng KHTC
-                                                                                                                               // chưa xét cấp đơn vị && phòng ban chỉ định
+                                                                                                                             
                        )).ToListAsync(cancellationToken);
 
             var trangThaiTiepTheoItems = statusDict.GetValueOrDefault(request.TrangThaiTiepTheo);
@@ -78,11 +82,11 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
             var history = new PheDuyetHistory
             {
                 Id = Guid.NewGuid(),
-                EntityName = PheDuyetEntityNames.QuyetDinhKeHoachThue,
+                EntityName = entity.Loai ?? string.Empty,
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
-                NoiDung = request.noiDung,
+                NoiDung = request.noiDung ?? string.Empty,
                 NguoiXuLyId = _userProvider.Info.UserID,
                 TrangThaiId = trangThaiTiepTheoItems?.Id,
                 NgayXuLy = DateTimeOffset.UtcNow

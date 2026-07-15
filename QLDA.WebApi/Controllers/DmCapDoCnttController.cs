@@ -1,12 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using QLDA.Application.Common.Enums;
-using QLDA.Application.Common.Queries;
-using QLDA.Application.Common.Commands;
 using QLDA.WebApi.Models.DmCapDoCntts;
-using QLDA.WebApi.Models;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.WebApi.Controllers;
 

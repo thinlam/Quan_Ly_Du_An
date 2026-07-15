@@ -9,12 +9,12 @@ public class PhanKhaiKinhPhiImportDescriptor : IImportDescriptor {
     public string OutputPath { get; set; } = "";
     public string? Title => "MẪU IMPORT PHÂN KHAI KINH PHÍ";
     public string? HintText =>
-        "Nhập dữ liệu vào bảng bên dưới. Cột Dự án / Nguồn vốn chọn từ danh sách. Tiền nhập theo đồng.";
+        "Nhập dữ liệu vào bảng bên dưới. Cột Dự án / Nguồn vốn chọn từ danh sách. Nguồn vốn hiển thị dạng \"Tên nguồn vốn - Tên dự án\". Tiền nhập theo đồng.";
 
     public List<ImportColumn> Columns { get; } =
     [
         new() { Header = "Dự án", Description = "Chọn từ danh sách", Placeholder = "$cbo1", ComboIndex = 1, Width = 40 },
-        new() { Header = "Nguồn vốn", Description = "Chọn từ danh mục", Placeholder = "$cbo2", ComboIndex = 2, Width = 22 },
+        new() { Header = "Nguồn vốn", Description = "Tên nguồn vốn - Tên dự án", Placeholder = "$cbo2", ComboIndex = 2, Width = 40 },
         new() { Header = "Kinh phí đề xuất", Description = "Số ≥ 0 (đồng)", NumberFormat = "#,##0", Width = 22 },
         new() { Header = "Kinh phí phân khai", Description = "Số ≥ 0 (đồng)", NumberFormat = "#,##0", Width = 22 },
         new() { Header = "Thuyết minh phân khai", Description = "Tùy chọn", Width = 35 },

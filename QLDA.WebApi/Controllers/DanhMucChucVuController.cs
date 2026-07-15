@@ -1,6 +1,7 @@
-using System.Net.Mime;
+using QLDA.Application.DmChucVus.Queries;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DmChucVus;
+using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers {
     [Tags("Danh mục chức vụ")]
@@ -59,8 +60,19 @@ namespace QLDA.WebApi.Controllers {
             }) as PaginatedList<DanhMucDto<int>>;
             return ResultApi.Ok(res == null ? [] : res.Data);
         }
-
-
+       
+        [ProducesResponseType<ResultApi>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+        [HttpGet("danh-sach-master")]
+        public async Task<ResultApi> GetMaster([FromQuery] bool getAll = false)
+        {
+            var res = await Mediator.Send(new DmChucVuGetDanhSachQuery()
+            {
+                GetAll = getAll,
+            });
+            return ResultApi.Ok(res.Data);
+        }
+        //DmChucVu
         [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
         [HttpPost("them-moi")]

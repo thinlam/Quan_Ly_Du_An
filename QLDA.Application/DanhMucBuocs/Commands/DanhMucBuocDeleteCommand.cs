@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.DanhMucBuocs.Commands;
 
@@ -22,6 +23,8 @@ internal class DanhMucBuocDeleteCommandHandler : IRequestHandler<DanhMucBuocDele
     private readonly IRepository<TamUng, Guid> TamUng;
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
     private readonly IRepository<DuAn, Guid> DuAn;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork UnitOfWork;
 
     public DanhMucBuocDeleteCommandHandler(IServiceProvider serviceProvider)
@@ -41,6 +44,8 @@ internal class DanhMucBuocDeleteCommandHandler : IRequestHandler<DanhMucBuocDele
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         UnitOfWork = DanhMucBuoc.UnitOfWork;
     }
 

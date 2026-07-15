@@ -1,3 +1,5 @@
+using QLDA.Application.Common;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
 using QLDA.WebApi.Models.BaoCaoTienDos;
@@ -30,7 +32,7 @@ namespace QLDA.WebApi.Models.TepDinhKems;
 
 public static class TepDinhKemMappingConfigurations
 {
-    private const string KySoPrefix = "KySo_";
+    private const string KySoPrefix = SignedHelper.Prefix;
 
     private static string ResolveGroupType(this TepDinhKemModel model, string rawGroupType)
     {
@@ -62,7 +64,7 @@ public static class TepDinhKemMappingConfigurations
         return belongsToTarget ? existingId : SequentialGuidGenerator.Instance.NewGuid();
     }
 
-    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, EGroupType groupType = EGroupType.None)
+    private static Attachment ToEntity(this TepDinhKemModel model, Guid groupId, EGroupType groupType = EGroupType.None)
     {
         var targetGroupId = groupId.ToString();
         var resolvedGroupType = model.ResolveGroupType(groupType.ToString());
@@ -80,7 +82,7 @@ public static class TepDinhKemMappingConfigurations
         };
     }
 
-    private static TepDinhKem ToEntity(this TepDinhKemModel model, string groupId, EGroupType groupType = EGroupType.None)
+    private static Attachment ToEntity(this TepDinhKemModel model, string groupId, EGroupType groupType = EGroupType.None)
     {
         var resolvedGroupType = model.ResolveGroupType(groupType.ToString());
         return new()
@@ -97,7 +99,7 @@ public static class TepDinhKemMappingConfigurations
         };
     }
 
-    private static TepDinhKem ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
+    private static Attachment ToEntity(this TepDinhKemModel model, Guid groupId, string groupType = "None")
     {
         var targetGroupId = groupId.ToString();
         var resolvedGroupType = model.ResolveGroupType(groupType);
@@ -114,19 +116,19 @@ public static class TepDinhKemMappingConfigurations
             Size = model.Size,
         };
     }
-    public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, string groupId,
+    public static IEnumerable<Attachment> ToEntities(this List<TepDinhKemModel> models, string groupId,
         EGroupType groupType = EGroupType.None)
         => models.Select(m => ToEntity(m, groupId, groupType));
 
-    public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, Guid groupId,
+    public static IEnumerable<Attachment> ToEntities(this List<TepDinhKemModel> models, Guid groupId,
         EGroupType groupType = EGroupType.None)
         => models.Select(m => ToEntity(m, groupId, groupType));
 
-    public static IEnumerable<TepDinhKem> ToEntities(this List<TepDinhKemModel> models, Guid groupId,
+    public static IEnumerable<Attachment> ToEntities(this List<TepDinhKemModel> models, Guid groupId,
         string groupType = "None")
         => models.Select(m => ToEntity(m, groupId, groupType));
 
-    public static TepDinhKemModel ToModel(this TepDinhKem entity)
+    public static TepDinhKemModel ToModel(this Attachment entity)
         => new()
         {
             Id = entity.Id,
@@ -140,84 +142,84 @@ public static class TepDinhKemMappingConfigurations
             ParentId = entity.ParentId,
         };
 
-    public static List<TepDinhKemModel> ToModels(this List<TepDinhKem> entities)
+    public static List<TepDinhKemModel> ToModels(this List<Attachment> entities)
         => entities.Select(e => e.ToModel()).ToList();
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this VanBanPhapLyModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this VanBanPhapLyModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.VanBanPhapLy).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this VanBanChuTruongModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this VanBanChuTruongModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.VanBanChuTruong).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this PheDuyetDuToanModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this PheDuyetDuToanModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.PheDuyetDuToan).ToList() ?? [];
 
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this KhoKhanVuongMacModel model, Guid groupId)
-        => [.. new List<TepDinhKem>()
+    public static List<Attachment> GetDanhSachTepDinhKem(this KhoKhanVuongMacModel model, Guid groupId)
+        => [.. new List<Attachment>()
             .Union(model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.KhoKhanVuongMac).ToList() ?? [])
             .Union(model.KetQua?.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.KetQuaXuLyKhoKhanVuongMac)
                 .ToList() ?? [])];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this BaoCaoTienDoModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this BaoCaoTienDoModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.BaoCaoTienDo).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this PhuLucHopDongModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this PhuLucHopDongModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.PhuLucHopDong).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this QuyetDinhDuyetDuAnModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this QuyetDinhDuyetDuAnModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.QuyetDinhDuyetDuAn).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this QuyetDinhDuyetKHLCNTModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this QuyetDinhDuyetKHLCNTModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.QuyetDinhDuyetKHLCNT).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this QuyetDinhDuyetQuyetToanModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this QuyetDinhDuyetQuyetToanModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.QuyetDinhDuyetQuyetToan).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this QuyetDinhLapBanQldaModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this QuyetDinhLapBanQldaModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.QuyetDinhLapBanQLDA).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this QuyetDinhLapBenMoiThauModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this QuyetDinhLapBenMoiThauModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.QuyetDinhLapBenMoiThau).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this QuyetDinhLapHoiDongThamDinhModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this QuyetDinhLapHoiDongThamDinhModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.QuyetDinhLapHoiDongThamDinh).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DangTaiKeHoachLcntLenMangModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this DangTaiKeHoachLcntLenMangModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DangTaiKeHoachLcntLenMang).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this BaoCaoBaoHanhSanPhamModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this BaoCaoBaoHanhSanPhamModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.BaoCaoBaoHanhSanPham).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this BaoCaoBanGiaoSanPhamModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this BaoCaoBanGiaoSanPhamModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.BaoCaoBanGiaoSanPham).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this PhanKhaiKinhPhiModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this PhanKhaiKinhPhiModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.PhanKhaiKinhPhi).ToList() ?? [];
 
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatChuTruongMoiModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this DeXuatChuTruongMoiModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatChuTruongMoi).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatChuyenTiepModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this DeXuatChuyenTiepModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatChuyenTiep).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatNhuCauKinhPhi).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiNamModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this DeXuatNhuCauKinhPhiNamModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DeXuatNhuCauKinhPhiNam).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this ThuyetMinhDuAnModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKem(this ThuyetMinhDuAnModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ThuyetMinhDuAn).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepDinhKemThamDinh(this ThuyetMinhDuAnModel model, Guid groupId)
-    => model.DanhSachTepThamDinh?.ToEntities(groupId, EGroupType.ThamDinhThuyetMinhDuAn).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepDinhKem(this ToTrinhThamDinhNhaThauModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepDinhKemThamDinh(this ThuyetMinhDuAnModel model, Guid groupId)
+    => model.DanhSachTepThamDinh?.ToEntities(groupId, EGroupType.ThuyetMinhDuAnThamDinh).ToList() ?? [];
+    public static List<Attachment> GetDanhSachTepDinhKem(this ToTrinhThamDinhNhaThauModel model, Guid groupId)
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ToTrinhThamDinhNhaThau).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTepThamDinh(this ToTrinhThamDinhNhaThauModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTepThamDinh(this ToTrinhThamDinhNhaThauModel model, Guid groupId)
       => model.DanhSachTepThamDinh?.ToEntities(groupId, EGroupType.NoiDungToTrinhThamDinhNhaThau).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTep(this KetQuaThamDinhNhaThauModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTep(this KetQuaThamDinhNhaThauModel model, Guid groupId)
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.KetQuaThamDinhNhaThau).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTep(this TrienKhaiKeHoachLCNTModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTep(this TrienKhaiKeHoachLCNTModel model, Guid groupId)
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.TrienKhaiKeHoachLCNT).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTep(this DonViTuVanKeHoachModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTep(this DonViTuVanKeHoachModel model, Guid groupId)
      => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.DonViTuVan).ToList() ?? [];
-    public static List<TepDinhKem> GetDanhSachTep(this ChuTruongLapKeHoachModel model, Guid groupId)
+    public static List<Attachment> GetDanhSachTep(this ChuTruongLapKeHoachModel model, Guid groupId)
      => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.ChuTruongLapKeHoach).ToList() ?? [];
 
 }

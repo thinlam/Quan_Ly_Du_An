@@ -28,6 +28,7 @@ public class VanBanPhapLyModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepD
 
     public Guid DuAnId { get; set; }
     public string? SoVanBan { get; set; } = string.Empty;
+    public string? CoQuanQuyetDinh { get; set; } = string.Empty;
     public DateTimeOffset? NgayVanBan { get; set; }
     public int? LoaiVanBanId { get; set; }
     public DateTimeOffset? NgayKy { get; set; }

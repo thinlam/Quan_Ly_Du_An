@@ -1,14 +1,11 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record TrienKhaiKeHoachLCNTTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -56,7 +53,7 @@ internal class TrienKhaiKeHoachLCNTTrinhCommandHandler : IRequestHandler<TrienKh
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc trả lại!");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
        // entity.NgayTrinh = DateTime.UtcNow;
 
         var history = new PheDuyetHistory
@@ -67,7 +64,7 @@ internal class TrienKhaiKeHoachLCNTTrinhCommandHandler : IRequestHandler<TrienKh
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

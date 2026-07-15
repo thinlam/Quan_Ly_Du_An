@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 
@@ -12,8 +11,8 @@ public record ToTrinhThamDinhNhaThauDeleteCommand(Guid Id) : IRequest<int>
 public record ToTrinhThamDinhNhaThauDeleteCommandHandler : IRequestHandler<ToTrinhThamDinhNhaThauDeleteCommand, int>
 {
     private readonly IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid> ToTrinhThamDinhNhaThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _user;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,8 +20,8 @@ public record ToTrinhThamDinhNhaThauDeleteCommandHandler : IRequestHandler<ToTri
     public ToTrinhThamDinhNhaThauDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         ToTrinhThamDinhNhaThau = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _user = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = ToTrinhThamDinhNhaThau.UnitOfWork;
@@ -35,7 +34,7 @@ public record ToTrinhThamDinhNhaThauDeleteCommandHandler : IRequestHandler<ToTri
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

@@ -1,5 +1,3 @@
-using QLDA.Application.Common.Constants;
-
 namespace QLDA.Application.DanhMucBuocs.DTOs;
 
 public static class StepMappingMappings {
@@ -37,7 +35,7 @@ public static class StepMappingMappings {
         => new PhaseDto() {
             Id = entity.Id,
             Stt = entity.Stt ?? 0,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
         };
 
     public static List<StepDto> ToSteps(this List<DuAnBuoc> entities)

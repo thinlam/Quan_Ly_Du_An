@@ -1,11 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -36,14 +32,6 @@ internal class HoSoMoiThauDienTuTuChoiCommandHandler : IRequestHandler<HoSoMoiTh
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuTuChoiCommand request, CancellationToken cancellationToken) {
-        // Permission: QLDA_LD, P.HC-TH (by PhongBanID), or QLDA_QuanTri
-        var isHcth = _userProvider.Info.PhongBanID == _settings.PhongHCTHId;
-        var isLanhDao = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV) ?? false;
-        var isQuanTri = _userProvider.AuthInfo?.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_QuanTri) ?? false;
-        if (!isLanhDao && !isHcth && !isQuanTri) {
-            throw new ManagedException("Chỉ quản lý có quyền từ chối hồ sơ mời thầu điện tử");
-        }
-
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do từ chối là bắt buộc");
         }
@@ -63,7 +51,7 @@ internal class HoSoMoiThauDienTuTuChoiCommandHandler : IRequestHandler<HoSoMoiTh
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể từ chối khi trạng thái là Đã trình");
         }
 

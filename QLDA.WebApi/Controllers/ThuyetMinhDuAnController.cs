@@ -1,11 +1,10 @@
-using QLDA.Application.DanhMucDonVis.Queries;
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Application.ThuyetMinhDuAns.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.ThuyetMinhDuAns;
 using System.Net.Mime;
@@ -27,12 +26,12 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAn]
+            EGroupTypes = [nameof(EGroupType.ThuyetMinhDuAn)]
         });
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [GroupTypeConstants.ThuyetMinhDuAnThamDinh]
+            EGroupTypes = [nameof(EGroupType.ThuyetMinhDuAnThamDinh)]
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepThamDinh));
     }
@@ -79,13 +78,21 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         var entity = model.ToEntity();
         entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   );
        
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
-            entity.Id, GroupTypeConstants.ThuyetMinhDuAn) ?? []];
-
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(
+            entity.Id, EGroupType.ThuyetMinhDuAn) ?? []];
+        
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
             Entities = files
+        });
+        List<Attachment> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
+            entity.Id, EGroupType.ThuyetMinhDuAnThamDinh) ?? []];
+        
+        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            Entities = filesThamDinh
         });
 
         return ResultApi.Ok(entity.Id);

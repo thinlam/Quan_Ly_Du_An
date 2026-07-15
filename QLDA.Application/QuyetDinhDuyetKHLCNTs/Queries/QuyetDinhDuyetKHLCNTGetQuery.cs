@@ -13,13 +13,13 @@ internal class QuyetDinhDuyetKHLCNTGetQueryHandler(IServiceProvider serviceProvi
     private readonly IRepository<QuyetDinhDuyetKHLCNT, Guid> QuyetDinhDuyetKHLCNT =
         serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetKHLCNT, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<QuyetDinhDuyetKHLCNT> Handle(QuyetDinhDuyetKHLCNTGetQuery request,
         CancellationToken cancellationToken = default) {
-        var queryable = QuyetDinhDuyetKHLCNT.GetOrderedSet()
+        var queryable = QuyetDinhDuyetKHLCNT.GetOrderedSet().Include(e=> e.VanBanQuyetDinh)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

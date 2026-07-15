@@ -1,9 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThuyetMinhDuAns.Commands;
 
@@ -13,7 +11,7 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
 {
     private readonly IRepository<ThuyetMinhDuAn, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -21,14 +19,14 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ThuyetMinhDuAn, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
 
     public async Task<ThuyetMinhDuAn> Handle(ThuyetMinhDuAnInsertCommand request, CancellationToken cancellationToken = default)
     {
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         // Auto-assign Dự thảo status
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -51,6 +49,6 @@ internal class ThuyetMinhDuAnInsertCommandHandler : IRequestHandler<ThuyetMinhDu
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

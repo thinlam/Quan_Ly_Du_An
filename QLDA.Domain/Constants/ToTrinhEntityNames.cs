@@ -1,4 +1,3 @@
-using QLDA.Domain.Entities;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -38,6 +37,7 @@ public static class ToTrinhEntityNames
   
   
 }
+// chú giải: Các tờ trình ko cần duyệt( chỉ trình là hoàn thành quá trình phê duyệt)
 public enum LoaiToTrinhKhongDuyetEnum
 {
     [Description("KHLCNTDuToanSanCo")]

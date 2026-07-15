@@ -1,8 +1,10 @@
+using BuildingBlocks.Domain.Entities;
+
 namespace QLDA.WebApi.Models.QuyetDinhDuyetDuAnNguonVons;
 
 public static class QuyetDinhDuyetDuAnNguonVonMappingConfiguration {
     public static QuyetDinhDuyetDuAnNguonVonModel ToModel(this QuyetDinhDuyetDuAnNguonVon entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             NguonVonId = entity.NguonVonId,

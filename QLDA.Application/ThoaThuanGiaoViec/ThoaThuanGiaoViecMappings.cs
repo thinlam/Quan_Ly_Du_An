@@ -6,7 +6,7 @@ namespace QLDA.Application.ThoaThuanGiaoViecs;
 public static class ThoaThuanGiaoViecMappings
 {
 
-    public static ThoaThuanGiaoViecDto ToDto(this ThoaThuanGiaoViec entity, List<TepDinhKem>? files = null)
+    public static ThoaThuanGiaoViecDto ToDto(this ThoaThuanGiaoViec entity, List<Attachment>? files = null)
     {
         return new ThoaThuanGiaoViecDto
         {

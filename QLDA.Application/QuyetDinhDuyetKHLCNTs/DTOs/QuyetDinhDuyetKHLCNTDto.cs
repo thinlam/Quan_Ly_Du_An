@@ -1,11 +1,11 @@
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Interfaces;
+using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
 using SequentialGuid;
 
 namespace QLDA.Application.QuyetDinhDuyetKHLCNTs.DTOs;
 
-public class QuyetDinhDuyetKHLCNTDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKemDto, ITienDo {
+public class QuyetDinhDuyetKHLCNTDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKemDto{//, ITienDo
     [DefaultValue(null)] public Guid? Id { get; set; }
 
     public Guid GetId() {
@@ -13,20 +13,13 @@ public class QuyetDinhDuyetKHLCNTDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHa
         return (Guid)Id;
     }
 
-    public Guid DuAnId { get; set; }
-    public int? BuocId { get; set; }
-
+  
     public Guid? KeHoachLuaChonNhaThauId { get; set; }
 
     /// <summary>
     /// Số quyết định
     /// </summary>
-    public string? SoQuyetDinh { get; set; }
-
-    public DateTimeOffset? NgayQuyetDinh { get; set; }
-    public string? CoQuanQuyetDinh { get; set; }
-    public string? TrichYeu { get; set; }
-    public DateTimeOffset? NgayKy { get; set; }
-    public string? NguoiKy { get; set; }
+//public string? SoQuyetDinh { get; set; }
+    public VanBanQuyetDinhDto? VanBanQuyetDinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }

@@ -1,13 +1,10 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatChuTruongMois.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record DeXuatChuTruongMoiTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -41,7 +38,7 @@ internal class DeXuatChuTruongMoiTrinhCommandHandler : IRequestHandler<DeXuatChu
 
         var entity = await _repository.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
-     
+
         ManagedException.ThrowIfNull(entity, "Không tìm thấy đề xuất");
 
         if (entity.TrangThaiId != null && entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
@@ -49,7 +46,7 @@ internal class DeXuatChuTruongMoiTrinhCommandHandler : IRequestHandler<DeXuatChu
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
         var history = new PheDuyetHistory
         {
@@ -59,7 +56,7 @@ internal class DeXuatChuTruongMoiTrinhCommandHandler : IRequestHandler<DeXuatChu
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

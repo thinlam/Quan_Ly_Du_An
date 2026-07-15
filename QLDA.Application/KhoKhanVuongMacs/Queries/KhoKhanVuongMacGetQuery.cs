@@ -13,8 +13,8 @@ internal class KhoKhanVuongMacGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<BaoCaoKhoKhanVuongMac, Guid> KhoKhanVuongMac =
         serviceProvider.GetRequiredService<IRepository<BaoCaoKhoKhanVuongMac, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<BaoCaoKhoKhanVuongMac> Handle(KhoKhanVuongMacGetQuery request,

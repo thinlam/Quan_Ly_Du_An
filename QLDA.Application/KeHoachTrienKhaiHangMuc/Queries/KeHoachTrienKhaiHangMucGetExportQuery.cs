@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 
@@ -28,6 +25,8 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
 {
     private readonly IRepository<KeHoachTrienKhaiHangMuc, Guid> _keHoachRepo =
         serviceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiHangMuc, Guid>>();
+    private readonly IRepository<HangMucKeHoach, Guid> _hangMucRepo =
+        serviceProvider.GetRequiredService<IRepository<HangMucKeHoach, Guid>>();
     private readonly IRepository<DanhMucGiaiDoan, int> _giaiDoanRepo =
         serviceProvider.GetRequiredService<IRepository<DanhMucGiaiDoan, int>>();
     private readonly IRepository<DmDonVi, long> _donViRepo =
@@ -46,11 +45,18 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
         CancellationToken cancellationToken = default)
     {
         var queryable = BuildFilteredQueryable(request);
-        var hangMucs = await LoadHangMucsAsync(queryable, request, cancellationToken);
+        var (hangMucs, duAnId) = await LoadHangMucsWithContextAsync(queryable, request, cancellationToken);
 
         ManagedException.ThrowIf(hangMucs.Count == 0, "Không có dữ liệu để xuất");
 
-        return await MapToExportRowsAsync(hangMucs, cancellationToken);
+        return await KeHoachTrienKhaiHangMucExportMappings.ToExportRowsAsync(
+            hangMucs,
+            duAnId ?? request.DuAnId,
+            _giaiDoanRepo,
+            _duAnBuocRepo,
+            _donViRepo,
+            _userRepo,
+            cancellationToken);
     }
 
     private IQueryable<KeHoachTrienKhaiHangMuc> BuildFilteredQueryable(
@@ -62,7 +68,6 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
                 _authContext,
                 e => e.BuocId)
             .AsNoTracking()
-            .Include(e => e.DanhSachHangMuc)
             .WhereIf(request.Id.HasValue && request.Id != Guid.Empty, e => e.Id == request.Id)
             .WhereIf(request.DuAnId.HasValue && request.DuAnId != Guid.Empty, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
@@ -74,7 +79,7 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
             .WhereIf(request.DenNgay.HasValue, e => e.NgayToTrinh.HasValue && e.NgayToTrinh.Value <= request.DenNgay!.Value.ToEndOfDayUtc());
     }
 
-    private static async Task<List<HangMucKeHoach>> LoadHangMucsAsync(
+    private async Task<(List<HangMucKeHoach> HangMucs, Guid? DuAnId)> LoadHangMucsWithContextAsync(
         IQueryable<KeHoachTrienKhaiHangMuc> queryable,
         KeHoachTrienKhaiHangMucGetExportQuery request,
         CancellationToken cancellationToken)
@@ -85,7 +90,11 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
         if (hasId)
         {
             var keHoach = await queryable.FirstOrDefaultAsync(cancellationToken);
-            return keHoach?.DanhSachHangMuc?.ToList() ?? [];
+            if (keHoach == null)
+                return ([], null);
+
+            var hangMucs = await LoadHangMucsByKeHoachIdAsync(keHoach.Id, cancellationToken);
+            return (hangMucs, keHoach.DuAnId);
         }
 
         if (hasDuAnId)
@@ -94,7 +103,11 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
                 .OrderByDescending(e => e.NgayToTrinh)
                 .ThenByDescending(e => e.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
-            return keHoach?.DanhSachHangMuc?.ToList() ?? [];
+            if (keHoach == null)
+                return ([], request.DuAnId);
+
+            var hangMucs = await LoadHangMucsByKeHoachIdAsync(keHoach.Id, cancellationToken);
+            return (hangMucs, request.DuAnId);
         }
 
         var keHoachs = await queryable
@@ -102,67 +115,20 @@ internal class KeHoachTrienKhaiHangMucGetExportQueryHandler(IServiceProvider ser
             .ThenByDescending(e => e.NgayToTrinh)
             .ToListAsync(cancellationToken);
 
-        return keHoachs
-            .SelectMany(k => k.DanhSachHangMuc ?? [])
-            .ToList();
+        var allHangMucs = new List<HangMucKeHoach>();
+        foreach (var keHoach in keHoachs)
+            allHangMucs.AddRange(await LoadHangMucsByKeHoachIdAsync(keHoach.Id, cancellationToken));
+
+        return (allHangMucs, null);
     }
 
-    private async Task<List<KeHoachTrienKhaiHangMucExportItemDto>> MapToExportRowsAsync(
-        List<HangMucKeHoach> hangMucs,
-        CancellationToken cancellationToken)
-    {
-        var giaiDoanIds = hangMucs
-            .Where(h => h.GiaiDoanId.HasValue)
-            .Select(h => h.GiaiDoanId!.Value)
-            .Distinct()
-            .ToList();
-
-        var giaiDoans = giaiDoanIds.Count == 0
-            ? []
-            : await _giaiDoanRepo.GetQueryableSet()
-                .AsNoTracking()
-                .Where(g => giaiDoanIds.Contains(g.Id))
-                .ToListAsync(cancellationToken);
-
-        var donViIds = hangMucs
-            .SelectMany(h => Enumerable.Empty<long?>()
-                .Append(h.DonViChuTriId)
-                .Concat((h.DonViPhoiHopIds ?? []).Select(id => (long?)id)))
-            .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
-
-        var donVis = donViIds.Count == 0
-            ? []
-            : await _donViRepo.GetQueryableSet()
-                .AsNoTracking()
-                .Where(d => donViIds.Contains(d.Id))
-                .Select(d => new { d.Id, d.TenDonVi })
-                .ToListAsync(cancellationToken);
-
-        var userIds = hangMucs
-            .SelectMany(h => Enumerable.Empty<long?>()
-                .Append(h.CanBoChuTriId)
-                .Concat((h.CanBoPhoiHopIds ?? []).Select(id => (long?)id)))
-            .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
-
-        var users = userIds.Count == 0
-            ? []
-            : await _userRepo.GetQueryableSet()
-                .AsNoTracking()
-                .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.HoTen })
-                .ToListAsync(cancellationToken);
-
-        return KeHoachTrienKhaiHangMucExportMapper.ToExportRows(
-            hangMucs,
-            giaiDoans.ToDictionary(g => g.Id, g => g.Ten ?? string.Empty),
-            giaiDoans.ToDictionary(g => g.Id, g => g.Stt ?? int.MaxValue - 1),
-            donVis.ToDictionary(d => d.Id, d => d.TenDonVi ?? string.Empty),
-            users.ToDictionary(u => u.Id, u => u.HoTen ?? string.Empty));
-    }
+    private async Task<List<HangMucKeHoach>> LoadHangMucsByKeHoachIdAsync(
+        Guid keHoachId,
+        CancellationToken cancellationToken) =>
+        await _hangMucRepo.GetQueryableSet()
+            .AsNoTracking()
+            .Where(h => h.KeHoachId == keHoachId)
+            .OrderBy(h => h.CreatedAt)
+            .ThenBy(h => h.Id)
+            .ToListAsync(cancellationToken);
 }

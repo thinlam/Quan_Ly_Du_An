@@ -1,5 +1,4 @@
 using System.Data;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
@@ -8,13 +7,13 @@ using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
-public record ToTrinhCoThamDinhUpdateCommand(ToTrinhCoThamDinh Dto) : IRequest<ToTrinhCoThamDinh>;
+public record ToTrinhCoThamDinhUpdateCommand(ToTrinhCoThamDinhInsUpdDto Dto) : IRequest<ToTrinhCoThamDinh>;
 
 internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCoThamDinhUpdateCommand, ToTrinhCoThamDinh>
 {
     private readonly IRepository<ToTrinhCoThamDinh, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -22,7 +21,7 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
     {
         _repo = serviceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
@@ -35,28 +34,30 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
             .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDaDuyet = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
-        var trangThaiChoThamDinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.DuThao);
+        var trangThaiChoThamDinh = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.ThamDinh);
+        var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.ToTrinhCoThamDinh.TraLai);
 
 
         var entity = await _repo.GetQueryableSet().AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
-
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+         
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         // Validate current status must be null (legacy), Dự thảo, or Migrated (LEG)
-
-        if (entity.TrangThaiId != trangThaiDaDuyet?.Id && entity.TrangThaiId != trangThaiChoThamDinh?.Id)
+        if (entity.TrangThaiId == trangThaiDaDuyet?.Id)//&& entity.TrangThaiId != trangThaiChoThamDinh?.Id && entity.TrangThaiId != trangThaiTraLai?.Id
         {
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
-        request.Dto.TrangThaiId = entity?.TrangThaiId;
+        // i had entity
+        // i want map request.Dto to entity , this is true func
+        request.Dto.MapToEntity(entity);
 
-        await _repo.UpdateAsync(request.Dto, cancellationToken);
+        await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         entity = await _repo.GetQueryableSet().AsNoTracking()
           .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken); 
-        return entity;
+        return entity!;
     }
 }
 

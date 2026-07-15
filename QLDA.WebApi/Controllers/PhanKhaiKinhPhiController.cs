@@ -1,13 +1,11 @@
-using System.Data;
 using System.Net.Mime;
-using QLDA.Domain.Constants;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -43,16 +41,8 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
     /// </summary>
     [ProducesResponseType<ResultApi<PaginatedList<PhanKhaiKinhPhiDto>>>(StatusCodes.Status200OK)]
     [HttpGet("danh-sach")]
-    public async Task<ResultApi> GetDanhSach(
-        [FromQuery] Guid? duAnId,
-        [FromQuery] string? globalFilter = null,
-        [FromQuery] int? trangThaiId = null,
-        int pageIndex = 0, int pageSize = 0) {
-        var res = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachQuery {
-            DuAnId = duAnId, GlobalFilter = globalFilter,
-            TrangThaiId = trangThaiId,
-            PageIndex = pageIndex, PageSize = pageSize, IsNoTracking = true,
-        });
+    public async Task<ResultApi> GetDanhSach([FromQuery] PhanKhaiKinhPhiSearchModel searchModel) {
+        var res = await Mediator.Send(searchModel.ToQuery());
         return ResultApi.Ok(res);
     }
 
@@ -81,7 +71,7 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
             }
         ), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PhanKhaiKinhPhi) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -116,7 +106,7 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
             }
         ), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.PhanKhaiKinhPhi) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

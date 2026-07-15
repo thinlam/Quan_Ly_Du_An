@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
+using QLDA.Application.Common;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -43,12 +43,12 @@ internal class
     KhoKhanVuongMacGetDanhSachQueryHandler : IRequestHandler<KhoKhanVuongMacGetDanhSachQuery,
     PaginatedList<KhoKhanVuongMacDto>> {
     private readonly IRepository<BaoCaoKhoKhanVuongMac, Guid> KhoKhanVuongMac;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
 
     public KhoKhanVuongMacGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         KhoKhanVuongMac = serviceProvider.GetRequiredService<IRepository<BaoCaoKhoKhanVuongMac, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
@@ -79,26 +79,25 @@ internal class
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
                 NoiDung = e.NoiDung,
-                Ngay = e.Ngay,
+                Ngay = e.Ngay.ToDateOnlyVn(),
                 TinhTrangId = e.TinhTrangId,
                 MucDoKhoKhanId = e.MucDoKhoKhanId,
                 HuongXuLy = e.HuongXuLy,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == nameof(EGroupType.KhoKhanVuongMac))
+                    .Where(i => i.GroupId == e.Id.ToString() && (i.GroupType == nameof(EGroupType.KhoKhanVuongMac) || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.KhoKhanVuongMac)))
                     .Select(i => i.ToDto()).ToList(),
                 KetQua = new KetQuaXuLyDto() {
                     KetQuaXuLy = e.KetQuaXuLy,
                     NgayXuLy = e.NgayXuLy,
                     DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                        .Where(i => i.GroupId == e.Id.ToString() && i.GroupType == nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac))
+                        .Where(i => i.GroupId == e.Id.ToString() && (i.GroupType == nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac) || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac)))
                         .Select(i => i.ToDto()).ToList()
                 },
-
 
                 #region Thông tin dự án
                 LoaiDuAnId = e.DuAn!.LoaiDuAnId,
                 NgayBatDau = e.DuAn.NgayBatDau,
-                LanhDaoPhuTrachId = e.DuAn.LanhDaoPhuTrachId,
+                LanhDaoPhuTrachId = e.DuAn!.LanhDaoPhuTrachId,
                 DonViPhuTrachChinhId = e.DuAn.DonViPhuTrachChinhId,
                 DonViPhoiHopId = e.DuAn.DuAnChiuTrachNhiemXuLys!.Where(i => i.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop).Select(i => i.RightId).FirstOrDefault(),
 

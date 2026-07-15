@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ThuyetMinhDuAns.Commands;
@@ -51,7 +50,7 @@ internal class ThuyetMinhDuAnThamDinhCommandHandler : IRequestHandler<ThuyetMinh
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

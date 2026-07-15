@@ -10,6 +10,7 @@ public class GoiThauUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
     public long? GiaTri { get; set; }
     public int? NguonVonId { get; set; }
     public int? HinhThucLuaChonNhaThauId { get; set; }
+    public int? LoaiCongViecId { get; set; }
     public int? PhuongThucLuaChonNhaThauId { get; set; }
     public string? ThoiGianLuaNhaThau { get; set; }
     public int? LoaiHopDongId { get; set; }

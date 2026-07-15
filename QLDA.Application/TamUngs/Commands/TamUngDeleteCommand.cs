@@ -7,15 +7,15 @@ namespace QLDA.Application.TamUngs.Commands;
 public record TamUngDeleteCommand(Guid Id) : IRequest;
 public record TamUngDeleteCommandHandler : IRequestHandler<TamUngDeleteCommand> {
     private readonly IRepository<TamUng, Guid> TamUng;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public TamUngDeleteCommandHandler(IServiceProvider serviceProvider) {
         TamUng = serviceProvider.GetRequiredService<IRepository<TamUng, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = TamUng.UnitOfWork;
     }
@@ -26,7 +26,7 @@ public record TamUngDeleteCommandHandler : IRequestHandler<TamUngDeleteCommand> 
 
         ManagedException.ThrowIfNull(entity);
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
         
         entity.IsDeleted = true;
 

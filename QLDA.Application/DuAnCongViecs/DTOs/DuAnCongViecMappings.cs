@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities;
-
 namespace QLDA.Application.DuAnCongViecs.DTOs;
 
 public static class DuAnCongViecMappings {

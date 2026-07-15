@@ -1,6 +1,5 @@
 using QLDA.Application.Dashboard.Queries;
 using QLDA.Domain.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.WebApi.Controllers;
 

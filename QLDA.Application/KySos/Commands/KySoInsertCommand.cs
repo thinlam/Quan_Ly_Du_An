@@ -1,5 +1,4 @@
 using System.Data;
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.KySos.DTOs;
 
 namespace QLDA.Application.KySos.Commands;
@@ -23,6 +22,6 @@ internal class KySoInsertCommandHandler : IRequestHandler<KySoInsertCommand, KyS
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

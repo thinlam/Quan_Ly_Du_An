@@ -1,6 +1,3 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
-using Microsoft.EntityFrameworkCore;
-
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.HopDongs.DTOs;
@@ -18,7 +15,7 @@ internal class
     PaginatedList<HopDongDto>>
 {
     private readonly IRepository<HopDong, Guid> HopDong;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _buocAuth;
     private readonly IAuthorizationManager _authManager;
@@ -27,7 +24,7 @@ internal class
     public HopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();

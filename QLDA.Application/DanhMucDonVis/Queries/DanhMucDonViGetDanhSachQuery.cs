@@ -1,8 +1,5 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DanhMucDonVis.Queries;
 
@@ -24,6 +21,10 @@ public record DanhMucDonViGetDanhSachQuery : AggregateRootPagination, IRequest<P
     /// </summary>
     public Guid? DuAnId { get; set; }
 
+    /// <summary>
+    /// Chỉ lấy phòng ban thuộc đơn vị của user hiện tại (DonViCapChaId = DonViID).
+    /// </summary>
+    public bool ChiLayPhongBanThuocDonVi { get; set; }
 }
 
 public record DanhMucDonViGetDanhSachQueryHandler(IServiceProvider ServiceProvider)
@@ -34,6 +35,9 @@ public record DanhMucDonViGetDanhSachQueryHandler(IServiceProvider ServiceProvid
 
     private readonly IRepository<DuAn, Guid> DuAnRepository =
         ServiceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+
+    private readonly IUserProvider _userProvider =
+        ServiceProvider.GetRequiredService<IUserProvider>();
 
     public async Task<PaginatedList<DmDonVi>> Handle(DanhMucDonViGetDanhSachQuery request,
         CancellationToken cancellationToken)
@@ -66,15 +70,32 @@ public record DanhMucDonViGetDanhSachQueryHandler(IServiceProvider ServiceProvid
                 }
         }
 
+        var currentDonViId = request.ChiLayPhongBanThuocDonVi
+            ? TryGetCurrentDonViId(_userProvider)
+            : null;
+
         var query = DanhMucDonVi.GetQueryableSet().AsNoTracking()
             .Where(e => e.Used == true)
             .WhereIf(request.Cap > 0, e => e.Cap == request.Cap)
             .WhereIf(request.CapDonViIds != null, e => request.CapDonViIds!.Contains(e.CapDonViId))
             .WhereIf(duAnDonViIds != null, e => duAnDonViIds!.Contains(e.Id))
-            ;
-
+            .WhereFunc(request.ChiLayPhongBanThuocDonVi, q => q
+                .Where(e => e.DonViCapChaId != null)
+                .WhereIf(currentDonViId > 0, e => e.DonViCapChaId == currentDonViId));
 
         return await query
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
+    }
+
+    private static long? TryGetCurrentDonViId(IUserProvider userProvider) {
+        if (userProvider.Id <= 0)
+            return null;
+
+        try {
+            var donViId = userProvider.Info.DonViID;
+            return donViId > 0 ? donViId : null;
+        } catch (UnauthorizedAccessException) {
+            return null;
+        }
     }
 }

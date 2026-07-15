@@ -1,10 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.QuyetDinhDieuChinhs.Commands;
 
@@ -55,7 +51,7 @@ internal class QuyetDinhDieuChinhTrinhCommandHandler : IRequestHandler<QuyetDinh
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
@@ -64,7 +60,7 @@ internal class QuyetDinhDieuChinhTrinhCommandHandler : IRequestHandler<QuyetDinh
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

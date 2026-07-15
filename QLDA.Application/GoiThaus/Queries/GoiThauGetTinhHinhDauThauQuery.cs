@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.GoiThaus;
 using QLDA.Application.GoiThaus.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.Providers;
@@ -8,7 +9,7 @@ public record GoiThauGetTinhHinhDauThauQuery(TinhHinhDauThauSearchDto SearchDto)
 internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHinhDauThauQuery, PaginatedList<GoiThauDto>>
 {
     private readonly IRepository<GoiThau, Guid> GoiThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<DuAn, Guid> _duAn;
@@ -18,7 +19,7 @@ internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHi
     public GoiThauGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
@@ -28,46 +29,15 @@ internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHi
 
     public async Task<PaginatedList<GoiThauDto>> Handle(    GoiThauGetTinhHinhDauThauQuery request,    CancellationToken cancellationToken = default)
     {
-        var firstDayOfYear = new DateTimeOffset(request.SearchDto.Nam?? 2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
-
-        var firstDayOfNextYear = firstDayOfYear.AddYears(1);
-
         var queryable = GoiThau.GetOrderedSet()
             .Include(e => e.KetQuaTrungThau)
             .Include(e => e.HopDong)
-            .AsQueryable();
-        if (request.SearchDto.DuAnId.HasValue)
-        {
-            queryable = queryable.Where(e => e.DuAnId == request.SearchDto.DuAnId.Value);
-        }
-        if (request.SearchDto.GiaiDoanId.HasValue)
-        {
-            queryable = queryable.Where(e => e.DuAn != null && e.DuAn.GiaiDoanHienTaiId == request.SearchDto.GiaiDoanId.Value);
-        }
-        if (request.SearchDto.Nam.HasValue)
-        {
-            queryable = queryable.Where(e => e.DuAn != null && e.DuAn.NgayBatDau.HasValue &&
-                e.DuAn.NgayBatDau >= firstDayOfYear && e.DuAn.NgayBatDau < firstDayOfNextYear);
-        }
-        queryable = request.SearchDto.TrangThai switch
-        {
-            // ChuaCoKetQua
-            1 => queryable.Where(e =>
-                e.KetQuaTrungThau == null &&
-                e.HopDong == null),
-
-            // CoKetQua
-            2 => queryable.Where(e =>
-                e.KetQuaTrungThau != null &&
-                e.HopDong == null),
-
-            // DaCoHopDong
-            3 => queryable.Where(e =>
-                e.KetQuaTrungThau != null &&
-                e.HopDong != null),
-
-            _ => queryable
-        };
+            .AsQueryable()
+            .ApplyTinhHinhDauThauFilters(
+                request.SearchDto.DuAnId,
+                request.SearchDto.GiaiDoanId)
+            .ApplyTinhHinhDauThauNamFilter(request.SearchDto.Nam)
+            .ApplyTinhHinhDauThauTabFilter(request.SearchDto.TrangThai);
         queryable = queryable.AsNoTracking();
 
         //  var entities = await queryable.ToListAsync(cancellationToken);

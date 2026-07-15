@@ -1,4 +1,5 @@
 using QLDA.Application.QuyetDinhLapHoiDongThamDinhs.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.QuyetDinhLapHoiDongThamDinhs;
 
@@ -9,24 +10,25 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh,
+            Ngay = dto.NgayQuyetDinh ?? dto.NgayKy,//chi co ngay ky
             TrichYeu = dto.TrichYeu,
+            CoQuanQuyetDinh = dto.CoQuanQuyetDinh,
             NoiDung = dto.NoiDung,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString(),
         };
     }
 
-    public static QuyetDinhLapHoiDongThamDinh ToEntity(this QuyetDinhLapHoiDongThamDinhUpdateDto dto) {
-        return new QuyetDinhLapHoiDongThamDinh {
-            Id = dto.Id,
-            So = dto.SoQuyetDinh,
-            Ngay = dto.NgayQuyetDinh,
-            TrichYeu = dto.TrichYeu,
-            NoiDung = dto.NoiDung,
-            NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
-        };
+    public static void ToEntity(this QuyetDinhLapHoiDongThamDinhUpdateDto dto, QuyetDinhLapHoiDongThamDinh entity) {
+        entity.So = dto.SoQuyetDinh;
+        entity.Ngay = dto.NgayQuyetDinh ?? dto.NgayKy;
+        entity.TrichYeu = dto.TrichYeu;
+        entity.NoiDung = dto.NoiDung;
+        entity.CoQuanQuyetDinh = dto.CoQuanQuyetDinh;
+        entity.NgayKy = dto.NgayKy;
+        entity.NguoiKy = dto.NguoiKy;
+        entity.Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapHoiDongThamDinh.ToString();
     }
 
     public static QuyetDinhLapHoiDongThamDinhDto ToDto(this QuyetDinhLapHoiDongThamDinh entity) {
@@ -37,6 +39,7 @@ public static class QuyetDinhLapHoiDongThamDinhMappings {
             SoQuyetDinh = entity.So,
             NgayQuyetDinh = entity.Ngay,
             TrichYeu = entity.TrichYeu,
+            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
             NoiDung = entity.NoiDung,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy

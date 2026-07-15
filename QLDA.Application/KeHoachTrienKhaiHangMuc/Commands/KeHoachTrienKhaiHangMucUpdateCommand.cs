@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.KeHoachTrienKhaiHangMucMappings;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Constants;
 using QLDA.Application.Common;
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
@@ -16,6 +15,7 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IRepository<HangMucKeHoach, Guid> _hangMucKeHoach;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -25,6 +25,7 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _hangMucKeHoach = serviceProvider.GetRequiredService<IRepository<HangMucKeHoach, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = _repo.UnitOfWork;
     }
@@ -48,33 +49,37 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
             ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
             await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+            await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
             if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
             {
                 throw new ManagedException("Trạng thái không thể cập nhật!");
             }
 
-            entity.DuAnId = request.Dto.DuAnId;
-            entity.BuocId = request.Dto.BuocId;
-            entity.So = request.Dto.So;
-            entity.NgayToTrinh = request.Dto.NgayTrinh;
-            entity.TrichYeu = request.Dto.TrichYeu;
+            entity.DuAnId = request.Dto!.DuAnId;
+            entity.BuocId = request.Dto!.BuocId;
+            entity.So = request.Dto!.So ?? string.Empty;
+            entity.NgayToTrinh = request.Dto!.NgayTrinh;
+            entity.TrichYeu = request.Dto!.TrichYeu ?? string.Empty;
 
-          //  entity.SyncHangMuc(request.Dto.HangMucTrienKhai);
-            await SyncHelper.SyncCollection(_hangMucKeHoach, entity.DanhSachHangMuc, [.. request.Dto.HangMucTrienKhai?.Select(e => e.ToEntity(entity.Id)) ?? []], (existing, request) =>
-            {
-                existing.TenHangMuc = request.TenHangMuc;
-                existing.GiaiDoanId = request.GiaiDoanId;
-                existing.TenHangMuc = request.TenHangMuc;
-                existing.KinhPhi = request.KinhPhi;
-                existing.NgayBatDau = request.NgayBatDau;
-                existing.NgayKetThuc = request.NgayKetThuc;
-                existing.ThoiHan = request.ThoiHan;
-                existing.CanBoChuTriId = request.CanBoChuTriId;
-                existing.CanBoPhoiHopIds = request.CanBoPhoiHopIds;
-                existing.DonViChuTriId = request.DonViChuTriId;
-                existing.DonViPhoiHopIds = request.DonViPhoiHopIds;
-            }, cancellationToken);
+            //  entity.SyncHangMuc(request.Dto.HangMucTrienKhai);
+            if (request.Dto.HangMucTrienKhai == null || request.Dto.HangMucTrienKhai.Count == 0)
+                entity.DanhSachHangMuc = null;
+            else
+                await SyncHelper.SyncCollection(_hangMucKeHoach, entity.DanhSachHangMuc, [.. request.Dto.HangMucTrienKhai?.Select(e => e.ToEntity(entity.Id)) ?? []], (existing, request) =>
+                {
+                    existing.TenHangMuc = request.TenHangMuc;
+                    existing.GiaiDoanId = request.GiaiDoanId;
+                    existing.TenHangMuc = request.TenHangMuc;
+                    existing.KinhPhi = request.KinhPhi;
+                    existing.NgayBatDau = request.NgayBatDau;
+                    existing.NgayKetThuc = request.NgayKetThuc;
+                    existing.ThoiHan = request.ThoiHan;
+                    existing.CanBoChuTriId = request.CanBoChuTriId;
+                    existing.CanBoPhoiHopIds = request.CanBoPhoiHopIds;
+                    existing.DonViChuTriId = request.DonViChuTriId;
+                    existing.DonViPhoiHopIds = request.DonViPhoiHopIds;
+                }, cancellationToken);
 
             if (_unitOfWork.HasTransaction)
             {

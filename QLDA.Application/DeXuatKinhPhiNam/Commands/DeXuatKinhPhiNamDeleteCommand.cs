@@ -10,13 +10,13 @@ public record DeXuatNhuCauKinhPhiNamDeleteCommand(Guid Id) : IRequest<int>
 public record DeXuatNhuCauKinhPhiNamDeleteCommandHandler : IRequestHandler<DeXuatNhuCauKinhPhiNamDeleteCommand, int>
 {
     private readonly IRepository<DeXuatNhuCauKinhPhiNam, Guid> DeXuatNhuCauKinhPhiNam;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeXuatNhuCauKinhPhiNamDeleteCommandHandler(IServiceProvider serviceProvider)
     {
         DeXuatNhuCauKinhPhiNam = serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhiNam, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _unitOfWork = DeXuatNhuCauKinhPhiNam.UnitOfWork;
     }
 

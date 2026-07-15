@@ -1,12 +1,11 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
-using QLDA.Domain.Interfaces;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.DeXuatChuTruongMois;
 
 public static class DeXuatChuTruongMoiMappingConfiguration {
-    public static DeXuatChuTruongMoiModel ToModel(this DeXuatChuTruongMoi entity, List<TepDinhKem>? danhSachTepDinhKem = null) =>
+    public static DeXuatChuTruongMoiModel ToModel(this DeXuatChuTruongMoi entity, List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

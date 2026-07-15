@@ -21,7 +21,7 @@ public class KhoKhanVuongMacDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTep
     /// <summary>
     /// Ngày báo cáo
     /// </summary>
-    public DateTimeOffset? Ngay { get; set; }
+    public DateOnly? Ngay { get; set; }
     public string? NoiDung { get; set; }
     /// <summary>
     /// Tình trạng khó khăn| trạng thái xử lý

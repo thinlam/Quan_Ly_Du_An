@@ -1,11 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -37,11 +33,6 @@ internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiTh
     }
 
     public async Task<int> Handle(HoSoMoiThauDienTuTraLaiCommand request, CancellationToken cancellationToken) {
-         var phongBanId = _userProvider.Info.PhongBanID;
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) && phongBanId != _settings.PhongHCTHId)
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
             throw new ManagedException("Lý do trả lại là bắt buộc");
@@ -62,11 +53,11 @@ internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiTh
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
 
-        entity.TrangThaiId = trangThaiTraLai.Id;
+        entity.TrangThaiId = trangThaiTraLai!.Id;
 
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
@@ -74,7 +65,7 @@ internal class HoSoMoiThauDienTuTraLaiCommandHandler : IRequestHandler<HoSoMoiTh
             EntityId = entity.Id,
             DuAnId = entity.DuAnId ?? Guid.Empty,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiTraLai.Id,
+            TrangThaiId = trangThaiTraLai!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

@@ -1,4 +1,3 @@
-using SequentialGuid;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.HoSoMoiThauDienTus;

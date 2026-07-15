@@ -5,8 +5,7 @@ namespace QLDA.Application.Authorization;
 /// Holds current user info + cached authorization flags, computed once per request.
 /// Providers inject this instead of IUserProvider/IAppSettingsProvider/IPolicyProvider directly.
 /// </summary>
-public interface IAuthorizationContext
-{
+public interface IAuthorizationContext {
     /// <summary>
     /// Current user provider.
     /// </summary>
@@ -27,28 +26,6 @@ public interface IAuthorizationContext
     /// Cached, computed once per request.
     /// </summary>
     bool HasKhtcBypass { get; }
-
-    /// <summary>
-    /// True if user holds an admin/manager role (DuAn-level: RoleConstants.GroupAdminOrManager)
-    /// OR has DuAn_XemTatCa policy (Buoc-level).
-    /// Cached, computed once per request.
-    /// </summary>
-    bool IsAdminManager { get; }
-
-    /// <summary>
-    /// Combined bypass: HasKhtcBypass || IsAdminManager.
-    /// Provided for places that historically treated admin/manager as bypass.
-    /// Note: most providers should use the specific flag they need, not this aggregate.
-    /// </summary>
-    bool HasGlobalBypass { get; }
-
-    /// <summary>
-    /// True if user holds any role in <see cref="QLDA.Domain.Constants.RoleConstants.GroupReadAll"/>
-    /// — grants read-only access to all DuAn, Bước, and child entities (HopDong, GoiThau,
-    /// VanBan...) through DuAnId-based filtering. Does NOT grant write access.
-    /// Cached, computed once per request.
-    /// </summary>
-    bool HasReadAllBypass { get; }
 
     /// <summary>
     /// Get LanhDaoPhuTrachId for a DuAn, cached per-DuAn per request.

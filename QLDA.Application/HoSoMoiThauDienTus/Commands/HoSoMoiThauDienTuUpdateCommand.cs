@@ -1,10 +1,7 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -14,6 +11,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -21,6 +19,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = HoSoMoiThauDienTu.UnitOfWork;
     }
@@ -32,8 +31,9 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId ?? Guid.Empty, _authContext, cancellationToken);
 
-        
+
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DuThao && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
         var trangThaiTra = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -42,15 +42,20 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaDuyet && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
         var trangThaiDaTrinh = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.HoSoMoiThauDienTu.DaTrinh && s.Loai == PheDuyetEntityNames.HoSoMoiThauDienTu, cancellationToken);
+        var model = request.Model;
 
-        
         var currentStatus = entity.TrangThaiId;
         var allowEdit = currentStatus == trangThaiDuThao?.Id || currentStatus == trangThaiTra?.Id;
 
         if (allowEdit)
-            entity.Update(request.Model);
+            entity.Update(model);
         else
-            entity.TrangThaiDangTai = request.Model.TrangThaiDangTai;
+            entity.TrangThaiDangTai = model.TrangThaiDangTai;
+        //region thông tin thẩm định
+        entity.NhaThauId = (model.ThamDinh ?? false) ? model.HoSoMoiThauThamDinh?.NhaThauId : null;
+        entity.ThamDinh = model.ThamDinh;
+         
+
         if (request.Model.ToTrinh != null)
         {
             ToTrinhQuyetDinhDto dto = request.Model.ToTrinh;
@@ -112,9 +117,9 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                 entity.QuyetDinh = null;
         }
 
-    await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
+        await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

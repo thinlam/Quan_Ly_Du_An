@@ -5,11 +5,11 @@ public static class DanhMucQuyTrinhMappings {
     public static DanhMucQuyTrinhDto ToDto(this DanhMucQuyTrinh entity)
         => new DanhMucQuyTrinhDto() {
             Id = entity.Id,
-            Ma = entity.Ma,
-            MoTa = entity.MoTa,
+            Ma = entity.Ma ?? string.Empty,
+            MoTa = entity.MoTa ?? string.Empty,
             Stt = entity.Stt,
             Used = entity.Used,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             MacDinh = entity.MacDinh,
         };
 

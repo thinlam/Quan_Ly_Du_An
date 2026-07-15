@@ -21,7 +21,7 @@ namespace QLDA.WebApi.Controllers
             {
                 PageIndex = 0,
                 PageSize = 0,
-                CapDonViIds = [4, 5],
+                ChiLayPhongBanThuocDonVi = true,
                 DuAnId = DuAnId,
             });
             return ResultApi.Ok(res.Data);

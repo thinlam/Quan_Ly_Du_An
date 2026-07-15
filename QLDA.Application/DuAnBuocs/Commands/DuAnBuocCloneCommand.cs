@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucBuocs.DTOs;
 using QLDA.Application.DuAnBuocs.Extensions;
 
@@ -41,7 +40,7 @@ internal class DuAnBuocCloneCommandHandler : IRequestHandler<DuAnBuocCloneComman
 
 
     }
-
+    
     #region Private helper methods
     private async Task Clone(DuAnBuocCloneCommand request, CancellationToken cancellationToken = default) {
         if (request.DuAn.QuyTrinhId == null) {
@@ -108,7 +107,6 @@ internal class DuAnBuocCloneCommandHandler : IRequestHandler<DuAnBuocCloneComman
 
 
         var toAdd = new List<DuAnBuoc>();
-        var firstNode = true;
 
         var orderedSteps = buocs.ToSteps().ToTreeList();
 
@@ -163,13 +161,13 @@ internal class DuAnBuocCloneCommandHandler : IRequestHandler<DuAnBuocCloneComman
                 e.Path.StartsWith(step.Path.EndsWith("/") ? step.Path : step.Path + "/")
             );
             if (isLeaf && request.DuAn.NgayBatDau != null) {
-                var startDate = request.DuAn.NgayBatDau;
-                var endDate = request.DuAn.NgayBatDau;
-                node.NgayDuKienBatDau = firstNode ? startDate : endDate!.Value.AddDays(1);
-                node.NgayDuKienKetThuc = node.NgayDuKienBatDau!.Value.AddDays(step.SoNgayThucHien == 0 ? 1 : step.SoNgayThucHien);
-                ;
-                endDate = node.NgayDuKienKetThuc.Value;
-                firstNode = false;
+                // TODO: TẠM TẮT - bật lại sau khi fix SoNgayThucHien → NgayDuKienKetThuc
+                // var startDate = request.DuAn.NgayBatDau;
+                // var endDate = request.DuAn.NgayBatDau;
+                // node.NgayDuKienBatDau = firstNode ? startDate : endDate!.Value.AddDays(1);
+                // node.NgayDuKienKetThuc = node.NgayDuKienBatDau!.Value.AddDays(step.SoNgayThucHien == 0 ? 1 : step.SoNgayThucHien);
+                // endDate = node.NgayDuKienKetThuc.Value;
+                // firstNode = false;
             } else {
                 node.NgayDuKienBatDau = null;
                 node.NgayDuKienKetThuc = null;

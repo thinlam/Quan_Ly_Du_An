@@ -1,10 +1,6 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.KeHoachLuaChonNhaThauRutGons.DTOs;
 using QLDA.Application.Authorization;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 
@@ -15,6 +11,7 @@ internal class KeHoachLuaChonNhaThauRutGonInsertCommandHandler : IRequestHandler
     private readonly IRepository<KeHoachLuaChonNhaThauRutGon, Guid> _repo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
     private readonly IUnitOfWork _unitOfWork;
@@ -24,6 +21,7 @@ internal class KeHoachLuaChonNhaThauRutGonInsertCommandHandler : IRequestHandler
         _repo = serviceProvider.GetRequiredService<IRepository<KeHoachLuaChonNhaThauRutGon, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
         _unitOfWork = _repo.UnitOfWork;
@@ -32,6 +30,7 @@ internal class KeHoachLuaChonNhaThauRutGonInsertCommandHandler : IRequestHandler
     public async Task<KeHoachLuaChonNhaThauRutGon> Handle(KeHoachLuaChonNhaThauRutGonInsertCommand request, CancellationToken cancellationToken = default)
     {
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         // Auto-assign Dự thảo status
         try

@@ -1,10 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Queries;
 
@@ -27,7 +25,7 @@ internal class
     PaginatedList<KetQuaTrungThauDto>>
 {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _buocAuth;
     private readonly IAuthorizationContext _authContext;
@@ -35,7 +33,7 @@ internal class
     public KetQuaTrungThauGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -75,6 +73,8 @@ internal class
                 SoQuyetDinh = e.SoQuyetDinh,
                 NgayQuyetDinh = e.NgayQuyetDinh,
                 SoNgayThucHienHopDong = e.SoNgayThucHienHopDong,
+                LoaiHopDongId = e.LoaiHopDongId,
+                HinhThucHopDong = e.HinhThucHopDong,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),

@@ -1,15 +1,12 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record KeHoachLuaChonNhaThauRutGonTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -61,7 +58,7 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             throw new ManagedException("Trạng thái không thể trình");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
 
         // Create history record
@@ -72,8 +69,9 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
+            NoiDung = request.NoiDung,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

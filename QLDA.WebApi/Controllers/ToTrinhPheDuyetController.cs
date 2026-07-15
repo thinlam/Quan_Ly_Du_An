@@ -1,4 +1,5 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
@@ -29,7 +30,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
-            GroupId = [entity.Id.ToString()]
+            GroupId = [entity.Id.ToString()], EGroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)]
         });
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
@@ -57,10 +58,10 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
       
         var entity = await Mediator.Send(new ToTrinhPheDuyetInsertCommand(dto), cancellationToken);
-        // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  GroupTypeConstants.ToTrinhPheDuyet theo Loai
+        // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  EGroupType.ToTrinhPheDuyet theo Loai
         //tạo contanst LoaiToTrinhPheDuyet
 
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhPheDuyet) ?? []];
+        List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhPheDuyet) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -80,9 +81,13 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        var entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
-
-        List<TepDinhKem> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.ToTrinhQuyetDinh) ?? []];
+        var entity = new ToTrinhPheDuyet();
+        if(LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai)) 
+            entity =  await Mediator.Send(new ToTrinhKhongDuyetUpdateCommand(dto), cancellationToken);
+        else
+            entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
+        
+        List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhPheDuyet) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

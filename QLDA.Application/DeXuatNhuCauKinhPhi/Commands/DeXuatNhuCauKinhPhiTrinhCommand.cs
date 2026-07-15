@@ -1,15 +1,11 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
 
 /// <summary>
-/// Trình hồ sơ đề xuất cấp độ CNTT - chỉ phòng KH-TC (PhongBanId = 219)
+///
 /// </summary>
 public record DeXuatNhuCauKinhPhiTrinhCommand(Guid Id, string? NoiDung = null) : IRequest<int>;
 
@@ -57,7 +53,7 @@ internal class DeXuatNhuCauKinhPhiTrinhCommandHandler : IRequestHandler<DeXuatNh
             throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
        // entity.NgayTrinh = DateTime.UtcNow;
 
         var history = new PheDuyetHistory
@@ -68,7 +64,7 @@ internal class DeXuatNhuCauKinhPhiTrinhCommandHandler : IRequestHandler<DeXuatNh
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

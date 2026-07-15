@@ -1,5 +1,3 @@
-using Azure.Core;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
@@ -7,9 +5,6 @@ using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.KeHoachTrienKhaiChiTietDuAns.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.KeHoachTrienKhaiChiTietDuAns.Queries;
 
@@ -40,7 +35,7 @@ internal class KeHoachTrienKhaiChiTietDuAnDanhSachQueryHandler(IServiceProvider 
 {
     private readonly IRepository<Domain.Entities.KeHoachTrienKhaiChiTietDuAn, Guid> KeHoachTrienKhaiChiTietDuAn = ServiceProvider.GetRequiredService<IRepository<KeHoachTrienKhaiChiTietDuAn, Guid>>();
     private readonly IRepository<DuAn, Guid> DuAn = ServiceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-    private readonly IRepository<Domain.Entities.TepDinhKem, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Domain.Entities.TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DmDonVi, long> DmDonVi = ServiceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();

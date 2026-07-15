@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 
 namespace QLDA.Application.VanBanPhapLys.Commands;
@@ -8,13 +9,17 @@ public record VanBanPhapLyDeleteCommand(Guid Id) : IRequest<int> {
 
 public record VanBanPhapLyDeleteCommandHandler : IRequestHandler<VanBanPhapLyDeleteCommand, int> {
     private readonly IRepository<VanBanPhapLy, Guid> VanBanPhapLy;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public VanBanPhapLyDeleteCommandHandler(IServiceProvider serviceProvider) {
         VanBanPhapLy = serviceProvider.GetRequiredService<IRepository<VanBanPhapLy, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _unitOfWork = VanBanPhapLy.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task<int> Handle(VanBanPhapLyDeleteCommand request, CancellationToken cancellationToken) {
@@ -22,6 +27,8 @@ public record VanBanPhapLyDeleteCommandHandler : IRequestHandler<VanBanPhapLyDel
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity);
+
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.IsDeleted = true;
 

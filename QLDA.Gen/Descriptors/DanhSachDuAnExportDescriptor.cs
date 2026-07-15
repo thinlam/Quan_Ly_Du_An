@@ -4,38 +4,35 @@ namespace QLDA.Gen.Descriptors;
 
 /// <summary>
 /// Descriptor for "DanhSachDuAn.xlsx".
-/// Layout: SimpleLetterheadExport — 1-row letterhead + title (R2) + blank (R3) + display headers (R4, bold, gray fill, thin border)
-/// + $Field template row (R5, thin border).
-/// Template row = R5 (row index 5 in the file, 0-based data row).
-/// Field names are camelCase to match the original template's binding conventions.
+/// Layout: LetterheadExport — UBND letterhead + title + blue table headers + $Field row
+/// (cùng format với KeHoachTrienKhaiHangMuc.xlsx).
+/// Template row = R5.
+/// Placeholders: $stt, $maDuAn, $tenDuAn, $thoiGianKhoiCong, $lanhDaoPhuTrachId,
+/// $donViPhuTrachChinhId, $donViPhoiHopIds, $hinhThucDauTuId, $hinhThucQuanLyDuAnId, $tongMucDauTu.
 /// </summary>
 public class DanhSachDuAnExportDescriptor : IExportDescriptor
 {
     public string EntityName => "DanhSachDuAn";
     public string TemplateFileName => "DanhSachDuAn.xlsx";
-    public List<ExportColumn> Columns { get; } =
-    [
-        new("stt",                   "STT",                   6),
-        new("maDuAn",                "Mã dự án",              12),
-        new("tenDuAn",               "Tên dự án",             42, null, wrapText: true),
-        new("thoiGianKhoiCong",      "Thời gian khởi công",   24),
-        new("ngayBatDau",            "Ngày bắt đầu",           30),
-        new("lanhDaoPhuTrachId",     "Lãnh đạo phụ trách",    30),
-        new("donViPhuTrachChinhId",  "Đơn vị phụ trách",      28),
-        new("donViPhoiHopIds",       "Đơn vị phối hợp",       25, null, wrapText: true),
-        new("hinhThucDauTuId",       "Hình thức đầu tư",       22),
-        new("hinhThucQuanLyDuAnId",  "Hình thức quản lý",     22),
-        new("tongMucDauTu",          "Tổng mức đầu tư",       26, "#,##0"),
-    ];
-
     public string OutputPath { get; set; } = string.Empty;
 
-    public string Title => "DANH SÁCH DỰ ÁN";
+    public string? Title => "DANH SÁCH DỰ ÁN";
 
-    public TemplateLayoutType Layout => TemplateLayoutType.SimpleLetterheadExport;
+    public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
 
-    /// <summary>
-    /// One-line letterhead matching the original template.
-    /// </summary>
-    public string LetterheadText => "Trung tâm chuyển đổi số Tp Hồ Chí Minh";
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
+
+    public List<ExportColumn> Columns { get; } =
+    [
+        new("stt", "STT"),
+        new("maDuAn", "Mã dự án"),
+        new("tenDuAn", "Tên dự án"),
+        new("thoiGianKhoiCong", "Thời gian khởi công"),
+        new("lanhDaoPhuTrachId", "Lãnh đạo phụ trách"),
+        new("donViPhuTrachChinhId", "Đơn vị phụ trách"),
+        new("donViPhoiHopIds", "Đơn vị phối hợp"),
+        new("hinhThucDauTuId", "Hình thức đầu tư"),
+        new("hinhThucQuanLyDuAnId", "Hình thức quản lý"),
+        new("tongMucDauTu", "Tổng mức đầu tư"),
+    ];
 }

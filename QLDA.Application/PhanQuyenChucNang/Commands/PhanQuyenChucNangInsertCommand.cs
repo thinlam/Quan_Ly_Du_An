@@ -1,9 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using QLDA.Application.Authorization;
-using QLDA.Application.PhanQuyenChucNangs.Commands;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 using System.Data;
 
 namespace QLDA.Application.PhanQuyenChucNangs.Commands;
@@ -29,11 +24,8 @@ public record PhanQuyenChucNangInsertUpdateCommand(PhanQuyenChucNang Entity) :  
     public async Task<int> Handle(PhanQuyenChucNangInsertUpdateCommand request,
         CancellationToken cancellationToken = default) {
         try {
-       
-            
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
-                var isExist = _PhanQuyenChucNang.GetQueryableSet().Any(o => o.Id == request.Entity.Id);
-                if (isExist) {
+                if (request.Entity.Id>0) {
                     await _PhanQuyenChucNang.UpdateAsync(request.Entity, cancellationToken);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                 } else {

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Persistence.Configurations;
 

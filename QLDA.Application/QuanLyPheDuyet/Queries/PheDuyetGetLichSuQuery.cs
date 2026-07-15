@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 
 namespace QLDA.Application.QuanLyPheDuyet.Queries;

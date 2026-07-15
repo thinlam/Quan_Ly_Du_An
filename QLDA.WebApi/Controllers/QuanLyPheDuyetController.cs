@@ -2,6 +2,7 @@ using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.QuanLyPheDuyet.Commands;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.QuanLyPheDuyet.Queries;
+using QLDA.Application.ThongBaos.Commands;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.PheDuyetDuToans;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
@@ -28,18 +29,16 @@ public class QuanLyPheDuyetController : AggregateRootController
     public ResultApi GetTypes()
     {
         var types = typeof(PheDuyetEntityNames)
-     .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-     .Where(f => f.IsLiteral
-         && f.Name != nameof(PheDuyetEntityNames.Default)
-         && !f.IsDefined(typeof(ExcludeFromTypeListAttribute), false))
-     .Select(f => new PheDuyetTypeItemDto
-     {
-         Key = (string)f.GetRawConstantValue()!,
-         Label = f.GetCustomAttribute<DescriptionAttribute>()?.Description
-                 ?? (string)f.GetRawConstantValue()!
-     })
-     .OrderBy(x => x.Label)
-     .ToList();
+         .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+         .Where(f => f.IsLiteral
+             && f.Name != nameof(PheDuyetEntityNames.Default)
+             && !f.IsDefined(typeof(ExcludeFromTypeListAttribute), false))
+         .Select(f => new PheDuyetTypeItemDto
+         {
+             Key = (string)f.GetRawConstantValue()!,
+             Label = f.GetCustomAttribute<DescriptionAttribute>()?.Description
+                     ?? (string)f.GetRawConstantValue()!
+         }).OrderBy(x => x.Label).ToList();
 
         return ResultApi.Ok(types);
     }
@@ -125,9 +124,13 @@ public class QuanLyPheDuyetController : AggregateRootController
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("{type}/{id}/duyet")]
-    public async Task<ResultApi> Duyet(string type, Guid id, string? noiDung)
+    public async Task<ResultApi> Duyet(string type, Guid id, [FromBody] TraLaiModel? model)
     {
-        var res = await Mediator.Send(new PheDuyetDispatchDuyetCommand(type, id, noiDung));
+        var res = await Mediator.Send(new PheDuyetDispatchDuyetCommand(type, id, model?.NoiDung));
+        if (res > 0)
+        {
+            await Mediator.Send(new ThongBaoInsertCommand(type, id, ThongBaoPheDuyetAction.Duyet));
+        }
         return ResultApi.Ok(res);
     }
 
@@ -141,8 +144,13 @@ public class QuanLyPheDuyetController : AggregateRootController
     public async Task<ResultApi> TraLai(string type, Guid id, [FromBody] TraLaiModel model)
     {
         var res = await Mediator.Send(new PheDuyetDispatchTraLaiCommand(type, id, model.NoiDung));
+        if (res > 0)
+        {
+            await Mediator.Send(new ThongBaoInsertCommand(type, id, ThongBaoPheDuyetAction.TraLai, model.NoiDung));
+        }
         return ResultApi.Ok(res);
     }
+
 
     /// <summary>
     /// Tu choi phe duyet theo type — can ly do
@@ -154,21 +162,13 @@ public class QuanLyPheDuyetController : AggregateRootController
     public async Task<ResultApi> TuChoi(string type, Guid id, [FromBody] TuChoiModel model)
     {
         var res = await Mediator.Send(new PheDuyetDispatchTuChoiCommand(type, id, model.NoiDung));
+        if (res > 0)
+        {
+            await Mediator.Send(new ThongBaoInsertCommand(type, id, ThongBaoPheDuyetAction.TuChoi, model.NoiDung));
+        }
         return ResultApi.Ok(res);
     }
 
-    /// <summary>
-    /// Chuyen P.HC-TH de phat hanh so (issue #9459)
-    /// </summary>
-    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    [HttpPost("{type}/{id}/chuyen-phat-hanh")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> ChuyenPhatHanh(string type, Guid id, [FromBody] ChuyenPhatHanhModel? model = null)
-    {
-        var res = await Mediator.Send(new PheDuyetChuyenPhatHanhCommand(type, id, model?.SoPhatHanh));
-        return ResultApi.Ok(res);
-    }
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("{type}/{id}/chuyen")]

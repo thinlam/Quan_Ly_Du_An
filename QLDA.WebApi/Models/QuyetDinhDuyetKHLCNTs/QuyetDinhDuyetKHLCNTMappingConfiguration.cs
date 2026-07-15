@@ -1,50 +1,72 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.QuyetDinhDuyetKHLCNTs;
 
-public static class QuyetDinhDuyetKHLCNTMappingConfiguration {
+public static class QuyetDinhDuyetKHLCNTMappingConfiguration
+{
     public static QuyetDinhDuyetKHLCNTModel ToModel(this QuyetDinhDuyetKHLCNT entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
-        new() {
+        List<Attachment>? danhSachTepDinhKem = null) =>
+        new()
+        {
             Id = entity.Id,
-            DuAnId = entity.DuAnId,
-            BuocId = entity.BuocId,
             KeHoachLuaChonNhaThauId = entity.KeHoachLuaChonNhaThauId,
-            SoQuyetDinh = entity.So,
-            NgayQuyetDinh = entity.Ngay,
-            CoQuanQuyetDinh = entity.CoQuanQuyetDinh,
-            TrichYeu = entity.TrichYeu,
-            NgayKy = entity.NgayKy,
-            NguoiKy = entity.NguoiKy,
+            VanBanQuyetDinh = new TongHopVanBanQuyetDinhs.VanBanQuyetDinhModel()
+            {
+                DuAnId = entity.VanBanQuyetDinh!.DuAnId,
+                BuocId = entity.VanBanQuyetDinh!.BuocId,
+                So = entity.VanBanQuyetDinh!.So ?? string.Empty,
+                Ngay = entity.VanBanQuyetDinh!.Ngay,
+                CoQuanQuyetDinh = entity.VanBanQuyetDinh!.CoQuanQuyetDinh ?? string.Empty,
+                TrichYeu = entity.VanBanQuyetDinh!.TrichYeu ?? string.Empty,
+                NgayKy = entity.VanBanQuyetDinh!.NgayKy,
+                NguoiKy = entity.VanBanQuyetDinh.NguoiKy,
+            },
             DanhSachTepDinhKem = danhSachTepDinhKem?
-                // .Where(o => o.GroupType == nameof(EGroupType.QuyetDinhDuyetKHLCNT))
+                 .Where(o => o.GroupType == nameof(EGroupType.QuyetDinhDuyetKHLCNT))
                 .Select(o => o.ToModel()).ToList()
         };
 
 
     public static QuyetDinhDuyetKHLCNT ToEntity(this QuyetDinhDuyetKHLCNTModel model)
-        => new() {
-            Id = model.GetId(),
-            DuAnId = model.DuAnId,
-            BuocId = model.BuocId,
+    {
+        var id = model.GetId();
+        return new QuyetDinhDuyetKHLCNT()
+        {
+            Id = id,
             KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId,
-            So = model.SoQuyetDinh,
-            Ngay = model.NgayQuyetDinh,
-            CoQuanQuyetDinh = model.CoQuanQuyetDinh,
-            TrichYeu = model.TrichYeu,
-            NgayKy = model.NgayKy,
-            NguoiKy = model.NguoiKy,
+            VanBanQuyetDinh = new VanBanQuyetDinh()
+            {
+                Id = id,
+                DuAnId = model.VanBanQuyetDinh!.DuAnId,
+                BuocId = model.VanBanQuyetDinh!.BuocId,
+                So = model.VanBanQuyetDinh!.So,
+                Ngay = model.VanBanQuyetDinh!.Ngay,
+                CoQuanQuyetDinh = model.VanBanQuyetDinh!.CoQuanQuyetDinh,
+                TrichYeu = model.VanBanQuyetDinh!.TrichYeu,
+                NgayKy = model.VanBanQuyetDinh!.NgayKy,
+                NguoiKy = model.VanBanQuyetDinh!.NguoiKy,
+                Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
+            }
         };
+    }
 
-    public static void Update(this QuyetDinhDuyetKHLCNT entity, QuyetDinhDuyetKHLCNTModel model) {
-        entity.DuAnId = model.DuAnId;
-        entity.BuocId = model.BuocId;
+    public static void Update(this QuyetDinhDuyetKHLCNT entity, QuyetDinhDuyetKHLCNTModel model)
+    {
+        entity.VanBanQuyetDinh = new VanBanQuyetDinh()
+        {
+            Id = entity.Id,
+            DuAnId = model.VanBanQuyetDinh!.DuAnId,
+            BuocId = model.VanBanQuyetDinh!.BuocId,
+            So = model.VanBanQuyetDinh!.So,
+            Ngay = model.VanBanQuyetDinh!.Ngay,
+            CoQuanQuyetDinh = model.VanBanQuyetDinh!.CoQuanQuyetDinh,
+            TrichYeu = model.VanBanQuyetDinh!.TrichYeu,
+            NgayKy = model.VanBanQuyetDinh!.NgayKy,
+            NguoiKy = model.VanBanQuyetDinh!.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
+        };
         entity.KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId;
-        entity.So = model.SoQuyetDinh;
-        entity.Ngay = model.NgayQuyetDinh;
-        entity.CoQuanQuyetDinh = model.CoQuanQuyetDinh;
-        entity.TrichYeu = model.TrichYeu;
-        entity.NgayKy = model.NgayKy;
-        entity.NguoiKy = model.NguoiKy;
+
     }
 }

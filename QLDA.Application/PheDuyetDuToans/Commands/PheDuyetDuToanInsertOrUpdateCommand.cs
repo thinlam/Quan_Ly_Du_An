@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.PheDuyetDuToans.Commands;
 
@@ -13,6 +14,8 @@ internal class PheDuyetDuToanInsertOrUpdateCommandHandler : IRequestHandler<PheD
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PheDuyetDuToanInsertOrUpdateCommandHandler> _logger;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
 
     public PheDuyetDuToanInsertOrUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<PheDuyetDuToanInsertOrUpdateCommandHandler> logger) {
@@ -22,11 +25,14 @@ internal class PheDuyetDuToanInsertOrUpdateCommandHandler : IRequestHandler<PheD
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
         _logger = logger;
         _unitOfWork = PheDuyetDuToan.UnitOfWork;
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
     }
 
     public async Task Handle(PheDuyetDuToanInsertOrUpdateCommand request,
         CancellationToken cancellationToken = default) {
         try {
+            await _authManager.EnsureCanExecuteAsync(request.Entity.BuocId, request.Entity.DuAnId, _authContext, cancellationToken);
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");
             ManagedException.ThrowIf(

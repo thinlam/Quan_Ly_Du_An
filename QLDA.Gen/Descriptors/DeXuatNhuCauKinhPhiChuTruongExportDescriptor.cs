@@ -7,15 +7,18 @@ public class DeXuatNhuCauKinhPhiChuTruongExportDescriptor : IExportDescriptor {
     public string TemplateFileName => "DeXuatNhuCauKinhPhiChuTruong.xlsx";
     public string OutputPath { get; set; } = "";
     public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
+
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
+
     public string? Title => "ĐỀ XUẤT NHU CẦU KINH PHÍ CHỦ TRƯƠNG ĐẦU TƯ";
 
     public List<ExportColumn> Columns { get; } =
     [
-        new("Stt", "STT", 6, null, false, ColumnAlign.Center),
-        new("TrichYeu", "Trích yếu", 50, null, true, ColumnAlign.Left),
-        new("KinhPhiDeXuat", "Kinh phí đề xuất (đ)", 22, "#,##0", false, ColumnAlign.Right),
-        new("TenPhongDeXuat", "Phòng đề xuất", 35, null, false, ColumnAlign.Left),
-        new("SoPhieuChuyen", "Số phiếu chuyển", 22, null, false, ColumnAlign.Left),
-        new("TenTrangThai", "Trạng thái", 24, null, false, ColumnAlign.Left),
+        new("Stt", "STT"),
+        new("TrichYeu", "Trích yếu"),
+        new("KinhPhiDeXuat", "Kinh phí đề xuất (đ)"),
+        new("TenPhongDeXuat", "Phòng đề xuất"),
+        new("SoPhieuChuyen", "Số phiếu chuyển"),
+        new("TenTrangThai", "Trạng thái"),
     ];
 }

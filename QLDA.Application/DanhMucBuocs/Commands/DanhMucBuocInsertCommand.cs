@@ -1,6 +1,5 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucBuocs.DTOs;
 
 namespace QLDA.Application.DanhMucBuocs.Commands;
@@ -33,7 +32,7 @@ internal class DanhMucBuocInsertCommandHandler : IRequestHandler<DanhMucBuocInse
         }
 
 
-        return entity;
+        return entity!;
     }
 
     #region Private helper methods
@@ -65,7 +64,7 @@ internal class DanhMucBuocInsertCommandHandler : IRequestHandler<DanhMucBuocInse
             entity.PartialView = string.Empty;
         }
         DanhMucBuoc.InitializeNode(entity, parent);
-        return entity;
+        return entity!;
     }
 
     #endregion

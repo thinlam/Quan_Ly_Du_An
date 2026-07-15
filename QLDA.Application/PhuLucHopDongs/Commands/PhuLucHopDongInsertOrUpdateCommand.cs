@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
-using QLDA.Application.Providers;
 
 namespace QLDA.Application.PhuLucHopDongs.Commands;
 
@@ -13,7 +12,7 @@ internal class PhuLucHopDongInsertOrUpdateCommandHandler : IRequestHandler<PhuLu
     private readonly IRepository<PhuLucHopDong, Guid> PhuLucHopDong;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PhuLucHopDongInsertOrUpdateCommandHandler> _logger;
@@ -23,7 +22,7 @@ internal class PhuLucHopDongInsertOrUpdateCommandHandler : IRequestHandler<PhuLu
         PhuLucHopDong = serviceProvider.GetRequiredService<IRepository<PhuLucHopDong, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = PhuLucHopDong.UnitOfWork;
@@ -44,14 +43,14 @@ internal class PhuLucHopDongInsertOrUpdateCommandHandler : IRequestHandler<PhuLu
                     ManagedException.ThrowIfNull(existingEntity);
 
                     // Check step authorization
-                    await _auth.EnsureCanExecuteStepAsync(existingEntity.BuocId, _authContext, cancellationToken);
+                    await _authManager.EnsureCanExecuteAsync(existingEntity.BuocId, existingEntity.DuAnId, _authContext, cancellationToken);
 
                     await PhuLucHopDong.UpdateAsync(request.Entity, cancellationToken);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                 } else {
                     // For insert: check BuocId from request.Entity
                     // Check step authorization
-                    await _auth.EnsureCanExecuteStepAsync(request.Entity.BuocId, _authContext, cancellationToken);
+                    await _authManager.EnsureCanExecuteAsync(request.Entity.BuocId, request.Entity.DuAnId, _authContext, cancellationToken);
 
                     //Thêm dự án trước
                     await PhuLucHopDong.AddAsync(request.Entity, cancellationToken);

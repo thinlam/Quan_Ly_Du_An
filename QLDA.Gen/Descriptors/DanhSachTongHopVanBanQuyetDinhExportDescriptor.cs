@@ -4,9 +4,8 @@ namespace QLDA.Gen.Descriptors;
 
 /// <summary>
 /// Descriptor for "DanhSachTongHopVanBanQuyetDinh.xlsx".
-/// Layout: Standard6RowWithLetterhead — 2-row letterhead + title (R3) + blank (R4)
-/// + display headers (R5, bold, thin border) + $Field template row (R6, thin border).
-/// Template row = R6 (row index 6 in the file, 0-based data row).
+/// Layout: LetterheadExport — UBND letterhead (R1-R2) + title (R3) + blue headers (R4) + $Field row (R5).
+/// Same format as DanhSachXinChuTruongDauTu.xlsx / DeXuatNhuCauKinhPhiChuTruong.xlsx.
 /// </summary>
 public class DanhSachTongHopVanBanQuyetDinhExportDescriptor : IExportDescriptor
 {
@@ -14,22 +13,19 @@ public class DanhSachTongHopVanBanQuyetDinhExportDescriptor : IExportDescriptor
     public string TemplateFileName => "DanhSachTongHopVanBanQuyetDinh.xlsx";
     public List<ExportColumn> Columns { get; } =
     [
-        new("stt",       "STT",           6),
-        new("tenDuAn",   "Dự án",        30, null, wrapText: true),
-        new("so",        "Số văn bản",   15),
-        new("ngay",      "Ngày",          12),
-        new("loai",      "Loại văn bản",  22),
-        new("trichYeu",  "Trích yếu",     35, null, wrapText: true),
+        new("Stt", "STT"),
+        new("TenDuAn", "Dự án"),
+        new("So", "Số văn bản"),
+        new("Ngay", "Ngày"),
+        new("Loai", "Loại văn bản"),
+        new("TrichYeu", "Trích yếu"),
     ];
 
     public string OutputPath { get; set; } = string.Empty;
 
-    public string Title => "VĂN BẢN - QUYẾT ĐỊNH";
+    public string Title => "TỔNG HỢP VĂN BẢN QUYẾT ĐỊNH";
 
-    public TemplateLayoutType Layout => TemplateLayoutType.Standard6RowWithLetterhead;
+    public TemplateLayoutType Layout => TemplateLayoutType.LetterheadExport;
 
-    /// <summary>
-    /// Two-line letterhead matching the original template.
-    /// </summary>
-    public string LetterheadText => "Trung tâm chuyển đổi số thành phố Hồ Chí Minh";
+    public bool HandMaintainedTemplate => true; // Template được giữ nguyên bởi người dùng.
 }

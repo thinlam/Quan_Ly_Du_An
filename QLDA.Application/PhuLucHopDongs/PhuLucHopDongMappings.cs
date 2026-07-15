@@ -36,7 +36,7 @@ public static class PhuLucHopDongMappings {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             SoPhuLucHopDong = entity.SoPhuLucHopDong,
             NoiDung = entity.NoiDung,
             Ngay = entity.Ngay,

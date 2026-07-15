@@ -1,29 +1,20 @@
+using BuildingBlocks.CrossCutting.DateTimes;
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Domain.Entities;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.KySos.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
+
 
 namespace QLDA.Application.KySos.Queries;
 
-public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto)
-    : AggregateRootPagination, IRequest<PaginatedList<TepDinhKemDto>>;
+public record NoiDungDaKyGetDanhSachQuery(NoiDungDaKySearchDto SearchDto) : AggregateRootSearch, IRequest<PaginatedList<TepDinhKemDto>>;
 
-internal class NoiDungDaKyGetDanhSachQueryHandler
-    : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>> {
-    private static readonly string[] SignedGroupTypes = [
-        GroupTypeConstants.KySo,
-        GroupTypeConstants.NoiDungDaKySo
-    ];
-
-    private readonly IRepository<QLDA.Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
-    private readonly IRepository<UserMaster, long> _userRepository;
-
-    public NoiDungDaKyGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
-        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<QLDA.Domain.Entities.TepDinhKem, Guid>>();
-        _userRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
-    }
+internal class NoiDungDaKyGetDanhSachQueryHandler(IServiceProvider serviceProvider) : IRequestHandler<NoiDungDaKyGetDanhSachQuery, PaginatedList<TepDinhKemDto>> {
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepository =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+    private readonly IRepository<UserMaster, long> _userRepository =
+        serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
+    private readonly IDateTimeProvider _clock =
+        serviceProvider.GetRequiredService<IDateTimeProvider>();
 
     public async Task<PaginatedList<TepDinhKemDto>> Handle(
         NoiDungDaKyGetDanhSachQuery request,
@@ -31,35 +22,28 @@ internal class NoiDungDaKyGetDanhSachQueryHandler
         var search = request.SearchDto;
         var users = _userRepository.GetQueryableSet().AsNoTracking();
 
-        var query = _tepDinhKemRepository.GetQueryableSet(OnlyNotDeleted: false)
-            .AsNoTracking()
-            .Where(e => e.ParentId != null)
-           // .Where(e => SignedGroupTypes.Contains(e.GroupType))
-            .WhereIf(search.CreateUserId.HasValue,
-                e => e.CreatedBy == search.CreateUserId!.Value.ToString())
-            .WhereIf(search.TuNgay.HasValue,
-                e => e.CreatedAt >= search.TuNgay!.Value.ToStartOfDayUtc())
-            .WhereIf(search.DenNgay.HasValue,
-                e => e.CreatedAt <= search.DenNgay!.Value.ToEndOfDayUtc())
-            .LeftOuterJoin(users, e => e.CreatedBy, u => u.UserPortalId.ToString(), (e, user) => new { e, user })
-            .OrderByDescending(x => x.e.CreatedAt)
-            .Select(x => new TepDinhKemDto {
-                Id = x.e.Id,
-                ParentId = x.e.ParentId,
-                GroupId = x.e.GroupId,
-                GroupType = x.e.GroupType,
-                Type = x.e.Type,
-                FileName = x.e.FileName,
-                OriginalName = x.e.OriginalName,
-                Path = x.e.Path,
-                Size = x.e.Size,
-                TenNguoiTao = x.user != null ? x.user.HoTen : null,
-                CreatedBy = x.e.CreatedBy,
-                CreatedAt = x.e.CreatedAt,
-                UpdatedBy = x.e.UpdatedBy,
-                UpdatedAt = x.e.UpdatedAt,
-            });
+        var rows = await _tepDinhKemRepository
+            .GetQueryableSet(OnlyNotDeleted: false, OrderByIndex: false)
+            .ApplyFiltersAsync(search, users, serviceProvider, _clock, cancellationToken);
 
-        return await query.PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
+        var dtos = rows.Select(x => new TepDinhKemDto {
+            Id = x.E.Id,
+            ParentId = x.E.ParentId,
+            GroupId = x.E.GroupId,
+            GroupType = x.E.GroupType,
+            Type = x.E.Type,
+            FileName = x.E.FileName,
+            OriginalName = x.E.OriginalName,
+            Path = x.E.Path,
+            Size = x.E.Size,
+            TenNguoiTao = x.User?.HoTen,
+            CreatedBy = x.E.CreatedBy,
+            CreatedAt = x.E.CreatedAt,
+            UpdatedBy = x.E.UpdatedBy,
+            UpdatedAt = x.E.UpdatedAt,
+        }).ToList();
+
+        return PaginatedList<TepDinhKemDto>.Create(
+            dtos, request.Skip(), request.Take());
     }
 }

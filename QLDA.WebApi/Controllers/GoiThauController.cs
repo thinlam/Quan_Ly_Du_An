@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
@@ -76,7 +77,7 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
         await Mediator.Send(new DuAnUpdatePhaseCommand(insertDto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new GoiThauInsertCommand(insertDto), cancellationToken);
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.GoiThau) ?? []];
+        List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.GoiThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -106,7 +107,7 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
 
         var entity = await Mediator.Send(new GoiThauUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, GroupTypeConstants.GoiThau) ?? []];
+        List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.GoiThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

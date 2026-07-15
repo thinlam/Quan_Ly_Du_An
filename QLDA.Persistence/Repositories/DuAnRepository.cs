@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Interfaces;
 
 namespace QLDA.Persistence.Repositories;

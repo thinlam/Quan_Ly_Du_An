@@ -14,6 +14,7 @@ public class VanBanPhapLyDto : IHasKey<Guid?>, IMayHaveTepDinhKemDto {
     public Guid DuAnId { get; set; }
     public DateTimeOffset? NgayVanBan { get; set; }
     public string? SoVanBan { get; set; } = string.Empty;
+    public string? CoQuanQuyetDinh { get; set; } = string.Empty;
     public string? TrichYeu { get; set; } = string.Empty;
     public int? LoaiVanBanId { get; set; }
     public DateTimeOffset? NgayKy { get; set; }

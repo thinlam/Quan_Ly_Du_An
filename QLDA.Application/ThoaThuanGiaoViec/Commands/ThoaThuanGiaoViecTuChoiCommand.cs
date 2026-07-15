@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThoaThuanGiaoViecs.Commands;
 
@@ -30,10 +27,6 @@ internal class ThoaThuanGiaoViecTuChoiCommandHandler : IRequestHandler<ThoaThuan
     }
 
     public async Task<int> Handle(ThoaThuanGiaoViecTuChoiCommand request, CancellationToken cancellationToken) {
-        if (!_userProvider.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_LDDV) )
-        {
-            throw new ManagedException("Tài khoản không có quyền.");
-        }
 
         // Validate NoiDung is required
         if (string.IsNullOrWhiteSpace(request.NoiDung)) {
@@ -54,23 +47,24 @@ internal class ThoaThuanGiaoViecTuChoiCommandHandler : IRequestHandler<ThoaThuan
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu");
+        var entitySafe = entity!;
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entitySafe.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể trả lại khi trạng thái là Đã trình");
         }
 
         // Update status to Trả lại
-        entity.TrangThaiId = trangThaiTuChoi.Id;
+        entitySafe.TrangThaiId = trangThaiTuChoi!.Id;
 
         // Create history record with reason
         var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.ThoaThuanGiaoViec,
-            EntityId = entity.Id,
-            DuAnId = entity.DuAnId,
+            EntityId = entitySafe.Id,
+            DuAnId = entitySafe.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiTuChoi.Id,
+            TrangThaiId = trangThaiTuChoi!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

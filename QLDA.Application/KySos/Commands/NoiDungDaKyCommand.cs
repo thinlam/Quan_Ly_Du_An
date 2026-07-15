@@ -1,25 +1,24 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Constants;
 
 namespace QLDA.Application.KySos.Commands;
 
 public record NoiDungDaKyCommand : IRequest<int> {
     public required string GroupId { get; set; }
-    public required List<TepDinhKem> Entities { get; set; }
+    public required List<Attachment> Entities { get; set; }
 }
 
 internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, int> {
-    private readonly IRepository<TepDinhKem, Guid> _repository;
+    private readonly IRepository<Attachment, Guid> _repository;
     private readonly IUnitOfWork _unitOfWork;
 
     public NoiDungDaKyCommandHandler(IServiceProvider serviceProvider) {
-        _repository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _repository = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _unitOfWork = _repository.UnitOfWork;
     }
 
     public async Task<int> Handle(NoiDungDaKyCommand request, CancellationToken cancellationToken = default) {
-        var toInsert = new List<TepDinhKem>();
+        var toInsert = new List<Attachment>();
 
         foreach (var entity in request.Entities.Where(e => e.ParentId != null)) {
             entity.GroupId = request.GroupId;
@@ -48,6 +47,4 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
         return toInsert.Count;
     }
 
-    private static bool IsSignedVersion(string? groupType) =>
-        groupType is GroupTypeConstants.KySo or GroupTypeConstants.NoiDungDaKySo;
 }

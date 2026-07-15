@@ -1,4 +1,5 @@
 using QLDA.Application.QuyetDinhLapBenMoiThaus.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.QuyetDinhLapBenMoiThaus;
 
@@ -13,7 +14,9 @@ public static class QuyetDinhLapBenMoiThauMappings {
             TrichYeu = dto.TrichYeu,
             NoiDung = dto.NoiDung,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapBenMoiThau.ToString(),
+
         };
     }
 
@@ -25,7 +28,10 @@ public static class QuyetDinhLapBenMoiThauMappings {
             TrichYeu = dto.TrichYeu,
             NoiDung = dto.NoiDung,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            
+            Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhLapBenMoiThau.ToString(),
+
         };
     }
 
@@ -40,6 +46,8 @@ public static class QuyetDinhLapBenMoiThauMappings {
             NoiDung = entity.NoiDung,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy
+
+
         };
     }
 }

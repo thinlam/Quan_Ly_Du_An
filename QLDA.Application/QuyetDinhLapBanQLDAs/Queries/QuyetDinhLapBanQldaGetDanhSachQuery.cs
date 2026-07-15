@@ -26,11 +26,11 @@ internal class
     QuyetDinhLapBanQldaGetDanhSachQueryHandler : IRequestHandler<QuyetDinhLapBanQldaGetDanhSachQuery,
     PaginatedList<QuyetDinhLapBanQldaDto>> {
     private readonly IRepository<QuyetDinhLapBanQLDA, Guid> QuyetDinhLapBanQLDA;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
 
     public QuyetDinhLapBanQldaGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         QuyetDinhLapBanQLDA = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapBanQLDA, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<QuyetDinhLapBanQldaDto>> Handle(QuyetDinhLapBanQldaGetDanhSachQuery request,
@@ -57,6 +57,10 @@ internal class
                 BuocId = e.BuocId == 0 ? null : e.BuocId,
                 SoQuyetDinh = e.So,
                 NgayQuyetDinh = e.Ngay,
+                SoDuThao= e.SoDuThao,
+                TrangThaiId = e.TrangThaiId,
+                MaTrangThai = e.TrangThai!.Ma ,
+                TenTrangThai = e.TrangThai!.Ten ?? string.Empty,
                 TrichYeu = e.TrichYeu,
                 NguoiKy = e.NguoiKy,
                 NgayKy = e.NgayKy,

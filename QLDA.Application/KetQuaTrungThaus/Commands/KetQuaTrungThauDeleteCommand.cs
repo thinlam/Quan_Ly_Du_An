@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Commands;
 
@@ -10,15 +9,15 @@ public record KetQuaTrungThauDeleteCommand(Guid Id) : IRequest<int> {
 
 public record KetQuaTrungThauDeleteCommandHandler : IRequestHandler<KetQuaTrungThauDeleteCommand, int> {
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
-    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
+    private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public KetQuaTrungThauDeleteCommandHandler(IServiceProvider serviceProvider) {
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
-        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = KetQuaTrungThau.UnitOfWork;
     }
@@ -30,7 +29,7 @@ public record KetQuaTrungThauDeleteCommandHandler : IRequestHandler<KetQuaTrungT
 
         ManagedException.ThrowIfNull(entity);// kết hoach -> goi thau -> kết quả gói thầu -> hopdong
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         var hasHopDong = await KetQuaTrungThau.GetQueryableSet().AnyAsync(x =>
                          x.Id == request.Id  && x.GoiThau != null
