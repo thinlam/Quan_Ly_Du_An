@@ -7207,8 +7207,8 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset>("NgayXuLy")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("NguoiTrinhId")
-                        .HasColumnType("int");
+                    b.Property<long?>("NguoiTrinhId")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("NguoiXuLyId")
                         .HasColumnType("bigint");
@@ -7840,72 +7840,6 @@ namespace QLDA.Migrator.Migrations
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
 
                     b.ToTable("TamUng", (string)null);
-                });
-
-            modelBuilder.Entity("QLDA.Domain.Entities.TepDinhKem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetimeoffset")
-                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GroupId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GroupType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("Index")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValueSql("DATEDIFF(SECOND, '19700101', GETUTCDATE())");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("OriginalName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Path")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("Size")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Index");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.ToTable("TepDinhKem", (string)null);
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.ThanhLyHopDong", b =>
