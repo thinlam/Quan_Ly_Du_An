@@ -18,17 +18,13 @@ internal class PhanKhaiKinhPhiGetPhieuTrinhPrintQueryHandler(IServiceProvider se
     public async Task<PhanKhaiKinhPhiPhieuTrinhPrintDto> Handle(
         PhanKhaiKinhPhiGetPhieuTrinhPrintQuery request,
         CancellationToken cancellationToken = default) {
-        var entity = await _authManager.FilterVisible(
-                _repo.GetQueryableSet(),
-                AuthorizationResourceKeys.DuAn)
+        var entity =await _repo.GetQueryableSet()
             .AsNoTracking()
             .Include(e => e.DuAn)
             .Include(e => e.NguonVon)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        ManagedException.ThrowIfNull(
-            entity,
-            "Không tìm thấy dữ liệu phân khai kinh phí để xuất tờ trình.");
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu phân khai kinh phí để xuất tờ trình.");
 
         return new PhanKhaiKinhPhiPhieuTrinhPrintDto {
             SoToTrinh = entity.SoToTrinh,

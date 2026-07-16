@@ -65,11 +65,6 @@ public static class RoleConstants {
     public const string GroupPhanKhaiKinhPhiExport = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";
 
     /// <summary>
-    /// Xuất tờ trình phân khai kinh phí (UC40) — chỉ CB.PKH-TC / LD.PKH-TC
-    /// </summary>
-    public const string GroupPhanKhaiKinhPhiToTrinhExport = $"{QLDA_LDDV},{QLDA_ChuyenVien}";
-
-    /// <summary>
     /// Kết xuất Excel danh sách đề xuất chủ trương chuyển tiếp (CB/LĐ.PCT, GĐ/PGĐ, CB/LĐ.PKH-TC)
     /// </summary>
     public const string GroupDeXuatChuTruongChuyenTiepExport = $"{QLDA_TatCa},{QLDA_QuanTri},{QLDA_LDDV},{QLDA_ChuyenVien}";

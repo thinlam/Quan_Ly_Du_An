@@ -1451,7 +1451,6 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     /// ToTrinhPhanKhaiKinhPhi.docx — Xuất tờ trình phân khai kinh phí (UC40 / #9467)
     /// </summary>
     [HttpGet("api/print/phieu-trinh-phan-khai-kinh-phi")]
-    [Authorize(Roles = RoleConstants.GroupPhanKhaiKinhPhiToTrinhExport)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> InPhieuTrinhPhanKhaiKinhPhi(
@@ -1478,8 +1477,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         var replacements = new Dictionary<string, string> {
             {
                 "ngay", entity.NgayToTrinh.HasValue
-                    ? $"Tphcm, ngày {ngayToTrinh!.Value:dd} tháng {ngayToTrinh!.Value:MM} năm {ngayToTrinh!.Value:yyyy}"
-                    : "Tphcm, ngày  tháng  năm "
+                    ? $"ngày {ngayToTrinh!.Value:dd} tháng {ngayToTrinh!.Value:MM} năm {ngayToTrinh!.Value:yyyy}"
+                    : "ngày  tháng  năm "
             },
             { "So", entity.SoToTrinh ?? "" },
             { "NgayToTrinh", (ngayToTrinh ?? DateTime.Now).ToString("dd/MM/yyyy") },
