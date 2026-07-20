@@ -1,7 +1,8 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.KhoKhanVuongMacs.Commands;
 using QLDA.Application.KhoKhanVuongMacs.DTOs;
 using QLDA.Application.KhoKhanVuongMacs.Queries;
@@ -27,9 +28,10 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
             Id = id, ThrowIfNull = true, IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -44,7 +46,7 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// Quy trình id là bắt buộc
@@ -58,7 +60,7 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] KhoKhanVuongMacModel model) {
         //Cập nhật bước hiện tại của dự án
-        
+
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
         var entity = model.ToEntity();
@@ -66,9 +68,11 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.KhoKhanVuongMac), nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -94,10 +98,11 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
-        //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.KhoKhanVuongMac), nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
@@ -131,12 +136,12 @@ public class KhoKhanVuongMacController(IServiceProvider serviceProvider) : Aggre
         });
         return ResultApi.Ok(res);
         // hiện tại
-        // kế hoạch -   
+        // kế hoạch -
         //          -
         //          -
         //          - thực tế
         //mong muốn
-        // kế hoạch -   
+        // kế hoạch -
         //          - thực tế
 
     }

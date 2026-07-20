@@ -1,8 +1,9 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.TrienKhaiKeHoachLCNTMappings;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
@@ -31,11 +32,11 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             IsNoTracking = true
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes= [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.TrienKhaiKeHoachLCNT)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
        ////
         var dvtvModel = entity.DonViTuVans!.Select(o => new DonViTuVanKeHoachModel()
         {
@@ -44,11 +45,11 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         }).ToList();
         foreach ( var item in dvtvModel)
         {
-            var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-            {
-                GroupId = [item.Id.ToString() ?? ""],
-                EGroupTypes = [nameof(EGroupType.DonViTuVan)]
-            });
+            var dsTep = (await Mediator.Send(new GetAttachmentsQuery(
+                GroupIds: [item.Id.ToString() ?? ""],
+                BaseGroupTypes: [nameof(EGroupType.DonViTuVan)],
+                IncludeSigned: false
+            ))).ToAttachmentEntities();
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList() ?? new List<TepDinhKemModel>(); // i need ways
         }
 
@@ -78,22 +79,26 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTInsertCommand(dto.ToEntity()), cancellationToken);
         var danhSachTepDinhKem = dto.GetDanhSachTep(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.TrienKhaiKeHoachLCNT)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         }, cancellationToken);
-       
+
         var danhSachFileKetQua = new List<Attachment>();
         foreach (var dv in dto.DonViTuVans!)
         {
             var id = dv.GetId();
             danhSachFileKetQua = dv.GetDanhSachTep(id).ToList();
 
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
                 GroupId = id.ToString(),
-                Entities = danhSachFileKetQua
+                GroupTypes = [nameof(EGroupType.DonViTuVan)],
+                Entities = danhSachFileKetQua,
+                AutoDeleteMissing = true
             }, cancellationToken);
         }
 
@@ -111,22 +116,24 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         var entity = await Mediator.Send(new TrienKhaiKeHoachLCNTUpdateCommand(model.ToEntity()), cancellationToken);
 
         var danhSachTepChinh = model.GetDanhSachTep(entity.Id).ToList();
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.TrienKhaiKeHoachLCNT)],
             Entities = danhSachTepChinh,
-            ScopeGroupTypes = [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         foreach (var dv in model.DonViTuVans ?? [])
         {
             var dvId = dv.Id ?? dv.GetId();
             var files = dv.GetDanhSachTep(dvId).ToList();
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
                 GroupId = dvId.ToString(),
+                GroupTypes = [nameof(EGroupType.DonViTuVan)],
                 Entities = files,
-                ScopeGroupTypes = [nameof(EGroupType.DonViTuVan)]
+                AutoDeleteMissing = true
             }, cancellationToken);
         }
 

@@ -7,9 +7,7 @@ public class AttachmentConfiguration : AggregateRootConfiguration<Attachment>
 {
     public override void Configure(EntityTypeBuilder<Attachment> builder)
     {
-        builder.ToTable("Attachments");
+        builder.ToTable("Attachments", t => t.ExcludeFromMigrations());
         builder.ConfigureForBase();
-
-        // GroupType is string, no conversion needed
     }
 }

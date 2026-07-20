@@ -71,7 +71,8 @@ public class AppDbContext : DbContext, IUnitOfWork
                 assembly,
                 t => t.BaseType != null &&
                      t.BaseType.IsGenericType &&
-                     t.BaseType.GetGenericTypeDefinition() == typeof(AggregateRootConfiguration<>)
+                     t.BaseType.GetGenericTypeDefinition() == typeof(AggregateRootConfiguration<>) &&
+                     t.FullName != "BuildingBlocks.Persistence.Configurations.AttachmentConfiguration"
             );
 
             // Apply IEntityTypeConfiguration<> types (for junction entities, etc.)
@@ -80,17 +81,13 @@ public class AppDbContext : DbContext, IUnitOfWork
                 t => t.GetInterfaces().Any(i =>
                     i.IsGenericType &&
                     i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)) &&
+                     t.FullName != "BuildingBlocks.Persistence.Configurations.AttachmentConfiguration" &&
                      (t.BaseType == null ||
                       !t.BaseType.IsGenericType ||
                       (t.BaseType.GetGenericTypeDefinition() != typeof(AggregateRootConfiguration<>) &&
                        t.BaseType.GetGenericTypeDefinition() != typeof(MasterRootConfiguration<>)))
             );
         }
-
-        modelBuilder.Entity<BuildingBlocks.Domain.Entities.TepDinhKem>(e =>
-        {
-            e.ToTable(t => t.ExcludeFromMigrations());
-        });
 
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
         {

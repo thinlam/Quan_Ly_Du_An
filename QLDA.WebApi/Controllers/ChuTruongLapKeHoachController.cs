@@ -4,9 +4,10 @@ using QLDA.Application.ChuTruongLapKeHoachs.Commands;
 using QLDA.Application.ChuTruongLapKeHoachs.DTOs;
 using QLDA.Application.ChuTruongLapKeHoachs.Queries;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.ChuTruongLapKeHoachs;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Data;
@@ -30,10 +31,10 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
             IsNoTracking = true
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
@@ -65,10 +66,12 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
         await Mediator.Send(new ChuTruongLapKeHoachInsertCommand(entity));
 
         var danhSachTepDinhKem = dto.GetDanhSachTep(entity.Id).ToList();
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.ChuTruongLapKeHoach)],
             Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -88,21 +91,25 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
         var entity = model.ToEntity();
 
         await Mediator.Send(new ChuTruongLapKeHoachUpdateCommand(entity));
-        
+
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ChuTruongLapKeHoach) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.ChuTruongLapKeHoach)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = model.GetDanhSachTep(entity.Id).ToList();
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.ChuTruongLapKeHoach)],
             Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         await _unitOfWork.CommitTransactionAsync(cancellationToken);

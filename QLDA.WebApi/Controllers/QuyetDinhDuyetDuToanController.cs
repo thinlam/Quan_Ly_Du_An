@@ -5,9 +5,10 @@ using QLDA.Application.QuyetDinhDuyetDuToans;
 using QLDA.Application.QuyetDinhDuyetDuToans.Commands;
 using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
 using QLDA.Application.QuyetDinhDuyetDuToans.Queries;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.QuyetDinhDuyetDuToans;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Net.Mime;
@@ -27,15 +28,16 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan)]
-        });
-        var danhSachTepDinhKemKhac = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
+        var danhSachTepDinhKemKhac = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }
 
@@ -44,8 +46,8 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         var res = await Mediator.Send(new QuyetDinhDuyetDuToanDeleteCommand(id));
         return ResultApi.Ok(res);
     }
-    
-  
+
+
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<Guid>>(StatusCodes.Status200OK)]
@@ -53,25 +55,29 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
     public async Task<ResultApi> Create([FromBody] QuyetDinhDuyetDuToanInsUpdDto dto) {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
-      
+
         var entity = dto.ToEntity();
         entity = await Mediator.Send( new QuyetDinhDuyetDuToanInsertCommand(dto.ToEntity())   );
-       
+
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(
             entity.Id, EGroupType.QuyetDinhDuyetDuToan) ?? []];
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan)],
+            Entities = files,
+            AutoDeleteMissing = true
         });
         List<Attachment> fileKhacs = [.. dto.DanhSachTepDinhKemKhac?.ToEntities(
             entity.Id, EGroupType.QuyetDinhDuyetDuToan_Khac) ?? []];
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = fileKhacs
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)],
+            Entities = fileKhacs,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.Id);
     }
@@ -86,29 +92,31 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,  EGroupType.QuyetDinhDuyetDuToan) ?? []];
 
-        // 3. Lưu danh sách file
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan)],
+            Entities = files,
+            AutoDeleteMissing = true
         });
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan)]
-        });
-        // 3. Lưu danh sách file khác
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         List<Attachment> fileKhacs = [.. model.DanhSachTepDinhKemKhac?.ToEntities(entity.Id,  EGroupType.QuyetDinhDuyetDuToan_Khac) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = fileKhacs
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)],
+            Entities = fileKhacs,
+            AutoDeleteMissing = true
         });
-        var danhSachTepDinhKemKhac = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)]
-        });
+        var danhSachTepDinhKemKhac = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }
 

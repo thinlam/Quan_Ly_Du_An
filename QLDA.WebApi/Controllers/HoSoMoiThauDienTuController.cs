@@ -2,8 +2,9 @@ using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Application.HoSoMoiThauDienTus.Queries;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.HoSoMoiThauDienTus;
 using QLDA.WebApi.Models.TepDinhKems;
 using System.Data;
@@ -16,35 +17,40 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
     [HttpGet("{id}")]
     public async Task<ResultApi> Get(Guid id) {
         var entity = await Mediator.Send(new HoSoMoiThauDienTuGetQuery { Id = id });
-        var files = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTu.ToString()]
-        });
+        var files = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTu.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         var filesToTrinh = new  List<Attachment>();
         if(entity.ToTrinh!= null)
-            filesToTrinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.ToTrinh != null ? entity.ToTrinh.Id.ToString() : ""],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
-        });
+            filesToTrinh = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.ToTrinh != null ? entity.ToTrinh.Id.ToString() : ""],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         var filesQuyetDinh = new  List<Attachment>();
         if (entity.QuyetDinh != null)
-            filesQuyetDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.QuyetDinh != null ? entity.QuyetDinh.Id.ToString() : ""],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()]
-        });
-        var fileCamKets = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()]
-        });
-        var fileThamDinhs = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()]
-
-        });
-        var fileBaoCaos = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()]
-        });
+            filesQuyetDinh = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.QuyetDinh != null ? entity.QuyetDinh.Id.ToString() : ""],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
+        var fileCamKets = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
+        var fileThamDinhs = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
+        var fileBaoCaos = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh, filesQuyetDinh));
     }
 
@@ -76,7 +82,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         // remove file cũ đi trong trường hợp entity cũ có Thẩm định
         var entityOld = await Mediator.Send(new HoSoMoiThauDienTuGetQuery { Id = model.GetId() });
         var entity = await Mediator.Send(new HoSoMoiThauDienTuUpdateCommand(model.ToUpdateModel()));
-       
+
         await SaveDanhSachTepDinhKemAsync(model, entity, entityOld, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -115,10 +121,10 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
                 EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString(),
                 cancellationToken);
         }
-       
+
         await SyncTepDinhKemAsync(
                    entityId.ToString(),
-                    model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId) ?? [], 
+                    model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId) ?? [],
                    EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
                    cancellationToken) ;
 
@@ -133,7 +139,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId) ?? [],
             EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
             cancellationToken);
-       
+
     }
 
     private Task SyncTepDinhKemAsync(
@@ -141,9 +147,10 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         List<Attachment> entities,
         string scopeGroupType,
         CancellationToken cancellationToken)
-        => Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        => Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = groupId,
+            GroupTypes = [scopeGroupType],
             Entities = entities,
-            ScopeGroupTypes = [scopeGroupType]
+            AutoDeleteMissing = true
         }, cancellationToken);
 }

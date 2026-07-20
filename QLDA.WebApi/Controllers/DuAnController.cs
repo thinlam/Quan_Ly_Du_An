@@ -9,9 +9,10 @@ using QLDA.Application.DuAns.Queries;
 using QLDA.Application.DuToans.Commands;
 using QLDA.Application.DuToans.DTOs;
 using QLDA.Application.KeHoachVons.DTOs;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DuAns;
 
@@ -70,7 +71,7 @@ namespace QLDA.WebApi.Controllers
         /// Báo cáo dự toán dự án
         /// </summary>
         /// TongHopVonGiaiNganQuery(int Nam, int LoaiDuAnId)
-        /// 
+        ///
         [HttpGet("api/du-an/von-giai-ngan")]
         [ProducesResponseType<ResultApi<List<BaoCaoDuAnDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -225,13 +226,14 @@ namespace QLDA.WebApi.Controllers
                 //Thêm dự toán
                 await Mediator.Send(new DuToanInsertRangeCommand([.. duToans.Select(e => e.Item1)]), cancellationToken);
 
-                //Thêm files
                 foreach (var (duToan, files) in duToans)
                 {
-                    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                    await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
                     {
                         GroupId = duToan.Id.ToString(),
+                        GroupTypes = [nameof(EGroupType.DuToan)],
                         Entities = files,
+                        AutoDeleteMissing = true
                     }, cancellationToken);
                 }
 
@@ -250,10 +252,12 @@ namespace QLDA.WebApi.Controllers
                             groupId: khvList[i].Id,
                             groupType: EGroupType.KeHoachVon
                         );
-                        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
                         {
                             GroupId = khvList[i].Id.ToString(),
+                            GroupTypes = [nameof(EGroupType.KeHoachVon)],
                             Entities = [.. khvFiles],
+                            AutoDeleteMissing = true
                         }, cancellationToken);
                     }
                 }
@@ -266,10 +270,12 @@ namespace QLDA.WebApi.Controllers
                     groupId: entity.Id,
                     groupType: EGroupType.QuyetDinhPheDuyetNhiemVu
                 );
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
                 {
                     GroupId = entity.Id.ToString(),
+                    GroupTypes = [nameof(EGroupType.QuyetDinhPheDuyetNhiemVu)],
                     Entities = [.. decisionFiles],
+                    AutoDeleteMissing = true
                 }, cancellationToken);
             }
 
@@ -308,14 +314,14 @@ namespace QLDA.WebApi.Controllers
             // Xử lý DuToan và TepDinhKem tương tự như trong hàm tạo mới
             List<(DuToan, List<Attachment>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
 
-            // Cập nhật dự toán và files
             foreach (var (duToan, files) in duToans)
             {
-                // Thêm hoặc cập nhật files cho mỗi dự toán
-                await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
                 {
                     GroupId = duToan.Id.ToString(),
+                    GroupTypes = [nameof(EGroupType.DuToan)],
                     Entities = files,
+                    AutoDeleteMissing = true
                 }, cancellationToken);
             }
 
@@ -325,18 +331,22 @@ namespace QLDA.WebApi.Controllers
                 foreach (var khvModel in updateDto.KeHoachVons)
                 {
                     var (khv, khvFiles) = khvModel.ToEntityWithFiles(entity.Id);
-                    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+                    await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
                     {
                         GroupId = khv.Id.ToString(),
+                        GroupTypes = [nameof(EGroupType.KeHoachVon)],
                         Entities = khvFiles,
+                        AutoDeleteMissing = true
                     }, cancellationToken);
                 }
             }
 
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
                 GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.QuyetDinhPheDuyetNhiemVu)],
                 Entities = [.. updateDto.DanhSachTepQuyetDinh?.ToEntities(entity.Id, EGroupType.QuyetDinhPheDuyetNhiemVu) ?? []],
+                AutoDeleteMissing = true
             }, cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -385,10 +395,10 @@ namespace QLDA.WebApi.Controllers
             List<Attachment>? files = null;
             if (groupIds.Count != 0)
             {
-                files = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-                {
-                    GroupId = [.. groupIds]
-                }, cancellationToken);
+                files = (await Mediator.Send(new GetAttachmentsQuery(
+                    GroupIds: [.. groupIds],
+                    IncludeSigned: false
+                ), cancellationToken)).ToAttachmentEntities();
             }
             return entity.ToDto(files);
         }

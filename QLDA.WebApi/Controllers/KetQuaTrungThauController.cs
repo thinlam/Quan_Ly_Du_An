@@ -1,7 +1,8 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.KetQuaTrungThaus.Commands;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
 using QLDA.Application.KetQuaTrungThaus.Queries;
@@ -34,9 +35,10 @@ public class KetQuaTrungThauController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
     }
 
@@ -78,9 +80,11 @@ public class KetQuaTrungThauController : AggregateRootController {
 
         var entity = await Mediator.Send(new KetQuaTrungThauInsertCommand(insertDto), cancellationToken);
         List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KetQuaTrungThau)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -108,9 +112,11 @@ public class KetQuaTrungThauController : AggregateRootController {
         var entity = await Mediator.Send(new KetQuaTrungThauUpdateCommand(updateDto), cancellationToken);
 
         List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KetQuaTrungThau)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -119,7 +125,7 @@ public class KetQuaTrungThauController : AggregateRootController {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="duAnId"></param>
     /// <param name="buocId"></param>

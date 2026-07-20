@@ -1,8 +1,9 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.ThoaThuanGiaoViecs;
 using QLDA.Application.ThoaThuanGiaoViecs.Commands;
 using QLDA.Application.ThoaThuanGiaoViecs.DTOs;
@@ -29,12 +30,12 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.ThoaThuanGiaoViec)]
-        });
-        
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.ThoaThuanGiaoViec)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
+
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -52,7 +53,7 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] ThoaThuanGiaoViecDto model, [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
-    
+
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
@@ -73,10 +74,12 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
         entity = await Mediator.Send(new ThoaThuanGiaoViecInsertCommand(entity));
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ThoaThuanGiaoViec) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.ThoaThuanGiaoViec)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         return ResultApi.Ok(entity.Id);
@@ -88,25 +91,27 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Update([FromBody] ThoaThuanGiaoViecDto dto, [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
-    { 
+    {
 
         var entity = await Mediator.Send(new ThoaThuanGiaoViecUpdateCommand(dto));
 
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ThoaThuanGiaoViec) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.ThoaThuanGiaoViec)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ), cancellationToken)).ToAttachmentEntities();
 
-        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList())); 
+        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
 
     [HttpGet("danh-sach-tien-do")]

@@ -1,8 +1,9 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.QuyetDinhDuyetDuAnHangMucs.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.QuyetDinhDuyetDuAns.Commands;
 using QLDA.Application.QuyetDinhDuyetDuAns.Queries;
 using QLDA.WebApi.Models.QuyetDinhDuyetDuAns;
@@ -36,9 +37,10 @@ public class QuyetDinhDuyetDuAnController : AggregateRootController {
             IncludeHangMuc = true, IncludeNguonVon = true
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -64,9 +66,11 @@ public class QuyetDinhDuyetDuAnController : AggregateRootController {
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuAn)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -103,9 +107,11 @@ public class QuyetDinhDuyetDuAnController : AggregateRootController {
         });
 
         //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetDuAn)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         var res = await Mediator.Send(new QuyetDinhDuyetDuAnGetQuery() {
             Id = entity.Id,

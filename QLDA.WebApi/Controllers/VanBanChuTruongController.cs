@@ -1,7 +1,8 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.VanBanChuTruongs.Commands;
 using QLDA.Application.VanBanChuTruongs.DTOs;
 using QLDA.Application.VanBanChuTruongs.Queries;
@@ -32,9 +33,10 @@ public class VanBanChuTruongController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -61,7 +63,7 @@ public class VanBanChuTruongController : AggregateRootController {
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] VanBanChuTruongModel model) {
         //Cập nhật bước hiện tại của dự án
-        
+
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
         var entity = model.ToEntity();
@@ -69,9 +71,11 @@ public class VanBanChuTruongController : AggregateRootController {
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.VanBanChuTruong)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -97,15 +101,17 @@ public class VanBanChuTruongController : AggregateRootController {
 
 
         //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.VanBanChuTruong)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="duAnId"></param>
     /// <param name="buocId"></param>

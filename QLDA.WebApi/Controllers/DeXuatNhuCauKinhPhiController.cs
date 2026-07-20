@@ -3,8 +3,9 @@ using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DeXuatNhuCauKinhPhis.DTOs;
 using QLDA.Application.DeXuatNhuCauKinhPhis.Queries;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.DeXuatNhuCauKinhPhis;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -34,9 +35,10 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -53,7 +55,7 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] DeXuatNhuCauKinhPhiModel model) {
         //Cập nhật bước hiện tại của dự án
-        
+
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
 
@@ -62,15 +64,17 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id, EGroupType.DeXuatNhuCauKinhPhi) ?? []];
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = savedEntity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.DeXuatNhuCauKinhPhi)],
+            Entities = files,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(savedEntity.Id);
     }
 
-   
+
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<DeXuatNhuCauKinhPhi>>(StatusCodes.Status200OK)]
@@ -85,7 +89,7 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
             {
                 Id = model.GetId(),
                 DuAnId = model.DuAnId,
-                BuocId = model.BuocId,  
+                BuocId = model.BuocId,
                 DonViDeXuatId = model.DonViDeXuatId,
                 SoPhieuChuyen = model.SoPhieuChuyen,
                 NgayPhieuChuyen = model.NgayPhieuChuyen,
@@ -95,18 +99,20 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
         ), cancellationToken);
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,EGroupType.DeXuatNhuCauKinhPhi) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.DeXuatNhuCauKinhPhi)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ), cancellationToken)).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -175,6 +181,6 @@ public class DeXuatNhuCauKinhPhiController : AggregateRootController {
         });
         return ResultApi.Ok(res);
     }
-    
-    
+
+
 }

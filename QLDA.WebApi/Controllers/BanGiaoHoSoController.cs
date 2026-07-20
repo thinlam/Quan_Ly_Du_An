@@ -2,8 +2,9 @@ using System.Net.Mime;
 using QLDA.Application.BanGiaoHoSos.Commands;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.BanGiaoHoSos;
 
 namespace QLDA.WebApi.Controllers;
@@ -20,13 +21,14 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     public async Task<ResultApi> Get(Guid id) {
         var entity = await _mediator.Send(new BanGiaoHoSoGetQuery(id));
         // Tải cả 2 loại tệp đính kèm
-        var allFiles = await _mediator.Send(new GetDanhSachTepDinhKemQuery { 
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [
+        var allFiles = (await _mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [
                 Domain.Enums.EGroupType.BanGiaoHoSo.ToString(),
                 Domain.Enums.EGroupType.BienBanBanGiao.ToString()
-            ]
-        });
+            ],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         var tepHS = allFiles.Where(f => f.GroupType == Domain.Enums.EGroupType.BanGiaoHoSo.ToString()).ToList();
         var bienBan = allFiles.Where(f => f.GroupType == Domain.Enums.EGroupType.BienBanBanGiao.ToString()).ToList();
         return ResultApi.Ok(entity.ToModel(tepHS, bienBan));
@@ -34,7 +36,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 
     [HttpGet("danh-sach")]
     [ProducesResponseType<ResultApi<PaginatedList<BanGiaoHoSoDto>>>(StatusCodes.Status200OK)]
-    public async Task<ResultApi> GetList([FromQuery] BanGiaoHoSoSearchDto searchDto, 
+    public async Task<ResultApi> GetList([FromQuery] BanGiaoHoSoSearchDto searchDto,
         [FromQuery] AggregateRootPagination pagination) {
         var res = await _mediator.Send(new BanGiaoHoSoGetDanhSachQuery {
             SearchDto = searchDto,
@@ -50,9 +52,11 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     public async Task<ResultApi> Insert([FromBody] BanGiaoHoSoInsertDto dto) {
         var entity = await _mediator.Send(new BanGiaoHoSoInsertCommand(dto));
 
-        await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await _mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id)
+            GroupTypes = [nameof(EGroupType.BanGiaoHoSo)],
+            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id),
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -64,9 +68,11 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     public async Task<ResultApi> Update([FromBody] BanGiaoHoSoUpdateModel dto) {
         var entity = await _mediator.Send(new BanGiaoHoSoUpdateCommand(dto));
 
-        await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await _mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id)
+            GroupTypes = [nameof(EGroupType.BanGiaoHoSo)],
+            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id),
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -80,10 +86,11 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
 
         var entity = await _mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao, model.PhongBanNhanId));
 
-        // Lưu biên bản bàn giao (EGroupType.BienBanBanGiao)
-        await _mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await _mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = bienBanEntities
+            GroupTypes = [nameof(EGroupType.BienBanBanGiao)],
+            Entities = bienBanEntities,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(1);

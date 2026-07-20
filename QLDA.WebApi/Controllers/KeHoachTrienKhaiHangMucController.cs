@@ -1,8 +1,9 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
@@ -27,11 +28,11 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
             ThrowIfNull = true,
             IsNoTracking = true
         });
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString() ?? ""],
-            EGroupTypes = [nameof(EGroupType.KeHoachTrienKhaiHangMuc)]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString() ?? ""],
+            BaseGroupTypes: [nameof(EGroupType.KeHoachTrienKhaiHangMuc)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity);
     }
@@ -50,24 +51,26 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create([FromBody] KeHoachTrienKhaiHangMucDto dto,
-        [FromServices] IUnitOfWork _unitOfWork, 
+        [FromServices] IUnitOfWork _unitOfWork,
         CancellationToken cancellationToken = default)
     {
-        using var tx = await _unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken); 
+        using var tx = await _unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken);
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
         var entity = await Mediator.Send(new KeHoachTrienKhaiHangMucInsertCommand(dto.ToEntity()), cancellationToken);
-       
+
 
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachTrienKhaiHangMuc) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KeHoachTrienKhaiHangMuc)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _unitOfWork.CommitTransactionAsync(cancellationToken); 
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
         return ResultApi.Ok(new { entity.Id });
     }
 
@@ -83,18 +86,20 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
         var entity = await Mediator.Send(new KeHoachTrienKhaiHangMucUpdateCommand(dto), cancellationToken);
 
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachTrienKhaiHangMuc) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KeHoachTrienKhaiHangMuc)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }

@@ -1,8 +1,9 @@
 using System.Net.Mime;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.NghiemThus.Commands;
 using QLDA.Application.NghiemThus.DTOs;
 using QLDA.Application.NghiemThus.Queries;
@@ -37,9 +38,10 @@ public class NghiemThuController : AggregateRootController {
             IncludeThanhToan = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
     }
 
@@ -83,9 +85,11 @@ public class NghiemThuController : AggregateRootController {
         var entity = await Mediator.Send(new NghiemThuInsertCommand(insertDto), cancellationToken);
 
         List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.NghiemThu) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.NghiemThu)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -114,9 +118,11 @@ public class NghiemThuController : AggregateRootController {
         var entity = await Mediator.Send(new NghiemThuUpdateCommand(updateDto), cancellationToken);
 
         List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.NghiemThu) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.NghiemThu)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

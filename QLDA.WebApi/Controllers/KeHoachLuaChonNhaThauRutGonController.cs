@@ -4,9 +4,10 @@ using QLDA.Application.KeHoachLuaChonNhaThauRutGons;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.DTOs;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Queries;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.KeHoachLuaChonNhaThauRutGons;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using System.Data;
@@ -39,9 +40,10 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
     }
 
@@ -55,7 +57,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="insertDto"></param>
     /// <param name="unitOfWork"></param>
@@ -66,7 +68,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
     public async Task<ResultApi> Create( [FromBody] KeHoachLuaChonNhaThauRutGonDto insertDto, [FromServices] IUnitOfWork unitOfWork,
-        CancellationToken cancellationToken = default ) 
+        CancellationToken cancellationToken = default )
     {
         using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         //Cập nhật bước hiện tại của dự án
@@ -78,10 +80,12 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauRutGonInsertCommand(insertDto.ToEntity()), cancellationToken);
 
         List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThauRutGon) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KeHoachLuaChonNhaThauRutGon)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -90,7 +94,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="Dto"></param>
     /// <param name="unitOfWork"></param>
@@ -112,10 +116,12 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauRutGonUpdateCommand(Dto), cancellationToken);
 
         List<Attachment> files = [.. Dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThauRutGon) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KeHoachLuaChonNhaThauRutGon)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -123,7 +129,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
         return ResultApi.Ok(new { entity.Id });
     }
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="duAnId"></param>
     /// <param name="buocId"></param>

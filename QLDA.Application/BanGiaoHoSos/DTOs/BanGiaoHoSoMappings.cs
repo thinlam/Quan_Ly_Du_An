@@ -1,4 +1,4 @@
-using QLDA.Application.Common;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Domain.Enums;
 using QLDA.Application.TepDinhKems.DTOs;
 

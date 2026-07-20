@@ -1,7 +1,8 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ThuyetMinhDuAns.DTOs;
 using QLDA.Application.ThuyetMinhDuAns.Queries;
@@ -24,15 +25,16 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.ThuyetMinhDuAn)]
-        });
-        var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.ThuyetMinhDuAnThamDinh)]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.ThuyetMinhDuAn)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
+        var danhSachTepThamDinh = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.ThuyetMinhDuAnThamDinh)],
+            IncludeSigned: false
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepThamDinh));
     }
 
@@ -41,7 +43,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
         var res = await Mediator.Send(new ThuyetMinhDuAnDeleteCommand(id));
         return ResultApi.Ok(res);
     }
-    
+
     /// <remarks>du an id la bac buoc</remarks>
     //[HttpPost("tham-dinh")]
     //[Consumes(MediaTypeNames.Application.Json)]
@@ -59,7 +61,7 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
     //    var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id);
 
-    //    await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+    //    await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
     //    {
     //        GroupId = entity.Id.ToString(),
     //        Entities = danhSachFileThamDinh
@@ -74,25 +76,29 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
     public async Task<ResultApi> Create([FromBody] ThuyetMinhDuAnModel model) {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
-      
+
         var entity = model.ToEntity();
         entity = await Mediator.Send( new ThuyetMinhDuAnInsertCommand(model.ToEntity())   );
-       
+
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(
             entity.Id, EGroupType.ThuyetMinhDuAn) ?? []];
-        
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.ThuyetMinhDuAn)],
+            Entities = files,
+            AutoDeleteMissing = true
         });
         List<Attachment> filesThamDinh = [.. model.DanhSachTepThamDinh?.ToEntities(
             entity.Id, EGroupType.ThuyetMinhDuAnThamDinh) ?? []];
-        
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = filesThamDinh
+            GroupTypes = [nameof(EGroupType.ThuyetMinhDuAnThamDinh)],
+            Entities = filesThamDinh,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -112,18 +118,20 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.ThuyetMinhDuAn)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         var danhSachFileThamDinh = model.GetDanhSachTepDinhKemThamDinh(entity.Id);
-        //if ()// chỉ có user phòng KH-tc
-        //{
 
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
                 GroupId = entity.Id.ToString(),
-                Entities = danhSachFileThamDinh
+                GroupTypes = [nameof(EGroupType.ThuyetMinhDuAnThamDinh)],
+                Entities = danhSachFileThamDinh,
+                AutoDeleteMissing = true
             });
        // }
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachFileThamDinh));
