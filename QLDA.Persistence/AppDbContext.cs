@@ -89,9 +89,12 @@ public class AppDbContext : DbContext, IUnitOfWork
             );
         }
 
+        // Attachment: force "TepDinhKem" — BB AttachmentConfiguration is excluded from
+        // ApplyConfigurationsFromAssembly (maps "Attachments"); inline config guarantees
+        // runtime queries target the legacy QLDA table.
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
         {
-            e.ToTable(t => t.ExcludeFromMigrations());
+            e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
         });
 
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.DmDonVi>(e =>
