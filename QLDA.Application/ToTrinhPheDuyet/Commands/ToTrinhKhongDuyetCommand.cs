@@ -6,10 +6,10 @@ using QLDA.Domain.Constants;
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
 /// <summary>
-/// Trình quyết định điều chỉnh - chỉ phòng KH-TC (PhongBanId = 219)
+
+/// Chỉ dành cho các tờ trình/quyết định chỉ trình( k cần duyệt)
 /// </summary>
 public record ToTrinhKhongDuyetCommand(Guid Id, string Loai, string? NoiDung = null) : IRequest<int>;
-// chu thich: Các tờ trình gọi api này thì ko cần duyệt. Trình là tính duyệt
 internal class ToTrinhKhongDuyetCommandHandler : IRequestHandler<ToTrinhKhongDuyetCommand, int>
 {
     private readonly DbContext _dbContext;
@@ -63,59 +63,57 @@ internal class ToTrinhKhongDuyetCommandHandler : IRequestHandler<ToTrinhKhongDuy
                 .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
 
         ManagedException.ThrowIfNull(entityType, "Không tìm thấy quyết định/tờ trình cần thao tác");
+        object[] keyValues = { request.Id };
+        var entity = await _dbContext.FindAsync(entityType, keyValues, cancellationToken);
 
-        var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
-        if (entity == null)
-        {
-            throw new ManagedException("Không tìm thấy dữ liệu cần thao tác trong hệ thống!");
-        }
-        var entitySafe = entity!;
+        if (entity is IApprovableEntity approvableEntity) {
+            var entitySafe = approvableEntity!;
+            await _auth.EnsureCanExecuteStepAsync(entitySafe.BuocId, _authContext, cancellationToken);
 
-        await _auth.EnsureCanExecuteStepAsync(entitySafe.BuocId, _authContext, cancellationToken);
+            // Validate: must be DT (Dự thảo) or TL (Trả lại) to transition to ĐTr (Đã trình)
+            if (entitySafe.TrangThaiId != trangThaiDuThao?.Id && entitySafe.TrangThaiId != trangThaiTraLai?.Id)
+            {
+                throw new ManagedException("Chỉ có thể trình khi trạng thái là dự thảo hoặc trả lại!");
+            }
+            entitySafe.TrangThaiId = trangThaiDaTrinh!.Id;
 
-        // Validate: must be DT (Dự thảo) or TL (Trả lại) to transition to ĐTr (Đã trình)
-        if (entitySafe.TrangThaiId != trangThaiDuThao?.Id && entitySafe.TrangThaiId != trangThaiTraLai?.Id)
-        {
-            throw new ManagedException("Chỉ có thể trình khi trạng thái là Dự thảo hoặc Trả lại!");
-        }
-
-        // 5. Cập nhật TrangThaiId (Dù là Model nào cũng chỉ tốn đúng 1 dòng này)
-        entitySafe.TrangThaiId = trangThaiDaTrinh!.Id;
-
-        // 6. Lưu lịch sử phê duyệt
-        var history = new PheDuyetHistory
-        {
-            Id = Guid.NewGuid(),
-            EntityName = request.Loai,
-            EntityId = request.Id,
-            DuAnId = entitySafe.DuAnId,
-            BuocId = entitySafe.BuocId,
-            NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
-            NgayXuLy = DateTimeOffset.UtcNow
-        };
-        await _historyRepository.AddAsync(history);
-        #region
-        // nếu là tờ trình kế hoạch lcnt  -> duyệt thì insert vào table KeHoachLuaChonNhaThau
-        if (Enum.IsDefined(typeof(KeHoachLuaChonNhaThauLoai), request.Loai))
-        {
-            var entityKeHoach = await _repository.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
-            ManagedException.ThrowIfNull(entityKeHoach, "Không tìm thấy kế hoạch cần cập nhật");
-            var keHoach = new KeHoachLuaChonNhaThau
+            // 6. Lưu lịch sử phê duyệt
+            var history = new PheDuyetHistory
             {
                 Id = Guid.NewGuid(),
-                Ten = entityKeHoach.Ten,
-                Loai = request.Loai,
-                DuAnId= entityKeHoach.DuAnId,
-                BuocId = entityKeHoach.BuocId
+                EntityName = request.Loai,
+                EntityId = request.Id,
+                DuAnId = entitySafe.DuAnId,
+                BuocId = entitySafe.BuocId,
+                NguoiXuLyId = _userProvider.Info.UserID,
+                TrangThaiId = trangThaiDaTrinh!.Id,
+                NoiDung = request.NoiDung,
+                NgayXuLy = DateTimeOffset.UtcNow
             };
-            await _keHoachRepo.AddAsync(keHoach, cancellationToken);
-        }
-        #endregion
-        // 7. Lưu thay đổi vào DB thông qua DbContext
-        await _dbContext.SaveChangesAsync(cancellationToken);
+            await _historyRepository.AddAsync(history);
+            #region
+            // nếu là tờ trình kế hoạch lcnt  -> duyệt thì insert vào table KeHoachLuaChonNhaThau
+            if (Enum.IsDefined(typeof(KeHoachLuaChonNhaThauLoai), request.Loai))
+            {
+                var entityKeHoach = await _repository.GetQueryableSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+                ManagedException.ThrowIfNull(entityKeHoach, "Không tìm thấy kế hoạch cần cập nhật");
+                var keHoach = new KeHoachLuaChonNhaThau
+                {
+                    Id = Guid.NewGuid(),
+                    Ten = entityKeHoach.Ten,
+                    Loai = request.Loai,
+                    DuAnId= entityKeHoach.DuAnId,
+                    BuocId = entityKeHoach.BuocId
+                };
+                await _keHoachRepo.AddAsync(keHoach, cancellationToken);
+            }
+            #endregion
+            // 7. Lưu thay đổi vào DB thông qua DbContext
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return 1;
+            return 1;
+        } else {
+            throw new ManagedException("Không tìm thấy dữ liệu cần thao tác trong hệ thống!");
+        }
     }
 }

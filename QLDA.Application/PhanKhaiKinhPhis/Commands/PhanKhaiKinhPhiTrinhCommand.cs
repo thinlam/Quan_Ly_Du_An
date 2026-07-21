@@ -57,7 +57,8 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $"Số {entity.SoToTrinh??""} {(entity.NgayToTrinh != null ? " - ngày " + entity.NgayToTrinh.ToDateOnlyVn()?.ToString("dd/MM/yyyy") : "")} " +
+                        $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ")}",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

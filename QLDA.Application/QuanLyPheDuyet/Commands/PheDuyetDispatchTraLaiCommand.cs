@@ -56,17 +56,17 @@ internal class PheDuyetDispatchTraLaiCommandHandler(IServiceProvider serviceProv
             PheDuyetEntityNames.TrienKhaiKeHoachLCNT => new TrienKhaiKeHoachLCNTTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc => new KeHoachTrienKhaiHangMucTraLaiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuTraLaiCommand(request.Id, request.NoiDung),
-            //simple ToTrinhPheDuyet
+            PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaTraLaiCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.ThanhLyHopDong => new ThanhLyHopDongTraLaiCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTraLaiCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
+          
+            #region Các tờ trình/quyết định gồm các tt duThao ->Trinh -> duyet/TraLai có thẻ dùng chung ToTrinhPheDuyet_XXX_Command
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue, request.NoiDung),
-            PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach, request.NoiDung),
-            PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaTraLaiCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetTraLaiCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
 
-            PheDuyetEntityNames.ThanhLyHopDong => new ThanhLyHopDongTraLaiCommand(request.Id, request.NoiDung),
-
-            PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTraLaiCommand(request.Id, PheDuyetEntityNames.ChuTruongLapKeHoach),
-
+            #endregion
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };
         return await _mediator.Send(command, cancellationToken);

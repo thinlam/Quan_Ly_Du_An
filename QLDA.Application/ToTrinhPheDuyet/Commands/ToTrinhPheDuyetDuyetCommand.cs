@@ -36,10 +36,8 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
 
     public async Task<int> Handle(ToTrinhPheDuyetDuyetCommand request, CancellationToken cancellationToken) {
 
-        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
-
-        var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
-        var statuses = await _statusRepository.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
+        //bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Loai);
+        var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
         var statusDict = statuses
             .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
             .ToDictionary(x => x.Ma!, x => x);
@@ -62,7 +60,7 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
         ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật");
 
 
-    //    await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
         if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {

@@ -18,7 +18,7 @@ public static class PheDuyetEntityNames
     /// <summary>
     /// 9488 - Hồ sơ đề xuất cấp độ ATTT
     /// </summary>
-    [Description("Hồ sơ đề xuất cấp CNTT")]
+    [Description("Hồ sơ đề xuất cấp độ CNTT")]
     public const string HoSoDeXuatCapDoCntt = "HoSoDeXuatCapDoCntt";
     /// <summary>
     /// 9473/9485 - Hồ sơ mời thầu điện tử
@@ -88,9 +88,6 @@ public static class PheDuyetEntityNames
     [Description("Tờ trình kế hoạch triển khai các hạng mục dự án")]
     public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
 
-    [Description("Quyết định phê duyệt kế hoạch thuê")]
-    public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue"; 
-
     [Description("Dự toán chuẩn bị đầu tư ")]
     public const string DuToanDauTu = "DuToanDauTu";
     [Description("Chủ trương lập kế hoạch")]
@@ -111,17 +108,25 @@ public static class PheDuyetEntityNames
 
     [Description("Kế hoạch LCNT giai đoạn CBĐT")]
     public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
+
     [Description("Thỏa thuận giao việc")]
     public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
+
     [Description("Kế hoạch lcnt rút gọn")]
     public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
+
     [Description("Quyết định duyệt dự toán")] //issue #9478
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
+
     [Description("Quyết định lập ban quản lý dự án")] //issue #9636
     public const string QuyetDinhLapBanQLDA = "QuyetDinhLapBanQLDA";
+
+    [Description("Quyết định kế hoạch thuê dịch vụ CNTT")]
+    public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
+
     [Description("Kế hoạch thuê dịch vụ CNTT")]//issue #9480
-    public const string QuyetDinhKeHoachThueCNTT = "QuyetDinhKeHoachThueCNTT";
-    
+    public const string KeHoachThueCNTT = "KeHoachThueCNTT"; // entity ToTrinhCoThamDinh
+
     /// <summary>
     /// UC63 — Thanh lý hợp đồng (Nghiệm thu thanh lý) (#9644)
     /// </summary>

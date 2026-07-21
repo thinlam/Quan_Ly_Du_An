@@ -16,6 +16,7 @@ using QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
 using QLDA.Application.ThanhLyHopDongs.Commands;
 using QLDA.Application.ThoaThuanGiaoViecs.Commands;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
+using QLDA.Application.ToTrinhCoThamDinhs.Commands;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
@@ -55,17 +56,23 @@ internal class PheDuyetDispatchDuyetCommandHandler(IServiceProvider serviceProvi
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc => new KeHoachTrienKhaiHangMucDuyetCommand(request.Id),
             PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuDuyetCommand(request.Id),
 
-            PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat),
             PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachDuyetCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonDuyetCommand(request.Id),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecDuyetCommand(request.Id),
+            PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaDuyetCommand(request.Id),
+            PheDuyetEntityNames.ThanhLyHopDong => new ThanhLyHopDongDuyetCommand(request.Id),
+            #region Các tờ trình/quyết định gồm các tt duThao ->Trinh -> duyet/TraLai có thẻ dùng chung ToTrinhPheDuyet_XXX_Command
 
+            PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue),
             PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),
             PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan),
-            PheDuyetEntityNames.QuyetDinhLapBanQLDA => new QuyetDinhLapBanQldaDuyetCommand(request.Id),
 
-            PheDuyetEntityNames.ThanhLyHopDong => new ThanhLyHopDongDuyetCommand(request.Id),
+            #endregion
+            //các entity có phần thao tác trình/duyệt/trả.... dc xử lý theo luồng riêng được quy định trong DuongDiTinhTrangToTrinh
+            //to-trinh-co-tham-dinh(PheDuyetEntityNames.KeHoachThueCNTT)
+            //ho-so-cap-do-cntt
+            
 
             _ => throw new ManagedException($"Loại phê duyệt '{request.Type}' không hợp lệ")
         };

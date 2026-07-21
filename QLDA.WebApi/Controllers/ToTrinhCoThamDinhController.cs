@@ -12,7 +12,9 @@ using QLDA.WebApi.Models.QuanLyPheDuyet;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
-
+#region
+// dùng cho kế hoạch thuê cntt( phê duyệt được quy định trong DuongDiTinhTrangToTrinh
+#endregion
 [Route("api/to-trinh-co-tham-dinh")]
 [Tags("Tờ trình có thẩm định")]
 public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
