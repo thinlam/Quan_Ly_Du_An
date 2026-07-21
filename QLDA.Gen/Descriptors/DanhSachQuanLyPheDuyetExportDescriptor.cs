@@ -42,5 +42,6 @@ public class DanhSachQuanLyPheDuyetExportDescriptor : IExportDescriptor
         new("NguoiTrinh", "Người trình"),
         new("NguoiDuyet", "Người duyệt"),
         new("TenTrangThai", "Trạng thái"),
+        new("TepDinhKem", "Tệp đính kèm"),
     ];
 }

@@ -43,6 +43,71 @@ public class PheDuyetExportTests(WebApiFixture fixture)
     }
 
     [Fact]
+    public async Task Handler_GetDanhSach_DefaultIncludeAttachments_NeverReturnsNullAttachmentList()
+    {
+        using var scope = fixture.Services.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        var listEx = await Record.ExceptionAsync(() => mediator.Send(new PheDuyetGetDanhSachQuery
+        {
+            PageIndex = 1,
+            PageSize = 10,
+            // IncludeAttachments mặc định true — không truyền tham số
+        }));
+
+        if (listEx != null)
+        {
+            listEx.Message.Should().BeOneOf("Không có dữ liệu để xuất", "Truy cập không được phép");
+            return;
+        }
+
+        var list = await mediator.Send(new PheDuyetGetDanhSachQuery
+        {
+            PageIndex = 1,
+            PageSize = 10,
+        });
+
+        foreach (var item in list.Data)
+        {
+            item.DanhSachTepDinhKem.Should().NotBeNull(
+                "API danh sách phải trả [] thay vì null khi không có tệp (contract code cũ)");
+        }
+    }
+
+    [Fact]
+    public async Task Handler_GetDanhSach_IncludeAttachmentsFalse_ReturnsEmptyNotNull()
+    {
+        using var scope = fixture.Services.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        var listEx = await Record.ExceptionAsync(() => mediator.Send(new PheDuyetGetDanhSachQuery
+        {
+            PageIndex = 1,
+            PageSize = 10,
+            IncludeAttachments = false,
+        }));
+
+        if (listEx != null)
+        {
+            listEx.Message.Should().BeOneOf("Không có dữ liệu để xuất", "Truy cập không được phép");
+            return;
+        }
+
+        var list = await mediator.Send(new PheDuyetGetDanhSachQuery
+        {
+            PageIndex = 1,
+            PageSize = 10,
+            IncludeAttachments = false,
+        });
+
+        foreach (var item in list.Data)
+        {
+            item.DanhSachTepDinhKem.Should().NotBeNull();
+            item.DanhSachTepDinhKem.Should().BeEmpty();
+        }
+    }
+
+    [Fact]
     public async Task ExportPheDuyet_WithDefaultFilter_ReturnsExcelOrNoData()
     {
         var response = await AuthedClient.GetAsync(

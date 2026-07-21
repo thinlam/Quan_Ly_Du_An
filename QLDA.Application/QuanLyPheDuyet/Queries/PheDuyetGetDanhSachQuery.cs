@@ -20,7 +20,10 @@ public record PheDuyetGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobal
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
 
-    /// <summary>False khi export Excel — không load tệp đính kèm.</summary>
+    /// <summary>
+    /// Mặc định <c>true</c> (API danh sách + export cột tệp đính kèm).
+    /// Đặt <c>false</c> chỉ khi caller chắc chắn không cần file (tối ưu).
+    /// </summary>
     public bool IncludeAttachments { get; set; } = true;
 }
 
