@@ -10,4 +10,7 @@ public class PheDuyetExportDto
     public string? NguoiTrinh { get; set; }
     public string? NguoiDuyet { get; set; }
     public string? TenTrangThai { get; set; }
+
+    /// <summary>Tên tệp đính kèm (OriginalName/FileName), nhiều file cách dòng.</summary>
+    public string? TepDinhKem { get; set; }
 }

@@ -1188,13 +1188,14 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
         ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template");
 
-        // Cùng nguồn với GET /api/phe-duyet/danh-sach — PageSize=0 = lấy hết
+        // Cùng nguồn với GET /api/phe-duyet/danh-sach — PageSize=0 = lấy hết.
+        // IncludeAttachments=true để map cột $TepDinhKem trên template.
         var list = await Mediator.Send(new PheDuyetGetDanhSachQuery {
             Type = type,
             TrangThai = trangThai,
             PageIndex = 1,
             PageSize = 0,
-            IncludeAttachments = false,
+            IncludeAttachments = true,
         }, cancellationToken);
 
         ManagedException.ThrowIf(list.Data.Count == 0, "Không có dữ liệu để xuất");
