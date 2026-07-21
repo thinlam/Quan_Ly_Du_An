@@ -1,11 +1,9 @@
 using System.Data;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.ToTrinhCoThamDinhs.DTOs;
 using QLDA.Domain.Constants;
-using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;
 
@@ -59,7 +57,7 @@ internal class ToTrinhCoThamDinhUpdateCommandHandler : IRequestHandler<ToTrinhCo
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         entity = await _repo.GetQueryableSet().AsNoTracking()
           .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken); 
-        return entity;
+        return entity!;
     }
 }
 

@@ -32,7 +32,7 @@ public static class TamUngMappings {
         };
     }
 
-    public static TamUngDto ToDto(this TamUng entity, List<TepDinhKem>? files = null) {
+    public static TamUngDto ToDto(this TamUng entity, List<Attachment>? files = null) {
         return new TamUngDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

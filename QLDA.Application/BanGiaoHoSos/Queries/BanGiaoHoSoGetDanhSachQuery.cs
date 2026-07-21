@@ -1,12 +1,9 @@
-using BuildingBlocks.Domain.Entities;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.Common;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
@@ -20,7 +17,7 @@ public record BanGiaoHoSoGetDanhSachQuery : AggregateRootPagination, IRequest<Pa
 internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoGetDanhSachQuery, PaginatedList<BanGiaoHoSoDto>>
 {
     private readonly IRepository<BanGiaoHoSo, Guid> _banGiaoRepository;
-    private readonly IRepository<Domain.Entities.TepDinhKem, Guid> _tepDinhKemRepository;
+    private readonly IRepository<Attachment, Guid> _tepDinhKemRepository;
     private readonly IRepository<UserMaster, long> _userMasterRepository;
     private readonly IRepository<DmDonVi, long> _danhMucDonViRepository;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
@@ -30,7 +27,7 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
     public BanGiaoHoSoGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         _banGiaoRepository = serviceProvider.GetRequiredService<IRepository<BanGiaoHoSo, Guid>>();
-        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.TepDinhKem, Guid>>();
+        _tepDinhKemRepository = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _userMasterRepository = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
         _danhMucDonViRepository = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();

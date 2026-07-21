@@ -90,7 +90,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
             .AsNoTracking()
             .Select(e => new
             {
-                TenDuAn = e.DuAn != null ? e.DuAn.TenDuAn : null,
+                TenDuAn = e.DuAn != null ? e.DuAn!.TenDuAn : null,
                 TenBuoc = e.DuAnBuoc != null
                     ? (e.DuAnBuoc.TenBuoc ?? (e.DuAnBuoc.Buoc != null ? e.DuAnBuoc.Buoc.Ten : null))
                     : duAnBuocQuery
@@ -100,7 +100,7 @@ internal class GoiThauGetTinhHinhDauThauPrintQueryHandler(IServiceProvider servi
                 TenGoiThau = e.Ten,
                 GiaGoiThau = e.GiaTri,
                 TenNguonVon = e.NguonVon != null ? e.NguonVon.Ten : null,
-                TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau != null ? e.HinhThucLuaChonNhaThau.Ten : null,
+                TenHinhThucLuaChonNhaThau = e.HinhThucLuaChonNhaThau != null ? e.HinhThucLuaChonNhaThau!.Ten : null,
                 TenPhuongThucLuaChonNhaThau = e.PhuongThucLuaChonNhaThau != null ? e.PhuongThucLuaChonNhaThau.Ten : null,
                 ThoiGianToChucLuaChonNhaThau = e.ThoiGianLuaNhaThau,
                 TenLoaiHopDong = e.LoaiHopDong != null ? e.LoaiHopDong.Ten : null,

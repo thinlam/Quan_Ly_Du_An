@@ -1,5 +1,3 @@
-using QLDA.Domain.Enums;
-
 namespace QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 
 /// <summary>

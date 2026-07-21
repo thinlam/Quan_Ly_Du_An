@@ -1,9 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.ThoaThuanGiaoViecs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThoaThuanGiaoViecs.Commands;
 
@@ -34,7 +32,7 @@ internal class ThoaThuanGiaoViecInsertCommandHandler : IRequestHandler<ThoaThuan
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.ThoaThuanGiaoViec, cancellationToken);
 
-        request.Dto.TrangThaiId = trangThaiDuThao.Id;
+        request.Dto!.TrangThaiId = trangThaiDuThao!.Id;
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(request.Dto, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

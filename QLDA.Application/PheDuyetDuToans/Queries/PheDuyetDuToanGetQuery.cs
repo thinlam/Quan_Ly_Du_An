@@ -13,8 +13,8 @@ internal class PheDuyetDuToanGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<PheDuyetDuToan, Guid> PheDuyetDuToan =
         serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<PheDuyetDuToan> Handle(PheDuyetDuToanGetQuery request,

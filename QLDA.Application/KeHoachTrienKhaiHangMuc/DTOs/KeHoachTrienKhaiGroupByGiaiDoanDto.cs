@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities;
-
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 
 internal class KeHoachTrienKhaiGroupByGiaiDoanDto

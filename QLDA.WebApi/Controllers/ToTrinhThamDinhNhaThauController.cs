@@ -1,4 +1,5 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
@@ -6,7 +7,6 @@ using QLDA.Application.ToTrinhThamDinhNhaThaus;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
@@ -40,7 +40,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             GroupId = [entity.Id.ToString()],
             EGroupTypes = [nameof(EGroupType.NoiDungToTrinhThamDinhNhaThau)]
         });
-        var nhaThauModel = entity.NhaThaus.Select(o => o.ToModel()).ToList();
+        var nhaThauModel = entity.NhaThaus!.Select(o => o.ToModel()).ToList();
         /*foreach (var item in nhaThauModel)
         {
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
@@ -50,7 +50,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             });
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
         }*/
-        var ids = nhaThauModel.Select(x => x.Id.ToString()).ToList();
+        var ids = nhaThauModel.Select(x => x.Id.ToString() ?? "").ToList();
 
             var allFiles = await Mediator.Send(new GetDanhSachTepDinhKemQuery
             {
@@ -61,7 +61,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
                     .ToDictionary(g => g.Key, g => g.ToList());
         foreach (var item in nhaThauModel)
         {
-            if (lookup.TryGetValue(item.Id.ToString(), out var files))
+            if (lookup.TryGetValue(item.Id.ToString() ?? "", out var files))
             {
                 item.DanhSachTepDinhKem = files
                     .Select(x => x.ToModel())
@@ -110,8 +110,8 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             GroupId = entity.Id.ToString(),
             Entities = danhSachFileThamDinh
         });
-        var danhSachFileKetQua = new List<TepDinhKem>();
-        foreach (var nhaThaus in dto.DanhSachNhaThaus)
+        var danhSachFileKetQua = new List<Attachment>();
+        foreach (var nhaThaus in dto.DanhSachNhaThaus!)
         {
             var id = nhaThaus.GetId();
             danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
@@ -135,7 +135,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
     {
         var entity = await Mediator.Send(new ToTrinhThamDinhNhaThauUpdateCommand(model.ToEntity()), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -158,8 +158,8 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             GroupId = entity.Id.ToString(),
             Entities = danhSachFileThamDinh
         });
-        var danhSachFileKetQua = new List<TepDinhKem>();
-        foreach (var nhaThaus in model.DanhSachNhaThaus)
+        var danhSachFileKetQua = new List<Attachment>();
+        foreach (var nhaThaus in model.DanhSachNhaThaus!)
         {
             var id = nhaThaus.GetId();
             danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();

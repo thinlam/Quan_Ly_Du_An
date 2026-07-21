@@ -1,11 +1,9 @@
 using BuildingBlocks.CrossCutting.DateTimes;
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DuAns.Queries;

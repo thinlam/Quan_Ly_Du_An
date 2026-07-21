@@ -1,4 +1,3 @@
-using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucBuocs.DTOs;
 
 namespace QLDA.Application.DanhMucBuocs;
@@ -43,9 +42,9 @@ public static class DanhMucBuocMappings {
     public static DanhMucBuocDto ToDto(this DanhMucBuoc entity) {
         return new DanhMucBuocDto {
             Id = entity.Id,
-            Ma = entity.Ma,
-            Ten = entity.Ten,
-            MoTa = entity.MoTa,
+            Ma = entity.Ma ?? string.Empty,
+            Ten = entity.Ten ?? string.Empty,
+            MoTa = entity.MoTa ?? string.Empty,
             Stt = entity.Stt,
             Used = entity.Used,
             QuyTrinhId = entity.QuyTrinhId,

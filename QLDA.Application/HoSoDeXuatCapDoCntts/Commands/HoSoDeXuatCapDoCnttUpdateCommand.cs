@@ -63,6 +63,6 @@ internal class HoSoDeXuatCapDoCnttUpdateCommandHandler : IRequestHandler<HoSoDeX
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

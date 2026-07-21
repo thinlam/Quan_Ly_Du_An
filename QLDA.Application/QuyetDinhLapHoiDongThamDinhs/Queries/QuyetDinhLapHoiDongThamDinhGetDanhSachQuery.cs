@@ -26,11 +26,11 @@ internal class
     QuyetDinhLapHoiDongThamDinhGetDanhSachQueryHandler : IRequestHandler<QuyetDinhLapHoiDongThamDinhGetDanhSachQuery,
     PaginatedList<QuyetDinhLapHoiDongThamDinhDto>> {
     private readonly IRepository<QuyetDinhLapHoiDongThamDinh, Guid> QuyetDinhLapHoiDongThamDinh;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
 
     public QuyetDinhLapHoiDongThamDinhGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         QuyetDinhLapHoiDongThamDinh = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapHoiDongThamDinh, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<PaginatedList<QuyetDinhLapHoiDongThamDinhDto>> Handle(QuyetDinhLapHoiDongThamDinhGetDanhSachQuery request,

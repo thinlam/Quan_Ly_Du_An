@@ -4,10 +4,10 @@ using QLDA.Domain.Enums;
 namespace QLDA.Application.TepDinhKems.DTOs;
 
 public static class TepDinhKemMappingConfiguration {
-    public static List<TepDinhKemDto> ToDtos(this IEnumerable<TepDinhKem> danhSachTepDinhKem)
+    public static List<TepDinhKemDto> ToDtos(this IEnumerable<Attachment> danhSachTepDinhKem)
         => [.. danhSachTepDinhKem.Select(o => o.ToDto())];
 
-    public static TepDinhKemDto ToDto(this TepDinhKem entity)
+    public static TepDinhKemDto ToDto(this Attachment entity)
         => new() {
             Id = entity.Id,
             ParentId = entity.ParentId,
@@ -19,7 +19,7 @@ public static class TepDinhKemMappingConfiguration {
             FileName = entity.FileName,
             OriginalName = entity.OriginalName,
         };
-    private static TepDinhKem ToEntity(this TepDinhKemInsertDto insertDto, Guid groupId, EGroupType groupType = EGroupType.None)
+    private static Attachment ToEntity(this TepDinhKemInsertDto insertDto, Guid groupId, EGroupType groupType = EGroupType.None)
     => new() {
         Id = GuidExtensions.GetSequentialGuidId(),
         ParentId = insertDto.ParentId,
@@ -31,7 +31,7 @@ public static class TepDinhKemMappingConfiguration {
         Path = insertDto.Path,
         Size = insertDto.Size,
     };
-    private static TepDinhKem ToEntity(this TepDinhKemInsertDto insertDto, Guid groupId, string groupType = "None")
+    private static Attachment ToEntity(this TepDinhKemInsertDto insertDto, Guid groupId, string groupType = "None")
     => new() {
         Id = GuidExtensions.GetSequentialGuidId(),
         ParentId = insertDto.ParentId,
@@ -43,7 +43,7 @@ public static class TepDinhKemMappingConfiguration {
         Path = insertDto.Path,
         Size = insertDto.Size,
     };
-    private static TepDinhKem ToEntity(this TepDinhKemInsertOrUpdateDto insertOrUpdateDto, Guid groupId, EGroupType groupType = EGroupType.None)
+    private static Attachment ToEntity(this TepDinhKemInsertOrUpdateDto insertOrUpdateDto, Guid groupId, EGroupType groupType = EGroupType.None)
     => new() {
         Id = insertOrUpdateDto.Id.GetId(),
         ParentId = insertOrUpdateDto.ParentId,
@@ -55,7 +55,7 @@ public static class TepDinhKemMappingConfiguration {
         Path = insertOrUpdateDto.Path,
         Size = insertOrUpdateDto.Size,
     };
-    private static TepDinhKem ToEntity(this TepDinhKemInsertOrUpdateDto insertOrUpdateDto, Guid groupId, string groupType = "None")
+    private static Attachment ToEntity(this TepDinhKemInsertOrUpdateDto insertOrUpdateDto, Guid groupId, string groupType = "None")
     => new() {
         Id = insertOrUpdateDto.Id.GetId(),
         ParentId = insertOrUpdateDto.ParentId,
@@ -67,32 +67,32 @@ public static class TepDinhKemMappingConfiguration {
         Path = insertOrUpdateDto.Path,
         Size = insertOrUpdateDto.Size,
     };
-    public static IEnumerable<TepDinhKem> ToEntities(
+    public static IEnumerable<Attachment> ToEntities(
         this List<TepDinhKemInsertDto> dtos,
         Guid groupId,
         EGroupType groupType = EGroupType.None
     )
     => dtos.Select(m => ToEntity(m, groupId, groupType));
-    public static IEnumerable<TepDinhKem> ToEntities(
+    public static IEnumerable<Attachment> ToEntities(
         this List<TepDinhKemInsertDto> dtos,
         Guid groupId,
         string groupType = "None"
     )
     => dtos.Select(m => ToEntity(m, groupId, groupType));
-    public static IEnumerable<TepDinhKem> ToEntities(
+    public static IEnumerable<Attachment> ToEntities(
        this List<TepDinhKemInsertOrUpdateDto> dtos,
        Guid groupId,
        EGroupType groupType = EGroupType.None
    )
    => dtos.Select(m => ToEntity(m, groupId, groupType));
-    public static IEnumerable<TepDinhKem> ToEntities(
+    public static IEnumerable<Attachment> ToEntities(
        this List<TepDinhKemInsertOrUpdateDto> dtos,
        Guid groupId,
        string groupType = "None"
    )
    => dtos.Select(m => ToEntity(m, groupId, groupType));
 
-    public static IEnumerable<TepDinhKem> ToEntities(
+    public static IEnumerable<Attachment> ToEntities(
         this List<TepDinhKemDto> dtos,
         Guid groupId,
         EGroupType groupType = EGroupType.None
@@ -100,7 +100,7 @@ public static class TepDinhKemMappingConfiguration {
     {
         foreach (var dto in dtos)
         {
-            yield return new TepDinhKem
+            yield return new Attachment
             {
                 Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = dto.ParentId,
@@ -115,11 +115,11 @@ public static class TepDinhKemMappingConfiguration {
         }
     }
 
-    public static IEnumerable<TepDinhKem> ToEntities( this List<TepDinhKemDto> dtos, Guid groupId, string groupType = "None" )
+    public static IEnumerable<Attachment> ToEntities( this List<TepDinhKemDto> dtos, Guid groupId, string groupType = "None" )
     {
         foreach (var dto in dtos)
         {
-            yield return new TepDinhKem
+            yield return new Attachment
             {
                 Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
                 ParentId = dto.ParentId,

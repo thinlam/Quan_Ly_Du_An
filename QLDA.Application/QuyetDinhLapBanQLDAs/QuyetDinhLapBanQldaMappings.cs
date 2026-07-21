@@ -28,7 +28,7 @@ public static class QuyetDinhLapBanQldaMappings {
             })];
         }
 
-        return entity;
+        return entity!;
     }
 
     public static QuyetDinhLapBanQLDA ToEntity(this QuyetDinhLapBanQldaUpdateDto dto) {
@@ -52,7 +52,7 @@ public static class QuyetDinhLapBanQldaMappings {
             })];
         }
 
-        return entity;
+        return entity!;
     }
 
     public static QuyetDinhLapBanQldaDto ToDto(this QuyetDinhLapBanQLDA entity) {

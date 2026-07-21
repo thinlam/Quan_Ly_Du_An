@@ -57,7 +57,7 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
     #region Private helper methods
 

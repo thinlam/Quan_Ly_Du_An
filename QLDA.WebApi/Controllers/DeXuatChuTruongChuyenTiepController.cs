@@ -1,12 +1,10 @@
-using Azure.Core;
 using QLDA.Application.DeXuatChuyenTieps.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
 using QLDA.Application.DeXuatChuyenTieps.Queries;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DeXuatChuTruongMois;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.DeXuatChuTruongChuyenTieps;
@@ -70,7 +68,7 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
 
         var entity = model.ToEntity();
         var savedEntity =        await Mediator.Send(new DeXuatChuyenTiepInsertCommand(entity));
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id,
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(savedEntity.Id,
             EGroupType.DeXuatChuyenTiep) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
@@ -105,7 +103,7 @@ public class DeXuatChuTruongChuyenTiepController : AggregateRootController {
                 UocGiaiNgan = model.UocGiaiNgan
             }
         ), cancellationToken);
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,EGroupType.DeXuatChuyenTiep) ?? []];
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,EGroupType.DeXuatChuyenTiep) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {

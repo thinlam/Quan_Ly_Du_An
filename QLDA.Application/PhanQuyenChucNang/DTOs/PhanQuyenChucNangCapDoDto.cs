@@ -1,10 +1,4 @@
-﻿using QLDA.Application.Common.Interfaces;
-using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Interfaces;
-using SequentialGuid;
-
-namespace QLDA.Application.PhanQuyenChucNangs.DTOs;
+﻿namespace QLDA.Application.PhanQuyenChucNangs.DTOs;
 
 public class PhanQuyenChucNangCapDoDto  {
    

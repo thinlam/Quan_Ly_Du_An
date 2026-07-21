@@ -1,8 +1,6 @@
 using System.Data;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BanGiaoHoSos.Commands;

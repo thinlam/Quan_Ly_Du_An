@@ -1,11 +1,12 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.ToTrinhKetQuaGoiThaus;
 
 public static class ToTrinhKetQuaGoiThauMappingConfiguration
 {
     public static ToTrinhKetQuaGoiThauModel ToModel(this ToTrinhKetQuaGoiThau entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new()
         {
             Id = entity.Id,
@@ -15,7 +16,7 @@ public static class ToTrinhKetQuaGoiThauMappingConfiguration
             So = entity.So,
             NgayTrinh = entity.NgayTrinh,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
-            GoiThaus = entity.GoiThaus.Select(o => new GoiThauCboModel
+            GoiThaus = entity.GoiThaus!.Select(o => new GoiThauCboModel
             {
                 GoiThauId = o.GoiThauId,
                 TenGoiThau = o.GoiThau?.Ten 

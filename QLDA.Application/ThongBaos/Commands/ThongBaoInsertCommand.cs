@@ -1,11 +1,6 @@
-using BuildingBlocks.Domain.Interfaces;
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.ThongBaos.Commands;
 
@@ -130,7 +125,7 @@ internal sealed class ThongBaoInsertCommandHandler
             .AsNoTracking()
             .Where(h => h.EntityId == request.EntityId
                         && h.EntityName == request.EntityName
-                        && h.TrangThaiId == trangThaiDaTrinh.Id
+                        && h.TrangThaiId == trangThaiDaTrinh!.Id
                         && h.NguoiXuLyId != null
                         && h.NguoiXuLyId > 0)
             .OrderByDescending(h => h.NgayXuLy)

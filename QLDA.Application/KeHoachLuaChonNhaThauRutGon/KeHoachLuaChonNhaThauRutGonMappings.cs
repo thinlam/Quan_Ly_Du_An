@@ -19,7 +19,7 @@ public static class KeHoachLuaChonNhaThauRutGonMappings
         };
     }
 
-    public static KeHoachLuaChonNhaThauRutGonDto ToDto(this KeHoachLuaChonNhaThauRutGon entity, List<TepDinhKem>? files = null)
+    public static KeHoachLuaChonNhaThauRutGonDto ToDto(this KeHoachLuaChonNhaThauRutGon entity, List<Attachment>? files = null)
     {
         return new KeHoachLuaChonNhaThauRutGonDto
         {

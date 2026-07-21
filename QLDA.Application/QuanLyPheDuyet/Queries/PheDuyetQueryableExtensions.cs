@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.QuanLyPheDuyet.Queries;
 
@@ -17,7 +15,7 @@ internal static class PheDuyetQueryableExtensions
         IRepository<PheDuyet, Guid> pheDuyetRepo,
         IRepository<DuAn, Guid> duAnRepo,
         IRepository<DuAnBuoc, int> duAnBuocRepo,
-        IRepository<TepDinhKem, Guid>? tepDinhKemRepo,
+        IRepository<Attachment, Guid>? tepDinhKemRepo,
         IAuthorizationContext authContext,
         long userId,
         bool includeAttachments)
@@ -25,7 +23,7 @@ internal static class PheDuyetQueryableExtensions
         var pheDuyetQuery = pheDuyetRepo.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
             .WhereIf(!string.IsNullOrEmpty(filter.Type), e => e.EntityName == filter.Type)
-            .WhereIf(!string.IsNullOrEmpty(filter.TrangThai), e => e.TrangThai.Ma == filter.TrangThai);
+            .WhereIf(!string.IsNullOrEmpty(filter.TrangThai), e => e.TrangThai!.Ma == filter.TrangThai);
 
         var duAnQuery = duAnRepo.GetQueryableSet().AsNoTracking();
         var duAnBuocQuery = duAnBuocRepo.GetQueryableSet().AsNoTracking();
@@ -38,22 +36,22 @@ internal static class PheDuyetQueryableExtensions
             .WhereIf(!authContext.HasKhtcBypass, x => x.da.LanhDaoPhuTrachId == userId)
             .Select(x => new PheDuyetListItemDto {
             Id = x.e.Id,
-            Type = filter.Type,
+            Type = filter.Type ?? "",
             EntityId = x.e.EntityId.ToString(),
-            EntityName = x.e.EntityName,
+            EntityName = x.e.EntityName ?? "",
             DuAnId = x.e.DuAnId,
             TenDuAn = x.da != null ? x.da.TenDuAn : null,
             TenBuoc = x.da != null && x.da.BuocHienTai != null ? x.da.BuocHienTai.TenBuoc : (x.b.TenBuoc ?? ""),
-            TenGiaiDoan = x.b.Buoc != null && x.b.Buoc.GiaiDoan != null ? x.b.Buoc.GiaiDoan.Ten : "",
+            TenGiaiDoan = x.b != null && x.b.Buoc != null && x.b.Buoc.GiaiDoan != null ? x.b.Buoc.GiaiDoan.Ten : "",
             TrichYeu = x.e.NoiDung,
             TrangThaiId = x.e.TrangThaiId,
-            MaTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG"
-                ? x.e.TrangThai.Ma
+            MaTrangThai = x.e.TrangThai != null && x.e.TrangThai!.Ma != "LEG"
+                ? x.e.TrangThai!.Ma
                 : TrangThaiPheDuyetCodes.Default.DuThao,
-            TenTrangThai = x.e.TrangThai != null && x.e.TrangThai.Ma != "LEG"
-                ? x.e.TrangThai.Ten
+            TenTrangThai = x.e.TrangThai != null && x.e.TrangThai!.Ma != "LEG"
+                ? x.e.TrangThai!.Ten
                 : TrangThaiPheDuyetCodes.Default.TenDuThao,
-            NguoiDuyetId = x.e.TrangThai != null && x.e.TrangThai.Ma == "ĐD" ? x.e.NguoiXuLyId : 0,
+            NguoiDuyetId = x.e.TrangThai != null && x.e.TrangThai!.Ma == "ĐD" ? x.e.NguoiXuLyId : 0,
             NguoiTrinhId = x.e.NguoiTrinhId,
             NgayXuLyMoiNhat = x.e.UpdatedAt,
             DanhSachTepDinhKem = null,
@@ -70,7 +68,7 @@ internal static class PheDuyetQueryableExtensions
 
     private static void AttachTepDinhKem(
         List<PheDuyetListItemDto> items,
-        IRepository<TepDinhKem, Guid> tepDinhKemRepo)
+        IRepository<Attachment, Guid> tepDinhKemRepo)
     {
         var groupIds = items
             .Select(i => i.EntityId)

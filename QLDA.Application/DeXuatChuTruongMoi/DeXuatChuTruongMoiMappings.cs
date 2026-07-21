@@ -1,7 +1,5 @@
-using BuildingBlocks.Domain.Entities.Abstractions;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Enums;
 
 namespace QLDA.Application.DeXuatChuTruongMois;
 
@@ -42,7 +40,7 @@ public static class DeXuatChuTruongMoiMappings {
         }
     }
 
-    public static DeXuatChuTruongMoiDto ToDto(this DeXuatChuTruongMoi entity, List<TepDinhKem>? files = null) {
+    public static DeXuatChuTruongMoiDto ToDto(this DeXuatChuTruongMoi entity, List<Attachment>? files = null) {
         return new DeXuatChuTruongMoiDto
         {
             Id = entity.Id,

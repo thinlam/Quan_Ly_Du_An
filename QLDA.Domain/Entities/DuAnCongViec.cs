@@ -1,5 +1,3 @@
-using QLDA.Domain.Interfaces;
-
 namespace QLDA.Domain.Entities;
 
 /// <summary>

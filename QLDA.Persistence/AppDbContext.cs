@@ -1,13 +1,8 @@
 using System.Data;
-using BuildingBlocks.Domain.Interfaces;
 using BuildingBlocks.Persistence.Configurations;
-using BuildingBlocks.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
-using QLDA.Domain.Entities;
-using QLDA.Persistence.Repositories;
 using QLDA.Persistence.Configurations.ViMaster;
 
 namespace QLDA.Persistence;
@@ -97,9 +92,15 @@ public class AppDbContext : DbContext, IUnitOfWork
             e.ToTable(t => t.ExcludeFromMigrations());
         });
 
+        // Attachment entity: both BuildingBlocks.AttachmentConfiguration (ToTable "Attachments")
+        // and QLDA.AttachmentConfiguration (ToTable "TepDinhKem") are picked up via
+        // ApplyConfigurationsFromAssembly above. AppDomain assembly enumeration order is
+        // non-deterministic, so the LAST ToTable call wins - but it may not be QLDA's.
+        // Force the table name to "TepDinhKem" here to guarantee the runtime query targets
+        // the legacy TepDinhKem table regardless of assembly enumeration order.
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
         {
-            e.ToTable(t => t.ExcludeFromMigrations());
+            e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
         });
 
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.DmDonVi>(e =>

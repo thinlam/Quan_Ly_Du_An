@@ -194,7 +194,7 @@ public static class SyncHelper {
         }
     }
     public static async Task SetDeleteWithRelatedFiles(
-          IRepository<TepDinhKem, Guid> tepDinhKemRepository,
+          IRepository<Attachment, Guid> tepDinhKemRepository,
           List<string> groupIds,
           CancellationToken cancellationToken = default
       ) => await SetDeleteWithRelatedFiles(tepDinhKemRepository, groupIds, false, cancellationToken);
@@ -203,7 +203,7 @@ public static class SyncHelper {
     /// collects groupIds from their Id.ToString(), and deletes related TepDinhKem.
     /// </summary>
     public static async Task SetDeleteWithRelatedFiles(
-        IRepository<TepDinhKem, Guid> tepDinhKemRepository,
+        IRepository<Attachment, Guid> tepDinhKemRepository,
         List<string> groupIds,
         bool disableAudit = false,
         CancellationToken cancellationToken = default

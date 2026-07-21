@@ -1,5 +1,3 @@
-using QLDA.Application.Common.Interfaces;
-
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 
 public record ToTrinhThamDinhNhaThauSearchDto

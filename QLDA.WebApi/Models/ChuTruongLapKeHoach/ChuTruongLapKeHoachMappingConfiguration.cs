@@ -1,11 +1,12 @@
 using QLDA.Application.ChuTruongLapKeHoachs.DTOs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.ChuTruongLapKeHoachs;
 
 public static class ChuTruongLapKeHoachMappingConfiguration {
     public static ChuTruongLapKeHoachModel ToModel(this ChuTruongLapKeHoach entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id =  entity.Id,
             BuocId = entity.BuocId,

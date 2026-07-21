@@ -1,10 +1,6 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.DuToanDauTus.Commands;
 
@@ -55,7 +51,7 @@ internal class DuToanDauTuTrinhCommandHandler : IRequestHandler<DuToanDauTuTrinh
             throw new ManagedException("Trạng thái không thể trình!");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
         entity.NgayTrinh = DateOnly.FromDateTime(DateTime.UtcNow).ToStartOfDayUtc();
 
         var history = new PheDuyetHistory {
@@ -64,7 +60,7 @@ internal class DuToanDauTuTrinhCommandHandler : IRequestHandler<DuToanDauTuTrinh
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };

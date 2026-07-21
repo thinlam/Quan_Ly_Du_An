@@ -1,11 +1,10 @@
 using QLDA.Application.DeXuatChuTruongMois.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Application.DeXuatChuTruongMois.Queries;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DeXuatChuTruongMois;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -69,7 +68,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
         var entity = model.ToEntity();
         var savedEntity =  await Mediator.Send(new DeXuatChuTruongMoiInsertCommand(entity));
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(
             savedEntity.Id, EGroupType.DeXuatChuTruongMoi) ?? []];
 
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
@@ -92,7 +91,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
     {
         var entity = await Mediator.Send(new DeXuatChuTruongMoiUpdateCommand(model.ToInsertDto()), cancellationToken);
 
-        List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,
+        List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,
             EGroupType.DeXuatChuTruongMoi) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {

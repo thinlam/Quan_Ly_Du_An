@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>BuildingBlocks.Application</RootNamespace>
     <AssemblyName>BuildingBlocks.Application</AssemblyName>
   </PropertyGroup>

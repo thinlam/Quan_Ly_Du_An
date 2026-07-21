@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using BuildingBlocks.CrossCutting.Factories;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Interfaces;
 using QLDA.Persistence.Factories;
 using QLDA.Persistence.Repositories;

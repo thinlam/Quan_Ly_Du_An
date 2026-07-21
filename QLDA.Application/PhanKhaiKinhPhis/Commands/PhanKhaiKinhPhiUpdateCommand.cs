@@ -45,6 +45,6 @@ internal class PhanKhaiKinhPhiUpdateCommandHandler : IRequestHandler<PhanKhaiKin
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

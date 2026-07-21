@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.KeHoachTrienKhaiHangMucMappings;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Constants;
 using QLDA.Application.Common;
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
@@ -57,11 +56,11 @@ internal class KeHoachTrienKhaiHangMucUpdateCommandHandler : IRequestHandler<KeH
                 throw new ManagedException("Trạng thái không thể cập nhật!");
             }
 
-            entity.DuAnId = request.Dto.DuAnId;
-            entity.BuocId = request.Dto.BuocId;
-            entity.So = request.Dto.So;
-            entity.NgayToTrinh = request.Dto.NgayTrinh;
-            entity.TrichYeu = request.Dto.TrichYeu;
+            entity.DuAnId = request.Dto!.DuAnId;
+            entity.BuocId = request.Dto!.BuocId;
+            entity.So = request.Dto!.So ?? string.Empty;
+            entity.NgayToTrinh = request.Dto!.NgayTrinh;
+            entity.TrichYeu = request.Dto!.TrichYeu ?? string.Empty;
 
             //  entity.SyncHangMuc(request.Dto.HangMucTrienKhai);
             if (request.Dto.HangMucTrienKhai == null || request.Dto.HangMucTrienKhai.Count == 0)

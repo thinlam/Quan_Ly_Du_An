@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using QLDA.Domain.Entities;
 using QLDA.Persistence;
-using QLDA.FakeDataTool;
 
 namespace QLDA.FakeDataTool.Commands;
 

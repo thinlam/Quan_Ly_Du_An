@@ -1,4 +1,3 @@
-using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.ThanhLyHopDongs.DTOs;

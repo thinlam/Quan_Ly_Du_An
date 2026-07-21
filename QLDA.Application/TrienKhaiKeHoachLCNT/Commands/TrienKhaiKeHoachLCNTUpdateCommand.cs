@@ -1,9 +1,6 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.TrienKhaiKeHoachLCNTMappings;
-using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
-using QLDA.Domain.Entities;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;

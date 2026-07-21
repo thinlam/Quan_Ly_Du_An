@@ -1,7 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 using QLDA.Application.TepDinhKems.DTOs;
 
 namespace QLDA.Application.QuyetDinhDieuChinhs.Queries;
@@ -41,11 +38,11 @@ public class ThongTinDieuChinhChiPhiItemDto {
 
 internal class QuyetDinhDieuChinhGetChiTietQueryHandler : IRequestHandler<QuyetDinhDieuChinhGetChiTietQuery, QuyetDinhDieuChinhChiTietDto> {
     private readonly IRepository<QuyetDinhDieuChinh, Guid> _repository;
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem;
+    private readonly IRepository<Attachment, Guid> _tepDinhKem;
 
     public QuyetDinhDieuChinhGetChiTietQueryHandler(IServiceProvider serviceProvider) {
         _repository = serviceProvider.GetRequiredService<IRepository<QuyetDinhDieuChinh, Guid>>();
-        _tepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _tepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     }
 
     public async Task<QuyetDinhDieuChinhChiTietDto> Handle(QuyetDinhDieuChinhGetChiTietQuery request, CancellationToken cancellationToken) {

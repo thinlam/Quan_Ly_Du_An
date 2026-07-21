@@ -1,11 +1,12 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 namespace QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
 
 public static class ToTrinhThamDinhNhaThauMappingConfiguration
 {
-    public static ToTrinhThamDinhNhaThauModel ToModel(this ToTrinhThamDinhNhaThau entity,List<KetQuaThamDinhNhaThauModel>? nhaThauModel = null, List<KetQuaThamDinhNhaThauDto>? nhaThaus = null, List<TepDinhKem>? danhSachTepDinhKem = null, List<TepDinhKem> ? danhSachTepThamDinh = null) =>
+    public static ToTrinhThamDinhNhaThauModel ToModel(this ToTrinhThamDinhNhaThau entity,List<KetQuaThamDinhNhaThauModel>? nhaThauModel = null, List<KetQuaThamDinhNhaThauDto>? nhaThaus = null, List<Attachment>? danhSachTepDinhKem = null, List<Attachment> ? danhSachTepThamDinh = null) =>
         new()
         {
             Id = entity.Id,

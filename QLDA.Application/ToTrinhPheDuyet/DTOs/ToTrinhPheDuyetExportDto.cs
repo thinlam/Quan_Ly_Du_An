@@ -1,8 +1,3 @@
-using QLDA.Application.Common.Interfaces;
-using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Interfaces;
-using SequentialGuid;
-
 namespace QLDA.Application.ToTrinhPheDuyets.DTOs;
 
 public class ToTrinhPheDuyetExportDto : ToTrinhPheDuyetDto

@@ -1,6 +1,5 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucBuocs.DTOs;
 
 namespace QLDA.Application.DanhMucBuocs.Commands;

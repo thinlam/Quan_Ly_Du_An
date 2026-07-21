@@ -1,10 +1,7 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.ToTrinhCoThamDinhs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 using Serilog;
 
 namespace QLDA.Application.ToTrinhCoThamDinhs.Commands;

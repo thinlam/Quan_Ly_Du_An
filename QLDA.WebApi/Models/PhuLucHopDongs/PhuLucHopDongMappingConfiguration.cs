@@ -1,10 +1,11 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.PhuLucHopDongs;
 
 public static class PhuLucHopDongMappingConfiguration {
     public static PhuLucHopDongModel ToModel(this PhuLucHopDong entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

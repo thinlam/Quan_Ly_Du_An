@@ -1,24 +1,5 @@
-using QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
-using QLDA.Application.ChuTruongLapKeHoachs.Commands;
-using QLDA.Application.Common;
-using QLDA.Application.DeXuatChuTruongMois.Commands;
-using QLDA.Application.DeXuatChuyenTieps.Commands;
-using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
-using QLDA.Application.DeXuatNhuCauKinhPhis.Commands;
-using QLDA.Application.DuToanDauTus.Commands;
-using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
-using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
-using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
-using QLDA.Application.PhanKhaiKinhPhis.Commands;
-using QLDA.Application.PheDuyetDuToans.Commands;
-using QLDA.Application.QuyetDinhDieuChinhs.Commands;
 using QLDA.Application.ThoaThuanGiaoViecs.Commands;
-using QLDA.Application.ThuyetMinhDuAns.Commands;
-using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
-using QLDA.Application.ToTrinhPheDuyets.Commands;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
-using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;

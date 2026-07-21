@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DuAns.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
@@ -81,7 +82,7 @@ public class NghiemThuController : AggregateRootController {
 
         var entity = await Mediator.Send(new NghiemThuInsertCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.NghiemThu) ?? []];
+        List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.NghiemThu) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -112,7 +113,7 @@ public class NghiemThuController : AggregateRootController {
 
         var entity = await Mediator.Send(new NghiemThuUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.NghiemThu) ?? []];
+        List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.NghiemThu) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

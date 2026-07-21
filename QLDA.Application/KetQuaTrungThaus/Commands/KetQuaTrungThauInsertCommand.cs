@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.KetQuaTrungThaus.Commands;
 
@@ -42,7 +41,7 @@ internal class KetQuaTrungThauInsertCommandHandler : IRequestHandler<KetQuaTrung
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

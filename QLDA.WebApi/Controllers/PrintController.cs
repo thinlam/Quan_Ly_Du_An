@@ -1,11 +1,8 @@
 using System.Data;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using BuildingBlocks.Application.Common.Converters;
-using BuildingBlocks.CrossCutting.Offices;
 using BuildingBlocks.Infrastructure.Offices;
 using EntityFrameworkCore.SqlServer.SimpleBulks.Extensions;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
 using QLDA.Application.DeXuatChuyenTieps.DTOs;
@@ -39,10 +36,8 @@ using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
 using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
 using QLDA.Application.TongHopVanBanQuyetDinhs.Queries;
 using QLDA.Application.ToTrinhPheDuyets.Queries;
-using QLDA.Application.TrienKhaiKeHoachLCNTs.DTOs;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Queries;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Interfaces;
 using QLDA.Infrastructure.Offices;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
@@ -1342,7 +1337,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
 
             var replacements = new Dictionary<string, string> {
        { "ngay", entity.NgayToTrinh.HasValue
-           ? $"ngày {ngayToTrinh.Value:dd} tháng {ngayToTrinh.Value:MM} năm {ngayToTrinh.Value:yyyy}"
+           ? $"ngày {ngayToTrinh!.Value:dd} tháng {ngayToTrinh!.Value:MM} năm {ngayToTrinh!.Value:yyyy}"
            : $"ngày  tháng  năm " },
 
        { "Ten", entity.Ten ?? "" },
@@ -1450,58 +1445,70 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
     #endregion
 
 
-    #region  Xuất tờ trình phân khai kinh phí
+    #region Xuất tờ trình phân khai kinh phí
+
+    /// <summary>
+    /// ToTrinhPhanKhaiKinhPhi.docx — Xuất tờ trình phân khai kinh phí (UC40 / #9467)
+    /// </summary>
     [HttpGet("api/print/phieu-trinh-phan-khai-kinh-phi")]
-    [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> InPhieuTrinhPhanKhaiKinhPhi([FromQuery] Guid id, CancellationToken cancellationToken = default) {
-        try {
-            var fileNameTemplate = "ToTrinhPhanKhaiKinhPhi.docx";
-            var templatePath = Path.Combine(
-                AppContext.BaseDirectory,
-                "PrintTemplates",
-                "Word",
-                fileNameTemplate
-            );
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> InPhieuTrinhPhanKhaiKinhPhi(
+        [FromQuery] Guid id,
+        CancellationToken cancellationToken = default) {
+        var fileNameTemplate = "ToTrinhPhanKhaiKinhPhi.docx";
+        var templatePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "PrintTemplates",
+            "Word",
+            fileNameTemplate);
 
-            ManagedException.ThrowIf(!System.IO.File.Exists(templatePath), "Không tìm thấy file template ToTrinhPhanKhaiKinhPhi.docx");
+        ManagedException.ThrowIf(
+            !System.IO.File.Exists(templatePath),
+            "Không tìm thấy file template ToTrinhPhanKhaiKinhPhi.docx");
 
-            var data = await Mediator.Send(new PhanKhaiKinhPhiGetDanhSachExportQuery {
-                Id = id,
+        var entity = await Mediator.Send(
+            new PhanKhaiKinhPhiGetPhieuTrinhPrintQuery { Id = id },
+            cancellationToken);
 
-            }, cancellationToken);
-            var entity = data != null && data.Count > 0 ? data[0] : null;
-            var doc = new Aspose.Words.Document(templatePath);
-            doc.MailMerge.UseNonMergeFields = true;
-            DateTime? ngayToTrinh = data[0].NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
-            var culture = new CultureInfo("vi-VN");
-            var replacements = new Dictionary<string, string> {
-                { "ngay", entity.NgayToTrinh.HasValue
-                    ? $"ngày {ngayToTrinh.Value:dd} tháng {ngayToTrinh.Value:MM} năm {ngayToTrinh.Value:yyyy}"
-                    : $"ngày  tháng  năm " },
+        DateTime? ngayToTrinh = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
+        var culture = new CultureInfo("vi-VN");
 
+        var replacements = new Dictionary<string, string> {
+            {
+                "ngay", entity.NgayToTrinh.HasValue
+                    ? $"ngày {ngayToTrinh!.Value:dd} tháng {ngayToTrinh!.Value:MM} năm {ngayToTrinh!.Value:yyyy}"
+                    : "ngày  tháng  năm "
+            },
+            { "So", entity.SoToTrinh ?? "" },
+            { "NgayToTrinh", (ngayToTrinh ?? DateTime.Now).ToString("dd/MM/yyyy") },
+            { "TenDuAn", entity.TenDuAn ?? "" },
+            { "TenNguonVon", entity.TenNguonVon ?? "" },
+            { "KinhPhiDeXuat", entity.KinhPhiDeXuat?.ToString("N0", culture) ?? "0" },
+            { "KinhPhiPhanKhai", entity.KinhPhiPhanKhai?.ToString("N0", culture) ?? "0" },
+            { "ThuyetMinh", entity.ThuyetMinh ?? "" },
+            { "TrichYeu", entity.TrichYeu ?? "" },
+        };
 
-                { "So", entity.SoToTrinh ?? "" },
-
-                { "TenDuAn", entity.TenDuAn ?? "" },
-                { "KinhPhiPhanKhai", entity.KinhPhiPhanKhai?.ToString("N0", culture) ?? "0"},
-                { "TongMucDauTu", entity.TongMucDauTu?.ToString("N0", culture) ?? "0"},
-                { "NgayToTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
-                { "NamToTrinh", (ngayToTrinh??DateTime.Now).ToString("yyyy")},
-              //  { "TrichYeu", entity.TrichYeu ?? "" }
-            };
-
-
-            var bytes = _wordHelper.ExportFromTemplate(templatePath, replacements);
-
-            return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                GetDownloadFileName(fileNameTemplate));
-
-        } catch (Exception ex) {
-            Log.Error("in phe duyet" + ex.Message);
-            throw;
+        // Template dùng placeholder text «Field» (DocumentBuilder) — MailMerge UseNonMergeFields
+        // không luôn thay được; dùng Range.Replace giống phiếu trình kế hoạch.
+        _asposeHelper.EnsureLicense();
+        var doc = new Aspose.Words.Document(templatePath);
+        var replaceOptions = new Aspose.Words.Replacing.FindReplaceOptions(
+            Aspose.Words.FindReplaceDirection.Forward);
+        foreach (var (key, value) in replacements) {
+            doc.Range.Replace($"«{key}»", value ?? string.Empty, replaceOptions);
         }
+
+        using var ms = new MemoryStream();
+        doc.Save(ms, Aspose.Words.SaveFormat.Docx);
+
+        return File(
+            ms.ToArray(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            $"to-trinh-phan-khai-kinh-phi_{DateTime.Now:ddMMyyyy_HHmmss}.docx");
     }
+
     [HttpGet("api/print/phieu-trinh-giao-nhiem-vu-phan-khai-kinh-phi")]
     [ProducesResponseType<ResultApi<FileContentResult>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
@@ -1527,8 +1534,8 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
             DateTime? ngayToTrinh = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
             var culture = new CultureInfo("vi-VN");
             var replacements = new Dictionary<string, string> {
-            { "ngay", entity.NgayToTrinh.HasValue
-                ? $"ngày {ngayToTrinh.Value:dd} tháng {ngayToTrinh.Value:MM} năm {ngayToTrinh.Value:yyyy}"
+            { "ngay", entity!.NgayToTrinh.HasValue
+                ? $"ngày {ngayToTrinh!.Value:dd} tháng {ngayToTrinh!.Value:MM} năm {ngayToTrinh!.Value:yyyy}"
                 : $"ngày  tháng  năm " },
 
 
@@ -1586,13 +1593,13 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         DateTime? ngayToTrinh = rows.NgayTrinh.ToOffset(TimeSpan.FromHours(7)).Date;
         var culture = new CultureInfo("vi-VN");
         var replacements = new Dictionary<string, string> {
-            { "TenGoiThau", rows?.GoiThau?.Ten},
+            { "TenGoiThau", rows?.GoiThau?.Ten ?? ""},
             { "NgayTrinh", (ngayToTrinh??DateTime.Now).ToString("dd/MM/yyyy")},
-            { "So", rows.So},
-            { "GiaTri", rows.GiaTri?.ToString("N0", culture) ?? "0" },
-            { "NoiDung", rows?.NoiDung },
-            { "YeuCau", rows?.YeuCau },
-            { "ThoiGianThucHien", rows?.ThoiGianThucHien },
+            { "So", rows?.So ?? ""},
+            { "GiaTri", rows?.GiaTri?.ToString("N0", culture) ?? "0" },
+            { "NoiDung", rows?.NoiDung ?? "" },
+            { "YeuCau", rows?.YeuCau ?? "" },
+            { "ThoiGianThucHien", rows?.ThoiGianThucHien ?? "" },
             { "TenHinhThucLCNT", rows?.DmHinhThucLCNT?.Ten??"" },
 
         };

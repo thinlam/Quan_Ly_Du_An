@@ -29,7 +29,7 @@ public static class ThanhToanMappings {
         };
     }
 
-    public static ThanhToanDto ToDto(this ThanhToan entity, IEnumerable<TepDinhKem>? files = null) {
+    public static ThanhToanDto ToDto(this ThanhToan entity, IEnumerable<Attachment>? files = null) {
         return new ThanhToanDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

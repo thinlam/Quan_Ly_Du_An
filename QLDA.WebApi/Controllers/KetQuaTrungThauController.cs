@@ -1,4 +1,5 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Application.KetQuaTrungThaus.Commands;
@@ -7,7 +8,6 @@ using QLDA.Application.KetQuaTrungThaus.Queries;
 using QLDA.Application.KetQuaTrungThaus;
 using System.Net.Mime;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Domain.Constants;
 using System.Data;
 
 namespace QLDA.WebApi.Controllers;
@@ -77,7 +77,7 @@ public class KetQuaTrungThauController : AggregateRootController {
         await Mediator.Send(new DuAnUpdatePhaseCommand(insertDto.DuAnId, step), cancellationToken);
 
         var entity = await Mediator.Send(new KetQuaTrungThauInsertCommand(insertDto), cancellationToken);
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau) ?? []];
+        List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -107,7 +107,7 @@ public class KetQuaTrungThauController : AggregateRootController {
 
         var entity = await Mediator.Send(new KetQuaTrungThauUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau) ?? []];
+        List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

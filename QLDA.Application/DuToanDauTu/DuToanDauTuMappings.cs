@@ -24,15 +24,15 @@ public static class DuToanDauTuMappings {
 
 
 
-    public static DuToanDauTuDto ToDto(this DuToanDauTu entity, List<TepDinhKem>? files = null) {
+    public static DuToanDauTuDto ToDto(this DuToanDauTu entity, List<Attachment>? files = null) {
         return new DuToanDauTuDto
         {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NgayTrinh = entity.NgayTrinh,
-            TrichYeu = entity.TrichYeu,
-            SoToTrinh = entity.SoToTrinh,
+            TrichYeu = entity.TrichYeu ?? string.Empty,
+            SoToTrinh = entity.SoToTrinh ?? string.Empty,
             TrangThaiId = entity.TrangThaiId,
 
             TongDuToan = entity.TongDuToan,

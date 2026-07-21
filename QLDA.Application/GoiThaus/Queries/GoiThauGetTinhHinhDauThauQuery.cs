@@ -9,7 +9,7 @@ public record GoiThauGetTinhHinhDauThauQuery(TinhHinhDauThauSearchDto SearchDto)
 internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHinhDauThauQuery, PaginatedList<GoiThauDto>>
 {
     private readonly IRepository<GoiThau, Guid> GoiThau;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
     private readonly IRepository<DuAn, Guid> _duAn;
@@ -19,7 +19,7 @@ internal class GoiThauGetDanhSachQueryHandler : IRequestHandler<GoiThauGetTinhHi
     public GoiThauGetDanhSachQueryHandler(IServiceProvider serviceProvider)
     {
         GoiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
         _duAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();

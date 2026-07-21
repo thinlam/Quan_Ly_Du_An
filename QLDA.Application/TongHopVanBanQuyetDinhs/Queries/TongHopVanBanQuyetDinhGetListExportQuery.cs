@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common.Interfaces;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
 using QLDA.Domain.Enums;
 
@@ -41,7 +40,7 @@ internal class TongHopVanBanQuyetDinhGetListExportQueryHandler(IServiceProvider 
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
             .WhereIf(!string.IsNullOrEmpty(request.CoQuanQuyetDinh),
-                e => e.CoQuanQuyetDinh!.Contains(request.CoQuanQuyetDinh))
+                e => e.CoQuanQuyetDinh!.Contains(request.CoQuanQuyetDinh!))
             .WhereIf(request.TrichYeu.IsNotNullOrWhitespace(),
                 e => e.TrichYeu!.ToLower().Contains(request.TrichYeu!.ToLower()))
             .WhereIf(request.TuNgay.HasValue,

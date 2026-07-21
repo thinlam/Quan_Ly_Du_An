@@ -1,10 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 
@@ -61,7 +58,7 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             throw new ManagedException("Trạng thái không thể trình");
         }
 
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entity.TrangThaiId = trangThaiDaTrinh!.Id;
 
 
         // Create history record
@@ -74,7 +71,7 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             BuocId = entity.BuocId,
             NoiDung = request.NoiDung,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

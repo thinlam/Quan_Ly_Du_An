@@ -19,7 +19,7 @@ public class DuAnBuocCreateCommandHandler(
         var (_, danhMucBuoc) = await ValidateAndGetAsync(request.Dto, cancellationToken);
         var entity = CreateEntity(request.Dto, danhMucBuoc);
         await SaveEntityAsync(entity, cancellationToken);
-        return entity;
+        return entity!;
     }
 
     private async Task<(dynamic, DanhMucBuoc)> ValidateAndGetAsync(DuAnBuocCreateDto Dto, CancellationToken cancellationToken) {

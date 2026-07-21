@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.UserMasters.DTOs;
 

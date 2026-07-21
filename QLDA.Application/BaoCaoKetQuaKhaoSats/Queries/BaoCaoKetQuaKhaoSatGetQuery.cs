@@ -26,6 +26,6 @@ internal class BaoCaoKetQuaKhaoSatGetQueryHandler
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
-        return entity;
+        return entity!;
     }
 }

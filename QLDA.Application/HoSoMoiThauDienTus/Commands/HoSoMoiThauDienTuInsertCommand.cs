@@ -1,10 +1,7 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -48,7 +45,7 @@ internal class HoSoMoiThauDienTuInsertCommandHandler : IRequestHandler<HoSoMoiTh
 
             return entity;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

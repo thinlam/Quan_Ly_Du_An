@@ -1,13 +1,12 @@
 using QLDA.Application.DuAns.Commands;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.DTOs;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Queries;
-using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.KeHoachLuaChonNhaThauRutGons;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using System.Data;
@@ -78,7 +77,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
 
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauRutGonInsertCommand(insertDto.ToEntity()), cancellationToken);
 
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThauRutGon) ?? []];
+        List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThauRutGon) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -112,7 +111,7 @@ public class KeHoachLuaChonNhaThauRutGonController : AggregateRootController {
 
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauRutGonUpdateCommand(Dto), cancellationToken);
 
-        List<TepDinhKem> files = [.. Dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThauRutGon) ?? []];
+        List<Attachment> files = [.. Dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThauRutGon) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),

@@ -1,7 +1,6 @@
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TongHopVanBanQuyetDinhs.DTOs;
-using QLDA.Domain.Interfaces;
 using SequentialGuid;
 
 namespace QLDA.Application.QuyetDinhDuyetKHLCNTs.DTOs;

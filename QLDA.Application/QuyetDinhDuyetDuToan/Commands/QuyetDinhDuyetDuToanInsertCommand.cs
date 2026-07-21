@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
-using QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
 using QLDA.Domain.Constants;
 using System.Data;
 
@@ -46,7 +45,7 @@ internal class QuyetDinhDuyetDuToanInsertCommandHandler : IRequestHandler<QuyetD
             var trangThaiDuThao = await StatusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
                                 .FirstOrDefaultAsync(s => s.Ma == "DT" && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
-            entity.TrangThaiId = trangThaiDuThao.Id;
+            entity.TrangThaiId = trangThaiDuThao!.Id;
 
             using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 await QuyetDinhDuyetDuToan.AddAsync(entity, cancellationToken);

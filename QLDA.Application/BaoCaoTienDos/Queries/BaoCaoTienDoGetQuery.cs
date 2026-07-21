@@ -13,8 +13,8 @@ internal class BaoCaoTienDoGetQueryHandler(IServiceProvider serviceProvider)
     private readonly IRepository<BaoCaoTienDo, Guid> BaoCaoTienDo =
         serviceProvider.GetRequiredService<IRepository<BaoCaoTienDo, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<BaoCaoTienDo> Handle(BaoCaoTienDoGetQuery request,

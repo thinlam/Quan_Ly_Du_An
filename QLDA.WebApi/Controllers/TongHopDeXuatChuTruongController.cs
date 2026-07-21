@@ -1,16 +1,5 @@
-using QLDA.Application.DeXuatChuTruongMois.Commands;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
-using QLDA.Application.DeXuatChuTruongMois.Queries;
-using QLDA.Application.DuAns.Commands;
-using QLDA.Application.PhanKhaiKinhPhis.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
 using QLDA.Application.TongHopDeXuatChuTruongs.Queries;
-using QLDA.Domain.Constants;
-using QLDA.WebApi.Models.DeXuatChuTruongMois;
-using QLDA.WebApi.Models.PhanKhaiKinhPhis;
-using QLDA.WebApi.Models.TepDinhKems;
-using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
 

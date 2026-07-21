@@ -1,5 +1,4 @@
 using System.Data;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
@@ -31,7 +30,8 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
 
     public async Task<ToTrinhPheDuyet> Handle(ToTrinhPheDuyetUpdateCommand request, CancellationToken cancellationToken = default)
     {
-        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(request.Dto.Loai);
+        var dto = request.Dto ?? new ToTrinhPheDuyetInsUpdDto();
+        bool isKhongDuyet = LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai);
         var loaiPheDuyet = isKhongDuyet ? PheDuyetEntityNames.ToTrinhKhongDuyet : PheDuyetEntityNames.DeXuatMacDinhStt;
         var statuses = await _statusRepo.GetByLoaiAsync(loaiPheDuyet, cancellationToken);
         var statusDict = statuses
@@ -43,7 +43,7 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
 
 
         var entity = await _repo.GetQueryableSet()
-            .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+            .FirstOrDefaultAsync(e => e.Id == dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
 
         await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
@@ -55,19 +55,19 @@ internal class ToTrinhPheDuyetUpdateCommandHandler : IRequestHandler<ToTrinhPheD
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
 
-        entity.So = request.Dto.So;
-        entity.Ten = request.Dto.Ten;
-        entity.NgayToTrinh = request.Dto.NgayToTrinh;
-        entity.TrichYeu = request.Dto.TrichYeu;
-        entity.DuAnId = request.Dto.DuAnId;
-        entity.BuocId = request.Dto.BuocId;
+        entity.So = dto.So ?? string.Empty;
+        entity.Ten = dto.Ten ?? string.Empty;
+        entity.NgayToTrinh = dto.NgayToTrinh;
+        entity.TrichYeu = dto.TrichYeu ?? string.Empty;
+        entity.DuAnId = dto.DuAnId;
+        entity.BuocId = dto.BuocId;
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

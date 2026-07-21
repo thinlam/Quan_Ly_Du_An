@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities.DanhMuc;
-
 namespace QLDA.WebApi.Models.DmCapDoCntts;
 
 public static class DmCapDoCnttMappingConfiguration {

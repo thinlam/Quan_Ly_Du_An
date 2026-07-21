@@ -1,4 +1,5 @@
 using System.Data;
+using BuildingBlocks.Domain.Entities;
 using System.Net.Mime;
 using QLDA.Domain.Constants;
 using QLDA.Application.DuAns.Commands;
@@ -76,7 +77,7 @@ public class TamUngController(IServiceProvider serviceProvider) : AggregateRootC
 
         var entity = await Mediator.Send(new TamUngInsertCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.TamUng) ?? []];
+        List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.TamUng) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files
@@ -107,7 +108,7 @@ public class TamUngController(IServiceProvider serviceProvider) : AggregateRootC
 
         var entity = await Mediator.Send(new TamUngUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.TamUng) ?? []];
+        List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.TamUng) ?? []];
         await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             Entities = files

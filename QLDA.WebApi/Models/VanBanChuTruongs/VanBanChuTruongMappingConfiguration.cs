@@ -1,10 +1,11 @@
 using QLDA.WebApi.Models.TepDinhKems;
+using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.VanBanChuTruongs;
 
 public static class VanBanChuTruongMappingConfiguration {
     public static VanBanChuTruongModel ToModel(this VanBanChuTruong entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             BuocId = entity.BuocId,

@@ -9,14 +9,14 @@ public record QuyetDinhLapHoiDongThamDinhDeleteCommand(Guid Id) : IRequest<int> 
 
 public record QuyetDinhLapHoiDongThamDinhDeleteCommandHandler : IRequestHandler<QuyetDinhLapHoiDongThamDinhDeleteCommand, int> {
     private readonly IRepository<QuyetDinhLapHoiDongThamDinh, Guid> QuyetDinhLapHoiDongThamDinh;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
 
     public QuyetDinhLapHoiDongThamDinhDeleteCommandHandler(IServiceProvider serviceProvider) {
         QuyetDinhLapHoiDongThamDinh = serviceProvider.GetRequiredService<IRepository<QuyetDinhLapHoiDongThamDinh, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = QuyetDinhLapHoiDongThamDinh.UnitOfWork;

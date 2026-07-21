@@ -1,13 +1,12 @@
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
-using QLDA.Domain.Entities;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Models.BaoCaoKetQuaKhaoSats;
 
 public static class BaoCaoKetQuaKhaoSatMappingConfiguration
 {
-    public static BaoCaoKetQuaKhaoSatModel ToModel(this BaoCaoKetQuaKhaoSat entity, List<TepDinhKem>? danhSachTepDinhKem = null) => new()
+    public static BaoCaoKetQuaKhaoSatModel ToModel(this BaoCaoKetQuaKhaoSat entity, List<Attachment>? danhSachTepDinhKem = null) => new()
     {
         Id = entity.Id,
         DuAnId = entity.DuAnId,

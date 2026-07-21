@@ -1,10 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 using System.Reflection;
 
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
@@ -44,7 +41,9 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
     public async Task<int> Handle(ToTrinhPheDuyetTrinhCommand request, CancellationToken cancellationToken)
     {
         var statuses = await _statusRepository.GetByLoaiAsync(PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
-        var statusDict = statuses.ToDictionary(x => x.Ma);
+        var statusDict = statuses
+            .Where(x => !string.IsNullOrWhiteSpace(x.Ma))
+            .ToDictionary(x => x.Ma!, x => x);
 
         var trangThaiDuThao = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao);
         var trangThaiTraLai = statusDict.GetValueOrDefault(TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai);
@@ -67,17 +66,18 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         {
             throw new ManagedException("Không tìm thấy dữ liệu cần thao tác trong hệ thống!");
         }
+        var entitySafe = entity!;
 
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+        await _auth.EnsureCanExecuteStepAsync(entitySafe.BuocId, _authContext, cancellationToken);
 
         // Validate: must be DT (Dự thảo) or TL (Trả lại) to transition to ĐTr (Đã trình)
-        if (entity.TrangThaiId != trangThaiDuThao?.Id && entity.TrangThaiId != trangThaiTraLai?.Id)
+        if (entitySafe.TrangThaiId != trangThaiDuThao?.Id && entitySafe.TrangThaiId != trangThaiTraLai?.Id)
         {
             throw new ManagedException("Chỉ có thể trình khi trạng thái là dự thảo hoặc trả lại!");
         }
 
         // 5. Cập nhật TrangThaiId (Dù là Model nào cũng chỉ tốn đúng 1 dòng này)
-        entity.TrangThaiId = trangThaiDaTrinh.Id;
+        entitySafe.TrangThaiId = trangThaiDaTrinh!.Id;
 
         // 6. Lưu lịch sử phê duyệt
         var history = new PheDuyetHistory
@@ -85,10 +85,10 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
             Id = Guid.NewGuid(),
             EntityName = request.Loai,
             EntityId = request.Id,
-            DuAnId = entity.DuAnId,
-            BuocId = entity.BuocId,
+            DuAnId = entitySafe.DuAnId,
+            BuocId = entitySafe.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaTrinh.Id,
+            TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = request.NoiDung,
             NgayXuLy = DateTimeOffset.UtcNow
         };
@@ -117,8 +117,8 @@ internal class ToTrinhPheDuyetTrinhCommandHandler : IRequestHandler<ToTrinhPheDu
         // Duyệt qua tất cả các phần tử của Enum và đọc Description của từng thằng
         foreach (ToTrinhEntityNames enumValue in Enum.GetValues(typeof(ToTrinhEntityNames)))
         {
-            var fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
-            var attribute = fieldInfo?.GetCustomAttribute<DescriptionAttribute>();
+            var fieldInfo = enumValue.GetType().GetField(enumValue.ToString()!);
+            var attribute = fieldInfo!.GetCustomAttribute<DescriptionAttribute>();
 
             // So sánh chuỗi truyền vào với Description (không phân biệt hoa thường)
             if (attribute != null && string.Equals(attribute.Description, loai, StringComparison.OrdinalIgnoreCase))

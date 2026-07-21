@@ -1,12 +1,7 @@
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
-using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.ChuTruongLapKeHoachs.Commands;
 
@@ -56,12 +51,12 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình
-        if (entity.TrangThaiId != trangThaiDaTrinh.Id) {
+        if (entity.TrangThaiId != trangThaiDaTrinh!.Id) {
             throw new ManagedException("Chỉ có thể duyệt khi trạng thái là Đã trình");
         }
 
         // Update status to Đã duyệt
-        entity.TrangThaiId = trangThaiDaDuyet.Id;
+        entity.TrangThaiId = trangThaiDaDuyet!.Id;
         entity.ButPhe = request.NoiDung;
         var ngayToTrinh = entity.NgayToTrinh.ToDateOnlyVn();
         // Create history record
@@ -74,7 +69,7 @@ internal class ChuTruongLapKeHoachDuyetCommandHandler : IRequestHandler<ChuTruon
                         : $"{entity.SoToTrinh} - {(ngayToTrinh.HasValue ? ngayToTrinh.Value.ToString("dd/MM/yyyy") : "")}",
             EntityId = entity.Id,
             NguoiXuLyId = _userProvider.Info.UserID,
-            TrangThaiId = trangThaiDaDuyet.Id,
+            TrangThaiId = trangThaiDaDuyet!.Id,
             NgayXuLy = DateTimeOffset.UtcNow
         };
        

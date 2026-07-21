@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.Common;
 

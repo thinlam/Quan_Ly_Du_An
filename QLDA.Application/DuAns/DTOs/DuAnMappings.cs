@@ -56,7 +56,7 @@ public static class DuAnMappings {
                 duToan.DuAnId = id;
             }
         }
-        return entity;
+        return entity!;
     }
 
     public static void Update(this DuAn entity, DuAnUpdateModel dto) {
@@ -141,7 +141,7 @@ public static class DuAnMappings {
 
         return dto;
     }
-    public static DuAnDto ToDto(this DuAn entity, List<TepDinhKem>? files = null) {
+    public static DuAnDto ToDto(this DuAn entity, List<Attachment>? files = null) {
         var dto = entity.ToDto();
         if (files == null || files.Count == 0) return dto;
 

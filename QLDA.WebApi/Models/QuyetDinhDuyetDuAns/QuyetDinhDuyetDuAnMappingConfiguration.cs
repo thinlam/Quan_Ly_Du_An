@@ -1,4 +1,5 @@
 using QLDA.WebApi.Models.QuyetDinhDuyetDuAnHangMucs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.QuyetDinhDuyetDuAnNguonVons;
 using QLDA.WebApi.Models.TepDinhKems;
 using SequentialGuid;
@@ -7,7 +8,7 @@ namespace QLDA.WebApi.Models.QuyetDinhDuyetDuAns;
 
 public static class QuyetDinhDuyetDuAnMappingConfiguration {
     public static QuyetDinhDuyetDuAnModel ToModel(this QuyetDinhDuyetDuAn entity,
-        List<TepDinhKem>? danhSachTepDinhKem = null) =>
+        List<Attachment>? danhSachTepDinhKem = null) =>
         new() {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

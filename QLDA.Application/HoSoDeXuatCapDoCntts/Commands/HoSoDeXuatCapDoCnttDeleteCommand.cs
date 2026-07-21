@@ -8,12 +8,12 @@ public record HoSoDeXuatCapDoCnttDeleteCommand(Guid Id) : IRequest;
 
 internal class HoSoDeXuatCapDoCnttDeleteCommandHandler : IRequestHandler<HoSoDeXuatCapDoCnttDeleteCommand> {
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> HoSoDeXuatCapDoCntt;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
 
     public HoSoDeXuatCapDoCnttDeleteCommandHandler(IServiceProvider serviceProvider) {
         HoSoDeXuatCapDoCntt = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _unitOfWork = HoSoDeXuatCapDoCntt.UnitOfWork;
     }
 

@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.Providers;
 using QLDA.Application.ThanhToans.DTOs;
 
 namespace QLDA.Application.ThanhToans.Commands;
@@ -52,7 +51,7 @@ internal class ThanhToanInsertCommandHandler : IRequestHandler<ThanhToanInsertCo
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

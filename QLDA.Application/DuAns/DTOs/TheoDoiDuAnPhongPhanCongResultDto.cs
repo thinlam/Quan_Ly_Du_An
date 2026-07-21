@@ -1,5 +1,3 @@
-using BuildingBlocks.Application.Common.DTOs;
-
 namespace QLDA.Application.DuAns.DTOs;
 
 public class TheoDoiDuAnPhongPhanCongResultDto

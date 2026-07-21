@@ -8,7 +8,7 @@ public static class DanhMucManHinhMapping {
     public static DanhMucManHinhDto ToDto(this DanhMucManHinh entity)
         => new() {
             Id = entity.Id,
-            Ten = entity.Ten,
+            Ten = entity.Ten ?? string.Empty,
             Label = entity.Label,
             Title = entity.Title,
             Used = entity.Used,

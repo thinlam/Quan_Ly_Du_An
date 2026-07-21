@@ -1,7 +1,5 @@
-using BuildingBlocks.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
 

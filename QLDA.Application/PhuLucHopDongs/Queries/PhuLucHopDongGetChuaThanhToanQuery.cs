@@ -1,9 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.PhuLucHopDongs.DTOs;
-using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.ThanhToans.DTOs;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace QLDA.Application.PhuLucHopDongs.Queries;
 

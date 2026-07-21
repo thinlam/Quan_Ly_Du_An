@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace QLDA.Application.DeXuatChuyenTieps.DTOs;
 
 public class DeXuatChuyenTiepImportDto {

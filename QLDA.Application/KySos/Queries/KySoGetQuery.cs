@@ -19,6 +19,6 @@ internal class KySoGetQueryHandler : IRequestHandler<KySoGetQuery, KySo> {
             .Include(e => e.ChucVu)
             .FirstOrDefaultAsync(e => e.Id == request.Id && !e.IsDeleted, cancellationToken);
         ManagedException.ThrowIfNull(entity);
-        return entity;
+        return entity!;
     }
 }

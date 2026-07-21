@@ -1,11 +1,6 @@
 using BuildingBlocks.CrossCutting.Offices;
-using BuildingBlocks.Domain.Entities;
-using BuildingBlocks.Domain.Providers;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 

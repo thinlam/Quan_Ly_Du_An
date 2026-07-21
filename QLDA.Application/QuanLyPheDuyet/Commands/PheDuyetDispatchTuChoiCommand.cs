@@ -1,7 +1,5 @@
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.DeXuatNhuCauKinhPhiNams.Commands;
-using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoMoiThauDienTus.Commands;
 using QLDA.Application.KeHoachLuaChonNhaThauRutGons.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;

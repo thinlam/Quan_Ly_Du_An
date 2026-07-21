@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QLDA.Application.Common.Constants;
-using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 
 namespace QLDA.Application.DuongDiTrangThaiToTrinhs.Queries;
@@ -33,7 +31,7 @@ public record DuongDiTrangThaiToTrinhGetQueryHandler(IServiceProvider ServicePro
             RoleId = entity.RoleId,
             RoleLevel = entity.RoleLevel,
             MaTrangThaiTiepTheo = entity.MaTrangThaiTiepTheo,
-            TenTrangThaiTiepTheo = dmTrangThaiPheDuyet.TryGetValue(entity.MaTrangThaiTiepTheo,  out var tenTrangThai) 
+            TenTrangThaiTiepTheo = dmTrangThaiPheDuyet.TryGetValue(entity.MaTrangThaiTiepTheo ?? "",  out var tenTrangThai) 
                                     ? tenTrangThai : string.Empty
         });
 

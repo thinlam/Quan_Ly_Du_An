@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>BuildingBlocks.Tests</RootNamespace>
     <AssemblyName>BuildingBlocks.Tests</AssemblyName>
   </PropertyGroup>

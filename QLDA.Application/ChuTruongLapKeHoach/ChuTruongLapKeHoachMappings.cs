@@ -18,7 +18,7 @@ public static class ChuTruongLapKeHoachMappings
             LoaiDeXuat = dto.LoaiDeXuat,
         };
     }
-    public static ChuTruongLapKeHoachDto ToDto(this ChuTruongLapKeHoach entity, List<TepDinhKem> tepDinhKems) {
+    public static ChuTruongLapKeHoachDto ToDto(this ChuTruongLapKeHoach entity, List<Attachment> tepDinhKems) {
         return new ChuTruongLapKeHoachDto {
             Id = entity.Id,
             DuAnId = entity.DuAnId,

@@ -34,7 +34,7 @@ internal class DanhMucTinhTrangThucHienLcntInsertCommandHandler : IRequestHandle
 
         _logger.Information("Created {EntityName} with Id {Id}", nameof(DanhMucTinhTrangThucHienLcnt), entity.Id);
 
-        return entity;
+        return entity!;
     }
 
     private async Task ValidateAsync(DanhMucTinhTrangThucHienLcntInsertCommand request, CancellationToken cancellationToken)

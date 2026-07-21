@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using QLDA.Domain.Constants;
 
 namespace QLDA.WebApi.Controllers {

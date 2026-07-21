@@ -8,12 +8,12 @@ public record QuyetDinhDuyetKHLCNTDeleteCommand(Guid Id) : IRequest<int> {
 
 public record QuyetDinhDuyetKHLCNTDeleteCommandHandler : IRequestHandler<QuyetDinhDuyetKHLCNTDeleteCommand, int> {
     private readonly IRepository<QuyetDinhDuyetKHLCNT, Guid> QuyetDinhDuyetKHLCNT;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IUnitOfWork _unitOfWork;
 
     public QuyetDinhDuyetKHLCNTDeleteCommandHandler(IServiceProvider serviceProvider) {
         QuyetDinhDuyetKHLCNT = serviceProvider.GetRequiredService<IRepository<QuyetDinhDuyetKHLCNT, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _unitOfWork = QuyetDinhDuyetKHLCNT.UnitOfWork;
     }
 

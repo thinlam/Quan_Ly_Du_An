@@ -1,5 +1,4 @@
 using System.Data;
-using BuildingBlocks.CrossCutting.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
@@ -89,7 +88,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
 
-        return entity;
+        return entity!;
     }
 
     #region  Private helper methods

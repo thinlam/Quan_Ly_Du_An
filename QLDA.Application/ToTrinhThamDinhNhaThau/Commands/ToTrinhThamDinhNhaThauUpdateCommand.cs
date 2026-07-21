@@ -1,9 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 
@@ -59,6 +57,6 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

@@ -39,7 +39,7 @@ internal class KeHoachLuaChonNhaThauInsertCommandHandler : IRequestHandler<KeHoa
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

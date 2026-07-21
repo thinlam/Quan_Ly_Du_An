@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BaoCaoKetQuaKhaoSats.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.BaoCaoKetQuaKhaoSats.Commands;
 
@@ -48,6 +47,6 @@ internal class BaoCaoKetQuaKhaoSatInsertCommandHandler
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

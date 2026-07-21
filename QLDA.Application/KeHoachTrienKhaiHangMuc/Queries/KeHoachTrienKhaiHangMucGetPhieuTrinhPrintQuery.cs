@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Application.Authorization;
-using QLDA.Application.KeHoachTrienKhaiHangMucs;
 using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Queries;
 

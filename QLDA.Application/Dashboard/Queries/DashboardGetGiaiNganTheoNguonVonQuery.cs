@@ -1,6 +1,3 @@
-using QLDA.Domain.DTOs;
-using QLDA.Domain.Interfaces;
-
 namespace QLDA.Application.Dashboard.Queries;
 
 /// <summary>

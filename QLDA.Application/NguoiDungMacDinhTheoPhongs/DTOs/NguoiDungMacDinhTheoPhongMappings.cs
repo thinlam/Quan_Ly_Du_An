@@ -1,6 +1,3 @@
-using BuildingBlocks.Domain.Entities;
-using QLDA.Domain.Entities;
-
 namespace QLDA.Application.NguoiDungMacDinhTheoPhongs.DTOs;
 
 internal static class NguoiDungMacDinhTheoPhongMappings

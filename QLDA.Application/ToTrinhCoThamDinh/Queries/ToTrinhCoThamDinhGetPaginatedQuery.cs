@@ -35,7 +35,7 @@ internal class
 {
     private readonly IRepository<ToTrinhCoThamDinh, Guid> _toTrinhCoThamDinh = ServiceProvider.GetRequiredService<IRepository<ToTrinhCoThamDinh, Guid>>();
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiTrangThaiToTrinh = ServiceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _tepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo = ServiceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
     private readonly IBuocAuthorizationProvider _buocAuth = ServiceProvider.GetRequiredService<IBuocAuthorizationProvider>();
     private readonly IAuthorizationContext _authContext = ServiceProvider.GetRequiredService<IAuthorizationContext>();
@@ -84,8 +84,8 @@ internal class
                 TrichYeu = e.TrichYeu,
                 NgayToTrinh = e.NgayToTrinh,
                 TrangThaiId = e.TrangThaiId,
-                MaTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
-                TenTrangThai = e.TrangThai != null && e.TrangThai.Ma != "LEG" ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
+                MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
+                TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
                 TenTrangThaiThamTra = e.TrangThaiThamTraId != null && e.TrangThaiThamTraId == (int)TrangThaiThamTra.DaThamTra ? "Đã thẩm tra" : "Chưa thẩm tra",
                 KetQuaThamTra = e.KetQuaThamTra,
                 KetQuaThamDinh = e.KetQuaThamDinh,

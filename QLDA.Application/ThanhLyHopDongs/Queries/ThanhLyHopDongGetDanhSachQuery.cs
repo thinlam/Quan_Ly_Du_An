@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.ExtensionMethods;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Common.Mapping;
@@ -19,14 +18,14 @@ public record ThanhLyHopDongGetDanhSachQuery : AggregateRootSearch, IRequest<Pag
 
 internal class ThanhLyHopDongGetDanhSachQueryHandler : IRequestHandler<ThanhLyHopDongGetDanhSachQuery, PaginatedList<ThanhLyHopDongDto>> {
     private readonly IRepository<ThanhLyHopDong, Guid> _thanhLy;
-    private readonly IRepository<TepDinhKem, Guid> _tepDinhKem;
+    private readonly IRepository<Attachment, Guid> _tepDinhKem;
     private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo;
     private readonly IBuocAuthorizationProvider _buocAuth;
     private readonly IAuthorizationContext _authContext;
 
     public ThanhLyHopDongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         _thanhLy = serviceProvider.GetRequiredService<IRepository<ThanhLyHopDong, Guid>>();
-        _tepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        _tepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _duAnBuocRepo = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _buocAuth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();

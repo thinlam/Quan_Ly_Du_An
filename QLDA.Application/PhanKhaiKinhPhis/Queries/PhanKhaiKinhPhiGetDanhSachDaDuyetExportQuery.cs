@@ -25,7 +25,7 @@ internal class PhanKhaiKinhPhiGetDanhSachDaDuyetExportQueryHandler
             .Include(e => e.NguonVon)
             .Include(e => e.DuAn)
             .Where(e => e.TrangThai != null
-                        && e.TrangThai.Ma == TrangThaiPheDuyetCodes.PhanKhaiKinhPhi.DaDuyet
+                        && e.TrangThai!.Ma == TrangThaiPheDuyetCodes.PhanKhaiKinhPhi.DaDuyet
                         && e.TrangThai.Loai == PheDuyetEntityNames.PhanKhaiKinhPhi)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereGlobalFilter(request,
@@ -38,11 +38,11 @@ internal class PhanKhaiKinhPhiGetDanhSachDaDuyetExportQueryHandler
             .Select(e => new {
                 e.SoToTrinh,
                 //TrichYeu = e.ThuyetMinh ?? (e.DuAn != null ? e.DuAn.Ten : null),
-                TrichYeu = e.ThuyetMinh ?? (e.DuAn != null ? e.DuAn.TenDuAn : null),
+                TrichYeu = e.ThuyetMinh ?? (e.DuAn != null ? e.DuAn!.TenDuAn : null),
                 TenNguonVon = e.NguonVon != null ? e.NguonVon.Ten : null,
                 e.KinhPhiDeXuat,
                 e.KinhPhiPhanKhai,
-                TenTrangThai = e.TrangThai != null ? e.TrangThai.Ten : TrangThaiPheDuyetCodes.Default.TenDaDuyet,
+                TenTrangThai = e.TrangThai != null ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDaDuyet,
             })
             .ToListAsync(cancellationToken);
 

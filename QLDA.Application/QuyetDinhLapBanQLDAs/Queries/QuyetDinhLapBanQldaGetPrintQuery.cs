@@ -1,7 +1,5 @@
-using BuildingBlocks.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.QuyetDinhLapBanQLDAs.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.QuyetDinhLapBanQLDAs.Queries;
 

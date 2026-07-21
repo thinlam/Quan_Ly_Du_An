@@ -21,7 +21,7 @@ public static class ThuyetMinhDuAnMappings
         };
     }
 
-    public static ThuyetMinhDuAnDto ToDto(this ThuyetMinhDuAn entity, List<TepDinhKem>? files = null, List<TepDinhKem>? filesThamDinh = null)
+    public static ThuyetMinhDuAnDto ToDto(this ThuyetMinhDuAn entity, List<Attachment>? files = null, List<Attachment>? filesThamDinh = null)
     {
         return new ThuyetMinhDuAnDto
         {

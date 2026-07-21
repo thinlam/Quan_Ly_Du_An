@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
-using QLDA.Application.Providers;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.VanBanChuTruongs.DTOs;
 using QLDA.Application.Authorization;
@@ -23,12 +21,12 @@ internal class
     VanBanChuTruongGetDanhSachQueryHandler : IRequestHandler<VanBanChuTruongGetDanhSachQuery,
     PaginatedList<VanBanChuTruongDto>> {
     private readonly IRepository<VanBanChuTruong, Guid> VanBanChuTruong;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
 
     public VanBanChuTruongGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         VanBanChuTruong = serviceProvider.GetRequiredService<IRepository<VanBanChuTruong, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 

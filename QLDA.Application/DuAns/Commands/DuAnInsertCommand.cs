@@ -34,7 +34,7 @@ internal class DuAnInsertCommandHandler : IRequestHandler<DuAnInsertCommand, DuA
         }
 
 
-        return entity;
+        return entity!;
 
     }
 

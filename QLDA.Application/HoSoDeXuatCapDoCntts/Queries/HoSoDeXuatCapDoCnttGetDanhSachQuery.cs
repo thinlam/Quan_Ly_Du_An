@@ -3,7 +3,6 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuongDiTrangThaiToTrinhs.DTOs;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.Common.Constants;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.HoSoDeXuatCapDoCntts.Queries;
@@ -17,12 +16,12 @@ internal class HoSoDeXuatCapDoCnttGetDanhSachQueryHandler
     : IRequestHandler<HoSoDeXuatCapDoCnttGetDanhSachQuery, PaginatedList<HoSoDeXuatCapDoCnttDto>> {
     
     private readonly IRepository<HoSoDeXuatCapDoCntt, Guid> HoSoDeXuatCapDoCntt;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<DuongDiTrangThaiToTrinh, long> _duongDiTrangThaiToTrinh ;
 
     public HoSoDeXuatCapDoCnttGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
         HoSoDeXuatCapDoCntt = serviceProvider.GetRequiredService<IRepository<HoSoDeXuatCapDoCntt, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _duongDiTrangThaiToTrinh = serviceProvider.GetRequiredService<IRepository<DuongDiTrangThaiToTrinh, long>>();
     }
 

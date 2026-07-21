@@ -18,7 +18,7 @@ internal class DanhMucManHinhInsertCommandHandler(IServiceProvider serviceProvid
         await DanhMucManHinh.AddAsync(entity, cancellationToken);
         await DanhMucManHinh.UnitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 
     #region  Private helper methods

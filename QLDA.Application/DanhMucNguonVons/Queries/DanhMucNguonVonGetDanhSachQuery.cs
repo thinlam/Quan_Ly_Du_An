@@ -29,9 +29,9 @@ public record DanhMucNguonVonGetDanhSachQueryHandler(IServiceProvider ServicePro
         return await query
             .Select(entity => new DanhMucNguonVonDto() {
                 Id = entity.Id,
-                Ma = entity.Ma,
-                Ten = entity.Ten,
-                MoTa = entity.MoTa,
+                Ma = entity.Ma ?? string.Empty,
+                Ten = entity.Ten ?? string.Empty,
+                MoTa = entity.MoTa ?? string.Empty,
                 Stt = entity.Stt,
                 Used = entity.Used,
             })

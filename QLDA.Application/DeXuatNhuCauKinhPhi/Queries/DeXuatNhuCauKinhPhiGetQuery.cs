@@ -13,8 +13,8 @@ internal class DeXuatNhuCauKinhPhiGetQueryHandler(IServiceProvider serviceProvid
     private readonly IRepository<DeXuatNhuCauKinhPhi, Guid> DeXuatNhuCauKinhPhi =
         serviceProvider.GetRequiredService<IRepository<DeXuatNhuCauKinhPhi, Guid>>();
 
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> TepDinhKem =
+        serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
 
     public async Task<DeXuatNhuCauKinhPhi> Handle(DeXuatNhuCauKinhPhiGetQuery request,

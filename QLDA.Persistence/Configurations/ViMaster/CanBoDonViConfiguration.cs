@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using BuildingBlocks.Domain.Entities;
 using QLDA.Domain.Entities.ViMaster;
 
 namespace QLDA.Persistence.Configurations.ViMaster;

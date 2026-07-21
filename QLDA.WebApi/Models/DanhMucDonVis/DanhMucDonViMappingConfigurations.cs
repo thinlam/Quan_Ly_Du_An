@@ -1,5 +1,3 @@
-using QLDA.Domain.Entities.ViMaster;
-
 using BuildingBlocks.Domain.Entities;
 
 namespace QLDA.WebApi.Models.DanhMucDonVis;

@@ -1,4 +1,5 @@
 using System.Data;
+using BuildingBlocks.Domain.Entities;
 using System.Net.Mime;
 using QLDA.Application.ThanhLyHopDongs.Commands;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
@@ -6,7 +7,6 @@ using QLDA.Application.ThanhLyHopDongs.Queries;
 using QLDA.Application.TepDinhKems.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.TepDinhKems.Queries;
-using QLDA.Domain.Constants;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -58,7 +58,7 @@ public class ThanhLyHopDongController : AggregateRootController {
 
         var entity = await Mediator.Send(new ThanhLyHopDongInsertCommand(insertDto), cancellationToken);
 
-        List<TepDinhKem> files = [
+        List<Attachment> files = [
             .. insertDto.BienBanNghiemThus?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_BienBanNghiemThu) ?? [],
             .. insertDto.ThanhLyHopDongs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong) ?? [],
             .. insertDto.Khacs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_Khac) ?? []
@@ -88,7 +88,7 @@ public class ThanhLyHopDongController : AggregateRootController {
 
         var entity = await Mediator.Send(new ThanhLyHopDongUpdateCommand(updateDto), cancellationToken);
 
-        List<TepDinhKem> files = [
+        List<Attachment> files = [
             .. updateDto.BienBanNghiemThus?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_BienBanNghiemThu) ?? [],
             .. updateDto.ThanhLyHopDongs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong) ?? [],
             .. updateDto.Khacs?.ToEntities(entity.Id, EGroupType.ThanhLyHopDong_Khac) ?? []

@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
-using QLDA.Application.Providers;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.NghiemThus.Commands;
 
@@ -12,7 +10,7 @@ public record NghiemThuDeleteCommand(Guid Id) : IRequest {
 public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCommand> {
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -20,7 +18,7 @@ public record NghiemThuDeleteCommandHandler : IRequestHandler<NghiemThuDeleteCom
     public NghiemThuDeleteCommandHandler(IServiceProvider serviceProvider) {
         NghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = NghiemThu.UnitOfWork;

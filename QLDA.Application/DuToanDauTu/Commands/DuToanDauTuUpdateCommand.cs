@@ -1,11 +1,8 @@
 using System.Data;
-using BuildingBlocks.CrossCutting.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.DuToanDauTus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.DuToanDauTus.Commands;
 
@@ -69,7 +66,7 @@ internal class DuToanDauTuUpdateCommandHandler : IRequestHandler<DuToanDauTuUpda
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }
 

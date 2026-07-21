@@ -1,11 +1,6 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
-using QLDA.Application.KeHoachTrienKhaiHangMucMappings;
-using QLDA.Application.KeHoachTrienKhaiHangMucs.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Entities;
-using QLDA.Domain.Entities.DanhMuc;
 
 namespace QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 
@@ -44,6 +39,6 @@ internal class KeHoachTrienKhaiHangMucInsertCommandHandler : IRequestHandler<KeH
         await _repo.AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity;
+        return entity!;
     }
 }

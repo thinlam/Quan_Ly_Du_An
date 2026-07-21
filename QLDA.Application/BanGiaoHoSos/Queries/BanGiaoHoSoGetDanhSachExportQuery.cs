@@ -1,9 +1,6 @@
-using BuildingBlocks.Domain.Entities;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
-using QLDA.Domain.Entities;
 
 namespace QLDA.Application.BanGiaoHoSos.Queries;
 

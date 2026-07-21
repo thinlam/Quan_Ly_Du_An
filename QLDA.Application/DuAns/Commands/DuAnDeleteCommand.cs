@@ -1,5 +1,4 @@
 using System.Data;
-using BuildingBlocks.CrossCutting.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
@@ -12,7 +11,7 @@ public record DuAnDeleteCommand(Guid Id) : IRequest;
 
 internal class DuAnDeleteCommandHandler : IRequestHandler<DuAnDeleteCommand> {
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IRepository<TepDinhKem, Guid> TepDinhKem;
+    private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IAuthorizationManager _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DuAnDeleteCommandHandler> _logger;
@@ -20,7 +19,7 @@ internal class DuAnDeleteCommandHandler : IRequestHandler<DuAnDeleteCommand> {
     public DuAnDeleteCommandHandler(IServiceProvider serviceProvider,
         ILogger<DuAnDeleteCommandHandler> logger) {
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        TepDinhKem = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+        TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _logger = logger;
         _unitOfWork = DuAn.UnitOfWork;

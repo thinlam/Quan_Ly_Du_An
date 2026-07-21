@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
 using QLDA.Application.DuAns.DTOs;
-using QLDA.Domain.Enums;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace QLDA.Application.DuAns.Queries;
 

@@ -1,5 +1,4 @@
 using BuildingBlocks.Application.Common.Interfaces;
-using QLDA.Domain.Interfaces;
 using SequentialGuid;
 
 namespace QLDA.Application.QuyetDinhDuyetDuToans.DTOs;
