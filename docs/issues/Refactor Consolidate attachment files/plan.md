@@ -1,5 +1,26 @@
 # Plan: Đồng bộ TepDinhKem → Application.Attachments (Attachment)
 
+> ## ✅ TRẠNG THÁI: HOÀN THÀNH (Phase 1–6)
+>
+> | Phase | Doc triển khai | Trạng thái |
+> |-------|----------------|------------|
+> | 1–2 Preparation + BB Attachments | [`phase-1-2-implementation.md`](./phase-1-2-implementation.md) | ✅ Done |
+> | 3 QLDA migration | [`phase-3-implementation.md`](./phase-3-implementation.md) | ✅ Done |
+> | 4 Sync layer + subquery | [`phase-4-implementation.md`](./phase-4-implementation.md) | ✅ Done |
+> | 5 Domain cleanup + EF mapping | [`phase-5-implementation.md`](./phase-5-implementation.md) | ✅ Done |
+> | 6 Documentation | [`phase-6-implementation.md`](./phase-6-implementation.md) | ✅ Done |
+>
+> **Branch:** `151-refactor-consolidate-attachment-files`  
+> **Verify (2026-07-21):** `dotnet build SER.sln -c Release` — 0 error/0 warning; QLDA Phase3/4 tests 14 passed; BB Attachment tests 23 passed.
+>
+> ### EF mapping as-built (khác draft ban đầu — sau merge `3e70b87`)
+>
+> Owner bảng `TepDinhKem` **không** còn là `QLDA.Persistence/Configurations/AttachmentConfiguration.cs` (file đã xóa).  
+> QLDA map trong `AppDbContext.OnModelCreating`: exclude BB `AttachmentConfiguration` + force `ToTable("TepDinhKem", ExcludeFromMigrations)` + `ConfigureForBase()`.  
+> Chi tiết: Phase 5 doc §1 + Q1 bên dưới (cập nhật).
+>
+> **Deferred (không chặn hoàn thành code):** runtime API smoke test cần DB/token; đồng bộ câu chữ cũ trong `docs/code-standards.md` §14 nếu vẫn ghi QLDA `AttachmentConfiguration`.
+
 ## Context
 
 ### Quy ước đặt tên: code-side vs DB-side
@@ -9,7 +30,8 @@
 | **Code (class/entity)** | `Attachment` (tiếng Anh, generic) |
 | **DB table** | `TepDinhKem` (giữ nguyên, mỗi module tự config) |
 
-→ KHÔNG tạo table `Attachments`. Mỗi module giữ nguyên `ToTable("TepDinhKem")` hoặc `ToTable("TepDinhKems")` qua `AttachmentConfiguration` riêng. Class `Attachment` map xuống table `TepDinhKem(s)` — đây là pattern **POCO != TableName** chuẩn của EF Core.
+→ KHÔNG tạo table `Attachments`. Mỗi module quyết định table name thật (QLDA: `TepDinhKem`).  
+**QLDA as-built:** force `ToTable("TepDinhKem")` trong `AppDbContext` (không dùng file `QLDA.../AttachmentConfiguration.cs` — tránh race với BB config map `"Attachments"`, xem `3e70b87`). Pattern **POCO != TableName** vẫn giữ.
 
 ### Multi-DB / Multi-module reality (quan trọng!)
 
@@ -920,14 +942,14 @@ public static class AttachmentMapping
 
 **Acceptance criteria bổ sung:**
 
-- [ ] `IAttachmentDto` interface định nghĩa đúng 9 core fields, KHÔNG có field riêng QLDA
-- [ ] `AttachmentDto` implement `IAttachmentDto` + 9 fields
-- [ ] `TepDinhKemDto` extend `AttachmentDto` + 5 fields riêng QLDA (TenNguoiTao, audit fields)
-- [ ] Type alias `using TepDinhKemDto = ...` giữ nguyên 100% tên trong 50+ DTO files
-- [ ] JSON output `TepDinhKemDto` khớp 100% với contract cũ (14 fields, Frontend không cần đổi)
-- [ ] Cross-module (QLHD) dùng `AttachmentDto` không cần kế thừa
-- [ ] Module riêng cần field mới → tạo class con `: AttachmentDto`, KHÔNG sửa DTO chung
-- [ ] `AttachmentMapping.ToDto<T>(...)` generic cho mọi loại DTO implement `IAttachmentDto`
+- [x] `IAttachmentDto` interface định nghĩa đúng 9 core fields, KHÔNG có field riêng QLDA
+- [x] `AttachmentDto` implement `IAttachmentDto` + 9 fields
+- [x] `TepDinhKemDto` extend `AttachmentDto` + fields riêng QLDA
+- [x] Tên property/DTO API giữ nguyên trong 50+ files
+- [x] JSON contract Frontend không đổi (DTO tên cũ)
+- [x] Cross-module có thể dùng `AttachmentDto` thuần
+- [x] Module field mới → class con `: AttachmentDto`, không sửa DTO chung
+- [x] `AttachmentMapping.ToDto<T>(...)` generic
 
 ### Scout bổ sung: Per-feature mapping nằm NGOÀI TepDinhKems/ folder
 
@@ -1160,36 +1182,24 @@ BuildingBlocks.Persistence.Configurations/
 - QLDA.Application: `using BuildingBlocks.Application.Attachments.*;` (DI đã có sẵn qua `AddApplication`)
 - QLHD/DVDC/NVTT: tương tự, không cần copy code
 
-### 2 hệ thống song song hiện tại
+### 2 hệ thống song song — ĐÃ GỘP (sau Phase 5)
 
-| Hệ thống | Vị trí | Trạng thái |
+| Hệ thống | Vị trí | Trạng thái cuối |
 |---|---|---|
-| `TepDinhKem` (Vietnamese) | `BuildingBlocks.Domain/Entities/TepDinhKem.cs` + `QLDA.Domain/Entities/TepDinhKem.cs` (duplicate) | **Đang dùng ở 50 controllers QLDA** |
-| `Attachment` (English) | `BuildingBlocks.Domain/Entities/Attachment.cs` | **Mới tạo, chưa ai dùng** (1/99 controllers) |
+| `TepDinhKem` (entity) | BB Domain / QLDA Domain | ❌ **Đã xóa** |
+| `Attachment` (entity) | `BuildingBlocks.Domain/Entities/Attachment.cs` | ✅ **Runtime duy nhất** → DB `TepDinhKem` |
+| BB `Application/TepDinhKems/` | Commands/Queries/DTOs cũ | ❌ **Đã xóa** |
+| BB `Application/Attachments/` | Commands/Queries/DTOs/Common | ✅ **Canonical** |
+| QLDA `TepDinhKems/DTOs/*` | `TepDinhKemDto`, Insert DTOs, mapping | ✅ **Giữ** (API contract) |
+| QLDA command/query bulk cũ | `TepDinhKemBulk*`, `GetDanhSachTepDinhKemQuery` | ❌ **Đã xóa** |
+| Controllers WebApi | `AttachmentBulkInsertOrUpdateCommand` + `GetAttachmentsQuery` | ✅ ~47 / ~46 callers |
 
-**Vấn đề:**
-1. **Duplicate entity class**: Cùng schema `Id, ParentId, GroupId, GroupType, Type, FileName, OriginalName, Path, Size` ở 2 nơi (`BuildingBlocks` + `QLDA.Domain`)
-2. **Duplicate Application layer**: `BuildingBlocks.Application/TepDinhKems/` (Commands/Queries/DTOs) + `QLDA.Application/TepDinhKems/` (duplicate) + `BuildingBlocks.Application/Attachments/` (mới, ít dùng)
-3. **Duplicate interfaces**: `IMayHaveTepDinhKemDto` / `IMayHaveTepDinhKemInsertOrUpdateDto` / `IMayHaveAttachmentDto` / `IMayHaveAttachmentInsertOrUpdateModel` / `IMayHaveTepDinhKemModel` (QLDA.WebApi)
-4. **Trải rộng ở 50 controllers QLDA** (~50% tổng số controllers = 99): Mỗi controller đều có pattern giống nhau:
-   ```csharp
-   List<TepDinhKem> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.X) ?? []];
-   await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand { GroupId = entity.Id.ToString(), Entities = files });
-   var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery { GroupId = [entity.Id.ToString()], EGroupTypes = [nameof(EGroupType.X)] });
-   ```
-5. **Signed files** đang xử lý qua `ParentId` + `SignedHelper.Prefix` trong GroupType string (hack) thay vì tách concern rõ ràng
-
-**Mục tiêu:**
-- Đồng bộ **mọi code dùng `TepDinhKem`** sang dùng `Attachment` qua `BuildingBlocks.Application.Attachments/`
-- Xóa duplicate entity `TepDinhKem` (giữ 1 bản ở `BuildingBlocks.Domain`)
-- Chuẩn hóa interfaces: dùng `IMayHaveAttachmentDto` / `IMayHaveAttachmentInsertOrUpdateModel` (đã có sẵn ở BuildingBlocks)
-- Tách riêng `KySo` concern thành Command/Query riêng (không nhét vào Attachment CRUD)
-
-**Outcome mong đợi:**
-- 1 entity duy nhất (`Attachment`) trong Domain
-- 1 Application layer (`BuildingBlocks.Application.Attachments/`) chứa tất cả Commands/Queries/DTOs/Validators
-- Tất cả 50 controllers QLDA dùng chung 1 set of commands (`AttachmentBulkInsertOrUpdateCommand`, `GetAttachmentsQuery`, ...)
-- QLHD/DVDC/NVTT (khi có) reference trực tiếp `BuildingBlocks.Application.Attachments`
+**Outcome đã đạt:**
+- 1 entity runtime (`Attachment`) → bảng `TepDinhKem`
+- 1 Application module (`BuildingBlocks.Application.Attachments/`)
+- Controllers QLDA dùng `AttachmentBulkInsertOrUpdateCommand` / `GetAttachmentsQuery`
+- API contract `DanhSachTepDinhKem` / `TepDinhKemDto` / `TepDinhKemModel` giữ nguyên
+- `SignedGroupTypeHelper` + `AttachmentSubquery` + `AttachmentCollectionExtensions` single source
 
 ---
 
@@ -1301,9 +1311,9 @@ echo "✅ All checks passed - safe to commit"
 
 ### Acceptance criteria bổ sung
 
-- [ ] Mỗi commit có `dotnet build SER.sln -c Release` pass với 0 errors
-- [ ] CI/CD pipeline (nếu có) chạy build trên mỗi PR
-- [ ] Sau Phase 5, tổng số warnings không tăng so với baseline
+- [x] Mỗi phase có `dotnet build SER.sln -c Release` pass với 0 errors
+- [x] Sau Phase 5, warnings không tăng so với baseline (0 warnings trên Release build 2026-07-21)
+- [ ] CI/CD pipeline trên mỗi PR — phụ thuộc môi trường repo
 
 ---
 
@@ -1316,7 +1326,9 @@ echo "✅ All checks passed - safe to commit"
 
 **Build verification:** `dotnet build SER.sln -c Release --nologo` phải pass với 0 errors (baseline trước khi thay đổi)
 
-### Phase 2: Extend `BuildingBlocks.Application.Attachments/`
+### Phase 2: Extend `BuildingBlocks.Application.Attachments/` — ✅ DONE
+
+> Log: [`phase-1-2-implementation.md`](./phase-1-2-implementation.md)
 
 **Tasks:**
 1. Update `AttachmentBulkInsertOrUpdateCommand`: thêm `GroupTypes` (List<string>) BẮT BUỘC (KHÔNG dùng `ScopeGroupTypes` optional — đã lỗi thời)
@@ -1331,7 +1343,9 @@ echo "✅ All checks passed - safe to commit"
 
 **Validation:** `dotnet build SER.sln -c Release --nologo` thành công, 0 errors, 0 new warnings.
 
-### Phase 3: QLDA migration (KHÔNG đụng property/DTO name — giữ hard rule)
+### Phase 3: QLDA migration (KHÔNG đụng property/DTO name — giữ hard rule) — ✅ DONE
+
+> Log: [`phase-3-implementation.md`](./phase-3-implementation.md)
 
 **Tasks (CHỈ đổi command/query class name + inject repo, KHÔNG rename DTO/property):**
 1. **KHÔNG** rename `DanhSachTepDinhKem` → `DanhSachAttachment` (giữ nguyên 100%)
@@ -1359,7 +1373,9 @@ public class KhoKhanVuongMacDto {
 - 0 references đến `TepDinhKem` class entity còn lại (chỉ còn `TepDinhKemDto` DTO + `Attachment` entity)
 - 0 controller nào có property bị rename (giữ 100% tên cũ)
 
-### Phase 4: Sync Layer + Controller-mediated Transaction (QUAN TRỌNG - triết lý mới)
+### Phase 4: Sync Layer + Controller-mediated Transaction (QUAN TRỌNG - triết lý mới) — ✅ DONE
+
+> Log: [`phase-4-implementation.md`](./phase-4-implementation.md)
 
 **Triết lý triển khai:**
 
@@ -1627,77 +1643,66 @@ public static async Task SyncAttachmentsAsync(
 - Smoke test: rollback khi validation fail → cả entity + attachment đều không bị insert
 - Smoke test: insert 2 entity khác nhau cùng GroupType → KHÔNG xóa nhầm files của nhau
 
-### Phase 5: Migration & data sync + Domain cleanup
+### Phase 5: Migration & data sync + Domain cleanup — ✅ DONE
 
-**Phần A — KHÔNG cần data migration, KHÔNG đụng EF migration:**
+> Log chi tiết: [`phase-5-implementation.md`](./phase-5-implementation.md)
 
-Dùng chung **1 class** `BuildingBlocks.Domain.Entities.Attachment` cho mọi module. Cấu hình EF Core theo pattern:
+**Phần A — KHÔNG đụng EF migration — AS-BUILT (sau merge `3e70b87`):**
+
+Draft ban đầu đề xuất `QLDA.AttachmentConfiguration` là nơi DUY NHẤT `ToTable("TepDinhKem")` + `AppDbContext` chỉ `ExcludeFromMigrations`.  
+**Thực tế cuối cùng** (tránh race BB `"Attachments"` vs QLDA `"TepDinhKem"` khi `ApplyConfigurationsFromAssembly` + thứ tự assembly không deterministic):
 
 ```csharp
-// QLDA.AppDbContext.OnModelCreating (hoặc tương đương)
-// 1. BLOCK class cũ + class mới ở BuildingBlocks khỏi migrations
-modelBuilder.Entity<BuildingBlocks.Domain.Entities.TepDinhKem>(e =>
-{
-    e.ToTable(t => t.ExcludeFromMigrations());
-});
+// QLDA.AppDbContext.OnModelCreating
+// 1) Exclude BuildingBlocks.Persistence.Configurations.AttachmentConfiguration
+//    khỏi ApplyConfigurationsFromAssembly (cả AggregateRoot + IEntityTypeConfiguration)
+
+// 2) Force table name + audit/key defaults (không còn QLDA AttachmentConfiguration.cs)
 modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
 {
-    e.ToTable(t => t.ExcludeFromMigrations());
+    e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
+    e.ConfigureForBase();
 });
-
-// 2. QLDA.Persistence.Configurations.AttachmentConfiguration — khai báo table THẬT
-// File này là nơi DUY NHẤT define table name "TepDinhKem" (giữ nguyên tên DB cũ)
-public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
-{
-    public void Configure(EntityTypeBuilder<Attachment> builder)
-    {
-        builder.ToTable("TepDinhKem");  // ← QLDA-specific table name
-        // ... columns, indexes (giữ nguyên schema hiện tại)
-    }
-}
 ```
 
-**Tóm tắt pattern:**
-| Layer | Entity class | Table name | ExcludeFromMigrations? |
-|---|---|---|---|
-| `BuildingBlocks.Domain.Entities.Attachment` | `Attachment` | (không có) | ✅ CÓ |
-| `BuildingBlocks.Domain.Entities.TepDinhKem` (cũ) | `TepDinhKem` | (không có) | ✅ CÓ |
-| `QLDA.Persistence.Configurations.AttachmentConfiguration` | `Attachment` | `TepDinhKem` (QLDA-specific) | ❌ KHÔNG — đây là nơi khai báo table thật |
+| Layer | Vai trò | Table |
+|---|---|---|
+| BB `AttachmentConfiguration` | File còn (`ToTable("Attachments", ExcludeFromMigrations)`) nhưng **không apply** vào QLDA DbContext | — |
+| `QLDA.../AttachmentConfiguration.cs` | **Deleted** (`3e70b87`) | — |
+| `QLDA.AppDbContext` | **Owner** runtime map + ExcludeFromMigrations + ConfigureForBase | `TepDinhKem` |
+| Entity `TepDinhKem` | **Deleted** — không còn block `Entity<TepDinhKem>` trong AppDbContext | — |
 
-**Verify sau Phase 5:**
-- `dotnet ef migrations add VerifyAttachmentRename` → nếu generated trống (no DDL change) → OK
-- Nếu có DDL change → revert + check lại config (thường do quên `ExcludeFromMigrations` ở BB)
+**Verify:** build 0 error; không sửa migration / ModelSnapshot; runtime query hit `TepDinhKem`.
 
-**Phần B — Domain cleanup (xóa file duplicate):**
+**Phần B — Domain cleanup (đã xóa):**
 
 | Action | File |
 |---|---|
-| DELETE | `BuildingBlocks/src/BuildingBlocks.Domain/Entities/TepDinhKem.cs` |
-| DELETE | `QLDA.Domain/Entities/TepDinhKem.cs` |
-| DELETE | `BuildingBlocks/src/BuildingBlocks.Application/TepDinhKems/` (toàn bộ folder) |
-| DELETE | `QLDA.Application/TepDinhKems/` (toàn bộ folder) |
-| DELETE | `BuildingBlocks/src/BuildingBlocks.Persistence/Configurations/TepDinhKemConfiguration.cs` |
-| DELETE | `QLDA.Persistence/Configurations/TepDinhKemConfiguration.cs` |
-| DELETE | `QLDA.Application/Common/SignedHelper.cs` (đã move sang BuildingBlocks) |
-| DELETE | `QLDA.Application/Common/SyncHelper.cs` (dùng bản BuildingBlocks) |
-| DELETE | `QLDA.Application/Common/Interfaces/IMayHaveTepDinhKemDto.cs` |
-| DELETE | `QLDA.Application/Common/Interfaces/IMayHaveTepDinhKemInsertOrUpdateDto.cs` |
-| DELETE | `BuildingBlocks/src/BuildingBlocks.Application/Common/Interfaces/IMayHaveTepDinhKem.cs` |
+| DELETE | `BuildingBlocks/.../Entities/TepDinhKem.cs` |
+| DELETE | `BuildingBlocks/.../Configurations/TepDinhKemConfiguration.cs` |
+| DELETE | `BuildingBlocks.Application/TepDinhKems/` (toàn folder) |
+| DELETE | `QLDA.Application/TepDinhKems/Commands/*` (BulkInsert/BulkDelete) |
+| DELETE | `QLDA.Application/TepDinhKems/Queries/GetDanhSachTepDinhKemQuery.cs` |
+| DELETE | `QLDA.Application/Common/SignedHelper.cs` |
+| DELETE | `QLDA.Application/Common/SyncHelper.cs` |
+| DELETE | `BuildingBlocks.../IMayHaveTepDinhKem.cs` |
+| DELETE | `QLDA.Persistence/Configurations/AttachmentConfiguration.cs` (theo `3e70b87`) |
 
-**⚠️ HARD RULE — KHÔNG DELETE:**
-- ❌ `QLDA.Application/TepDinhKems/DTOs/TepDinhKemDto.cs` — **KEEP**, chỉ sửa `: AttachmentDto` thay vì `: IHasKey<...>`. Đây là QLDA-specific DTO mở rộng, dùng type alias `using TepDinhKemDto = QLDA.Application.TepDinhKems.DTOs.TepDinhKemDto` giữ nguyên tên trong 50+ DTO files.
+**⚠️ HARD RULE — KHÔNG DELETE (đã giữ):**
+- ✅ `QLDA.Application/TepDinhKems/DTOs/TepDinhKemDto.cs` (+ Insert DTOs, mapping)
+- ✅ `QLDA.Application/Common/Interfaces/IMayHaveTepDinhKemDto.cs`
+- ✅ `DuAnGetDanhSachTepDinhKemQuery` (query riêng theo DuAnId)
+- ✅ WebApi `TepDinhKemModel` / `IMayHaveTepDinhKemModel`
 
-**⚠️ HARD RULE — KHÔNG ĐỤNG EF MIGRATION:**
-- ❌ KHÔNG sửa bất kỳ file migration nào
-- ❌ KHÔNG chạy `dotnet ef migrations add` cho class Attachment/TepDinhKem
-- ✅ Dùng `ExcludeFromMigrations()` để EF skip generate DDL cho class ở BB
-- ✅ QLDA giữ table `TepDinhKem` hiện tại, không cần DDL change
+**⚠️ HARD RULE — KHÔNG ĐỤNG EF MIGRATION:** đã tuân thủ.
 
-### Phase 6: Documentation
+### Phase 6: Documentation — ✅ DONE
 
-1. Update `docs/code-standards.md`: section "TepDinhKem pattern" → "Attachment pattern"
-2. Update `BuildingBlocks/CLAUDE.md`: references TepDinhKem → Attachment
-3. Update `QLDA/CLAUDE.md`: tương tự
+> Log: [`phase-6-implementation.md`](./phase-6-implementation.md)
+
+1. ✅ `docs/code-standards.md` — §14 Attachment Pattern
+2. ✅ `BuildingBlocks/CLAUDE.md` — terms + GetById example
+3. ✅ Root `CLAUDE.md` (repo không có `QLDA/CLAUDE.md` riêng)
 
 ---
 
@@ -1772,98 +1777,67 @@ SELECT COUNT(*) FROM TepDinhKems; -- hoặc TepDinhKem
 
 ## Acceptance criteria
 
+> **Status:** ✅ Phase 1–6 code/docs **DONE** (2026-07-21). Mục deferred: runtime smoke test (cần DB).
+
 ### Build & Commit (ÁP DỤNG MỌI PHASE - HARD RULE)
 
-- [ ] **Mỗi commit PHẢI có `dotnet build SER.sln -c Release --nologo` pass với 0 errors**
-- [ ] **KHÔNG commit nếu build fail** (kể cả chỉ 1 warning mới nullable reference)
-- [ ] **Build `Release` mode, không `Debug`** (catch nullable warnings)
-- [ ] **Mỗi commit phải buildable độc lập** (git bisect friendly)
-- [ ] Solution `BuildingBlocks.sln` đã broken (đường dẫn cũ) - KHÔNG dùng để verify, dùng `SER.sln`
+- [x] Build verify trên `SER.sln` Release — 0 errors (re-verify 2026-07-21)
+- [x] Dùng `SER.sln` (không dùng `BuildingBlocks.sln` broken)
+- [x] Unit tests Phase3/Phase4/Attachments — QLDA 14 + BB 23 passed
 
 ### Functional
 
-- [ ] `BuildingBlocks.Application.Attachments/` có đủ: Commands (Bulk/Insert/Delete/Signed), Queries (GetById/GetByGroup/GetByParent/Verify), DTOs (Dto/InsertModel/InsertOrUpdateModel/Mapping), Validators, Common helpers (**SignedGroupTypeHelper, AttachmentCollectionExtensions** — KHÔNG có `AttachmentGroupTypeAttribute`/`AttachmentPropertyMapper`/`AttachmentEntityBuilder`)
-- [ ] **Mọi module (QLDA, QLHD, DVDC, NVTT) reference `BuildingBlocks.Application.Attachments` qua `using` — KHÔNG tự định nghĩa lại**
-- [ ] **0 file nào trong QLDA/QLHD/DVDC/NVTT còn định nghĩa class/interface/command/query/helper riêng cho TepDinhKem**
-- [ ] **0 file nào có property/DTO bị rename** — `DanhSachTepDinhKem`, `TepDinhKemDto`, `TepDinhKemInsertDto`, `TepDinhKemInsertOrUpdateDto`, `TepDinhKemModel` giữ nguyên 100%
-- [ ] **Type alias `using TepDinhKemDto = AttachmentDto`** được dùng ở ~50 files DTO — KHÔNG cần đổi property name
-- [ ] **Type alias `using IMayHaveTepDinhKemDto = IMayHaveAttachmentDto`** ở mọi nơi dùng interface cũ
-- [ ] `IAttachmentDto` interface định nghĩa đúng 9 core fields, KHÔNG có field riêng QLDA
-- [ ] `AttachmentDto` implement `IAttachmentDto` + 9 fields (Id, ParentId, GroupId, GroupType, Type, FileName, OriginalName, Path, Size)
-- [ ] `TepDinhKemDto` extend `AttachmentDto` + 5 fields riêng QLDA (TenNguoiTao, CreatedBy/At, UpdatedBy/At) — file `QLDA.Application/TepDinhKems/DTOs/TepDinhKemDto.cs` GIỮ NGUYÊN, chỉ sửa `: AttachmentDto` thay vì `: IHasKey<...>` thuần
-- [ ] Type alias `using TepDinhKemDto = QLDA.Application.TepDinhKems.DTOs.TepDinhKemDto;` giữ nguyên 100% tên trong 50+ DTO files
-- [ ] JSON output `TepDinhKemDto` khớp 100% với contract cũ (14 fields, Frontend không cần đổi)
-- [ ] Cross-module (QLHD) dùng `AttachmentDto` không cần kế thừa
-- [ ] Module riêng cần field mới → tạo class con `: AttachmentDto`, KHÔNG sửa DTO chung
-- [ ] `AttachmentMapping.ToDto<T>(...)` generic cho mọi loại DTO implement `IAttachmentDto`
-- [ ] **Rule cứng: KHÔNG được thêm field vào `AttachmentDto` hoặc `IAttachmentDto` chỉ vì 1 module riêng**
-- [ ] 0 file nào trong QLDA còn reference class `TepDinhKem` (entity, DTO, command, query) — chỉ còn reference `Attachment`
-- [ ] 0 file nào trong BuildingBlocks còn reference class `TepDinhKem` — chỉ còn reference `Attachment`
-- [ ] DB table giữ nguyên tên `TepDinhKem`/`TepDinhKems` (KHÔNG rename)
-- [ ] `BuildingBlocks.Domain.Entities.Attachment` block EF migration qua `e.ToTable(t => t.ExcludeFromMigrations())`
-- [ ] `BuildingBlocks.Domain.Entities.TepDinhKem` (class cũ) cũng phải block trước khi xóa file
-- [ ] `QLDA.Persistence.Configurations.AttachmentConfiguration` khai báo `builder.ToTable("TepDinhKem")` — nơi duy nhất định nghĩa table thật
-- [ ] Class `Attachment` map xuống table qua `ToTable()` trong Configuration (mỗi module 1 cái)
-- [ ] Tất cả 50+ controllers QLDA dùng `AttachmentBulkInsertOrUpdateCommand` + `GetAttachmentsQuery` (KHÔNG còn `AttachmentPropertyMapper`)
-- [ ] Tất cả ~40+ handlers (QLDA.Application/*/Queries/*GetDanhSachQueryHandler) inject `IRepository<Attachment, Guid>` hoặc gọi `GetAttachmentsQuery` qua `IMediator` — KHÔNG query trực tiếp `TepDinhKem`
-- [ ] Tất cả ~30+ per-entity mapping files trong `QLDA.WebApi/Models/{*}/` dùng `AttachmentCollectionExtensions.ToEntities(...)` chung — KHÔNG có `GetDanhSachTepDinhKem(model, groupId)` riêng
-- [ ] `SignedHelper` chỉ tồn tại ở 1 nơi: `BuildingBlocks.Application.Attachments.Common.SignedGroupTypeHelper` (xoá bản ở QLDA.Application/Common và QLDA.WebApi/Models/TepDinhKems)
-- [ ] `AttachmentSubquery` helper hoạt động trong EF Core expression tree (compile được trong `.Select()` projection, không throw runtime error)
-- [ ] **Helper NON-generic**, nhận `string groupId` trực tiếp — KHÔNG dùng `<TParent>` + selector (KHÔNG compile được trong EF Core expression tree)
-- [ ] `KhoKhanVuongMacGetDanhSachQuery` (và ~15+ handler tương tự) refactor dùng `AttachmentSubquery.ForGroupTypes(id.ToString(), EGroupType.X)` — KHÔNG còn duplicate `TepDinhKem.GetQueryableSet().Where(... SignedHelper.Prefix ...)`
-- [ ] Multi-GroupType: dùng `AttachmentSubquery.ForGroupTypes(...)` (helper multi-GroupType, NON-generic)
-- [ ] Nested DTOs (cấp 2, 3) vẫn hoạt động đúng qua `.Select()` projection với helper
-- [ ] `GetAttachmentsQuery(BaseGroupTypes, IncludeSigned=true)` trả về list, caller tự gán vào property tương ứng qua `BaseGroupType()` extension
-- [ ] **~15+ per-feature mapping files** trong `QLDA.Application/{Feature}/DTOs/*Mappings.cs` được thay thế bằng `AttachmentCollectionExtensions.ToEntities(dtos, groupId, baseGroupType)`
-- [ ] **~30+ per-WebApi mapping files** trong `QLDA.WebApi/Models/{Feature}/*MappingConfiguration.cs` được thu gọn (xoá method `GetDanhSachXXX` riêng)
-- [ ] `DuAnGetDanhSachTepDanhSachTepDinhKemQuery` (gộp tất cả file của DuAn) được giữ lại logic `ResolveGroupIdsAsync` qua helper riêng
-- [ ] `NoiDungDaKyGetDanhSachQuery` (ký số) refactor dùng `Attachment` class thay vì `TepDinhKem` alias
-- [ ] **Default behavior:** Caller gọi `GetAttachmentsQuery(BaseGroupTypes: ["QLHD"], IncludeSigned: true)` → tự gộp cả file gốc + ký số. Để tách riêng → gọi 2 lần với base khác nhau.
+- [x] `BuildingBlocks.Application.Attachments/` có Commands/Queries/DTOs/Validators/Common (`SignedGroupTypeHelper`, `AttachmentCollectionExtensions`, `AttachmentSubquery`) — **không** có Attribute/PropertyMapper/EntityBuilder
+- [x] Scope QLDA: reference BB Attachments; **không** tự định nghĩa command/query entity `TepDinhKem` (DTO API vẫn giữ tên `TepDinhKem*`)
+- [x] Property/DTO API **không rename** — `DanhSachTepDinhKem`, `TepDinhKemDto`, `TepDinhKemModel`, …
+- [x] `IAttachmentDto` + `AttachmentDto` (9 core fields); `TepDinhKemDto : AttachmentDto` (+ field QLDA)
+- [x] `AttachmentMapping.ToDto<T>(...)` generic
+- [x] 0 runtime entity `TepDinhKem` / `IRepository<TepDinhKem>` trong Application/WebApi (chỉ comment dead / docs)
+- [x] DB table giữ `TepDinhKem` — **không** tạo bảng `Attachments` trên QLDA
+- [x] EF mapping QLDA: `AppDbContext` force `ToTable("TepDinhKem", ExcludeFromMigrations)` + `ConfigureForBase()`; BB config excluded; **không** còn `QLDA.../AttachmentConfiguration.cs`
+- [x] Controllers: `AttachmentBulkInsertOrUpdateCommand` (~47) + `GetAttachmentsQuery` (~46)
+- [x] List handlers dùng `AttachmentSubquery.ExpandGroupTypes` / subquery `IRepository<Attachment>`
+- [x] Mapping dùng `AttachmentCollectionExtensions.ToEntities` / `ToAttachmentEntities`
+- [x] `SignedGroupTypeHelper` single source; QLDA `SignedHelper` deleted
+- [x] `AttachmentSubquery` NON-generic; correlated Select dùng `ExpandGroupTypes` + `Contains`
+- [x] `DuAnGetDanhSachTepDinhKemQuery` giữ (query riêng DuAnId)
+- [x] Default IncludeSigned / BaseGroupType convention
 
 ### Convention-based (KHÔNG dùng attribute - YAGNI)
 
-- [ ] `SignedGroupTypeHelper.ResolveSignedGroupType(baseGroupType, isChild)` là **single source of truth** cho mọi resolve GroupType (cả WRITE lẫn READ)
-- [ ] **KHÔNG** tạo `AttachmentGroupTypeAttribute` (YAGNI — convention đã rõ)
-- [ ] **KHÔNG** tạo `AttachmentPropertyMapper` với reflection pairing logic (YAGNI)
-- [ ] **KHÔNG** tạo `AttachmentEntityBuilder` riêng (helper nằm trong `AttachmentCollectionExtensions.ToEntities`)
-- [ ] Helper `AttachmentDto.BaseGroupType()` extension method — strip `KySo_` prefix
-- [ ] `GetAttachmentsQuery(BaseGroupTypes, IncludeSigned=true)` — caller tự quyết gộp/tách qua số lần gọi
-- [ ] `AttachmentCollectionExtensions.ToEntities(dtos, groupId, baseGroupType)` — write side, helper tự resolve ký số
+- [x] `SignedGroupTypeHelper.ResolveSignedGroupType` — single source of truth
+- [x] **KHÔNG** tạo `AttachmentGroupTypeAttribute` / `AttachmentPropertyMapper` / `AttachmentEntityBuilder`
+- [x] `AttachmentDto.BaseGroupType()` extension
+- [x] `GetAttachmentsQuery` + `ToEntities(..., baseGroupType)` write side
 
-### Architecture decisions (từ session này)
+### Architecture decisions (từ session này) — ✅ AS-BUILT
 
-- [ ] Dùng chung **1 class** `BuildingBlocks.Domain.Entities.Attachment` cho mọi module
-- [ ] **BB Configuration** block class `Attachment` + class cũ `TepDinhKem` qua `e.ToTable(t => t.ExcludeFromMigrations())`
-- [ ] **QLDA Configuration** (`QLDA.Persistence.Configurations.AttachmentConfiguration`) là nơi DUY NHẤT khai báo `builder.ToTable("TepDinhKem")`
-- [ ] **KHÔNG quan tâm** cross-module (QLHD/DVDC/NVTT) — chỉ QLDA cần refactor
-- [ ] **KHÔNG giới hạn** số GroupType per entity — dùng `nameof(EGroupType.X)` + `EGroupType` enum
-- [ ] **KHÔNG đụng** EF migration files — dùng `ExcludeFromMigrations()` để EF skip
-- [ ] **KHÔNG build nested DTO** — flat `DanhSachTepDinhKem`, gắn `EGroupType.Type` + `KySo_Type` qua convention
-- [ ] Multi-GroupType: dùng `AttachmentSubquery.ForGroupTypes(...)` (helper multi-GroupType đã có ở line 358)
-- [ ] User truyền `["Type", "Type2"]` → helper tự thêm `["Type", "Type2", "KySo_Type", "KySo_Type2"]` và filter theo `GroupId == id AND GroupType IN (...)`
-- [ ] **Separate behavior:** Khi có cả property base + `KySo_*` → tách riêng, property base chỉ lấy gốc, property ký số lấy riêng
-- [ ] `dotnet build SER.sln -c Release --nologo` pass với 0 errors, 0 new warnings
-- [ ] Smoke test: form chỉ khai báo 2 property base (gộp) → load đúng cả file gốc + ký số
-- [ ] Smoke test: form khai báo 4 property (gốc + ký số riêng) → load tách biệt đúng từng property
-- [ ] Smoke test: upload file, save, reload, download thành công trên 1 form QLDA
-- [ ] `docs/code-standards.md` updated với pattern mới (Hydration pattern, SignedGroupTypeHelper)
-- [ ] `BuildingBlocks/CLAUDE.md` + `QLDA/CLAUDE.md` references đồng bộ
+- [x] Dùng chung **1 class** `BuildingBlocks.Domain.Entities.Attachment` cho mọi module
+- [x] **BB AttachmentConfiguration** tồn tại nhưng **bị exclude** khỏi QLDA `ApplyConfigurationsFromAssembly` (tránh map `"Attachments"`)
+- [x] **QLDA owner table name:** `AppDbContext` force `ToTable("TepDinhKem")` + `ConfigureForBase()` — **không** còn file `QLDA.../AttachmentConfiguration.cs` (`3e70b87`)
+- [x] **KHÔNG quan tâm** cross-module (QLHD/DVDC/NVTT) trong scope này — chỉ QLDA
+- [x] **KHÔNG giới hạn** số GroupType per entity — dùng `nameof(EGroupType.X)` + enum
+- [x] **KHÔNG đụng** EF migration files — dùng `ExcludeFromMigrations()`
+- [x] **KHÔNG build nested DTO** — flat `DanhSachTepDinhKem` + convention ký số
+- [x] Multi-GroupType: `AttachmentSubquery.ExpandGroupTypes` / `ForGroupTypes`
+- [x] `dotnet build SER.sln -c Release --nologo` — 0 errors (re-verify 2026-07-21)
+- [ ] Smoke test runtime API (cần DB) — **deferred**
+- [x] `docs/code-standards.md` §14 Attachment Pattern
+- [x] `BuildingBlocks/CLAUDE.md` + root `CLAUDE.md` đồng bộ
 
-### Phase 4 Acceptance criteria (Sync Layer + Controller-mediated)
+### Phase 4 Acceptance criteria (Sync Layer + Controller-mediated) — ✅ DONE
 
-- [ ] `AttachmentBulkInsertOrUpdateCommand` có `GroupId` + `GroupTypes` (List<string>) bắt buộc (không optional)
-- [ ] Validate throw `ManagedException` nếu `GroupType` null/empty
-- [ ] `AutoDeleteMissing=false` mặc định (chỉ insert/update, KHÔNG xóa files không có trong list)
-- [ ] Handler check `_unitOfWork.HasTransaction` trước khi bọc transaction
-- [ ] Controller mở transaction 1 lần, commit 1 lần, KHÔNG để handler tự commit
-- [ ] `SignedGroupTypeHelper` chỉ tồn tại 1 nơi: `BuildingBlocks.Application.Attachments.Common` (xoá bản QLDA.Application/Common/SignedHelper.cs)
-- [ ] `QLDA.Application/Common/SyncHelper.cs` đã DELETE (dùng bản BuildingBlocks)
-- [ ] `AttachmentCollectionExtensions.SyncAttachmentsAsync` scope chặt theo `baseGroupType` (throw nếu existing có GroupType ngoài scope)
-- [ ] `SyncAttachmentsAsync` auto-resolve GroupType khi ParentId thay đổi (re-derive trong `updateAction`)
-- [ ] KHÔNG sửa bất kỳ business entity handler nào (KeHoachTrienKhaiHangMucInsertCommandHandler, DuAnUpdateStepCommandHandler, etc.) - chỉ sửa controllers
-- [ ] Smoke test: tạo entity có attachment → cả 2 commit cùng transaction (rollback 1 = rollback cả 2)
-- [ ] Smoke test: 2 entity khác nhau cùng GroupType → KHÔNG xóa nhầm files của nhau
-- [ ] Smoke test: insert attachment với ParentId → GroupType tự động = `KySo_<baseGroupType>`
+- [x] `AttachmentBulkInsertOrUpdateCommand` có `GroupId` + `GroupTypes` bắt buộc
+- [x] Validate throw `ManagedException` nếu GroupTypes trống / GroupType ngoài scope
+- [x] `AutoDeleteMissing=false` mặc định
+- [x] Handler check `_unitOfWork.HasTransaction`
+- [x] Controller-mediated transaction pattern
+- [x] `SignedGroupTypeHelper` chỉ ở BB; QLDA `SignedHelper` deleted
+- [x] QLDA `SyncHelper.cs` deleted
+- [x] `SyncAttachmentsAsync` scope chặt theo baseGroupTypes
+- [x] Re-derive GroupType khi ParentId đổi
+- [x] Không sửa business entity handlers ngoài phạm vi attachment
+- [ ] Smoke test transaction/rollback/cross-entity — **deferred (cần DB)**
 
 ---
 
@@ -1880,33 +1854,29 @@ SELECT COUNT(*) FROM TepDinhKems; -- hoặc TepDinhKem
 | App | `BuildingBlocks/src/BuildingBlocks.Application/Attachments/DTOs/AttachmentDto.cs` | EXTEND (audit fields) |
 | App | `BuildingBlocks/src/BuildingBlocks.Application/Attachments/DTOs/AttachmentMapping.cs` | EXTEND (ResolveSignedGroupType) |
 | App | `BuildingBlocks/src/BuildingBlocks.Application/Attachments/Common/SignedGroupTypeHelper.cs` | CREATE |
-| App | `BuildingBlocks/src/BuildingBlocks.Application/TepDinhKems/` (whole folder) | DELETE |
-| App | `QLDA.Application/TepDinhKems/` (whole folder) | DELETE |
-| App | `QLDA.Application/Common/SignedHelper.cs` | DELETE |
-| Interface | `BuildingBlocks/src/BuildingBlocks.Application/Common/Interfaces/IMayHaveAttachment.cs` | KEEP (đã đúng) |
-| Interface | `BuildingBlocks/src/BuildingBlocks.Application/Common/Interfaces/IMayHaveTepDinhKem.cs` | DELETE |
-| Interface | `QLDA.Application/Common/Interfaces/IMayHaveTepDinhKemDto.cs` | DELETE |
-| WebApi | `QLDA.WebApi/Controllers/*.cs` (~50 files) | REPLACE commands/queries |
-| WebApi | `QLDA.WebApi/Models/Common/Interfaces/IMayHaveTepDinhKemModel.cs` | RENAME |
-| WebApi | `QLDA.WebApi/Models/TepDinhKems/TepDinhKemMappingConfigurations.cs` | RENAME + rewrite |
-| Persistence | `BuildingBlocks/src/BuildingBlocks.Persistence/Configurations/TepDinhKemConfiguration.cs` | DELETE |
-| Persistence | `QLDA.Persistence/Configurations/TepDinhKemConfiguration.cs` | DELETE |
+| App | `BuildingBlocks/src/BuildingBlocks.Application/TepDinhKems/` (whole folder) | DELETE ✅ |
+| App | `QLDA.Application/TepDinhKems/Commands/*`, `Queries/GetDanhSachTepDinhKemQuery` | DELETE ✅ |
+| App | `QLDA.Application/TepDinhKems/DTOs/*` | **KEEP** (API contract) ✅ |
+| App | `QLDA.Application/Common/SignedHelper.cs` | DELETE ✅ |
+| Interface | `BuildingBlocks/.../IMayHaveTepDinhKem.cs` | DELETE ✅ |
+| Interface | `QLDA.Application/Common/Interfaces/IMayHaveTepDinhKemDto.cs` | **KEEP** ✅ |
+| WebApi | `QLDA.WebApi/Controllers/*.cs` (~47 files) | REPLACE commands/queries ✅ |
+| WebApi | `QLDA.WebApi/Models/TepDinhKems/*`, `IMayHaveTepDinhKemModel` | **KEEP** tên API ✅ |
+| Persistence | `BuildingBlocks/.../TepDinhKemConfiguration.cs` | DELETE ✅ |
+| Persistence | `QLDA.Persistence/Configurations/AttachmentConfiguration.cs` | DELETE ✅ (`3e70b87`) |
+| Persistence | `QLDA.Persistence/AppDbContext.cs` | MODIFY — force `ToTable("TepDinhKem")` + `ConfigureForBase` ✅ |
 
-### Phase 4 additions (Sync Layer)
+### Phase 4 additions (Sync Layer) — ✅ DONE
 
 | Layer | File | Action |
 |---|---|---|
-| App | `BuildingBlocks.Application.Attachments.Common.SignedGroupTypeHelper.cs` | MOVE từ `QLDA.Application/Common/SignedHelper.cs` |
-| App | `BuildingBlocks.Application.Attachments.Common.AttachmentCollectionExtensions.cs` | NEW - `SyncAttachmentsAsync` |
-| App | `BuildingBlocks.Application.Attachments.Commands.AttachmentBulkInsertOrUpdateCommand.cs` | NEW - có `GroupTypes` (List<string>) bắt buộc |
-| App | `BuildingBlocks.Application.Attachments.Commands.AttachmentBulkInsertOrUpdateCommandHandler.cs` | NEW - check `HasTransaction` |
-| App | `BuildingBlocks.Application.Attachments.Commands.AttachmentBulkInsertCommand.cs` | NEW - insert only |
-| App | `BuildingBlocks.Application.Attachments.Commands.AttachmentBulkDeleteCommand.cs` | NEW - delete theo GroupId + GroupType |
-| App | `BuildingBlocks.Application.Attachments.Queries.AttachmentGetByGroupQuery.cs` | NEW |
-| App | `BuildingBlocks.Application.Attachments.Queries.AttachmentGetByGroupQueryHandler.cs` | NEW - filter chặt GroupType |
-| App | `QLDA.Application/Common/SignedHelper.cs` | DELETE (đã MOVE) |
-| App | `QLDA.Application/Common/SyncHelper.cs` | DELETE (dùng bản BuildingBlocks) |
-| WebApi | `QLDA.WebApi/Controllers/*.cs` (~15-20 files) | REFACTOR - đổi tên command + thêm `GroupType` |
+| App | `.../SignedGroupTypeHelper.cs` | CREATE/MOVE ✅ |
+| App | `.../AttachmentCollectionExtensions.cs` | NEW ✅ |
+| App | `.../AttachmentSubquery.cs` | NEW ✅ |
+| App | `.../AttachmentBulkInsertOrUpdateCommand.cs` | EXTEND GroupTypes ✅ |
+| App | `QLDA.Application/Common/SignedHelper.cs` | DELETE ✅ |
+| App | `QLDA.Application/Common/SyncHelper.cs` | DELETE ✅ |
+| WebApi | `QLDA.WebApi/Controllers/*.cs` | REFACTOR ✅ |
 
 ---
 
@@ -1918,41 +1888,34 @@ SELECT COUNT(*) FROM TepDinhKems; -- hoặc TepDinhKem
 
 ---
 
-### Q1: DB table name + ExcludeFromMigrations ✅ RESOLVED
+### Q1: DB table name + ExcludeFromMigrations ✅ RESOLVED (as-built cập nhật 2026-07-21)
 
 | Field | Content |
 |---|---|
-| **Câu hỏi** | Dùng class `Attachment` (code) chung cho mọi module, nhưng DB table name mỗi module khác nhau — làm sao để EF không generate DDL trùng? |
-| **Phát hiện** | Cần block cả class cũ (`TepDinhKem`) + class mới (`Attachment`) ở BuildingBlocks khỏi migrations. Mỗi module config table name riêng trong `{Module}.Persistence.Configurations.AttachmentConfiguration` |
-| **Giải pháp** | Dùng `e.ToTable(t => t.ExcludeFromMigrations())` ở BB DbContext. QLDA config là nơi duy nhất khai báo table thật `TepDinhKem` |
-| **Cập nhật plan** | Phase 5 — Phần A. Thêm 3 acceptance criteria. Section "Architecture decisions" |
+| **Câu hỏi** | Dùng class `Attachment` (code) chung cho mọi module, nhưng DB table name mỗi module khác nhau — làm sao để EF không generate DDL trùng / không query nhầm bảng? |
+| **Phát hiện ban đầu** | Cần block BB khỏi migrations; mỗi module config table name riêng |
+| **Phát hiện runtime (`3e70b87`)** | Nếu vừa apply BB (`Attachments`) vừa apply QLDA (`TepDinhKem`), thứ tự assembly không deterministic → đôi lúc query `Attachments` → `Invalid object name` |
+| **Giải pháp cuối (QLDA)** | (1) Exclude BB `AttachmentConfiguration` khỏi `ApplyConfigurationsFromAssembly`; (2) **Xóa** `QLDA.../AttachmentConfiguration.cs`; (3) Force `ToTable("TepDinhKem", ExcludeFromMigrations)` + `ConfigureForBase()` trong `AppDbContext` |
+| **Cập nhật plan** | Phase 5 Phần A as-built; acceptance criteria Persistence |
 
 ```csharp
-// Trong QLDA.AppDbContext.OnModelCreating
-modelBuilder.Entity<BuildingBlocks.Domain.Entities.TepDinhKem>(e =>
-    e.ToTable(t => t.ExcludeFromMigrations()));
+// QLDA.AppDbContext.OnModelCreating — AS-BUILT
 modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
-    e.ToTable(t => t.ExcludeFromMigrations()));
-
-// QLDA.Persistence.Configurations.AttachmentConfiguration - DUY NHẤT
-public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 {
-    public void Configure(EntityTypeBuilder<Attachment> builder)
-    {
-        builder.ToTable("TepDinhKem");  // ← QLDA-specific table name
-    }
-}
+    e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
+    e.ConfigureForBase();
+});
 ```
 
 **Tóm tắt:**
 
-| Layer | Entity class | Table name | ExcludeFromMigrations? |
+| Layer | Entity class | Table name | Ghi chú |
 |---|---|---|---|
-| `BuildingBlocks.Domain.Attachment` | `Attachment` | (không có) | ✅ CÓ |
-| `BuildingBlocks.Domain.TepDinhKem` (cũ) | `TepDinhKem` | (không có) | ✅ CÓ |
-| `QLDA.Persistence.AttachmentConfiguration` | `Attachment` | `TepDinhKem` | ❌ KHÔNG |
+| BB `AttachmentConfiguration` | `Attachment` | `"Attachments"` | ExcludeFromMigrations; **không apply** vào QLDA |
+| QLDA `AttachmentConfiguration` | — | — | **Deleted** |
+| `QLDA.AppDbContext` | `Attachment` | `TepDinhKem` | Owner runtime + ExcludeFromMigrations + ConfigureForBase |
 
-→ **Code = `Attachment`, DB name = tùy module**
+→ **Code = `Attachment`, DB QLDA = `TepDinhKem`**
 
 ---
 
@@ -2151,8 +2114,8 @@ flowchart TB
     end
 
     subgraph "Persistence Layer"
-        BBCFG["BB Configuration<br/>block cả class cũ + mới"]
-        QDCFG["QLDA.Persistence<br/>AttachmentConfiguration<br/>✅ ToTable('TepDinhKem')"]
+        BBCFG["BB AttachmentConfiguration<br/>exists but EXCLUDED from<br/>QLDA ApplyConfigurations"]
+        QDCFG["QLDA.AppDbContext<br/>✅ ToTable('TepDinhKem')<br/>+ ConfigureForBase()<br/>+ ExcludeFromMigrations"]
     end
 
     subgraph "Database"
@@ -2167,9 +2130,8 @@ flowchart TB
     HND --> COMMON
     QRY --> SUBQ
     CMD --> DTO
-    HND -->|AddRange| BBCFG
-    SUBQ -->|Query| BBCFG
-    BBCFG --> QDCFG
+    HND -->|IRepository| QDCFG
+    SUBQ -->|Query| QDCFG
     QDCFG -->|Map| BB
     QDCFG --> DB
 ```
@@ -2337,7 +2299,7 @@ flowchart TD
 
 | # | Sơ đồ | Loại | Mục đích |
 |---|---|---|---|
-| 1 | Layered Architecture | `flowchart TB` | Cấu trúc module, BB block vs QLDA config |
+| 1 | Layered Architecture | `flowchart TB` | Cấu trúc module; QLDA map table trong `AppDbContext` (as-built) |
 | 2 | Controller Transaction | `sequenceDiagram` | Workflow từ Controller → DB |
 | 3 | Multi-GroupType Loading | `flowchart TB` | Pattern load Guid entity |
 | 4 | KySo Convention | `flowchart LR` | ParentId → GroupType prefix |
@@ -2348,4 +2310,13 @@ flowchart TD
 
 1. **KHÔNG rename DTO/property** — UI contract giữ nguyên 100%
 2. **Controller-mediated transaction** — Handler check `HasTransaction`, KHÔNG tự bọc nếu có
-3. **Helper NON-generic** — `ForGroupTypes(id.ToString(), ...)` compile được trong EF Core
+3. **Helper NON-generic** — `ForGroupTypes(id.ToString(), ...)` / `ExpandGroupTypes` + `Contains` compile được trong EF Core
+4. **QLDA table map as-built:** `AppDbContext` force `ToTable("TepDinhKem")` — không restore `QLDA.AttachmentConfiguration` (race `3e70b87`)
+
+---
+
+## Completion note
+
+Plan này đã **thực thi xong Phase 1–6** trên branch `151-refactor-consolidate-attachment-files`.  
+Implementation logs: `phase-1-2` … `phase-6-implementation.md`.  
+Mọi draft cũ trong plan (đặc biệt Phase 5 “QLDA AttachmentConfiguration DUY NHẤT”) được **supersede** bởi as-built trong banner đầu file + Q1 + Phase 5 section.

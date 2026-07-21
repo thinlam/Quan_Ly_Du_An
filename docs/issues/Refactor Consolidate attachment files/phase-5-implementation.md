@@ -2,7 +2,7 @@
 
 > **Trạng thái:** Hoàn thành  
 > **Branch:** `151-refactor-consolidate-attachment-files`  
-> **Ngày:** 2026-07-20  
+> **Ngày:** 2026-07-20 (cập nhật mapping 2026-07-21 sau merge `main` / `3e70b87`)  
 > **Phạm vi:** Chỉ Phase 5 (không Phase 6, không commit tự động)
 
 ---
@@ -10,6 +10,8 @@
 ## Summary
 
 Phase 5 consolidate runtime entity về `BuildingBlocks.Domain.Entities.Attachment`, map EF vào bảng DB `TepDinhKem`, và xóa toàn bộ implementation duplicate (`TepDinhKem` entity, command/query/handler cũ, helper duplicate). DTO/API compatibility (`TepDinhKemDto`, `DanhSachTepDinhKem`, …) được giữ nguyên.
+
+**EF mapping (sau merge `main`):** không còn `QLDA.Persistence/Configurations/AttachmentConfiguration.cs`. Owner runtime table name + `ConfigureForBase()` là **`AppDbContext.OnModelCreating`** (force `ToTable("TepDinhKem")`), đồng bộ với fix `3e70b87` — tránh race BB `Attachments` vs QLDA `TepDinhKem`.
 
 ---
 
@@ -56,48 +58,51 @@ dotnet build SER.sln -c Release --nologo
 
 **File:** `BuildingBlocks/src/BuildingBlocks.Persistence/Configurations/AttachmentConfiguration.cs`
 
-**Thay đổi:** Thêm `ExcludeFromMigrations()` — BB không sở hữu DDL.
+**Thay đổi:** Thêm `ExcludeFromMigrations()` — BB không sở hữu DDL QLDA. File vẫn tồn tại cho shared module / module khác; **QLDA không apply** class này (xem §1.3).
 
 ```csharp
 builder.ToTable("Attachments", t => t.ExcludeFromMigrations());
 builder.ConfigureForBase();
 ```
 
-### 1.2 QLDA `AttachmentConfiguration` (giữ nguyên — owner bảng thật)
+### 1.2 QLDA `AttachmentConfiguration` — **Deleted** (theo `3e70b87`)
 
-**File:** `QLDA.Persistence/Configurations/AttachmentConfiguration.cs`
+**File:** `QLDA.Persistence/Configurations/AttachmentConfiguration.cs` → **không còn trong repo**
 
-```csharp
-public class AttachmentConfiguration : BuildingBlocks.Persistence.Configurations.AttachmentConfiguration {
-    public override void Configure(EntityTypeBuilder<Attachment> builder) {
-        builder.ToTable("TepDinhKem");  // ← nơi DUY NHẤT map bảng thật
-        builder.ConfigureForBase();
-    }
-}
-```
+**Lý do (commit `3e70b87` trên `main`):** cả BB (`ToTable("Attachments")`) và QLDA (`ToTable("TepDinhKem")`) đều bị `ApplyConfigurationsFromAssembly` pick up. Thứ tự `AppDomain.GetAssemblies()` không deterministic → config chạy sau thắng. Nếu BB thắng → runtime query bảng `Attachments` (không tồn tại) → `Invalid object name 'Attachments'`.
 
-### 1.3 `AppDbContext` — loại bỏ entity cũ
+Fix: **xóa** QLDA config (redundant) + **force** `ToTable("TepDinhKem")` trong `AppDbContext` sau mọi `ApplyConfigurationsFromAssembly`.
+
+> Bản Phase 5 ban đầu (2026-07-20) từng giữ QLDA `AttachmentConfiguration` làm owner. Sau merge `main` → cập nhật theo `3e70b87`: owner = `AppDbContext`.
+
+### 1.3 `AppDbContext` — owner bảng `TepDinhKem` + exclude BB config
 
 **File:** `QLDA.Persistence/AppDbContext.cs`
 
-**Trước:**
+1. **Exclude** `BuildingBlocks.Persistence.Configurations.AttachmentConfiguration` khỏi cả hai `ApplyConfigurationsFromAssembly` (AggregateRoot + `IEntityTypeConfiguration`) — tránh map nhầm `"Attachments"`.
+2. **Xóa** block `Entity<TepDinhKem>` (entity đã xóa).
+3. **Force** map `Attachment` → `TepDinhKem` + `ConfigureForBase()` (vì không còn `IEntityTypeConfiguration<Attachment>` nào được apply cho QLDA).
+
 ```csharp
-modelBuilder.Entity<TepDinhKem>(e => e.ToTable(t => t.ExcludeFromMigrations()));
-modelBuilder.Entity<Attachment>(e => e.ToTable(t => t.ExcludeFromMigrations()));
+// Trong filter ApplyConfigurationsFromAssembly:
+t.FullName != "BuildingBlocks.Persistence.Configurations.AttachmentConfiguration"
+
+// Sau vòng ApplyConfigurations:
+modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
+{
+    e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
+    e.ConfigureForBase();
+});
 ```
 
-**Sau:**
-```csharp
-modelBuilder.Entity<Attachment>(e => e.ToTable(t => t.ExcludeFromMigrations()));
-```
-
-> `ExcludeFromMigrations` trên `Attachment` trong `AppDbContext` giữ snapshot migration ổn định. Runtime table name vẫn là `TepDinhKem` nhờ QLDA `AttachmentConfiguration` override.
+> `ExcludeFromMigrations` giữ snapshot Migrator ổn định. `ConfigureForBase()` cung cấp key/audit defaults (trước đây nằm trong QLDA `AttachmentConfiguration`).
 
 ### 1.4 Xóa configuration entity cũ
 
 | File | Hành động |
 |------|-----------|
 | `BuildingBlocks.Persistence/Configurations/TepDinhKemConfiguration.cs` | **Deleted** |
+| `QLDA.Persistence/Configurations/AttachmentConfiguration.cs` | **Deleted** (theo `3e70b87` / merge `main`) |
 
 ---
 
@@ -196,12 +201,17 @@ global using BuildingBlocks.Application.Common;
 ## Final architecture
 
 ```text
-Runtime entity:     BuildingBlocks.Domain.Entities.Attachment
-Database table:     TepDinhKem
-Owning configuration: QLDA.Persistence.Configurations.AttachmentConfiguration
+Runtime entity:          BuildingBlocks.Domain.Entities.Attachment
+Database table:          TepDinhKem
+Owning mapping (QLDA):   QLDA.Persistence.AppDbContext
+                         → ToTable("TepDinhKem", ExcludeFromMigrations) + ConfigureForBase()
+BB AttachmentConfiguration:
+                         Exists (ToTable "Attachments", ExcludeFromMigrations)
+                         nhưng bị EXCLUDE trong AppDbContext.ApplyConfigurationsFromAssembly
+QLDA AttachmentConfiguration:  Deleted (3e70b87)
 Shared application module: BuildingBlocks.Application.Attachments
-Signed logic (single): BuildingBlocks.Application.Attachments.Common.SignedGroupTypeHelper
-Sync logic (single): BuildingBlocks.Application.Common.SyncHelper
+Signed logic (single):   BuildingBlocks.Application.Attachments.Common.SignedGroupTypeHelper
+Sync logic (single):     BuildingBlocks.Application.Common.SyncHelper
 ```
 
 ---
@@ -216,9 +226,9 @@ _(Không có file mới — chỉ doc này)_
 
 | File | Mô tả |
 |------|-------|
-| `BuildingBlocks.Persistence/Configurations/AttachmentConfiguration.cs` | `ExcludeFromMigrations` |
+| `BuildingBlocks.Persistence/Configurations/AttachmentConfiguration.cs` | `ExcludeFromMigrations` (không apply vào QLDA DbContext) |
 | `BuildingBlocks.Application/Common/SyncHelper.cs` | Xóa TepDinhKem overload, thêm 3-param Attachment overload |
-| `QLDA.Persistence/AppDbContext.cs` | Xóa block `Entity<TepDinhKem>` |
+| `QLDA.Persistence/AppDbContext.cs` | Exclude BB AttachmentConfiguration; force `ToTable("TepDinhKem")` + `ConfigureForBase()`; xóa `Entity<TepDinhKem>` |
 | `QLDA.Application/GlobalUsing.cs` | `global using BuildingBlocks.Application.Common` |
 | `QLDA.Application/BanGiaoHoSos/DTOs/BanGiaoHoSoMappings.cs` | SignedGroupTypeHelper |
 | `QLDA.Application/ToTrinhPheDuyet/Queries/ToTrinhPheDuyetGetExportQuery.cs` | Xóa dead TepDinhKem repo |
@@ -231,6 +241,7 @@ _(Không có file mới — chỉ doc này)_
 **Entity & EF:**
 - `BuildingBlocks.Domain/Entities/TepDinhKem.cs`
 - `BuildingBlocks.Persistence/Configurations/TepDinhKemConfiguration.cs`
+- `QLDA.Persistence/Configurations/AttachmentConfiguration.cs` (redundant với force map trong `AppDbContext` — `3e70b87`)
 
 **BuildingBlocks.Application/TepDinhKems/ (7 files):**
 - Commands, Queries, DTOs, Mapping
@@ -264,11 +275,16 @@ QLDA.Application/DuAns/Queries/DuAnGetDanhSachTepDinhKemQuery.cs  (query riêng 
 
 ```text
 Attachment mapped table (runtime):  TepDinhKem
-Migration owner:                    QLDA.Persistence (AttachmentConfiguration)
+Migration / table owner (QLDA):     AppDbContext.OnModelCreating
+                                    → ToTable("TepDinhKem", ExcludeFromMigrations)
+                                    → ConfigureForBase()
 ExcludeFromMigrations locations:
   - BuildingBlocks.Persistence.AttachmentConfiguration → ToTable("Attachments", ExcludeFromMigrations)
-  - QLDA.Persistence.AppDbContext → Entity<Attachment>().ToTable(ExcludeFromMigrations)
-Duplicate configurations remaining: 0 (TepDinhKemConfiguration deleted)
+    (file còn; KHÔNG apply vào QLDA AppDbContext)
+  - QLDA.Persistence.AppDbContext → Entity<Attachment>().ToTable("TepDinhKem", ExcludeFromMigrations)
+QLDA.AttachmentConfiguration:       Deleted (3e70b87)
+BB AttachmentConfiguration applied: No (filtered out by FullName)
+Duplicate TepDinhKemConfiguration:  0 (deleted)
 Migration files modified:           0
 ModelSnapshot modified:             0
 ```
@@ -313,12 +329,15 @@ BuildingBlocks.Application.SyncHelper: 1 (canonical)
 ### Build & test
 
 ```text
-Build command:  dotnet clean SER.sln -c Release && dotnet build SER.sln -c Release --nologo
+Build command:  dotnet build SER.sln -c Release --nologo
 Build result:   SUCCESS — 0 errors, 0 warnings
+                (re-verify 2026-07-21 sau merge + AppDbContext ConfigureForBase)
 
-Test command:   dotnet test SER.sln -c Release --no-build --filter "FullyQualifiedName~Phase3|FullyQualifiedName~Phase4"
+Test command:
+  dotnet test QLDA.Tests -c Release --filter "FullyQualifiedName~Phase3|FullyQualifiedName~Phase4"
+  dotnet test BuildingBlocks.Tests -c Release --filter "FullyQualifiedName~Attachments|Phase3|Phase4"
 QLDA.Tests:     Passed: 14, Failed: 0
-BB.Tests:       Passed: 13, Failed: 0
+BB.Tests:       Passed: 23, Failed: 0
 ```
 
 ### Migration safety
@@ -334,16 +353,16 @@ git diff --name-only *Migration* *ModelSnapshot*:  (empty — không đụng mig
 | # | Kiểm tra | Trạng thái |
 |---|----------|------------|
 | 1–10 | API upload/get/download với DB thật | **Chưa chạy** — không có DB/token trong session |
-| Mapping source | `Attachment` → table `TepDinhKem` | ✅ Verified by code |
-| Không sinh table `Attachment` | BB ExcludeFromMigrations | ✅ Verified |
+| Mapping source | `Attachment` → table `TepDinhKem` via `AppDbContext` | ✅ Verified by code |
+| Không sinh table `Attachments` trên QLDA | BB config excluded + ExcludeFromMigrations | ✅ Verified |
 | API contract `DanhSachTepDinhKem` | DTO giữ nguyên | ✅ Verified |
 
 ---
 
 ## Deferred
 
-- **Phase 6** — cập nhật `docs/code-standards.md`, `BuildingBlocks/CLAUDE.md`, `QLDA/CLAUDE.md`
-- **Commit/push** — user tự commit khi sẵn sàng
+- **Phase 6** — đã hoàn thành (xem `phase-6-implementation.md`); lưu ý `docs/code-standards.md` §14 vẫn có thể ghi `QLDA.AttachmentConfiguration` — nên đồng bộ sang `AppDbContext` nếu chỉnh docs
+- **Commit/push** — user tự commit khi sẵn sàng (`AppDbContext` có thay đổi uncommitted nếu chưa commit merge fix)
 - **Runtime API smoke test** — cần môi trường DB
 
 ---
@@ -358,10 +377,11 @@ git diff --name-only *Migration* *ModelSnapshot*:  (empty — không đụng mig
 - [x] Không còn implementation duplicate
 
 ### Persistence
-- [x] QLDA `AttachmentConfiguration` map bảng `TepDinhKem`
-- [x] Không tạo bảng `Attachment` (ExcludeFromMigrations ở BB)
+- [x] `AppDbContext` force map `Attachment` → bảng `TepDinhKem` (+ `ConfigureForBase`)
+- [x] `QLDA.AttachmentConfiguration` đã xóa (tránh race với BB — `3e70b87`)
+- [x] BB `AttachmentConfiguration` bị exclude khỏi `ApplyConfigurationsFromAssembly` của QLDA
+- [x] Không tạo bảng `Attachments` trên QLDA (ExcludeFromMigrations + không apply BB config)
 - [x] Shared context không generate DDL trùng
-- [x] `ExcludeFromMigrations()` đúng DbContext
 - [x] Không còn configuration reference entity đã xóa
 
 ### Cleanup

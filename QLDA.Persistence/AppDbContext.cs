@@ -89,12 +89,15 @@ public class AppDbContext : DbContext, IUnitOfWork
             );
         }
 
-        // Attachment: force "TepDinhKem" — BB AttachmentConfiguration is excluded from
-        // ApplyConfigurationsFromAssembly (maps "Attachments"); inline config guarantees
-        // runtime queries target the legacy QLDA table.
+        // Attachment mapping (aligned with 3e70b87):
+        // - BB AttachmentConfiguration is excluded above (would map "Attachments").
+        // - QLDA AttachmentConfiguration intentionally deleted — redundant with this override.
+        // - Force ToTable("TepDinhKem") AFTER ApplyConfigurations so table name is deterministic.
+        // - ConfigureForBase() lives here because no IEntityTypeConfiguration is applied for Attachment.
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
         {
             e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
+            e.ConfigureForBase();
         });
 
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.DmDonVi>(e =>
