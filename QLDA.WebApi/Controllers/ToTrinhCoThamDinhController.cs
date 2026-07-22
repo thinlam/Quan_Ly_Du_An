@@ -1,3 +1,4 @@
+using QLDA.Application.Common;
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.TepDinhKems.Commands;
@@ -34,12 +35,12 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [nameof(EGroupType.QuyetDinhKeHoachThue)]
+            EGroupTypes= [..nameof(EGroupType.QuyetDinhKeHoachThue).WithSignedVariant()]
         });
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes= [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)]
+            EGroupTypes= [..nameof(EGroupType.QuyetDinhKeHoachThueThamDinh).WithSignedVariant()]
         });
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()));
     }
@@ -109,12 +110,12 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         var danhSachTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.QuyetDinhKeHoachThue)]
+            EGroupTypes = [..nameof(EGroupType.QuyetDinhKeHoachThue).WithSignedVariant()]
         }, cancellationToken);
         var danhSachTepThamDinh = await Mediator.Send(new GetDanhSachTepDinhKemQuery
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)]
+            EGroupTypes = [..nameof(EGroupType.QuyetDinhKeHoachThueThamDinh).WithSignedVariant()]
         }, cancellationToken);
 
         return ResultApi.Ok(entity.ToDto(danhSachTep.ToList(), danhSachTepThamDinh.ToList()));
