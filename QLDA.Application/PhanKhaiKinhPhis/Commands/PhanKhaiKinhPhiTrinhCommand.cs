@@ -53,8 +53,7 @@ internal class PhanKhaiKinhPhiTrinhCommandHandler : IRequestHandler<PhanKhaiKinh
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.PhanKhaiKinhPhi,
             EntityId = entity.Id,
-            DuAnId = entity.DuAnId,
-            BuocId = entity.BuocId,
+            DuAnId = entity.DuAnId,// ko có buocID nha
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = $"Số {entity.SoToTrinh??""} {(entity.NgayToTrinh != null ? " - ngày " + entity.NgayToTrinh.ToDateOnlyVn()?.ToString("dd/MM/yyyy") : "")} " +
