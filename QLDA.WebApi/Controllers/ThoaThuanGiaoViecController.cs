@@ -32,7 +32,7 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
             GroupId = [entity.Id.ToString()],
-            EGroupTypes = [nameof(EGroupType.ThoaThuanGiaoViec)]
+            //EGroupTypes = [nameof(EGroupType.ThoaThuanGiaoViec)]
         });
         
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));

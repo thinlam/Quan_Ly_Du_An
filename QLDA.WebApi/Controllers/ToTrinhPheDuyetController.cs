@@ -30,7 +30,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
 
         var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
         {
-            GroupId = [entity.Id.ToString()], EGroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)]
+            GroupId = [entity.Id.ToString()]//, EGroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)]
         });
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));

@@ -47,7 +47,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
             var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
             {
                 GroupId = [item.Id.ToString() ?? ""],
-                EGroupTypes = [nameof(EGroupType.DonViTuVan)]
+               // EGroupTypes = [nameof(EGroupType.DonViTuVan)]
             });
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList() ?? new List<TepDinhKemModel>(); // i need ways
         }
