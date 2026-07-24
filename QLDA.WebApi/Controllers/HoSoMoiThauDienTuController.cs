@@ -99,7 +99,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             EGroupType.HoSoMoiThauDienTu.ToString(),
             cancellationToken);
 
-        if (entity.ToTrinh != null && entityOld?.ToTrinh != null) {
+        if (entity.ToTrinh != null || entityOld?.ToTrinh != null) {
             var toTrinhId = entity.ToTrinh != null  ? entity.ToTrinh.Id : entityOld?.ToTrinh?.Id;
             await SyncTepDinhKemAsync(
                 (toTrinhId??0).ToString(),
@@ -107,7 +107,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
                 EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
                 cancellationToken);
         }
-        if (entity.QuyetDinh != null && entityOld?.QuyetDinh != null) {
+        if (entity.QuyetDinh != null || entityOld?.QuyetDinh != null) {
             var quyetDinhId = entity.QuyetDinh != null ? entity.QuyetDinh.Id : entityOld?.QuyetDinh?.Id;
             await SyncTepDinhKemAsync(
                 (quyetDinhId ?? 0).ToString(),

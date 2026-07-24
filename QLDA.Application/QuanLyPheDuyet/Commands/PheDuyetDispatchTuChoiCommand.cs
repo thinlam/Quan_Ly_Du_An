@@ -31,7 +31,7 @@ internal class PheDuyetDispatchTuChoiCommandHandler(IServiceProvider serviceProv
             PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTuChoiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiTuChoiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhDieuChinh => new QuyetDinhDieuChinhTuChoiCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
+            //PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTuChoiCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
             PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam => new DeXuatKinhPhiNamTuChoiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonTuChoiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.ThoaThuanGiaoViec => new ThoaThuanGiaoViecTuChoiCommand(request.Id, request.NoiDung),

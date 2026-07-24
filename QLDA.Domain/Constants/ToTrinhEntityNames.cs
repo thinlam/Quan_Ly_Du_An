@@ -4,13 +4,13 @@ using System.Reflection;
 namespace QLDA.Domain.Constants;
 
 /// <summary>
-/// Entity name constants for polymorphic PheDuyetHistory
-/// </summary>
+/// Đây là các Loai trong entity ToTrinhPheDuyet
+/// </summary> 
 public static class ToTrinhEntityNames
 {
 
     /// <summary>
-    /// 9621 - 
+    /// 9621 - Các tờ trình chỉ trình(k cần duyệt)
     /// </summary>
     #region task 9621
 
@@ -27,8 +27,8 @@ public static class ToTrinhEntityNames
     public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
    
     #endregion
-
-    [Description("Quyết định kế hoạch thuê")]
+    // Các loại tờ trình cần duyệt
+    [Description("Quyết định kế hoạch thuê dịch vụ cntt")]
     public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
     [Description("Tờ trình kế hoạch ")]
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";

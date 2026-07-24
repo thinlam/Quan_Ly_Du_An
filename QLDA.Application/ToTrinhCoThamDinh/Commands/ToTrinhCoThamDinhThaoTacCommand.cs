@@ -79,6 +79,7 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
                 ManagedException.Throw("Tài khoản không có quyền!");
 
             entity.TrangThaiId = trangThaiTiepTheoItems?.Id;
+            //entityLoai include (QuyetDinhKeHoachThueCNTT )
             var history = new PheDuyetHistory
             {
                 Id = Guid.NewGuid(),

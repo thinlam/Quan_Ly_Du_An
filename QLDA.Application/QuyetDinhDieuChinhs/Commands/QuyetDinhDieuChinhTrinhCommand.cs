@@ -61,7 +61,9 @@ internal class QuyetDinhDieuChinhTrinhCommandHandler : IRequestHandler<QuyetDinh
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+
+            NoiDung = $"Số {entity.SoQuyetDinh ?? ""} {(entity.NgayQuyetDinh != null ? " - ngày " + entity.NgayQuyetDinh.ToDateOnlyVn()?.ToString("dd/MM/yyyy") : "")} " +
+                        $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ")}",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

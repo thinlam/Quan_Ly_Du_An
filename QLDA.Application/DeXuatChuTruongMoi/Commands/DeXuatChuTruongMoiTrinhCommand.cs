@@ -57,7 +57,7 @@ internal class DeXuatChuTruongMoiTrinhCommandHandler : IRequestHandler<DeXuatChu
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $" Đề xuất chủ trương mới {(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ") }",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

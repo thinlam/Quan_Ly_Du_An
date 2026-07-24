@@ -61,7 +61,8 @@ internal class DuToanDauTuTrinhCommandHandler : IRequestHandler<DuToanDauTuTrinh
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $"Số {entity.SoToTrinh} {(entity.NgayTrinh!= null? " - ngày " + entity.NgayTrinh.ToDateOnlyVn()?.ToString("dd/MM/yyyy") : "")} " +
+                        $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ") }",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 
