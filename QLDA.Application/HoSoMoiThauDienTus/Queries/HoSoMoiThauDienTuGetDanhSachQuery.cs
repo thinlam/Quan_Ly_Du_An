@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
@@ -50,6 +51,18 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
             queryable = queryable.Where(e => e.GoiThauId == request.SearchDto.GoiThauId);
         }
 
+        // Gốc + KySo_* — khớp API chi tiết (GetAttachmentsQuery ExpandGroupTypes)
+        var groupTypesOnEntityId = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true,
+            nameof(EGroupType.HoSoMoiThauDienTu),
+            nameof(EGroupType.HoSoMoiThauDienTuQuyetDinhTD),
+            nameof(EGroupType.HoSoMoiThauDienTuCamKetTD),
+            nameof(EGroupType.HoSoMoiThauDienTuBaoCaoTD));
+        var groupTypesToTrinh = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.HoSoMoiThauDienTuToTrinh));
+        var groupTypesQuyetDinh = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.HoSoMoiThauDienTuQuyetDinh));
+
         return await queryable
              .Select(e => new HoSoMoiThauDienTuDto()
              {
@@ -71,23 +84,19 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
 
                  DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                 .Where(i =>
-                    !i.IsDeleted &&
-                    (
-                        i.GroupId == e.Id.ToString()
-                        || (
-                            e.ToTrinh != null
-                            && i.GroupId == e.ToTrinh.Id.ToString()
-                            && i.GroupType == EGroupType.HoSoMoiThauDienTuToTrinh.ToString()
-                        )
-                        || (
-                            e.QuyetDinh != null
-                            && i.GroupId == e.QuyetDinh.Id.ToString()
-                            && i.GroupType == EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()
-                        )
+                    (i.GroupId == e.Id.ToString() && groupTypesOnEntityId.Contains(i.GroupType))
+                    || (
+                        e.ToTrinh != null
+                        && i.GroupId == e.ToTrinh.Id.ToString()
+                        && groupTypesToTrinh.Contains(i.GroupType)
+                    )
+                    || (
+                        e.QuyetDinh != null
+                        && i.GroupId == e.QuyetDinh.Id.ToString()
+                        && groupTypesQuyetDinh.Contains(i.GroupType)
                     )
                 ).Select(i => i.ToDto()).ToList()
              })
-            //.Select(e => e.ToDto(e.))
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
     }
 }

@@ -1,5 +1,7 @@
 using System.Data;
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.KySos.Commands;
 
@@ -20,18 +22,18 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
     public async Task<int> Handle(NoiDungDaKyCommand request, CancellationToken cancellationToken = default) {
         var toInsert = new List<Attachment>();
 
-        foreach (var entity in request.Entities.Where(e => e.ParentId != null)) {
+        foreach (var entity in request.Entities) {
             entity.GroupId = request.GroupId;
+            EnsureSignedGroupType(entity);
 
-            var parent = await _repository.GetQueryableSet()
-                .FirstOrDefaultAsync(e => e.Id == entity.ParentId, cancellationToken);
-            ManagedException.ThrowIfNull(parent, "Không tìm thấy tệp cha (ParentId)");
-
-            //if (IsSignedVersion(parent.GroupType)) {
-            //    entity.ParentId = parent.Id;
-            //} else {
-            //    entity.GroupType = GroupTypeConstants.KySo;
-            //}
+            // ParentId có nhưng chưa có bản ghi cha (ký trước khi lưu form) → vẫn lưu file ký số.
+            // ParentId null → cũng lưu, coi như file ký số độc lập.
+            if (entity.ParentId is { } parentId) {
+                var parentExists = await _repository.GetQueryableSet()
+                    .AnyAsync(e => e.Id == parentId, cancellationToken);
+                if (!parentExists)
+                    entity.ParentId = null;
+            }
 
             toInsert.Add(entity);
         }
@@ -47,4 +49,18 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
         return toInsert.Count;
     }
 
+    /// <summary>
+    /// API ký số luôn lưu bản ghi là file ký số (GroupType chứa KySo), kể cả khi không có ParentId.
+    /// </summary>
+    private static void EnsureSignedGroupType(Attachment entity) {
+        if (string.IsNullOrWhiteSpace(entity.GroupType)) {
+            entity.GroupType = nameof(EGroupType.KySo);
+            return;
+        }
+
+        if (entity.GroupType.Contains("KySo", StringComparison.Ordinal))
+            return;
+
+        entity.GroupType = SignedGroupTypeHelper.WithSignedVariant(entity.GroupType);
+    }
 }
