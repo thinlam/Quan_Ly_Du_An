@@ -45,7 +45,9 @@ public class QuanLyKySoController(IServiceProvider serviceProvider) : AggregateR
         ManagedException.ThrowIfNull(model.DanhSachTepDinhKem);
         model.DanhSachTepDinhKem ??= [];
 
-        var entities = model.DanhSachTepDinhKem.ToEntities(model.GroupId, EGroupType.KySo)
+        // Không truyền EGroupType.KySo — ToEntities sẽ ra KySo_KySo khi có ParentId.
+        // NoiDungDaKyCommand derive GroupType = KySo_<base> từ parent khi ParentId tồn tại.
+        var entities = model.DanhSachTepDinhKem.ToEntities(model.GroupId, EGroupType.None)
             .ToList();
 
         var count = await Mediator.Send(new NoiDungDaKyCommand {

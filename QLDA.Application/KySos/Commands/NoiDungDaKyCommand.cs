@@ -24,15 +24,26 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
 
         foreach (var entity in request.Entities) {
             entity.GroupId = request.GroupId;
-            EnsureSignedGroupType(entity);
 
-            // ParentId có nhưng chưa có bản ghi cha (ký trước khi lưu form) → vẫn lưu file ký số.
-            // ParentId null → cũng lưu, coi như file ký số độc lập.
             if (entity.ParentId is { } parentId) {
-                var parentExists = await _repository.GetQueryableSet()
-                    .AnyAsync(e => e.Id == parentId, cancellationToken);
-                if (!parentExists)
+                var parent = await _repository.GetQueryableSet()
+                    .FirstOrDefaultAsync(e => e.Id == parentId, cancellationToken);
+
+                if (parent is null) {
+                    // Ký trước khi lưu form / parent không tồn tại — cần GroupType từ caller.
                     entity.ParentId = null;
+                    RequireGroupTypeWhenNoParent(entity);
+                    EnsureSignedGroupType(entity);
+                }
+                else {
+                    // Derive KySo_<base> từ parent (vd. BanGiaoHoSo → KySo_BanGiaoHoSo).
+                    // Tránh KySo_KySo khi caller hard-code EGroupType.KySo vào ToEntities.
+                    ApplySignedGroupTypeFromParent(entity, parent);
+                }
+            }
+            else {
+                RequireGroupTypeWhenNoParent(entity);
+                EnsureSignedGroupType(entity);
             }
 
             toInsert.Add(entity);
@@ -50,15 +61,59 @@ internal class NoiDungDaKyCommandHandler : IRequestHandler<NoiDungDaKyCommand, i
     }
 
     /// <summary>
-    /// API ký số luôn lưu bản ghi là file ký số (GroupType chứa KySo), kể cả khi không có ParentId.
+    /// GroupType ký số = KySo_&lt;base của parent&gt;. Parent đã là KySo_* thì strip về base trước.
+    /// </summary>
+    private static void ApplySignedGroupTypeFromParent(Attachment entity, Attachment parent) {
+        var baseType = parent.GroupType.ToBaseGroupType() ?? parent.GroupType;
+
+        if (string.IsNullOrWhiteSpace(baseType) || baseType == nameof(EGroupType.KySo)) {
+            EnsureSignedGroupType(entity);
+            return;
+        }
+
+        entity.GroupType = SignedGroupTypeHelper.WithSignedVariant(baseType);
+    }
+
+    /// <summary>
+    /// Ký trực tiếp (không có ParentId hợp lệ): caller phải truyền GroupType base hoặc KySo_&lt;base&gt;.
+    /// </summary>
+    private static void RequireGroupTypeWhenNoParent(Attachment entity) {
+        if (!IsMissingGroupTypeForDirectSign(entity.GroupType))
+            return;
+
+        ManagedException.Throw(
+            "Khi không có ParentId, bắt buộc truyền GroupType (vd. BanGiaoHoSo hoặc KySo_BanGiaoHoSo).");
+    }
+
+    private static bool IsMissingGroupTypeForDirectSign(string? groupType) {
+        if (string.IsNullOrWhiteSpace(groupType))
+            return true;
+
+        var trimmed = groupType.Trim();
+        if (trimmed == nameof(EGroupType.None) || trimmed == nameof(EGroupType.KySo))
+            return true;
+
+        if (trimmed == $"{SignedGroupTypeHelper.Prefix}{nameof(EGroupType.KySo)}"
+            || trimmed == $"{SignedGroupTypeHelper.Prefix}{nameof(EGroupType.None)}")
+            return true;
+
+        var baseType = trimmed.ToBaseGroupType() ?? trimmed;
+        return baseType == nameof(EGroupType.None) || baseType == nameof(EGroupType.KySo);
+    }
+
+    /// <summary>
+    /// Khi không có parent hợp lệ: đảm bảo GroupType chứa KySo (fallback sentinel <c>KySo</c>).
+    /// Chuẩn hóa <c>KySo_KySo</c> → <c>KySo</c>.
     /// </summary>
     private static void EnsureSignedGroupType(Attachment entity) {
-        if (string.IsNullOrWhiteSpace(entity.GroupType)) {
+        if (string.IsNullOrWhiteSpace(entity.GroupType)
+            || entity.GroupType == nameof(EGroupType.KySo)
+            || entity.GroupType == $"{SignedGroupTypeHelper.Prefix}{nameof(EGroupType.KySo)}") {
             entity.GroupType = nameof(EGroupType.KySo);
             return;
         }
 
-        if (entity.GroupType.Contains("KySo", StringComparison.Ordinal))
+        if (entity.GroupType.StartsWith(SignedGroupTypeHelper.Prefix, StringComparison.Ordinal))
             return;
 
         entity.GroupType = SignedGroupTypeHelper.WithSignedVariant(entity.GroupType);
