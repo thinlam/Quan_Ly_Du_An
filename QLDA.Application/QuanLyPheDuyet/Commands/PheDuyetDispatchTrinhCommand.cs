@@ -11,14 +11,15 @@ using QLDA.Application.KeHoachTrienKhaiHangMucs.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PheDuyetDuToans.Commands;
 using QLDA.Application.QuyetDinhDieuChinhs.Commands;
+using QLDA.Application.QuyetDinhDuyetDuToans.Commands;
+using QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
+using QLDA.Application.ThanhLyHopDongs.Commands;
 using QLDA.Application.ThoaThuanGiaoViecs.Commands;
 using QLDA.Application.ThuyetMinhDuAns.Commands;
 using QLDA.Application.ToTrinhKetQuaGoiThaus.Commands;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.TrienKhaiKeHoachLCNTs.Commands;
-using QLDA.Application.QuyetDinhLapBanQLDAs.Commands;
-using QLDA.Application.ThanhLyHopDongs.Commands;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.QuanLyPheDuyet.Commands;
@@ -51,11 +52,10 @@ internal class PheDuyetDispatchTrinhCommandHandler(IServiceProvider serviceProvi
             PheDuyetEntityNames.KeHoachTrienKhaiHangMuc => new KeHoachTrienKhaiHangMucTrinhCommand(request.Id),
             PheDuyetEntityNames.DuToanDauTu => new DuToanDauTuTrinhCommand(request.Id),
             PheDuyetEntityNames.ChuTruongLapKeHoach => new ChuTruongLapKeHoachTrinhCommand(request.Id, request.NoiDung),
+            PheDuyetEntityNames.QuyetDinhDuyetDuToan => new QuyetDinhDuyetDuToanTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
 
             //simple ToTrinhPheDuyet
-            PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
-            PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan, request.NoiDung),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetTrinhCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue, request.NoiDung),
             // chỉ trình k cần duyệt
             PheDuyetEntityNames.KHLCNTDuToanSanCo => new ToTrinhKhongDuyetCommand(request.Id, PheDuyetEntityNames.KHLCNTDuToanSanCo, request.NoiDung),

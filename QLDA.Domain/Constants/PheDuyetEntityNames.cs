@@ -28,16 +28,16 @@ public static class PheDuyetEntityNames
     /// <summary>
     /// 9467 - Phân khai kinh phí
     /// </summary>
-    [Description("Phân khai kinh phí")]
+    [Description("Phân khai dự toán")]
     public const string PhanKhaiKinhPhi = "PhanKhaiKinhPhi";
     /// <summary>
     /// Quyết định điều chỉnh phê duyệt
     /// </summary>
-    [Description("Quyết định điều chỉnh")]
+    [Description("Quyết định điều chỉnh dự toán")]
     public const string QuyetDinhDieuChinh = "QuyetDinhDieuChinh";
 
-    [Description("Tờ trình kế hoạch")]
-    public const string ToTrinhKeHoach = "ToTrinhKeHoach";
+    //[Description("Tờ trình kế hoạch")]
+    //public const string ToTrinhKeHoach = "ToTrinhKeHoach";
    
     [Description("Đề xuất chủ trương mới")]
     public const string DeXuatChuTruongMoi = "DeXuatChuTruongMoi";
@@ -68,7 +68,7 @@ public static class PheDuyetEntityNames
     [Description("Báo cáo kết quả khảo sát")]
     public const string BaoCaoKetQuaKhaoSat = "BaoCaoKetQuaKhaoSat";
     
-    [Description("Tờ trình phê duyệt khảo sát")]
+    [Description("Tờ trình phê duyệt nhiệm vụ khảo sát")]
     public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
 
     [ExcludeFromTypeList]
@@ -76,7 +76,7 @@ public static class PheDuyetEntityNames
     public const string ThuyetMinhDuAn = "ThuyetMinhDuAn";
 
 
-    [Description("Tờ trình kết quả gói thầu")]
+    [Description("Tờ trình kết quả LCNT")]
     public const string ToTrinhKetQuaGoiThau = "ToTrinhKetQuaGoiThau";
 
     [Description("Tờ trình thẩm định và phê duyệt KQLCNT")]
@@ -109,13 +109,13 @@ public static class PheDuyetEntityNames
     [Description("Kế hoạch LCNT giai đoạn CBĐT")]
     public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
 
-    [Description("Thỏa thuận giao việc")]
+    [Description("Tờ trình phê duyệt giao nhiệm vụ")]
     public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
 
-    [Description("Kế hoạch lcnt rút gọn")]
+    [Description("Trình và phê duyệt kết quả LCNT")]
     public const string KeHoachLuaChonNhaThauRutGon = "KeHoachLuaChonNhaThauRutGon";
 
-    [Description("Quyết định duyệt dự toán")] //issue #9478
+    [Description("Quyết định duyệt dự toán/ dự án")] //issue #9478
     public const string QuyetDinhDuyetDuToan = "QuyetDinhDuyetDuToan";
 
     [Description("Quyết định lập ban quản lý dự án")] //issue #9636

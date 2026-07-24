@@ -65,7 +65,7 @@ internal class PheDuyetDispatchDuyetCommandHandler(IServiceProvider serviceProvi
 
             PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat),
             PheDuyetEntityNames.QuyetDinhKeHoachThue => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhKeHoachThue),
-            PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),
+            //PheDuyetEntityNames.ToTrinhKeHoach => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.ToTrinhKeHoach),
             PheDuyetEntityNames.QuyetDinhDuyetDuToan => new ToTrinhPheDuyetDuyetCommand(request.Id, PheDuyetEntityNames.QuyetDinhDuyetDuToan),
 
             #endregion
