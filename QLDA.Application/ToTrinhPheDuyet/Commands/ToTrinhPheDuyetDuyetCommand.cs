@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using QLDA.Application.Authorization;
 using QLDA.Application.Common;
 using QLDA.Application.Providers;
@@ -47,19 +48,19 @@ internal class ToTrinhPheDuyetDuyetCommandHandler : IRequestHandler<ToTrinhPheDu
 
         ManagedException.ThrowIfNull(trangThaiDaTrinh, "Không tìm thấy trạng thái 'Đã trình'");
         ManagedException.ThrowIfNull(trangThaiDaDuyet, "Không tìm thấy trạng thái 'Đã duyệt'");
+        // lúc đầu dùng chung nhìu bảng 
+        //string table = request.Loai;
+        //if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))
+        //    table = "ToTrinhPheDuyet";// hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
 
-        string table = request.Loai;
-        if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))
-            table = "ToTrinhPheDuyet";// hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
+        //var entityType = _dbContext.Model.GetEntityTypes()
+        //        .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
+        //var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
 
-        var entityType = _dbContext.Model.GetEntityTypes()
-                .FirstOrDefault(t => t.ClrType.Name == table)?.ClrType;
-        ManagedException.ThrowIfNull(entityType, "Không tìm thấy entity type");
-
-        var entity = await _dbContext.FindAsync(entityType, new object[] { request.Id }, cancellationToken) as IApprovableEntity;
-        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần cập nhật");
-
-
+        var entity = await _repository.GetQueryableSet().AsNoTracking()
+        .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        ManagedException.ThrowIfNull(entity, "Không tìm thấy dữ liệu cần thao tác");
+        // commnad này chỉ sử dụng cho các E_ManHinh có mặt trong tiến độ dự án
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
 
         // Validate current status must be Đã trình

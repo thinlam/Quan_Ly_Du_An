@@ -32,7 +32,7 @@ public static class ToTrinhEntityNames
     public const string QuyetDinhKeHoachThue = "QuyetDinhKeHoachThue";
     [Description("Tờ trình kế hoạch ")]
     public const string ToTrinhKeHoach = "ToTrinhKeHoach";
-    [Description("Phê duyệt khảo sát")]
+    [Description("Tờ trình phê duyệt nhiệm vụ khảo sát")]// new name 
     public const string PheDuyetKhaoSat = "PheDuyetKhaoSat";
   
   

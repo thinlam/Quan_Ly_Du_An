@@ -62,7 +62,7 @@ internal static class PheDuyetDispatchHelper
                 await repo.Set<BaoCaoKetQuaKhaoSat>().Where(e => e.Id == entityId).Select(e => (Guid?)e.DuAnId).FirstOrDefaultAsync(cancellationToken),
             PheDuyetEntityNames.PheDuyetKhaoSat or
             PheDuyetEntityNames.QuyetDinhKeHoachThue or
-            PheDuyetEntityNames.ToTrinhKeHoach or
+            //PheDuyetEntityNames.ToTrinhKeHoach or
             PheDuyetEntityNames.QuyetDinhDuyetDuToan =>
                 await repo.Set<ToTrinhPheDuyet>().Where(e => e.Id == entityId).Select(e => (Guid?)e.DuAnId).FirstOrDefaultAsync(cancellationToken),
             PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon =>
