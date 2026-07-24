@@ -1,7 +1,8 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.VanBanPhapLys.Commands;
 using QLDA.Application.VanBanPhapLys.DTOs;
 using QLDA.Application.VanBanPhapLys.Queries;
@@ -31,9 +32,9 @@ public class VanBanPhapLyController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -67,9 +68,11 @@ public class VanBanPhapLyController : AggregateRootController {
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.VanBanPhapLy)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -94,9 +97,11 @@ public class VanBanPhapLyController : AggregateRootController {
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
         //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.VanBanPhapLy)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }

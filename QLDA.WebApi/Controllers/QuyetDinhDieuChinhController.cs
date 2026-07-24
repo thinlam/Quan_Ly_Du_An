@@ -2,7 +2,7 @@ using QLDA.Application.QuyetDinhDieuChinhs.Commands;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.QuyetDinhDieuChinhs.DTOs;
 using QLDA.Application.QuyetDinhDieuChinhs.Queries;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
 using System.Net.Mime;
 
@@ -61,10 +61,12 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
           [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhInsertCommand(dto), cancellationToken);
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(result.Id, EGroupType.QuyetDinhDieuChinh) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = result.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.QuyetDinhDieuChinh)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -82,13 +84,15 @@ public class QuyetDinhDieuChinhController : AggregateRootController {
         [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken) {
         var result = await Mediator.Send(new QuyetDinhDieuChinhUpdateCommand(dto), cancellationToken);
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(result.Id, EGroupType.QuyetDinhDieuChinh) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = result.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.QuyetDinhDieuChinh)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken); 
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return ResultApi.Ok(result);
     }
 

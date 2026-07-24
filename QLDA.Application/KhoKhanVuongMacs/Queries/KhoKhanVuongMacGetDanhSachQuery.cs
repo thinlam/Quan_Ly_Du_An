@@ -1,5 +1,5 @@
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -73,6 +73,12 @@ internal class
                 e => e.TinhTrang!.Ten
             );
 
+        // Expand trước Select — EF Core translate Contains(List) trong correlated subquery.
+        var groupTypesKhoKhan = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.KhoKhanVuongMac));
+        var groupTypesKetQua = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac));
+
         return await queryable
             .Select(e => new KhoKhanVuongMacDto() {
                 Id = e.Id,
@@ -84,13 +90,13 @@ internal class
                 MucDoKhoKhanId = e.MucDoKhoKhanId,
                 HuongXuLy = e.HuongXuLy,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString() && (i.GroupType == nameof(EGroupType.KhoKhanVuongMac) || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.KhoKhanVuongMac)))
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesKhoKhan.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
                 KetQua = new KetQuaXuLyDto() {
                     KetQuaXuLy = e.KetQuaXuLy,
                     NgayXuLy = e.NgayXuLy,
                     DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                        .Where(i => i.GroupId == e.Id.ToString() && (i.GroupType == nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac) || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.KetQuaXuLyKhoKhanVuongMac)))
+                        .Where(i => i.GroupId == e.Id.ToString() && groupTypesKetQua.Contains(i.GroupType))
                         .Select(i => i.ToDto()).ToList()
                 },
 

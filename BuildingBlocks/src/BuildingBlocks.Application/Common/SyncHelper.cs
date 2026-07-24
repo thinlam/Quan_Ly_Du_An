@@ -193,28 +193,13 @@ public static class SyncHelper {
     }
 
     /// <summary>
-    /// Sets IsDeleted = true on the entity and all its loaded navigation properties that implement IMayHaveDelete,
-    /// collects groupIds from their Id.ToString(), and deletes related TepDinhKem.
+    /// Sets IsDeleted = true on Attachment entities by groupIds.
     /// </summary>
     public static async Task SetDeleteWithRelatedFiles(
-        IRepository<TepDinhKem, Guid> tepDinhKemRepository,
+        IRepository<Attachment, Guid> attachmentRepository,
         List<string> groupIds,
-        bool disableAudit = false,
         CancellationToken cancellationToken = default
-    ) {
-        if (groupIds == null || groupIds.Count == 0)
-            return;
-
-        var files = await tepDinhKemRepository.GetOrderedSet()
-            .Where(o => groupIds.Contains(o.GroupId)).ToListAsync(cancellationToken);
-
-        foreach (var file in files) {
-            if (disableAudit && file is IConditionalAuditable conditionalAuditable) {
-                conditionalAuditable.DisableAudit();
-            }
-            file.IsDeleted = true;
-        }
-    }
+    ) => await SetDeleteWithRelatedFiles(attachmentRepository, groupIds, false, cancellationToken);
 
     /// <summary>
     /// Sets IsDeleted = true on Attachment entities by groupIds.
@@ -222,7 +207,7 @@ public static class SyncHelper {
     public static async Task SetDeleteWithRelatedFiles(
         IRepository<Attachment, Guid> attachmentRepository,
         List<string> groupIds,
-        bool disableAudit = false,
+        bool disableAudit,
         CancellationToken cancellationToken = default
     ) {
         if (groupIds == null || groupIds.Count == 0)

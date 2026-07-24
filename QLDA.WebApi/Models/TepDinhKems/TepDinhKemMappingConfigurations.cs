@@ -1,4 +1,4 @@
-using QLDA.Application.Common;
+using BuildingBlocks.Application.Attachments.Common;
 using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
@@ -32,7 +32,7 @@ namespace QLDA.WebApi.Models.TepDinhKems;
 
 public static class TepDinhKemMappingConfigurations
 {
-    private const string KySoPrefix = SignedHelper.Prefix;
+    private const string KySoPrefix = SignedGroupTypeHelper.Prefix;
 
     private static string ResolveGroupType(this TepDinhKemModel model, string rawGroupType)
     {
