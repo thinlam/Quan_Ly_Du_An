@@ -396,8 +396,7 @@ namespace QLDA.WebApi.Controllers
             if (groupIds.Count != 0)
             {
                 files = (await Mediator.Send(new GetAttachmentsQuery(
-                    GroupIds: [.. groupIds],
-                    IncludeSigned: false
+                    GroupIds: [.. groupIds]
                 ), cancellationToken)).ToAttachmentEntities();
             }
             return entity.ToDto(files);

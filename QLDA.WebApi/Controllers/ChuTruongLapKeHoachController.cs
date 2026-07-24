@@ -32,8 +32,8 @@ public class ChuTruongLapKeHoachController(IServiceProvider serviceProvider) : A
         });
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
+            //IncludeSigned = false < nếu ko muốn load file kí sổ>
         ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));

@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Domain.Enums;
 using QLDA.Application.TepDinhKems.DTOs;
 
@@ -47,40 +46,6 @@ public static class BanGiaoHoSoMappings {
         DanhSachTepHSBanGiao = tepHSBanGiao?.Select(f => f.ToDto()).ToList(),
         DanhSachBienBanBanGiao = bienBanBanGiao?.Select(f => f.ToDto()).ToList()
     };
-
-    /// <summary>Tệp HS bàn giao – extension trên InsertDto, gắn khi insert/update</summary>
-    public static List<Attachment> GetDanhSachTepHSBanGiao(this BanGiaoHoSoInsertDto dto, Guid groupId) {
-        if (dto.DanhSachTepDinhKem?.Any() != true) return [];
-        return dto.DanhSachTepDinhKem
-            .Select(f => new Attachment {
-                Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
-                ParentId = f.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = EGroupType.BanGiaoHoSo.ToString().ResolveSignedGroupType(f.ParentId != null),
-                Type = f.Type,
-                FileName = f.FileName,
-                OriginalName = f.OriginalName,
-                Path = f.Path,
-                Size = f.Size
-            }).ToList();
-    }
-
-    /// <summary>Biên bản bàn giao – extension trên BanGiaoDto, gắn khi thực hiện bàn giao</summary>
-    public static List<Attachment> GetDanhSachBienBanBanGiao(this BanGiaoHoSoBanGiaoDto dto, Guid groupId) {
-        if (dto.DanhSachBienBan?.Any() != true) return [];
-        return dto.DanhSachBienBan
-            .Select(f => new Attachment {
-                Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
-                ParentId = f.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = EGroupType.BienBanBanGiao.ToString().ResolveSignedGroupType(f.ParentId != null),
-                Type = f.Type,
-                FileName = f.FileName,
-                OriginalName = f.OriginalName,
-                Path = f.Path,
-                Size = f.Size
-            }).ToList();
-    }
 
     private static string GetTrangThaiText(ETrangThaiBanGiao trangThai) {
         return trangThai switch {

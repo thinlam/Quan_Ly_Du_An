@@ -31,7 +31,7 @@ public class BaoCaoBanGiaoSanPhamController(IServiceProvider serviceProvider)
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.BaoCaoBanGiaoSanPham)]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }

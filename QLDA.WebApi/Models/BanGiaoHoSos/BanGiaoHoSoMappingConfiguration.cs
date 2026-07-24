@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Attachments.Common;
 using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -23,22 +22,4 @@ public static class BanGiaoHoSoMappingConfiguration {
         DanhSachTepDinhKem = tepHSBanGiao?.Select(f => f.ToModel()).ToList(),
         DanhSachBienBanBanGiao = bienBanBanGiao?.Select(f => f.ToModel()).ToList()
     };
-
-    /// <summary>Biên bản bàn giao (EGroupType.BienBanBanGiao) – gắn khi thực hiện bàn giao</summary>
-    public static List<Attachment> GetDanhSachBienBanBanGiao(this BanGiaoHoSoBanGiaoModel model, Guid groupId) {
-        if (model.DanhSachBienBan?.Any() != true) return [];
-        return model.DanhSachBienBan
-            .Select(f => new Attachment {
-                Id = f.Id ?? Guid.NewGuid(),
-                ParentId = f.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = EGroupType.BienBanBanGiao.ToString().ResolveSignedGroupType(f.ParentId != null),
-                Type = f.Type,
-                FileName = f.FileName,
-                OriginalName = f.OriginalName,
-                Path = f.Path,
-                Size = f.Size
-            })
-            .ToList();
-    }
 }

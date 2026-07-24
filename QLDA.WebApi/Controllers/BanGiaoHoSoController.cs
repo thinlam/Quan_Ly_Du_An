@@ -2,10 +2,12 @@ using System.Net.Mime;
 using QLDA.Application.BanGiaoHoSos.Commands;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Application.BanGiaoHoSos.Queries;
+using QLDA.Application.TepDinhKems.DTOs;
 using BuildingBlocks.Application.Attachments.Commands;
 using BuildingBlocks.Application.Attachments.Queries;
 using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.BanGiaoHoSos;
+using QLDA.WebApi.Models.TepDinhKems;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -20,17 +22,21 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [ProducesResponseType<ResultApi<BanGiaoHoSoModel>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> Get(Guid id) {
         var entity = await _mediator.Send(new BanGiaoHoSoGetQuery(id));
-        // Tải cả 2 loại tệp đính kèm
+        // Mặc định IncludeSigned=true → gốc + KySo_*; split bằng ToBaseGroupType
         var allFiles = (await _mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
             BaseGroupTypes: [
-                Domain.Enums.EGroupType.BanGiaoHoSo.ToString(),
-                Domain.Enums.EGroupType.BienBanBanGiao.ToString()
-            ],
-            IncludeSigned: false
+                nameof(EGroupType.BanGiaoHoSo),
+                nameof(EGroupType.BienBanBanGiao)
+            ]
+            //IncludeSigned = false < nếu ko muốn load file kí sổ>
         ))).ToAttachmentEntities();
-        var tepHS = allFiles.Where(f => f.GroupType == Domain.Enums.EGroupType.BanGiaoHoSo.ToString()).ToList();
-        var bienBan = allFiles.Where(f => f.GroupType == Domain.Enums.EGroupType.BienBanBanGiao.ToString()).ToList();
+        var tepHS = allFiles
+            .Where(f => f.GroupType.ToBaseGroupType() == nameof(EGroupType.BanGiaoHoSo))
+            .ToList();
+        var bienBan = allFiles
+            .Where(f => f.GroupType.ToBaseGroupType() == nameof(EGroupType.BienBanBanGiao))
+            .ToList();
         return ResultApi.Ok(entity.ToModel(tepHS, bienBan));
     }
 
@@ -55,7 +61,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
         await _mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             GroupTypes = [nameof(EGroupType.BanGiaoHoSo)],
-            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id),
+            Entities = dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.BanGiaoHoSo).ToList() ?? [],
             AutoDeleteMissing = true
         });
 
@@ -71,7 +77,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
         await _mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
             GroupTypes = [nameof(EGroupType.BanGiaoHoSo)],
-            Entities = dto.GetDanhSachTepHSBanGiao(entity.Id),
+            Entities = dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.BanGiaoHoSo).ToList() ?? [],
             AutoDeleteMissing = true
         });
 
@@ -82,7 +88,7 @@ public class BanGiaoHoSoController(IServiceProvider sp) : AggregateRootControlle
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
     public async Task<ResultApi> BanGiao(Guid id, [FromBody] BanGiaoHoSoBanGiaoModel model) {
-        var bienBanEntities = model.GetDanhSachBienBanBanGiao(id);
+        var bienBanEntities = model.DanhSachBienBan?.ToEntities(id, EGroupType.BienBanBanGiao).ToList() ?? [];
 
         var entity = await _mediator.Send(new BanGiaoHoSoBanGiaoCommand(id, model.NgayBanGiao, model.PhongBanNhanId));
 

@@ -30,8 +30,7 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
         });
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString() ?? ""],
-            BaseGroupTypes: [nameof(EGroupType.KeHoachTrienKhaiHangMuc)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.KeHoachTrienKhaiHangMuc)]
         ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity);
@@ -97,8 +96,7 @@ public class KeHoachTrienKhaiHangMucController(IServiceProvider serviceProvider)
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));

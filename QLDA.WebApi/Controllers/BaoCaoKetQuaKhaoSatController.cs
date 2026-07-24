@@ -21,8 +21,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
     {
         var entity = await Mediator.Send(new BaoCaoKetQuaKhaoSatGetQuery { Id = id });
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
@@ -82,8 +81,7 @@ public class BaoCaoKetQuaKhaoSatController(IServiceProvider sp) : AggregateRootC
             AutoDeleteMissing = true
         });
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }

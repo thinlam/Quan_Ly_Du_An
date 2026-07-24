@@ -30,8 +30,7 @@ public class BaoCaoTienDoController(IServiceProvider serviceProvider) : Aggregat
         });
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }

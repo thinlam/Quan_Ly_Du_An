@@ -19,37 +19,31 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         var entity = await Mediator.Send(new HoSoMoiThauDienTuGetQuery { Id = id });
         var files = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTu.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTu.ToString()]
         ))).ToAttachmentEntities();
         var filesToTrinh = new  List<Attachment>();
         if(entity.ToTrinh!= null)
             filesToTrinh = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.ToTrinh != null ? entity.ToTrinh.Id.ToString() : ""],
-            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         ))).ToAttachmentEntities();
         var filesQuyetDinh = new  List<Attachment>();
         if (entity.QuyetDinh != null)
             filesQuyetDinh = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.QuyetDinh != null ? entity.QuyetDinh.Id.ToString() : ""],
-            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()]
         ))).ToAttachmentEntities();
         var fileCamKets = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()]
         ))).ToAttachmentEntities();
         var fileThamDinhs = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()]
         ))).ToAttachmentEntities();
         var fileBaoCaos = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()],
-            IncludeSigned: false
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh, filesQuyetDinh));
     }

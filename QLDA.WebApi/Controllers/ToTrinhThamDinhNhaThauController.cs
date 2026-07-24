@@ -33,13 +33,11 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau)]
         ))).ToAttachmentEntities();
         var danhSachTepThamDinh = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.NoiDungToTrinhThamDinhNhaThau)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.NoiDungToTrinhThamDinhNhaThau)]
         ))).ToAttachmentEntities();
         var nhaThauModel = entity.NhaThaus!.Select(o => o.ToModel()).ToList();
         /*foreach (var item in nhaThauModel)
@@ -55,8 +53,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
 
             var allFiles = (await Mediator.Send(new GetAttachmentsQuery(
                 GroupIds: ids,
-                BaseGroupTypes: [nameof(EGroupType.KetQuaThamDinhNhaThau)],
-                IncludeSigned: false
+                BaseGroupTypes: [nameof(EGroupType.KetQuaThamDinhNhaThau)]
             ))).ToAttachmentEntities();
         var lookup = allFiles.GroupBy(x => x.GroupId)
                     .ToDictionary(g => g.Key, g => g.ToList());

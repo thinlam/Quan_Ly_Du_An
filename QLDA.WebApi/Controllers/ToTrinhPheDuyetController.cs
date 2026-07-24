@@ -31,8 +31,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.ToTrinhPheDuyet)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.ToTrinhPheDuyet)]
         ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
@@ -103,8 +102,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));

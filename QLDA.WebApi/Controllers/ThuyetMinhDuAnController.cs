@@ -27,13 +27,11 @@ public class ThuyetMinhDuAnController(IServiceProvider serviceProvider) : Aggreg
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.ThuyetMinhDuAn)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.ThuyetMinhDuAn)]
         ))).ToAttachmentEntities();
         var danhSachTepThamDinh = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.ThuyetMinhDuAnThamDinh)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.ThuyetMinhDuAnThamDinh)]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepThamDinh));
     }

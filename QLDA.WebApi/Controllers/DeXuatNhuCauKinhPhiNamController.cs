@@ -25,8 +25,7 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
         });
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
@@ -80,8 +79,7 @@ public class DeXuatNhuCauKinhPhiNamController(IServiceProvider serviceProvider) 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ), cancellationToken)).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }

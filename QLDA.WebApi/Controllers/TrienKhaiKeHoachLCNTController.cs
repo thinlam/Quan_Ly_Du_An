@@ -34,8 +34,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.TrienKhaiKeHoachLCNT)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.TrienKhaiKeHoachLCNT)]
         ))).ToAttachmentEntities();
        ////
         var dvtvModel = entity.DonViTuVans!.Select(o => new DonViTuVanKeHoachModel()
@@ -47,8 +46,7 @@ public class TrienKhaiKeHoachLCNTController(IServiceProvider serviceProvider) : 
         {
             var dsTep = (await Mediator.Send(new GetAttachmentsQuery(
                 GroupIds: [item.Id.ToString() ?? ""],
-                BaseGroupTypes: [nameof(EGroupType.DonViTuVan)],
-                IncludeSigned: false
+                BaseGroupTypes: [nameof(EGroupType.DonViTuVan)]
             ))).ToAttachmentEntities();
             item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList() ?? new List<TepDinhKemModel>(); // i need ways
         }

@@ -19,8 +19,7 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
     public async Task<ResultApi> Get(Guid id) {
         var entity = await Mediator.Send(new HoSoDeXuatCapDoCnttGetQuery { Id = id });
         var files = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(files));
     }

@@ -87,10 +87,10 @@ await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
     AutoDeleteMissing = true
 });
 
-// ✅ Read — hydration
+// ✅ Read — hydration (IncludeSigned mặc định true → gốc + KySo_*)
 var files = (await Mediator.Send(new GetAttachmentsQuery(
     GroupIds: [entity.Id.ToString()],
-    IncludeSigned: false
+    BaseGroupTypes: [nameof(EGroupType.BaoCaoTienDo)]
 ))).ToAttachmentEntities();
 ```
 

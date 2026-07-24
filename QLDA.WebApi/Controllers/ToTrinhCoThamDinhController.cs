@@ -32,13 +32,11 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThue)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThue)]
         ))).ToAttachmentEntities();
         var danhSachTepThamDinh = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList(), danhSachTepThamDinh.ToList()));
     }
@@ -112,13 +110,11 @@ public class ToTrinhCoThamDinhController(IServiceProvider serviceProvider) : Agg
         //
         var danhSachTep = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThue)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThue)]
         ), cancellationToken)).ToAttachmentEntities();
         var danhSachTepThamDinh = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhKeHoachThueThamDinh)]
         ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTep.ToList(), danhSachTepThamDinh.ToList()));

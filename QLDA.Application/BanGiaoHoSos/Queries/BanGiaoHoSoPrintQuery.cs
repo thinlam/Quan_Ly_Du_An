@@ -20,6 +20,7 @@ internal class BanGiaoHoSoPrintQueryHandler : IRequestHandler<BanGiaoHoSoPrintQu
 
     public async Task<BanGiaoHoSoPrintDto> Handle(BanGiaoHoSoPrintQuery request, CancellationToken cancellationToken = default) {
         var donVis = _donViRepository.GetQueryableSet().AsNoTracking();
+        // Print: chỉ đếm file gốc HS bàn giao (không gồm bản KySo_)
         var groupTypesBanGiaoExact = AttachmentSubquery.ExpandGroupTypes(
             includeSigned: false, nameof(EGroupType.BanGiaoHoSo));
 

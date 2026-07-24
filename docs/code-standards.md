@@ -237,9 +237,10 @@ Load attachment **ngoài** query handler chính, rồi hydrate vào response mod
 ```csharp
 var entity = await Mediator.Send(new BaoCaoTienDoGetQuery { Id = id, ... });
 
+// Mặc định IncludeSigned = true → lấy cả file gốc và KySo_*
 var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
     GroupIds: [entity.Id.ToString()],
-    IncludeSigned: false          // hoặc true để gộp cả file ký số
+    BaseGroupTypes: [nameof(EGroupType.BaoCaoTienDo)]
 ))).ToAttachmentEntities();      // bridge DTO → entity cho ToModel()
 
 return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
@@ -251,10 +252,16 @@ return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
 |-------|----------|-------|
 | `GroupIds` | — | Danh sách GroupId (bắt buộc, không rỗng) |
 | `BaseGroupTypes` | `null` | Filter theo base GroupType; `null` = lấy mọi GroupType |
-| `IncludeSigned` | `true` | Tự thêm variant `KySo_*` khi filter |
+| `IncludeSigned` | `true` | Tự thêm variant `KySo_*` khi filter theo `BaseGroupTypes` |
+
+**Quy ước:**
+- Mặc định luôn bao gồm file ký số — **không** truyền `IncludeSigned: true` ở từng caller.
+- Chỉ opt-out tường minh khi nghiệp vụ không cần ký số: `IncludeSigned: false`.
+- `IncludeSigned` **chỉ có hiệu lực khi có `BaseGroupTypes`**. Không truyền `BaseGroupTypes` → lấy mọi GroupType của GroupId (flag bị bỏ qua).
+- Multi-GroupType trên 1 response: load 1 lần rồi split bằng `ToBaseGroupType()` / `.BaseGroupType()` — **không** so exact `GroupType == "X"` (sẽ loại nhầm `KySo_X`).
 
 **Gộp vs tách file ký số:**
-- **Gộp:** 1 lần gọi `GetAttachmentsQuery` với `IncludeSigned: true` → filter bằng `.BaseGroupType()` khi gán property.
+- **Gộp (mặc định):** 1 lần gọi `GetAttachmentsQuery` (IncludeSigned mặc định true) → filter bằng `.BaseGroupType()` khi gán property.
 - **Tách:** 2 lần gọi — base (`IncludeSigned: false`) và signed (`BaseGroupTypes: ["KySo_X"]` hoặc `SignedOnly`).
 
 ### Read side — IQueryable subquery (List handlers)

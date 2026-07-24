@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Attachments.Common;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -73,16 +72,5 @@ public static class HoSoDeXuatCapDoCnttMappingConfiguration {
 
     public static List<Attachment> GetDanhSachTepDinhKem(
         this HoSoDeXuatCapDoCnttModel model, Guid groupId)
-        => model.DanhSachTepDinhKem?  
-            .Select(m => new Attachment {
-                Id = m.Id ?? Guid.NewGuid(),
-                ParentId = m.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = EGroupType.HoSoDeXuatCapDoCntt.ToString().ResolveSignedGroupType(m.ParentId != null),
-                Type = m.Type,
-                FileName = m.FileName,
-                OriginalName = m.OriginalName,
-                Path = m.Path,
-                Size = m.Size
-            }).ToList() ?? [];
+        => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoDeXuatCapDoCntt).ToList() ?? [];
 }

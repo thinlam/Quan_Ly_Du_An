@@ -30,13 +30,11 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan)]
         ))).ToAttachmentEntities();
         var danhSachTepDinhKemKhac = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }
@@ -101,8 +99,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         });
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan)]
         ))).ToAttachmentEntities();
         List<Attachment> fileKhacs = [.. model.DanhSachTepDinhKemKhac?.ToEntities(entity.Id,  EGroupType.QuyetDinhDuyetDuToan_Khac) ?? []];
         await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
@@ -114,8 +111,7 @@ public class QuyetDinhDuyetDuToanController(IServiceProvider serviceProvider) : 
         });
         var danhSachTepDinhKemKhac = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.QuyetDinhDuyetDuToan_Khac)]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem, danhSachTepDinhKemKhac));
     }

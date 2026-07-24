@@ -32,8 +32,7 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.ThoaThuanGiaoViec)],
-            IncludeSigned: false
+            BaseGroupTypes: [nameof(EGroupType.ThoaThuanGiaoViec)]
         ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
@@ -107,8 +106,7 @@ public class ThoaThuanGiaoViecController(IServiceProvider serviceProvider) : Agg
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            IncludeSigned: false
+            GroupIds: [entity.Id.ToString()]
         ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
