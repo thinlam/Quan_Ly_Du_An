@@ -1,5 +1,5 @@
 using QLDA.Application.Authorization;
-using QLDA.Application.Common;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ThanhLyHopDongs.DTOs;
@@ -41,6 +41,10 @@ internal class ThanhLyHopDongGetDanhSachTienDoQueryHandler : IRequestHandler<Tha
             .WhereIf(request.HopDongId != null, e => e.HopDongId == request.HopDongId)
             .WhereSearchString(request, e => e.So, e => e.TrichYeu);
 
+        var groupTypesBienBanNghiemThu = AttachmentSubquery.ExpandGroupTypes(includeSigned: true, nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu));
+        var groupTypesThanhLyHopDong = AttachmentSubquery.ExpandGroupTypes(includeSigned: true, nameof(EGroupType.ThanhLyHopDong));
+        var groupTypesKhac = AttachmentSubquery.ExpandGroupTypes(includeSigned: true, nameof(EGroupType.ThanhLyHopDong_Khac));
+
         return await queryable
             .Select(x => new ThanhLyHopDongDto {
                 Id = x.Id,
@@ -55,19 +59,13 @@ internal class ThanhLyHopDongGetDanhSachTienDoQueryHandler : IRequestHandler<Tha
                 TrangThaiTen = x.TrangThai!.Ten,
                 NghiemThuIds = x.DanhSachNghiemThus!.Select(j => j.RightId).ToList(),
                 BienBanNghiemThus = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString()
-                        && (i.GroupType == nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu)
-                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThanhLyHopDong_BienBanNghiemThu)))
+                    .Where(i => i.GroupId == x.Id.ToString() && groupTypesBienBanNghiemThu.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
                 ThanhLyHopDongs = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString()
-                        && (i.GroupType == nameof(EGroupType.ThanhLyHopDong)
-                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThanhLyHopDong)))
+                    .Where(i => i.GroupId == x.Id.ToString() && groupTypesThanhLyHopDong.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
                 Khacs = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == x.Id.ToString()
-                        && (i.GroupType == nameof(EGroupType.ThanhLyHopDong_Khac)
-                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThanhLyHopDong_Khac)))
+                    .Where(i => i.GroupId == x.Id.ToString() && groupTypesKhac.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

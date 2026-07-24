@@ -17,9 +17,6 @@ internal class ToTrinhPheDuyetGetExportQueryHandler(IServiceProvider serviceProv
     private readonly IRepository<DmDonVi, long> _dmDonVi = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
     private readonly IRepository<UserMaster, long> userMaster = serviceProvider.GetRequiredService<IRepository<UserMaster, long>>();
 
-    private readonly IRepository<BuildingBlocks.Domain.Entities.TepDinhKem, Guid> TepDinhKem =
-        serviceProvider.GetRequiredService<IRepository<BuildingBlocks.Domain.Entities.TepDinhKem, Guid>>();
-
     public async Task<ToTrinhPheDuyetExportDto> Handle(ToTrinhPheDuyetGetExportQuery request, CancellationToken cancellationToken = default)
     {
         var dmDonViQuery = _dmDonVi.GetQueryableSet().AsNoTracking();

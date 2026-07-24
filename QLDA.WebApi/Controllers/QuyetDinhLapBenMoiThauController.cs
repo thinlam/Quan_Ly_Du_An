@@ -1,7 +1,8 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.QuyetDinhLapBenMoiThaus.Commands;
 using QLDA.Application.QuyetDinhLapBenMoiThaus.DTOs;
 using QLDA.Application.QuyetDinhLapBenMoiThaus.Queries;
@@ -29,9 +30,9 @@ public class QuyetDinhLapBenMoiThauController(IServiceProvider serviceProvider)
             Id = id, ThrowIfNull = true, IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -45,10 +46,10 @@ public class QuyetDinhLapBenMoiThauController(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
-    /// 
+    ///
     /// </remarks>
     /// <param name="model"></param>
     /// <returns></returns>
@@ -66,16 +67,18 @@ public class QuyetDinhLapBenMoiThauController(IServiceProvider serviceProvider)
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.QuyetDinhLapBenMoiThau)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
     }
 
     /// <summary>
-    /// Cập nhật 
+    /// Cập nhật
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
@@ -94,15 +97,17 @@ public class QuyetDinhLapBenMoiThauController(IServiceProvider serviceProvider)
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
         //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.QuyetDinhLapBenMoiThau)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// SoQuyetDinh: Số quyết định
@@ -114,14 +119,14 @@ public class QuyetDinhLapBenMoiThauController(IServiceProvider serviceProvider)
     [HttpGet("danh-sach-tien-do")]
     public async Task<ResultApi> Get([FromQuery] QuyetDinhLapBenMoiThauSearchModel searchModel) {
         var res = await Mediator.Send(new QuyetDinhLapBenMoiThauGetDanhSachQuery() {
-            
+
             IsNoTracking = true,
             DuAnId = searchModel.DuAnId,
             BuocId = searchModel.BuocId,
             PageSize = searchModel.PageSize,
             PageIndex = searchModel.PageIndex,
             GlobalFilter = searchModel.GlobalFilter,
-            
+
             SoQuyetDinh = searchModel.SoQuyetDinh,
             TuNgay = searchModel.TuNgay,
             DenNgay = searchModel.DenNgay,

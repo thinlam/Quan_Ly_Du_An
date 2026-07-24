@@ -3,9 +3,10 @@ using BuildingBlocks.Domain.Entities;
 using QLDA.Application.PhanKhaiKinhPhis.Commands;
 using QLDA.Application.PhanKhaiKinhPhis.DTOs;
 using QLDA.Application.PhanKhaiKinhPhis.Queries;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
 
@@ -30,9 +31,9 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
             Id = id, ThrowIfNull = true, IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -72,9 +73,11 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         ), cancellationToken);
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.PhanKhaiKinhPhi)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -107,16 +110,18 @@ public class PhanKhaiKinhPhiController : AggregateRootController {
         ), cancellationToken);
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.PhanKhaiKinhPhi) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.PhanKhaiKinhPhi)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ), cancellationToken)).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 

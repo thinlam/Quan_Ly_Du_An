@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.BaoCaoBanGiaoSanPhams.DTOs;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.Common.Interfaces;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.BaoCaoBanGiaoSanPhams.Queries;
 
@@ -53,6 +55,10 @@ internal class
                 e => e.NoiDung
             );
 
+        // Mặc định includeSigned=true → gốc + KySo_BaoCaoBanGiaoSanPham
+        var groupTypes = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.BaoCaoBanGiaoSanPham));
+
         return await queryable
             .Select(e => new BaoCaoBanGiaoSanPhamDto() {
                 Id = e.Id,
@@ -63,7 +69,7 @@ internal class
                 DonViBanGiaoId = e.DonViBanGiaoId,
                 DonViNhanBanGiaoId = e.DonViNhanBanGiaoId,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypes.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

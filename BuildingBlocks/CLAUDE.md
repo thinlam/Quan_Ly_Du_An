@@ -108,7 +108,7 @@ public class MyHierarchy : MaterializedPathEntity<Guid>  // ParentId, Path, Leve
 | Term       | English             |
 | ---------- | ------------------- |
 | DanhMuc    | Catalog/Master Data |
-| TepDinhKem | File Attachment     |
+| Attachment | File Attachment (runtime entity; DB table may still be `TepDinhKem`) |
 | DonVi      | Organization Unit   |
 | TrangThai  | Status              |
 | MoTa       | Description         |
@@ -287,14 +287,19 @@ All catalog/master data entities MUST follow the naming pattern `DanhMuc{Ten}`:
 Use `.Join()` for legacy tables, navigation properties directly in Select for non-legacy entities, and `.ToDto()` for child collections:
 
 ```csharp
+// Requires: BuildingBlocks.Application.Attachments.Common, BuildingBlocks.Domain.Constants
 internal class HopDongGetByIdQueryHandler(IServiceProvider serviceProvider) : IRequestHandler<HopDongGetByIdQuery, HopDongDto>
 {
     private readonly IRepository<HopDong, Guid> _repository = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
     private readonly IRepository<DmDonVi, long> _dmDonViRepository = serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
-    private readonly IRepository<TepDinhKem, Guid> _attachmentRepository = serviceProvider.GetRequiredService<IRepository<TepDinhKem, Guid>>();
+    private readonly IRepository<Attachment, Guid> _attachmentRepository = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
 
     public async Task<HopDongDto> Handle(HopDongGetByIdQuery request, CancellationToken cancellationToken)
     {
+        var attachmentTypes = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true,
+            nameof(EGroupType.HopDong));
+
         var dto = await _repository.GetQueryableSet()
             .Where(e => e.Id == request.Id)
             .Join(_dmDonViRepository.GetQueryableSet(),
@@ -313,9 +318,10 @@ internal class HopDongGetByIdQueryHandler(IServiceProvider serviceProvider) : IR
                 // Child collections via .ToDto()
                 PhongBanPhoiHopIds = joinedData.hd.PhongBanPhoiHops!.Select(p => p.RightId).ToList(),
                 ThuTienThucTes = joinedData.hd.ThuTienThucTes!.Select(t => t.ToDto()).ToList(),
-                // TepDinhKem uses GroupId pattern (subquery)
+                // Attachment uses GroupId + GroupType pattern (subquery)
                 TepDinhKems = _attachmentRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == joinedData.hd.Id.ToString())
+                    .Where(f => f.GroupId == joinedData.hd.Id.ToString()
+                        && attachmentTypes.Contains(f.GroupType))
                     .Select(e => e.ToDto()).ToList()
             })
             .FirstOrDefaultAsync(cancellationToken);
@@ -333,7 +339,7 @@ internal class HopDongGetByIdQueryHandler(IServiceProvider serviceProvider) : IR
 | `.Join()`                     | Legacy tables (DmDonVi, USER_MASTER)                                              |
 | `entity.Navigation!.Property` | Non-legacy navigation properties (no Include needed in Select)                    |
 | `.Select(e => e.ToDto())`     | Child collections with ToDto mapping                                              |
-| Subquery with `GroupId`       | TepDinhKem (uses GroupId instead of FK) and `GroupType` if primary key is numeric |
+| Subquery with `GroupId`       | `Attachment` (uses GroupId instead of FK) + `GroupType` via `AttachmentSubquery` / `SignedGroupTypeHelper` |
 
 ### Anti-Pattern: Navigation Properties to Legacy Tables
 
