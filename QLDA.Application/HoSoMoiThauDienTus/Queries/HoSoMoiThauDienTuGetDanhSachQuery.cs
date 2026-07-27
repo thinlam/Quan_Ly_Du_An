@@ -51,10 +51,12 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
             queryable = queryable.Where(e => e.GoiThauId == request.SearchDto.GoiThauId);
         }
 
-        // Gốc + KySo_* — khớp API chi tiết (GetAttachmentsQuery ExpandGroupTypes)
+        // Dữ liệu mới lưu toàn bộ file theo HoSo.Id; vẫn giữ nhánh Id cũ để đọc bản ghi legacy.
         var groupTypesOnEntityId = AttachmentSubquery.ExpandGroupTypes(
             includeSigned: true,
             nameof(EGroupType.HoSoMoiThauDienTu),
+            nameof(EGroupType.HoSoMoiThauDienTuToTrinh),
+            nameof(EGroupType.HoSoMoiThauDienTuQuyetDinh),
             nameof(EGroupType.HoSoMoiThauDienTuQuyetDinhTD),
             nameof(EGroupType.HoSoMoiThauDienTuCamKetTD),
             nameof(EGroupType.HoSoMoiThauDienTuBaoCaoTD));

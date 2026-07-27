@@ -112,5 +112,83 @@ public class PheDuyetQueryableExtensionsAttachmentTests
 
         query.IncludeAttachments.Should().BeTrue();
     }
+
+    [Fact]
+    public void IncludeSigned_DefaultsToTrue_OnQuery()
+    {
+        var query = new PheDuyetGetDanhSachQuery();
+
+        query.IncludeSigned.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AssignAttachments_IncludesSignedFiles_WithParentId()
+    {
+        var entityId = Guid.Parse("08dee930-5abe-25bd-687a-7b4630000f5a");
+        var parentId = Guid.NewGuid();
+        var items = new List<PheDuyetListItemDto>
+        {
+            new()
+            {
+                EntityId = entityId.ToString(),
+                EntityName = "HoSoMoiThauDienTu",
+            },
+        };
+        var files = new List<Attachment>
+        {
+            new()
+            {
+                Id = parentId,
+                GroupId = entityId.ToString(),
+                GroupType = "HoSoMoiThauDienTu",
+                FileName = "goc.pdf",
+                ParentId = null,
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                GroupId = entityId.ToString(),
+                GroupType = "KySo_HoSoMoiThauDienTu",
+                FileName = "goc.signed.pdf",
+                ParentId = parentId,
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                GroupId = entityId.ToString(),
+                GroupType = "HoSoMoiThauDienTu",
+                FileName = "goc2.pdf",
+                ParentId = null,
+            },
+        };
+
+        PheDuyetQueryableExtensions.AssignAttachments(items, files);
+
+        items[0].DanhSachTepDinhKem.Should().HaveCount(3);
+        items[0].DanhSachTepDinhKem.Should().Contain(f => f.GroupType == "KySo_HoSoMoiThauDienTu");
+        items[0].DanhSachTepDinhKem.Should().Contain(f => f.ParentId == parentId);
+    }
+
+    [Fact]
+    public void AssignAttachments_DeduplicatesById()
+    {
+        var entityId = Guid.NewGuid();
+        var fileId = Guid.NewGuid();
+        var items = new List<PheDuyetListItemDto>
+        {
+            new() { EntityId = entityId.ToString() },
+        };
+        var dup = new Attachment
+        {
+            Id = fileId,
+            GroupId = entityId.ToString(),
+            GroupType = "HoSoMoiThauDienTu",
+            FileName = "a.pdf",
+        };
+
+        PheDuyetQueryableExtensions.AssignAttachments(items, [dup, dup]);
+
+        items[0].DanhSachTepDinhKem.Should().HaveCount(1);
+    }
 }
 
