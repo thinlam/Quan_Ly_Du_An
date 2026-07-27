@@ -27,10 +27,10 @@ internal class PheDuyetDispatchTuChoiCommandHandler(IServiceProvider serviceProv
         await _auth.EnsureCanApproveDuAnAsync(duAnId ?? Guid.Empty, cancellationToken);
 
         IRequest<int> command = request.Type switch {
-            PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanTuChoiCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTuChoiCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiTuChoiCommand(request.Id, request.NoiDung),
-            PheDuyetEntityNames.QuyetDinhDieuChinh => new QuyetDinhDieuChinhTuChoiCommand(request.Id, request.NoiDung),
+            // PheDuyetEntityNames.PheDuyetDuToan => new PheDuyetDuToanTuChoiCommand(request.Id, request.NoiDung),
+            // PheDuyetEntityNames.HoSoMoiThauDienTu => new HoSoMoiThauDienTuTuChoiCommand(request.Id, request.NoiDung),
+            // PheDuyetEntityNames.PhanKhaiKinhPhi => new PhanKhaiKinhPhiTuChoiCommand(request.Id, request.NoiDung),
+            // PheDuyetEntityNames.QuyetDinhDieuChinh => new QuyetDinhDieuChinhTuChoiCommand(request.Id, request.NoiDung),
             //PheDuyetEntityNames.PheDuyetKhaoSat => new ToTrinhPheDuyetTuChoiCommand(request.Id, PheDuyetEntityNames.PheDuyetKhaoSat, request.NoiDung),
             PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam => new DeXuatKinhPhiNamTuChoiCommand(request.Id, request.NoiDung),
             PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon => new KeHoachLuaChonNhaThauRutGonTuChoiCommand(request.Id, request.NoiDung),
