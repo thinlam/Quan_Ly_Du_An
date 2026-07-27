@@ -36,6 +36,17 @@ public class SignedGroupTypeHelperTests
     }
 
     [Fact]
+    public void IsBlankOrPrefixOnly_DetectsEmptySignedPrefix()
+    {
+        Assert.True(SignedGroupTypeHelper.IsBlankOrPrefixOnly(null));
+        Assert.True(SignedGroupTypeHelper.IsBlankOrPrefixOnly(""));
+        Assert.True(SignedGroupTypeHelper.IsBlankOrPrefixOnly("   "));
+        Assert.True(SignedGroupTypeHelper.IsBlankOrPrefixOnly("KySo_"));
+        Assert.False(SignedGroupTypeHelper.IsBlankOrPrefixOnly("DeXuatChuyenTiep"));
+        Assert.False(SignedGroupTypeHelper.IsBlankOrPrefixOnly("KySo_DeXuatChuyenTiep"));
+    }
+
+    [Fact]
     public void ExpandWithSignedVariant_ReturnsBaseAndSigned()
     {
         var expanded = SignedGroupTypeHelper.ExpandWithSignedVariant("KhoKhanVuongMac");

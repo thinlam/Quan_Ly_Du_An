@@ -90,15 +90,16 @@ internal class AttachmentBulkInsertOrUpdateCommandHandler(
         {
             entity.GroupId = request.GroupId;
 
-            var entityBaseType = entity.GroupType.ToBaseGroupType() ?? entity.GroupType;
-
-            // Nếu GroupType trống → gán base đầu tiên + resolve theo ParentId
-            if (string.IsNullOrWhiteSpace(entity.GroupType))
+            // GroupType trống hoặc chỉ còn prefix (vd "KySo_") → gán từ scope form + ParentId.
+            // Scope đã biết từ GroupTypes; không phụ thuộc FE truyền GroupType.
+            if (SignedGroupTypeHelper.IsBlankOrPrefixOnly(entity.GroupType))
             {
                 entity.GroupType = allowedBases[0]
                     .ResolveSignedGroupType(entity.ParentId != null);
                 continue;
             }
+
+            var entityBaseType = entity.GroupType.ToBaseGroupType() ?? entity.GroupType;
 
             // Re-resolve để tránh KySo_KySo_ và đồng bộ ParentId
             if (allowedBases.Contains(entityBaseType)
