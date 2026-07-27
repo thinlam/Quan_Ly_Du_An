@@ -12,7 +12,10 @@ using QLDA.Domain.Constants;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
-
+/// <summary>
+///Hiện có 2 loại tờ trình/quyết định dùng chung contronller này là tờ trình có trình duyệt và tờ trình chỉ trình(ko cần duyệt)
+/// </summary>
+/// <param name="serviceProvider"></param>
 [Route("api/to-trinh-phe-duyet")]
 [Tags("Tờ trình phê duyệt")]
 public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)

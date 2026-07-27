@@ -73,7 +73,8 @@ internal class ThanhLyHopDongTrinhCommandHandler : IRequestHandler<ThanhLyHopDon
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $"Số {entity.So} -Ngày {entity.Ngay?.ToDateOnlyVn().ToString("dd/MM/yyyy")}"
+                    + (!string.IsNullOrEmpty(request.NoiDung)?$" Nội dung chuyển {request.NoiDung} " :""),
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

@@ -14,6 +14,9 @@ namespace QLDA.WebApi.Controllers;
 
 /// <summary>
 /// Quan ly phe duyet — center provider cho tat ca cac loai pheduyet
+/// có 3 loại chỉ trình ko can phê duyệt là :
+// đặc thù DeXuatNhuCauKinhPhi / PhanKhaiKinhPhi chỉ phòng kế hoạch tc mới dc duyệt/trả  (RoleLevel=3)
+// DeXuatChuTruongMoi / DeXuatChuyenTiep  / DeXuatNhuCauKinhPhiNam chỉ lãnh đạo phụ trách dự án mới dc duyệt / trả(RoleLevel = 4)
 /// </summary>
 [Tags("Quản lý phê duyệt")]
 [Route("api/phe-duyet")]

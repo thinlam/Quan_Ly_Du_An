@@ -77,19 +77,20 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         var duongDi = await _duongDiTrangThaiToTrinh.GetQueryableSet().AsNoTracking()
            .Where(x => x.Used && !(x.IsDeleted ?? false)).ToListAsync(cancellationToken);
         var duongDiLookup = duongDi
-              .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
-              .GroupBy(x => (
-                  x.MaTrangThaiHienTai!.Trim(), x.Loai))
-              .ToDictionary(
-                  g => g.Key,
-                  g => g.Select(x => new DuongDiTrangThaiToTrinhDto {
-                      MaTrangThaiHienTai = x.MaTrangThaiHienTai,
-                      MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
-                      TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
-                      RoleId = x.RoleId,
-                      RoleLevel = x.RoleLevel
-                  }).ToList()
-              );
+          .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
+         
+        .GroupBy(x => (
+            x.MaTrangThaiHienTai!.Trim(), x.Loai))
+        .ToDictionary(
+            g => g.Key,
+            g => g.Select(x => new DuongDiTrangThaiToTrinhDto {
+                MaTrangThaiHienTai = x.MaTrangThaiHienTai,
+                MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
+                TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
+                RoleId = x.RoleId,
+                RoleLevel = x.RoleLevel
+            }).ToList()
+        );
 
         var finalQuery = PheDuyetQueryableExtensions.ApplyDanhSachFilters(
             new PheDuyetDanhSachFilter(request.Type, request.TrangThai),
@@ -104,13 +105,35 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         // PageSize=0 / Take()=0 → lấy hết (dùng cho export Excel)
         var pagiList = PaginatedList<PheDuyetListItemDto>.Create(finalQuery, request.Skip(), request.Take());
         await ResolveUserNamesAsync(pagiList.Data, cancellationToken);
+        var phongBanId = _userProvider.Info.PhongBanID;
+
         foreach (var item in pagiList.Data) {
-            item.ThaoTacTiepTheo =  !string.IsNullOrEmpty(item.MaTrangThai)
-                                    && duongDiLookup.TryGetValue((
-                                        item.MaTrangThai.Trim(),
-                                        item.EntityName ),
-                                    out var actions)
-                                    ? actions : [];}
+            item.ThaoTacTiepTheo = [];
+
+            if (string.IsNullOrWhiteSpace(item.MaTrangThai))
+                continue;
+
+            if (!duongDiLookup.TryGetValue(( item.MaTrangThai.Trim(), item.EntityName),  out var actions)) {
+                continue;
+            }
+
+            item.ThaoTacTiepTheo = actions
+                .Where(x =>
+                    // RoleLevel = 0
+                    // Không giới hạn Role
+                    x.RoleLevel == 0
+                    || ( x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri // Phòng ban chủ trì
+                       && x.RoleId == phongBanId )
+                    // Người phụ trách chính
+                    || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh
+                        && item.LanhDaoPhuTrachId == userId  )
+                    // Phòng ban chỉ định
+                    || ( x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh
+                        && x.RoleId == phongBanId  )
+                )
+                .ToList();
+        }
+       
         return pagiList;
        
     }

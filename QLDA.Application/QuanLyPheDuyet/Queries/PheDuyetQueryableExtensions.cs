@@ -45,6 +45,7 @@ internal static class PheDuyetQueryableExtensions
             TenGiaiDoan = x.b != null && x.b.Buoc != null && x.b.Buoc.GiaiDoan != null ? x.b.Buoc.GiaiDoan.Ten : "",
             TrichYeu = x.e.NoiDung,
             TrangThaiId = x.e.TrangThaiId,
+            LanhDaoPhuTrachId = x.da !=null ? x.da.LanhDaoPhuTrachId : 0,
             MaTrangThai = x.e.TrangThai != null && x.e.TrangThai!.Ma != "LEG"
                 ? x.e.TrangThai!.Ma
                 : TrangThaiPheDuyetCodes.Default.DuThao,
