@@ -35,6 +35,18 @@ public static class SignedGroupTypeHelper
         => groupType?.StartsWith(Prefix, StringComparison.Ordinal) == true;
 
     /// <summary>
+    /// GroupType trống hoặc chỉ còn prefix (vd <c>KySo_</c> → base rỗng).
+    /// </summary>
+    public static bool IsBlankOrPrefixOnly(string? groupType)
+    {
+        if (string.IsNullOrWhiteSpace(groupType))
+            return true;
+
+        var baseType = groupType.ToBaseGroupType() ?? groupType;
+        return string.IsNullOrWhiteSpace(baseType);
+    }
+
+    /// <summary>
     /// Trả về biến thể ký số: "QLHD" → "KySo_QLHD". Không double-prefix nếu đã có KySo_.
     /// </summary>
     public static string WithSignedVariant(string baseGroupType)
