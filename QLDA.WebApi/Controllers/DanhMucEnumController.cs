@@ -21,12 +21,14 @@ namespace QLDA.WebApi.Controllers {
                 nameof(EChiuTrachNhiemXuLy),
                 nameof(ELoaiDeXuatKeHoachLCNT),
                 nameof(PhanQuyenChucNangLevel),
+                nameof(EGroupType),
             };
             return await Task.FromResult(ResultApi.Ok(result));
         }
 
         /// <summary>
-        /// Danh mục EDanhMuc là tên tất cả danh mục có thể sử dụng
+        /// Danh mục EDanhMuc là tên tất cả danh mục có thể sử dụng.
+        /// EGroupType: dùng cho UI chọn groupType khi ký số trực tiếp (parentId = null).
         /// </summary>
         /// <param name="enumName"></param>
         /// <returns></returns>
@@ -43,6 +45,7 @@ namespace QLDA.WebApi.Controllers {
                 nameof(ETrangThaiMoiThau) => EnumsExtensions.EnumAll<ETrangThaiMoiThau>(),
                 nameof(EChiuTrachNhiemXuLy) => EnumsExtensions.EnumAll<EChiuTrachNhiemXuLy>(),
                 nameof(PhanQuyenChucNangLevel) => EnumsExtensions.EnumAll<PhanQuyenChucNangLevel>(),
+                nameof(EGroupType) => EnumsExtensions.EnumAll<EGroupType>(),
                 _ => result
             };
             return await Task.FromResult(ResultApi.Ok(result));

@@ -71,48 +71,26 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
 
     public async Task<PaginatedList<PheDuyetListItemDto>> Handle(PheDuyetGetDanhSachQuery request, CancellationToken cancellationToken)
     {
-        var validTypes = new[] {
-            PheDuyetEntityNames.PheDuyetDuToan,
-            PheDuyetEntityNames.HoSoDeXuatCapDoCntt,
-            PheDuyetEntityNames.HoSoMoiThauDienTu,
-            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat,
-            PheDuyetEntityNames.DeXuatChuTruongMoi,
-       //     PheDuyetEntityNames.DeXuatChuTruongChuyenTiep,
-        //    PheDuyetEntityNames.DeXuatNhuCauKinhPhi,
-            //PheDuyetEntityNames.ThuyetMinhDuAn,
-            // thiếu tờ trình phê duyet5 khảo sát
-
-            PheDuyetEntityNames.BaoCaoKetQuaKhaoSat,//add new
-            PheDuyetEntityNames.ChuTruongLapKeHoach,//addnew
-            PheDuyetEntityNames.DeXuatNhuCauKinhPhiNam,
-            PheDuyetEntityNames.ToTrinhKeHoach,// cái này đang dùng chung 8 màn hình
-            PheDuyetEntityNames.ToTrinhKetQuaGoiThau,
-            PheDuyetEntityNames.ToTrinhThamDinhNhaThau,
-            PheDuyetEntityNames.QuyetDinhKeHoachThue,
-            PheDuyetEntityNames.DuToanDauTu,
-            PheDuyetEntityNames.KHLCNTDuToanYeuCauRieng,
-            PheDuyetEntityNames.KHLCNTDuToanSanCo,
-            PheDuyetEntityNames.QuyetDinhDieuChinh,// xem lại dữ liệu
-            PheDuyetEntityNames.KeHoachTrienKhaiHangMuc,
-        };
+       
         var userId = _userProvider.Info.UserID;
         // Dùng HasKhtcBypass từ IAuthorizationContext (cached per request) thay cho check trực tiếp PhongBanID.
         var duongDi = await _duongDiTrangThaiToTrinh.GetQueryableSet().AsNoTracking()
            .Where(x => x.Used && !(x.IsDeleted ?? false)).ToListAsync(cancellationToken);
         var duongDiLookup = duongDi
-              .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
-              .GroupBy(x => (
-                  x.MaTrangThaiHienTai!.Trim(), x.Loai))
-              .ToDictionary(
-                  g => g.Key,
-                  g => g.Select(x => new DuongDiTrangThaiToTrinhDto {
-                      MaTrangThaiHienTai = x.MaTrangThaiHienTai,
-                      MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
-                      TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
-                      RoleId = x.RoleId,
-                      RoleLevel = x.RoleLevel
-                  }).ToList()
-              );
+          .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
+         
+        .GroupBy(x => (
+            x.MaTrangThaiHienTai!.Trim(), x.Loai))
+        .ToDictionary(
+            g => g.Key,
+            g => g.Select(x => new DuongDiTrangThaiToTrinhDto {
+                MaTrangThaiHienTai = x.MaTrangThaiHienTai,
+                MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
+                TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
+                RoleId = x.RoleId,
+                RoleLevel = x.RoleLevel
+            }).ToList()
+        );
 
         var finalQuery = PheDuyetQueryableExtensions.ApplyDanhSachFilters(
             new PheDuyetDanhSachFilter(request.Type, request.TrangThai),
@@ -127,47 +105,37 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         // PageSize=0 / Take()=0 → lấy hết (dùng cho export Excel)
         var pagiList = PaginatedList<PheDuyetListItemDto>.Create(finalQuery, request.Skip(), request.Take());
         await ResolveUserNamesAsync(pagiList.Data, cancellationToken);
+        var phongBanId = _userProvider.Info.PhongBanID;
+
         foreach (var item in pagiList.Data) {
-            item.ThaoTacTiepTheo =  !string.IsNullOrEmpty(item.MaTrangThai)
-                                    && duongDiLookup.TryGetValue((
-                                        item.MaTrangThai.Trim(),
-                                        item.EntityName ),
-                                    out var actions)
-                                    ? actions : [];}
+            item.ThaoTacTiepTheo = [];
+
+            if (string.IsNullOrWhiteSpace(item.MaTrangThai))
+                continue;
+
+            if (!duongDiLookup.TryGetValue(( item.MaTrangThai.Trim(), item.EntityName),  out var actions)) {
+                continue;
+            }
+
+            item.ThaoTacTiepTheo = actions
+                .Where(x =>
+                    // RoleLevel = 0
+                    // Không giới hạn Role
+                    x.RoleLevel == 0
+                    || ( x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri // Phòng ban chủ trì
+                       && x.RoleId == phongBanId )
+                    // Người phụ trách chính
+                    || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh
+                        && item.LanhDaoPhuTrachId == userId  )
+                    // Phòng ban chỉ định
+                    || ( x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh
+                        && x.RoleId == phongBanId  )
+                )
+                .ToList();
+        }
+       
         return pagiList;
-        #region old
-        //var items = await GetPheDuyetAll(request, cancellationToken);
-
-
-        //if (request.Type == PheDuyetEntityNames.PheDuyetDuToan)
-        //{
-        //    items.AddRange(await GetDuToanItems(request, cancellationToken));
-        //}
-
-        //if (request.Type == PheDuyetEntityNames.HoSoDeXuatCapDoCntt)
-        //{
-        //    items.AddRange(await GetHoSoDeXuatCapDoCnttItems(request, cancellationToken));
-        //}
-
-        //if (request.Type == PheDuyetEntityNames.HoSoMoiThauDienTu)
-        //{
-        //    items.AddRange(await GetHoSoMoiThauDienTuItems(request, cancellationToken));
-        //}
-
-        //if (request.Type == PheDuyetEntityNames.BaoCaoKetQuaKhaoSat)
-        //{
-        //    items.AddRange(await GetBaoCaoKetQuaKhaoSatItems(request, cancellationToken));
-        //}
-        //else
-        //{
-        //     items.AddRange(await GetPheDuyetAll(request, cancellationToken));
-        //  }
-        // chỉ lấy từ pheDuyetHistory
-
-
-        // var sorted = items.OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue).ToList();
-        // return new PaginatedList<PheDuyetListItemDto>(sorted.Skip(request.Skip()).Take(request.Take()).ToList(), sorted.Count, request.Skip(), request.Take());
-        #endregion 
+       
     }
 
     private async Task ResolveUserNamesAsync(List<PheDuyetListItemDto> rows, CancellationToken cancellationToken)

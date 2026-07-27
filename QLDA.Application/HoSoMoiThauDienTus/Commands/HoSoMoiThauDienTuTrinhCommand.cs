@@ -59,10 +59,10 @@ internal class HoSoMoiThauDienTuTrinhCommandHandler : IRequestHandler<HoSoMoiTha
             EntityId = entity.Id,
             DuAnId = entity.DuAnId ?? Guid.Empty,
             BuocId = entity.BuocId,
-            NoiDung = !string.IsNullOrEmpty(request.NoiDung) ? request.NoiDung
-                        : $" Gói thầu {entity.GoiThau?.Ten} đã trình ",
+            NoiDung = $" Gói thầu {entity.GoiThau?.Ten} đã trình {(!string.IsNullOrEmpty(request.NoiDung) ? "với nội dung: " + request.NoiDung : " ") }", 
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NgayXuLy = DateTimeOffset.UtcNow
+            NgayXuLy = DateTimeOffset.UtcNow,
+            NguoiXuLyId = _userProvider.Info.UserID,
         };
 
         await _historyRepository.AddAsync(history, cancellationToken);

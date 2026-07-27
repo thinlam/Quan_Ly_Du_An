@@ -50,7 +50,7 @@ tests/
 | Code Term | English Equivalent | Usage |
 |-----------|-------------------|-------|
 | `DanhMuc` | Catalog/Master Data | Base class for catalog entities |
-| `TepDinhKem` | File Attachment | File upload entities |
+| `Attachment` | File Attachment | Runtime entity; DB table may be `TepDinhKem` per module config |
 | `DonVi` | Organization Unit | Organizational hierarchy |
 | `TrangThai` | Status | Status enumeration |
 | `MoTa` | Description | Description fields |

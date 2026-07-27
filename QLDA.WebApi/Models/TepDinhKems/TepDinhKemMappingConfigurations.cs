@@ -1,4 +1,4 @@
-using QLDA.Application.Common;
+using BuildingBlocks.Application.Attachments.Common;
 using BuildingBlocks.Domain.Entities;
 using QLDA.WebApi.Models.BaoCaoBanGiaoSanPhams;
 using QLDA.WebApi.Models.BaoCaoBaoHanhSanPhams;
@@ -32,20 +32,36 @@ namespace QLDA.WebApi.Models.TepDinhKems;
 
 public static class TepDinhKemMappingConfigurations
 {
-    private const string KySoPrefix = SignedHelper.Prefix;
-
     private static string ResolveGroupType(this TepDinhKemModel model, string rawGroupType)
     {
-        var resolved = model.GroupType ?? rawGroupType;
+        // Form insert/update: caller truyền base thật → luôn dùng base, bỏ qua FE
+        // (tránh "" / "KySo_" từ FE + ParentId → GroupType="KySo_").
+        // API ký trực tiếp (None/KySo): mới fallback sang GroupType FE.
+        var preferred = IsUsableBusinessGroupType(rawGroupType)
+            ? rawGroupType
+            : (IsUsableBusinessGroupType(model.GroupType) ? model.GroupType! : rawGroupType);
 
-        // File gốc (ParentId == null): giữ nguyên GroupType
-        if (model.ParentId is null)
-            return resolved;
+        var baseType = preferred.ToBaseGroupType() ?? preferred;
+        if (string.IsNullOrWhiteSpace(baseType))
+            return string.Empty;
 
-        // File con (ký số - ParentId != null): thêm prefix KySo_ nếu chưa có
-        return resolved.StartsWith(KySoPrefix, StringComparison.Ordinal)
-            ? resolved
-            : $"{KySoPrefix}{resolved}";
+        return SignedGroupTypeHelper.ResolveSignedGroupType(baseType, model.ParentId != null);
+    }
+
+    /// <summary>
+    /// Base GroupType nghiệp vụ hợp lệ — không phải null/rỗng/sentinel None|KySo|KySo_.
+    /// </summary>
+    private static bool IsUsableBusinessGroupType(string? groupType)
+    {
+        if (string.IsNullOrWhiteSpace(groupType))
+            return false;
+
+        var baseType = groupType.ToBaseGroupType() ?? groupType;
+        if (string.IsNullOrWhiteSpace(baseType))
+            return false;
+
+        return baseType != nameof(EGroupType.None)
+            && baseType != nameof(EGroupType.KySo);
     }
 
     /// <summary>

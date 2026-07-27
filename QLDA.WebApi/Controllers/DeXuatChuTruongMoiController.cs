@@ -3,8 +3,9 @@ using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DeXuatChuTruongMois.DTOs;
 using QLDA.Application.DeXuatChuTruongMois.Queries;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.DeXuatChuTruongMois;
 using QLDA.WebApi.Models.PhanKhaiKinhPhis;
 using QLDA.WebApi.Models.TepDinhKems;
@@ -34,9 +35,9 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -48,7 +49,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// Quy trình id là bắt buộc
@@ -61,7 +62,7 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     public async Task<ResultApi> Create([FromBody] DeXuatChuTruongMoiModel model) {
         //Cập nhật bước hiện tại của dự án
-        
+
         var step = await Mediator.Send(new DuAnUpdateStepCommand(model.DuAnId, model.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(model.DuAnId, step));
 
@@ -71,15 +72,17 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(
             savedEntity.Id, EGroupType.DeXuatChuTruongMoi) ?? []];
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = savedEntity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.DeXuatChuTruongMoi)],
+            Entities = files,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(savedEntity.Id);
     }
 
-   
+
     [HttpPut("cap-nhat")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType<ResultApi<DeXuatChuTruongMoi>>(StatusCodes.Status200OK)]
@@ -93,18 +96,19 @@ public class DeXuatChuTruongMoiController : AggregateRootController {
 
         List<Attachment> files = [.. model.DanhSachTepDinhKem?.ToEntities(entity.Id,
             EGroupType.DeXuatChuTruongMoi) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.DeXuatChuTruongMoi)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ), cancellationToken)).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 

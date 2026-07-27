@@ -65,7 +65,8 @@ internal class ThoaThuanGiaoViecTrinhCommandHandler : IRequestHandler<ThoaThuanG
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiTrinh.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $"Gói thầu {entity.GoiThau?.Ten ?? ""} " +
+                        $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ")}",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

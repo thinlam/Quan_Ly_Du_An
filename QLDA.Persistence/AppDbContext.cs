@@ -71,7 +71,8 @@ public class AppDbContext : DbContext, IUnitOfWork
                 assembly,
                 t => t.BaseType != null &&
                      t.BaseType.IsGenericType &&
-                     t.BaseType.GetGenericTypeDefinition() == typeof(AggregateRootConfiguration<>)
+                     t.BaseType.GetGenericTypeDefinition() == typeof(AggregateRootConfiguration<>) &&
+                     t.FullName != "BuildingBlocks.Persistence.Configurations.AttachmentConfiguration"
             );
 
             // Apply IEntityTypeConfiguration<> types (for junction entities, etc.)
@@ -80,6 +81,7 @@ public class AppDbContext : DbContext, IUnitOfWork
                 t => t.GetInterfaces().Any(i =>
                     i.IsGenericType &&
                     i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)) &&
+                     t.FullName != "BuildingBlocks.Persistence.Configurations.AttachmentConfiguration" &&
                      (t.BaseType == null ||
                       !t.BaseType.IsGenericType ||
                       (t.BaseType.GetGenericTypeDefinition() != typeof(AggregateRootConfiguration<>) &&
@@ -87,20 +89,15 @@ public class AppDbContext : DbContext, IUnitOfWork
             );
         }
 
-        modelBuilder.Entity<BuildingBlocks.Domain.Entities.TepDinhKem>(e =>
-        {
-            e.ToTable(t => t.ExcludeFromMigrations());
-        });
-
-        // Attachment entity: both BuildingBlocks.AttachmentConfiguration (ToTable "Attachments")
-        // and QLDA.AttachmentConfiguration (ToTable "TepDinhKem") are picked up via
-        // ApplyConfigurationsFromAssembly above. AppDomain assembly enumeration order is
-        // non-deterministic, so the LAST ToTable call wins - but it may not be QLDA's.
-        // Force the table name to "TepDinhKem" here to guarantee the runtime query targets
-        // the legacy TepDinhKem table regardless of assembly enumeration order.
+        // Attachment mapping (aligned with 3e70b87):
+        // - BB AttachmentConfiguration is excluded above (would map "Attachments").
+        // - QLDA AttachmentConfiguration intentionally deleted — redundant with this override.
+        // - Force ToTable("TepDinhKem") AFTER ApplyConfigurations so table name is deterministic.
+        // - ConfigureForBase() lives here because no IEntityTypeConfiguration is applied for Attachment.
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.Attachment>(e =>
         {
             e.ToTable("TepDinhKem", t => t.ExcludeFromMigrations());
+            e.ConfigureForBase();
         });
 
         modelBuilder.Entity<BuildingBlocks.Domain.Entities.DmDonVi>(e =>

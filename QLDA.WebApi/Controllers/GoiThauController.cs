@@ -1,8 +1,9 @@
 using System.Net.Mime;
 using BuildingBlocks.Domain.Entities;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.GoiThaus.Commands;
 using QLDA.Application.GoiThaus.Queries;
 using QLDA.Application.GoiThaus.DTOs;
@@ -34,9 +35,9 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
     }
 
@@ -78,9 +79,11 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
 
         var entity = await Mediator.Send(new GoiThauInsertCommand(insertDto), cancellationToken);
         List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.GoiThau) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.GoiThau)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -108,9 +111,11 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
         var entity = await Mediator.Send(new GoiThauUpdateCommand(updateDto), cancellationToken);
 
         List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.GoiThau) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.GoiThau)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -119,7 +124,7 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="searchDto"></param>
     /// <remarks>
@@ -137,7 +142,7 @@ public class GoiThauController(IServiceProvider serviceProvider) : AggregateRoot
         return ResultApi.Ok(res);
     }
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="searchDto"></param>
     /// <remarks>

@@ -79,6 +79,7 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
                 ManagedException.Throw("Tài khoản không có quyền!");
 
             entity.TrangThaiId = trangThaiTiepTheoItems?.Id;
+            //entityLoai include (QuyetDinhKeHoachThueCNTT )
             var history = new PheDuyetHistory
             {
                 Id = Guid.NewGuid(),
@@ -86,12 +87,15 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
-                NoiDung = request.noiDung ?? string.Empty,
+                NoiDung = entity.So??""
+                            + (entity.NgayToTrinh != null ? " - ngày " +entity.NgayToTrinh?.ToDateOnlyVn().ToString("dd/MM/yyyy") :"")
+                            + (! string.IsNullOrEmpty(entity.TrichYeu) ? " - " +entity.TrichYeu:""),
                 NguoiXuLyId = _userProvider.Info.UserID,
                 TrangThaiId = trangThaiTiepTheoItems?.Id,
                 NgayXuLy = DateTimeOffset.UtcNow
             };
 
+            await _repository.UpdateAsync(entity, cancellationToken);
             await _historyRepository.AddAsync(history, cancellationToken);
 
             return await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -1,7 +1,8 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.QuyetDinhDuyetQuyetToans.Commands;
 using QLDA.Application.QuyetDinhDuyetQuyetToans.DTOs;
 using QLDA.Application.QuyetDinhDuyetQuyetToans.Queries;
@@ -29,9 +30,9 @@ public class QuyetDinhDuyetQuyetToanController(IServiceProvider serviceProvider)
             Id = id, ThrowIfNull = true, IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -45,7 +46,7 @@ public class QuyetDinhDuyetQuyetToanController(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// Quy trình id là bắt buộc
@@ -66,9 +67,11 @@ public class QuyetDinhDuyetQuyetToanController(IServiceProvider serviceProvider)
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetQuyetToan)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -94,15 +97,17 @@ public class QuyetDinhDuyetQuyetToanController(IServiceProvider serviceProvider)
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
         //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.QuyetDinhDuyetQuyetToan)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="duAnId"></param>
     /// <param name="buocId"></param>

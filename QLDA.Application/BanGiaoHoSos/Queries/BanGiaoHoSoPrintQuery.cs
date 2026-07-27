@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.BanGiaoHoSos.DTOs;
 using QLDA.Domain.Enums;
@@ -19,6 +20,9 @@ internal class BanGiaoHoSoPrintQueryHandler : IRequestHandler<BanGiaoHoSoPrintQu
 
     public async Task<BanGiaoHoSoPrintDto> Handle(BanGiaoHoSoPrintQuery request, CancellationToken cancellationToken = default) {
         var donVis = _donViRepository.GetQueryableSet().AsNoTracking();
+        // Print: chỉ đếm file gốc HS bàn giao (không gồm bản KySo_)
+        var groupTypesBanGiaoExact = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: false, nameof(EGroupType.BanGiaoHoSo));
 
         var dto = await _banGiaoRepository.GetQueryableSet()
             .AsNoTracking()
@@ -36,7 +40,7 @@ internal class BanGiaoHoSoPrintQueryHandler : IRequestHandler<BanGiaoHoSoPrintQu
                 GhiChu = x.e.GhiChu,
                 NgayBanGiao = x.e.NgayBanGiao,
                 TongSoTepDinhKem = _tepDinhKemRepository.GetQueryableSet()
-                    .Count(f => f.GroupId == x.e.Id.ToString() && f.GroupType == nameof(EGroupType.BanGiaoHoSo))
+                    .Count(f => f.GroupId == x.e.Id.ToString() && groupTypesBanGiaoExact.Contains(f.GroupType))
             })
             .FirstOrDefaultAsync(cancellationToken);
 

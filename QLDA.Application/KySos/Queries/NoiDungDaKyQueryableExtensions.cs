@@ -47,8 +47,8 @@ internal static class NoiDungDaKyQueryableExtensions {
         var filterLower = search.GlobalFilter?.Trim().ToLower(
             System.Globalization.CultureInfo.CurrentCulture);
 
+        // File ký số: GroupType chứa KySo (có hoặc không có ParentId — ký trước khi lưu form).
         var files = await query
-            .Where(e => e.ParentId != null)
             .Where(e => e.GroupType.Contains("KySo"))
             .WhereIf(nguoiKyId != null, e => e.CreatedBy == nguoiKyId)
             .WhereIf(groupIds != null, e => groupIds!.Contains(e.GroupId))

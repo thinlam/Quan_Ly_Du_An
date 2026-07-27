@@ -7,7 +7,11 @@ using QLDA.Domain.Constants;
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
 /// <summary>
-/// Trả lại phân khai kinh phí - LDDV role, cần lý do
+/// Mục đích phục vụ cho các loại tờ trình  cần duyệt( chỉ trình )
+
+/// Mục đích phục vụ cho các loại tờ trình không cần duyệt( chỉ trình )
+//  Table ToTrinhPheDuyet có 2 loại
+//1. Đầy đủ các bước trình/duyệt/trả
 /// </summary>
 public record ToTrinhPheDuyetTraLaiCommand(Guid Id,string Loai, string NoiDung) : IRequest<int>;
 
@@ -44,7 +48,8 @@ internal class ToTrinhPheDuyetTraLaiCommandHandler : IRequestHandler<ToTrinhPheD
         }
 
 
-      #region kiểm tra có tồn tại không, hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
+        //ToTrinhPheDuyet : QuyetDinhDuyetDuToan, ToTrinhKeHoach, QuyetDinhKeHoachThue, PheDuyetKhaoSat
+        #region kiểm tra có tồn tại không, hiện đang có ToTrinhPheDuyet & QuyetDinhDuyetDuToan
 
         string table = request.Loai;
         if (ToTrinhEntityNamesExtensions.ContainsEntity(request.Loai))

@@ -14,6 +14,7 @@ global using BuildingBlocks.Domain.Interfaces;
 global using BuildingBlocks.Domain.Entities.Abstractions;
 global using BuildingBlocks.CrossCutting.Exceptions;
 global using BuildingBlocks.CrossCutting.ExtensionMethods;
+global using BuildingBlocks.Application.Common;
 global using BuildingBlocks.Application.Common.DTOs;
 global using BuildingBlocks.Application.Common.Services;
 global using BuildingBlocks.Application.ExtensionMethods;

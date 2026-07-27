@@ -1,136 +1,114 @@
-using QLDA.Application.Common;
+using BuildingBlocks.Application.Attachments.Common;
+using BuildingBlocks.Application.Attachments.DTOs;
+using BuildingBlocks.Domain.Entities;
 using QLDA.Domain.Enums;
 
 namespace QLDA.Application.TepDinhKems.DTOs;
 
-public static class TepDinhKemMappingConfiguration {
+/// <summary>
+/// Compatibility mapping — resolve ký số qua SignedGroupTypeHelper (BB Phase 2).
+/// </summary>
+public static class TepDinhKemMappingConfiguration
+{
     public static List<TepDinhKemDto> ToDtos(this IEnumerable<Attachment> danhSachTepDinhKem)
-        => [.. danhSachTepDinhKem.Select(o => o.ToDto())];
+        => [.. danhSachTepDinhKem.Select(o => o.ToDto<TepDinhKemDto>())];
 
     public static TepDinhKemDto ToDto(this Attachment entity)
-        => new() {
-            Id = entity.Id,
-            ParentId = entity.ParentId,
-            GroupId = entity.GroupId,
-            GroupType = entity.GroupType,
-            Path = entity.Path,
-            Size = entity.Size,
-            Type = entity.Type,
-            FileName = entity.FileName,
-            OriginalName = entity.OriginalName,
-        };
+        => entity.ToDto<TepDinhKemDto>();
+
     private static Attachment ToEntity(this TepDinhKemInsertDto insertDto, Guid groupId, EGroupType groupType = EGroupType.None)
-    => new() {
-        Id = GuidExtensions.GetSequentialGuidId(),
-        ParentId = insertDto.ParentId,
-        GroupId = groupId.ToString(),
-        GroupType = groupType.ToString().ResolveSignedGroupType(insertDto.ParentId != null),
-        Type = insertDto.Type,
-        FileName = insertDto.FileName,
-        OriginalName = insertDto.OriginalName,
-        Path = insertDto.Path,
-        Size = insertDto.Size,
-    };
+        => new()
+        {
+            Id = GuidExtensions.GetSequentialGuidId(),
+            ParentId = insertDto.ParentId,
+            GroupId = groupId.ToString(),
+            GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
+                groupType.ToString(), insertDto.ParentId != null),
+            Type = insertDto.Type,
+            FileName = insertDto.FileName,
+            OriginalName = insertDto.OriginalName,
+            Path = insertDto.Path,
+            Size = insertDto.Size,
+        };
+
     private static Attachment ToEntity(this TepDinhKemInsertDto insertDto, Guid groupId, string groupType = "None")
-    => new() {
-        Id = GuidExtensions.GetSequentialGuidId(),
-        ParentId = insertDto.ParentId,
-        GroupId = groupId.ToString(),
-        GroupType = groupType.ResolveSignedGroupType(insertDto.ParentId != null),
-        Type = insertDto.Type,
-        FileName = insertDto.FileName,
-        OriginalName = insertDto.OriginalName,
-        Path = insertDto.Path,
-        Size = insertDto.Size,
-    };
+        => new()
+        {
+            Id = GuidExtensions.GetSequentialGuidId(),
+            ParentId = insertDto.ParentId,
+            GroupId = groupId.ToString(),
+            GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
+                groupType, insertDto.ParentId != null),
+            Type = insertDto.Type,
+            FileName = insertDto.FileName,
+            OriginalName = insertDto.OriginalName,
+            Path = insertDto.Path,
+            Size = insertDto.Size,
+        };
+
     private static Attachment ToEntity(this TepDinhKemInsertOrUpdateDto insertOrUpdateDto, Guid groupId, EGroupType groupType = EGroupType.None)
-    => new() {
-        Id = insertOrUpdateDto.Id.GetId(),
-        ParentId = insertOrUpdateDto.ParentId,
-        GroupId = groupId.ToString(),
-        GroupType = groupType.ToString().ResolveSignedGroupType(insertOrUpdateDto.ParentId != null),
-        Type = insertOrUpdateDto.Type,
-        FileName = insertOrUpdateDto.FileName,
-        OriginalName = insertOrUpdateDto.OriginalName,
-        Path = insertOrUpdateDto.Path,
-        Size = insertOrUpdateDto.Size,
-    };
+        => new()
+        {
+            Id = insertOrUpdateDto.Id.GetId(),
+            ParentId = insertOrUpdateDto.ParentId,
+            GroupId = groupId.ToString(),
+            GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
+                groupType.ToString(), insertOrUpdateDto.ParentId != null),
+            Type = insertOrUpdateDto.Type,
+            FileName = insertOrUpdateDto.FileName,
+            OriginalName = insertOrUpdateDto.OriginalName,
+            Path = insertOrUpdateDto.Path,
+            Size = insertOrUpdateDto.Size,
+        };
+
     private static Attachment ToEntity(this TepDinhKemInsertOrUpdateDto insertOrUpdateDto, Guid groupId, string groupType = "None")
-    => new() {
-        Id = insertOrUpdateDto.Id.GetId(),
-        ParentId = insertOrUpdateDto.ParentId,
-        GroupId = groupId.ToString(),
-        GroupType = groupType.ResolveSignedGroupType(insertOrUpdateDto.ParentId != null),
-        Type = insertOrUpdateDto.Type,
-        FileName = insertOrUpdateDto.FileName,
-        OriginalName = insertOrUpdateDto.OriginalName,
-        Path = insertOrUpdateDto.Path,
-        Size = insertOrUpdateDto.Size,
-    };
+        => new()
+        {
+            Id = insertOrUpdateDto.Id.GetId(),
+            ParentId = insertOrUpdateDto.ParentId,
+            GroupId = groupId.ToString(),
+            GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
+                groupType, insertOrUpdateDto.ParentId != null),
+            Type = insertOrUpdateDto.Type,
+            FileName = insertOrUpdateDto.FileName,
+            OriginalName = insertOrUpdateDto.OriginalName,
+            Path = insertOrUpdateDto.Path,
+            Size = insertOrUpdateDto.Size,
+        };
+
     public static IEnumerable<Attachment> ToEntities(
         this List<TepDinhKemInsertDto> dtos,
         Guid groupId,
-        EGroupType groupType = EGroupType.None
-    )
-    => dtos.Select(m => ToEntity(m, groupId, groupType));
+        EGroupType groupType = EGroupType.None)
+        => dtos.Select(m => ToEntity(m, groupId, groupType));
+
     public static IEnumerable<Attachment> ToEntities(
         this List<TepDinhKemInsertDto> dtos,
         Guid groupId,
-        string groupType = "None"
-    )
-    => dtos.Select(m => ToEntity(m, groupId, groupType));
+        string groupType = "None")
+        => dtos.Select(m => ToEntity(m, groupId, groupType));
+
     public static IEnumerable<Attachment> ToEntities(
-       this List<TepDinhKemInsertOrUpdateDto> dtos,
-       Guid groupId,
-       EGroupType groupType = EGroupType.None
-   )
-   => dtos.Select(m => ToEntity(m, groupId, groupType));
+        this List<TepDinhKemInsertOrUpdateDto> dtos,
+        Guid groupId,
+        EGroupType groupType = EGroupType.None)
+        => dtos.Select(m => ToEntity(m, groupId, groupType));
+
     public static IEnumerable<Attachment> ToEntities(
-       this List<TepDinhKemInsertOrUpdateDto> dtos,
-       Guid groupId,
-       string groupType = "None"
-   )
-   => dtos.Select(m => ToEntity(m, groupId, groupType));
+        this List<TepDinhKemInsertOrUpdateDto> dtos,
+        Guid groupId,
+        string groupType = "None")
+        => dtos.Select(m => ToEntity(m, groupId, groupType));
 
     public static IEnumerable<Attachment> ToEntities(
         this List<TepDinhKemDto> dtos,
         Guid groupId,
-        EGroupType groupType = EGroupType.None
-    )
-    {
-        foreach (var dto in dtos)
-        {
-            yield return new Attachment
-            {
-                Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
-                ParentId = dto.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = groupType.ToString().ResolveSignedGroupType(dto.ParentId != null),
-                Type = dto.Type,
-                FileName = dto.FileName,
-                OriginalName = dto.OriginalName,
-                Path = dto.Path,
-                Size = dto.Size,
-            };
-        }
-    }
+        EGroupType groupType = EGroupType.None)
+        => ((IEnumerable<IAttachmentDto>)dtos).ToEntities(groupId, groupType.ToString());
 
-    public static IEnumerable<Attachment> ToEntities( this List<TepDinhKemDto> dtos, Guid groupId, string groupType = "None" )
-    {
-        foreach (var dto in dtos)
-        {
-            yield return new Attachment
-            {
-                Id = dto.Id ?? GuidExtensions.GetSequentialGuidId(),
-                ParentId = dto.ParentId,
-                GroupId = groupId.ToString(),
-                GroupType = groupType.ResolveSignedGroupType(dto.ParentId != null),
-                Type = dto.Type,
-                FileName = dto.FileName,
-                OriginalName = dto.OriginalName,
-                Path = dto.Path,
-                Size = dto.Size,
-            };
-        }
-    }
+    public static IEnumerable<Attachment> ToEntities(
+        this List<TepDinhKemDto> dtos,
+        Guid groupId,
+        string groupType = "None")
+        => ((IEnumerable<IAttachmentDto>)dtos).ToEntities(groupId, groupType);
 }

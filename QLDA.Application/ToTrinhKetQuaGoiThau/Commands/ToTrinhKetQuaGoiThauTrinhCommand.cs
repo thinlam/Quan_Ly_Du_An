@@ -65,7 +65,10 @@ internal class ToTrinhKetQuaGoiThauTrinhCommandHandler : IRequestHandler<ToTrinh
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+
+            NoiDung = $"Số {entity.So ?? ""} " +
+                      entity.NgayTrinh != null ? $"- ngày  {entity.NgayTrinh.ToDateOnlyVn()?.ToString("dd/MM/yyyy")}":"" +
+                      $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ")}",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

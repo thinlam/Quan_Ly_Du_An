@@ -77,7 +77,10 @@ internal class QuyetDinhLapBanQldaTrinhCommandHandler : IRequestHandler<QuyetDin
             BuocId = entitySafe.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $"Số {entity.So??" dự thảo " + entity.SoDuThao??""} " +
+                        $"{(entity.NgayKy != null ? " - ngày ký" + entity.NgayKy.ToDateOnlyVn()?.ToString("dd/MM/yyyy")
+                        : " - ngày " + entity.Ngay.ToDateOnlyVn()?.ToString("dd/MM/yyyy"))} " +
+                        $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ")}",
             NgayXuLy = DateTimeOffset.UtcNow
         };
         await _historyRepository.AddAsync(history);

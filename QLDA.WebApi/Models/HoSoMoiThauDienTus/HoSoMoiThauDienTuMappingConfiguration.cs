@@ -27,42 +27,9 @@ public static class HoSoMoiThauDienTuMappingConfiguration
             HoSoMoiThauThamDinh = entity.NhaThauId != null && (entity.ThamDinh??false) ? new HoSoMoiThauThamDinhModel()
             {
                 NhaThauId = entity.NhaThauId ?? new Guid(),
-                DinhKemQuyetDinh = filesThamDinh?.Select(f => new TepDinhKemModel
-                {
-                    Id = f.Id,
-                    ParentId = f.ParentId,
-                    GroupId = f.GroupId,
-                    GroupType = f.GroupType,
-                    FileName = f.FileName,
-                    OriginalName = f.OriginalName,
-                    Path = f.Path,
-                    Size = f.Size,
-                    Type = f.Type,
-                }).ToList() ,
-                DinhKemCamKet = filesCamKet?.Select(f => new TepDinhKemModel
-                {
-                    Id = f.Id,
-                    ParentId = f.ParentId,
-                    GroupId = f.GroupId,
-                    GroupType = f.GroupType,
-                    FileName = f.FileName,
-                    OriginalName = f.OriginalName,
-                    Path = f.Path,
-                    Size = f.Size,
-                    Type = f.Type,
-                }).ToList(),
-                DinhKemBaoCao = fileBaoCao?.Select(f => new TepDinhKemModel
-                {
-                    Id = f.Id,
-                    ParentId = f.ParentId,
-                    GroupId = f.GroupId,
-                    GroupType = f.GroupType,
-                    FileName = f.FileName,
-                    OriginalName = f.OriginalName,
-                    Path = f.Path,
-                    Size = f.Size,
-                    Type = f.Type,
-                }).ToList()
+                DinhKemQuyetDinh = filesThamDinh?.Select(f => f.ToModel()).ToList() ,
+                DinhKemCamKet = filesCamKet?.Select(f => f.ToModel()).ToList(),
+                DinhKemBaoCao = fileBaoCao?.Select(f => f.ToModel()).ToList()
             } : null,
             ToTrinh = entity.ToTrinh != null ? new ToTrinhQuyetDinhModel()
             {
@@ -72,18 +39,7 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                 NguoiKy = entity.ToTrinh!.NguoiKy,
                 ChucVu = entity.ToTrinh!.ChucVu,
                 TrichYeu = entity.ToTrinh!.TrichYeu,
-                DanhSachTepDinhKem = filesToTrinh?.Select(f => new TepDinhKemModel
-                {
-                    Id = f.Id,
-                    ParentId = f.ParentId,
-                    GroupId = f.GroupId,
-                    GroupType = f.GroupType,
-                    FileName = f.FileName,
-                    OriginalName = f.OriginalName,
-                    Path = f.Path,
-                    Size = f.Size,
-                    Type = f.Type,
-                }).ToList()
+                DanhSachTepDinhKem = filesToTrinh?.Select(f => f.ToModel()).ToList()
             } : null,
             QuyetDinh = entity.QuyetDinh != null ? new ToTrinhQuyetDinhModel()
             {
@@ -93,31 +49,9 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                 NguoiKy = entity.QuyetDinh!.NguoiKy,
                 ChucVu = entity.QuyetDinh!.ChucVu,
                 TrichYeu = entity.QuyetDinh!.TrichYeu,
-                DanhSachTepDinhKem = filesQuyetDinh?.Select(f => new TepDinhKemModel
-                {
-                    Id = f.Id,
-                    ParentId = f.ParentId,
-                    GroupId = f.GroupId,
-                    GroupType = f.GroupType,
-                    FileName = f.FileName,
-                    OriginalName = f.OriginalName,
-                    Path = f.Path,
-                    Size = f.Size,
-                    Type = f.Type,
-                }).ToList()
+                DanhSachTepDinhKem = filesQuyetDinh?.Select(f => f.ToModel()).ToList()
             } : null,
-            DanhSachTepDinhKem = files?.Select(f => new TepDinhKemModel
-            {
-                Id = f.Id,
-                ParentId = f.ParentId,
-                GroupId = f.GroupId,
-                GroupType = f.GroupType,
-                FileName = f.FileName,
-                OriginalName = f.OriginalName,
-                Path = f.Path,
-                Size = f.Size,
-                Type = f.Type,
-            }).ToList()
+            DanhSachTepDinhKem = files?.Select(f => f.ToModel()).ToList()
         };
 
     public static HoSoMoiThauDienTuInsertDto ToInsertDto(this HoSoMoiThauDienTuModel model)
@@ -137,85 +71,13 @@ public static class HoSoMoiThauDienTuMappingConfiguration
             HoSoMoiThauThamDinh = (model.ThamDinh ?? false) && model.HoSoMoiThauThamDinh != null ? new HoSoMoiThauThamDinhDto()
             {
                 NhaThauId = model.HoSoMoiThauThamDinh!.GetId(),
-                DinhKemCamKet = model.HoSoMoiThauThamDinh?.DinhKemCamKet?.Select(m => new TepDinhKemDto
-                {
-                    Id = m.Id,
-                    ParentId = m.ParentId,
-                    FileName = m.FileName,
-                    OriginalName = m.OriginalName,
-                    Path = m.Path,
-                    Size = m.Size,
-                    Type = m.Type,
-                }).ToList(),
-                DinhKemQuyetDinh = model.HoSoMoiThauThamDinh?.DinhKemQuyetDinh?.Select(m => new TepDinhKemDto
-                {
-                    Id = m.Id,
-                    ParentId = m.ParentId,
-                    FileName = m.FileName,
-                    OriginalName = m.OriginalName,
-                    Path = m.Path,
-                    Size = m.Size,
-                    Type = m.Type,
-                }).ToList(),
-                DinhKemBaoCao = model.HoSoMoiThauThamDinh?.DinhKemBaoCao?.Select(m => new TepDinhKemDto
-                {
-                    Id = m.Id,
-                    ParentId = m.ParentId,
-                    FileName = m.FileName,
-                    OriginalName = m.OriginalName,
-                    Path = m.Path,
-                    Size = m.Size,
-                    Type = m.Type,
-                }).ToList()
+                DinhKemCamKet = model.HoSoMoiThauThamDinh?.DinhKemCamKet?.Select(m => ToDto(m)).ToList(),
+                DinhKemQuyetDinh = model.HoSoMoiThauThamDinh?.DinhKemQuyetDinh?.Select(m => ToDto(m)).ToList(),
+                DinhKemBaoCao = model.HoSoMoiThauThamDinh?.DinhKemBaoCao?.Select(m => ToDto(m)).ToList()
             }: null,
-            ToTrinh = new ToTrinhQuyetDinhDto()
-            {
-                So = model.ToTrinh!.So,
-                TrichYeu = model.ToTrinh!.TrichYeu ?? string.Empty,
-                Ngay = model.ToTrinh!.Ngay,
-                NguoiKy = model.ToTrinh!.NguoiKy,
-                ChucVu = model.ToTrinh!.ChucVu,
-                DanhSachTepDinhKem = model.ToTrinh?.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
-                {
-                    Id = m.Id,
-                    ParentId = m.ParentId,
-                    FileName = m.FileName,
-                    OriginalName = m.OriginalName,
-                    Path = m.Path,
-                    Size = m.Size,
-                    Type = m.Type,
-                }).ToList()
-            },
-            QuyetDinh = new ToTrinhQuyetDinhDto()
-            {
-                So = model.QuyetDinh!.So ?? string.Empty,
-                TrichYeu = model.QuyetDinh!.TrichYeu ?? string.Empty,
-                Ngay = model.QuyetDinh!.Ngay,
-                NguoiKy = model.QuyetDinh!.NguoiKy,
-                ChucVu = model.QuyetDinh!.ChucVu,
-                DanhSachTepDinhKem = model.QuyetDinh?.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
-                {
-                    Id = m.Id,
-                    ParentId = m.ParentId,
-                    FileName = m.FileName,
-                    OriginalName = m.OriginalName,
-                    Path = m.Path,
-                    Size = m.Size,
-                    Type = m.Type,
-                }).ToList()
-            },
-            DanhSachTepDinhKem = model.DanhSachTepDinhKem?.Select(m => new TepDinhKemDto
-            {
-                Id = m.Id,
-                ParentId = m.ParentId,
-                GroupId = m.GroupId,
-                GroupType = m.GroupType,
-                FileName = m.FileName,
-                OriginalName = m.OriginalName,
-                Path = m.Path,
-                Size = m.Size,
-                Type = m.Type,
-            }).ToList()
+            ToTrinh = model.ToTrinh != null ? ToUpdateModel(model.ToTrinh) : null,
+            QuyetDinh = model.QuyetDinh != null ? ToUpdateModel(model.QuyetDinh) : null,
+            DanhSachTepDinhKem = model.DanhSachTepDinhKem?.Select(m => ToDto(m)).ToList()
         };
 
         return dto;
@@ -223,6 +85,36 @@ public static class HoSoMoiThauDienTuMappingConfiguration
 
     }
 
+    public static TepDinhKemModel ToFileModel(this Attachment f) => new() {
+        Id = f.Id,
+        ParentId = f.ParentId,
+        GroupId = f.GroupId,
+        GroupType = f.GroupType,
+        FileName = f.FileName,
+        OriginalName = f.OriginalName,
+        Path = f.Path,
+        Size = f.Size,
+        Type = f.Type,
+    };
+    public static TepDinhKemDto ToDto(this TepDinhKemModel m) => new() {
+        Id = m.Id,
+        ParentId = m.ParentId,
+        GroupId = m.GroupId,
+        GroupType = m.GroupType,
+        FileName = m.FileName,
+        OriginalName = m.OriginalName,
+        Path = m.Path,
+        Size = m.Size,
+        Type = m.Type,
+    };
+    public static ToTrinhQuyetDinhDto ToUpdateModel(this ToTrinhQuyetDinhModel model) => new() {
+        So = model!.So ?? string.Empty,
+        TrichYeu = model!.TrichYeu ?? string.Empty,
+        Ngay = model!.Ngay,
+        NguoiKy = model!.NguoiKy,
+        ChucVu = model!.ChucVu,
+        DanhSachTepDinhKem = model?.DanhSachTepDinhKem?.Select(m => ToDto(m)).ToList()
+    };
     public static HoSoMoiThauDienTuUpdateModel ToUpdateModel(this HoSoMoiThauDienTuModel model) => new()
     {
         Id = model.GetId(),

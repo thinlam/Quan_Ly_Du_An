@@ -1,7 +1,8 @@
 using System.Net.Mime;
 using QLDA.Application.DuAns.Commands;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.PhuLucHopDongs.Commands;
 using QLDA.Application.PhuLucHopDongs.DTOs;
 using QLDA.Application.PhuLucHopDongs.Queries;
@@ -29,9 +30,9 @@ public class PhuLucHopDongController(IServiceProvider serviceProvider) : Aggrega
             Id = id, ThrowIfNull = true, IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
 
@@ -68,9 +69,11 @@ public class PhuLucHopDongController(IServiceProvider serviceProvider) : Aggrega
 
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id).ToList();
 
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.PhuLucHopDong)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
 
         return ResultApi.Ok(entity.Id);
@@ -97,9 +100,11 @@ public class PhuLucHopDongController(IServiceProvider serviceProvider) : Aggrega
         var danhSachTepDinhKem = model.GetDanhSachTepDinhKem(entity.Id);
 
         //Thêm file mới
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = danhSachTepDinhKem
+            GroupTypes = [nameof(EGroupType.PhuLucHopDong)],
+            Entities = danhSachTepDinhKem,
+            AutoDeleteMissing = true
         });
         return ResultApi.Ok(entity.ToModel(danhSachTepDinhKem));
     }
@@ -111,7 +116,7 @@ public class PhuLucHopDongController(IServiceProvider serviceProvider) : Aggrega
     ///
     /// </remarks>
     /// <returns></returns>
-    /// 
+    ///
     /// PhuLucHopDongGetChuaThanhToanQuery
     [HttpGet("danh-sach-cbobox")]
     [ProducesResponseType<ResultApi<PaginatedList<PhuLucHopDongDto>>>(StatusCodes.Status200OK)]

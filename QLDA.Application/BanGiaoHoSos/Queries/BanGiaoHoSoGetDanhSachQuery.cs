@@ -1,7 +1,7 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
-using QLDA.Application.Common;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Enums;
@@ -41,14 +41,21 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
         var users = _userMasterRepository.GetQueryableSet().AsNoTracking();
         var donVis = _danhMucDonViRepository.GetQueryableSet().AsNoTracking();
 
-        var queryable = _banGiaoRepository.GetQueryableSet()
+        var filtered = _banGiaoRepository.GetQueryableSet()
             .ApplyDanhSachFilters(
                 request.SearchDto,
                 _buocAuth,
                 _duAnBuocRepo,
                 _authContext,
                 users,
-                donVis)
+                donVis);
+
+        var groupTypesHsBanGiao = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.BanGiaoHoSo));
+        var groupTypesBienBan = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.BienBanBanGiao));
+
+        var queryable = filtered
             .Select(x => new BanGiaoHoSoDto
             {
                 Id = x.E.Id,
@@ -71,14 +78,10 @@ internal class BanGiaoHoSoGetDanhSachQueryHandler : IRequestHandler<BanGiaoHoSoG
                 TenNguoiTao = x.User != null ? x.User.HoTen : null,
                 CreatedAt = x.E.CreatedAt,
                 DanhSachTepHSBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == x.E.Id.ToString()
-                        && (f.GroupType == nameof(EGroupType.BanGiaoHoSo)
-                            || f.GroupType == SignedHelper.Prefix + nameof(EGroupType.BanGiaoHoSo)))
+                    .Where(f => f.GroupId == x.E.Id.ToString() && groupTypesHsBanGiao.Contains(f.GroupType))
                     .Select(f => f.ToDto()).ToList(),
                 DanhSachBienBanBanGiao = _tepDinhKemRepository.GetQueryableSet()
-                    .Where(f => f.GroupId == x.E.Id.ToString()
-                        && (f.GroupType == nameof(EGroupType.BienBanBanGiao)
-                            || f.GroupType == SignedHelper.Prefix + nameof(EGroupType.BienBanBanGiao)))
+                    .Where(f => f.GroupId == x.E.Id.ToString() && groupTypesBienBan.Contains(f.GroupType))
                     .Select(f => f.ToDto()).ToList()
             });
 

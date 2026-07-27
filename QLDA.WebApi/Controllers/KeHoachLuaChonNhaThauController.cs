@@ -6,9 +6,10 @@ using QLDA.Application.KeHoachLuaChonNhaThaus;
 using QLDA.Application.KeHoachLuaChonNhaThaus.Commands;
 using QLDA.Application.KeHoachLuaChonNhaThaus.DTOs;
 using QLDA.Application.KeHoachLuaChonNhaThaus.Queries;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -37,9 +38,9 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
             IsNoTracking = true,
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery() {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
     }
 
@@ -53,7 +54,7 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="insertDto"></param>
     /// <param name="unitOfWork"></param>
@@ -77,9 +78,11 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
 
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauInsertCommand(insertDto), cancellationToken);
         List<Attachment> files = [.. insertDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThau) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KeHoachLuaChonNhaThau)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -88,7 +91,7 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="updateDto"></param>
     /// <param name="unitOfWork"></param>
@@ -108,9 +111,11 @@ public class KeHoachLuaChonNhaThauController : AggregateRootController {
         var entity = await Mediator.Send(new KeHoachLuaChonNhaThauUpdateCommand(updateDto), cancellationToken);
 
         List<Attachment> files = [.. updateDto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.KeHoachLuaChonNhaThau) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.KeHoachLuaChonNhaThau)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

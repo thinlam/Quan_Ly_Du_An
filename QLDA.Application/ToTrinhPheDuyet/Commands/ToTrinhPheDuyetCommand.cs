@@ -5,7 +5,10 @@ using QLDA.Domain.Constants;
 namespace QLDA.Application.ToTrinhPheDuyets.Commands;
 
 /// <summary>
-/// Trình phân khai kinh phí - chỉ phòng KH-TC (PhongBanId = 219)
+/// Mục đích phục vụ cho các loại tờ trình không cần duyệt( chỉc trình )
+//  Table ToTrinhPheDuyet có 2 loại(duyệt/chỉ trình)
+//2. Tờ trình chỉ trình(k cần duyệt) như KHLCNTDuToanSanCo, KHLCNTDuToanYeuCauRieng, KeHoachTongTheLCNT, KeHoachLCNTChuanBiDauTu
+
 /// </summary>
 public record ToTrinhPheDuyetCommand(Guid Id, string Loai, string? NoiDung = null) : IRequest<int>;
 
@@ -54,8 +57,7 @@ internal class ToTrinhPheDuyetCommandHandler : IRequestHandler<ToTrinhPheDuyetCo
 
         // Update status to Đã trình
         entity.TrangThaiId = trangThaiDaTrinh!.Id;
-        //1 QuyetDinhKeHoachThue
-        //2 DuToanDauTu
+        //1 QuyetDinhKeHoachThueCntt
 
         // Create history record
         var history = new PheDuyetHistory {

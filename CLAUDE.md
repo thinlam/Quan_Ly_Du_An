@@ -66,6 +66,34 @@ var queryable = _buocAuth.FilterVisibleChildEntities(
 );
 ```
 
+## Attachment Pattern (File đính kèm)
+
+Runtime entity: `BuildingBlocks.Domain.Entities.Attachment`. Bảng DB QLDA vẫn là `TepDinhKem`. Chi tiết đầy đủ: `docs/code-standards.md` §14.
+
+**Hard rules:**
+- Dùng `IRepository<Attachment, Guid>` + BB commands/queries — **không** dùng entity/command `TepDinhKem*` cũ.
+- **Không** rename API contract: `DanhSachTepDinhKem`, `TepDinhKemDto`, `TepDinhKemModel`.
+- Write: `AttachmentBulkInsertOrUpdateCommand` với `GroupId` + `GroupTypes` bắt buộc.
+- Read (controller): Hydration qua `GetAttachmentsQuery` → `.ToAttachmentEntities()` → `ToModel()`.
+- Read (list handler): Subquery trong `.Select()` dùng `AttachmentSubquery.ExpandGroupTypes` + `Contains` — **không** gọi `_mediator.Send()` trong projection.
+- Ký số: `SignedGroupTypeHelper` (BB) — single source of truth cho `KySo_` prefix.
+
+```csharp
+// ✅ Write — controller sau khi entity có Id
+await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
+    GroupId = entity.Id.ToString(),
+    GroupTypes = [nameof(EGroupType.BaoCaoTienDo)],
+    Entities = model.GetDanhSachTepDinhKem(entity.Id),
+    AutoDeleteMissing = true
+});
+
+// ✅ Read — hydration (IncludeSigned mặc định true → gốc + KySo_*)
+var files = (await Mediator.Send(new GetAttachmentsQuery(
+    GroupIds: [entity.Id.ToString()],
+    BaseGroupTypes: [nameof(EGroupType.BaoCaoTienDo)]
+))).ToAttachmentEntities();
+```
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 

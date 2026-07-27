@@ -1,8 +1,9 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.ToTrinhPheDuyets;
 using QLDA.Application.ToTrinhPheDuyets.Commands;
 using QLDA.Application.ToTrinhPheDuyets.DTOs;
@@ -11,7 +12,10 @@ using QLDA.Domain.Constants;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
-
+/// <summary>
+///Hiện có 2 loại tờ trình/quyết định dùng chung contronller này là tờ trình có trình duyệt và tờ trình chỉ trình(ko cần duyệt)
+/// </summary>
+/// <param name="serviceProvider"></param>
 [Route("api/to-trinh-phe-duyet")]
 [Tags("Tờ trình phê duyệt")]
 public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
@@ -28,10 +32,10 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
             IsNoTracking = true
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()], EGroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.ToTrinhPheDuyet)]
+        ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
@@ -56,16 +60,18 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
-      
+
         var entity = await Mediator.Send(new ToTrinhPheDuyetInsertCommand(dto), cancellationToken);
         // nếu dùng ToTrinhPheDuyet cho nhìu màn hình thì lấy  EGroupType.ToTrinhPheDuyet theo Loai
         //tạo contanst LoaiToTrinhPheDuyet
 
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhPheDuyet) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -82,24 +88,25 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
         CancellationToken cancellationToken = default)
     {
         var entity = new ToTrinhPheDuyet();
-        if(LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai)) 
+        if(LoaiToTrinhKhongDuyetExtensions.ContainsDescription(dto.Loai))
             entity =  await Mediator.Send(new ToTrinhKhongDuyetUpdateCommand(dto), cancellationToken);
         else
             entity = await Mediator.Send(new ToTrinhPheDuyetUpdateCommand(dto), cancellationToken);
-        
+
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.ToTrinhPheDuyet) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.ToTrinhPheDuyet)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
@@ -109,7 +116,7 @@ public class ToTrinhPheDuyetController(IServiceProvider serviceProvider) : Aggre
     [HttpGet("danh-sach-tien-do")]
     public async Task<ResultApi> Get([FromQuery] ToTrinhPheDuyetSearchDto dto)
     {
-        // hien tai có 6 loai trong  ToTrinhEntityNames 
+        // hien tai có 6 loai trong  ToTrinhEntityNames
         var res = await Mediator.Send(new ToTrinhPheDuyetGetPaginatedQuery()
         {
             IsNoTracking = true,

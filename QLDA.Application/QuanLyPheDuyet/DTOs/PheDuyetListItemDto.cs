@@ -22,6 +22,8 @@ public class PheDuyetListItemDto {
     public long? NguoiTrinhId { get; set; }
     public string? NguoiDuyet { get; set; }
     public string? NguoiTrinh { get; set; }
+    public long? LanhDaoPhuTrachId { get; set; }
+    
     /// <summary>Luôn là collection (có thể rỗng); không null — tương thích API cũ.</summary>
     public List<TepDinhKemDto> DanhSachTepDinhKem { get; set; } = [];
     public DateTimeOffset? NgayKy { get; set; }

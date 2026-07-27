@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.BanGiaoHoSos.DTOs;
@@ -43,8 +44,7 @@ internal class BanGiaoHoSoGetFileExportQueryHandler(IServiceProvider serviceProv
 
         var files = await _tepDinhKemRepository.GetQueryableSet()
             .AsNoTracking()
-            .Where(f => f.GroupId == entity.Id.ToString()
-                        && f.GroupType == nameof(EGroupType.BanGiaoHoSo))
+            .ForExactGroupType(entity.Id.ToString(), nameof(EGroupType.BanGiaoHoSo))
             .OrderBy(f => f.CreatedAt)
             .Select(f => new BanGiaoHoSoFileExportItemDto
             {

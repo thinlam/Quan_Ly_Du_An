@@ -1,6 +1,6 @@
 using QLDA.Application.Authorization;
 
-using QLDA.Application.Common;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
@@ -36,6 +36,9 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId);
 
+        var groupTypesThuyetMinh = AttachmentSubquery.ExpandGroupTypes(includeSigned: true, nameof(EGroupType.ThuyetMinhDuAn));
+        var groupTypesThamDinh = AttachmentSubquery.ExpandGroupTypes(includeSigned: true, nameof(EGroupType.ThuyetMinhDuAnThamDinh));
+
         return await queryable
             .Select(e => new ThuyetMinhDuAnDto() {
                 Id = e.Id,
@@ -51,14 +54,10 @@ internal class ThuyetMinhDuAnGetDanhSachQueryHandler(IServiceProvider ServicePro
                 MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : TrangThaiPheDuyetCodes.Default.DuThao,
                 TenTrangThaiThamDinh = e.TrangThaiThamDinh!.Ten,
                 DanhSachTepDinhKem = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString()
-                        && (i.GroupType == nameof(EGroupType.ThuyetMinhDuAn)
-                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThuyetMinhDuAn)))
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesThuyetMinh.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
                 DanhSachTepThamDinh = _tepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString()
-                        && (i.GroupType == nameof(EGroupType.ThuyetMinhDuAnThamDinh)
-                            || i.GroupType == SignedHelper.Prefix + nameof(EGroupType.ThuyetMinhDuAnThamDinh)))
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesThamDinh.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

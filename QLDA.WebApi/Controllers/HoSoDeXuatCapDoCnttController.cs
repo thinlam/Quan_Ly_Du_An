@@ -1,8 +1,9 @@
 using QLDA.Application.HoSoDeXuatCapDoCntts.Commands;
 using QLDA.Application.HoSoDeXuatCapDoCntts.DTOs;
 using QLDA.Application.HoSoDeXuatCapDoCntts.Queries;
-using QLDA.Application.TepDinhKems.Commands;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Commands;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.WebApi.Models.HoSoDeXuatCapDoCntts;
 using QLDA.WebApi.Models.QuanLyPheDuyet;
 using System.Net.Mime;
@@ -10,16 +11,16 @@ using System.Net.Mime;
 namespace QLDA.WebApi.Controllers;
 
 [Tags("Hồ sơ đề xuất cấp độ CNTT")]
-[Route("api/ho-so-de-xuat-cap-do-cntt")] 
+[Route("api/ho-so-de-xuat-cap-do-cntt")]
 [Authorize]
 public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootController(sp) {
 
     [HttpGet("{id}")]
     public async Task<ResultApi> Get(Guid id) {
         var entity = await Mediator.Send(new HoSoDeXuatCapDoCnttGetQuery { Id = id });
-        var files = await Mediator.Send(new GetDanhSachTepDinhKemQuery {
-            GroupId = [entity.Id.ToString()]
-        });
+        var files = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(files));
     }
 
@@ -37,9 +38,12 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
 
         // Lưu file đính kèm
         if (model.DanhSachTepDinhKem?.Count > 0) {
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
                 GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.HoSoDeXuatCapDoCntt)],
                 Entities = model.GetDanhSachTepDinhKem(entity.Id)
+,
+                AutoDeleteMissing = true
             });
         }
 
@@ -53,9 +57,12 @@ public class HoSoDeXuatCapDoCnttController(IServiceProvider sp) : AggregateRootC
 
         // Cập nhật file đính kèm
         if (model.DanhSachTepDinhKem?.Count > 0) {
-            await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand {
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
                 GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.HoSoDeXuatCapDoCntt)],
                 Entities = model.GetDanhSachTepDinhKem(entity.Id)
+,
+                AutoDeleteMissing = true
             });
         }
 

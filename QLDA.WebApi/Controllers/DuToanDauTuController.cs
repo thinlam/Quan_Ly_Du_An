@@ -1,8 +1,9 @@
 using QLDA.Application.DuAns.Commands;
 using BuildingBlocks.Domain.Entities;
-using QLDA.Application.TepDinhKems.Commands;
+using BuildingBlocks.Application.Attachments.Commands;
 using QLDA.Application.TepDinhKems.DTOs;
-using QLDA.Application.TepDinhKems.Queries;
+using BuildingBlocks.Application.Attachments.Queries;
+using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.DuToanDauTus;
 using QLDA.Application.DuToanDauTus.Commands;
 using QLDA.Application.DuToanDauTus.DTOs;
@@ -27,10 +28,9 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
             IsNoTracking = true
         });
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-        {
-            GroupId = [entity.Id.ToString()]
-        });
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ))).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
@@ -55,16 +55,18 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
     {
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
-      
+
         var entity = await Mediator.Send(new DuToanDauTuInsertCommand(dto), cancellationToken);
         // nếu dùng DuToanDauTu cho nhìu màn hình thì lấy  EGroupType.DuToanDauTu theo Loai
         //tạo contanst LoaiDuToanDauTu
 
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DuToanDauTu) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.DuToanDauTu)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -83,18 +85,19 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
         var entity = await Mediator.Send(new DuToanDauTuUpdateCommand(dto), cancellationToken);
 
         List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DuToanDauTu) ?? []];
-        await Mediator.Send(new TepDinhKemBulkInsertOrUpdateCommand
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
-            Entities = files
+            GroupTypes = [nameof(EGroupType.DuToanDauTu)],
+            Entities = files,
+            AutoDeleteMissing = true
         }, cancellationToken);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var danhSachTepDinhKem = await Mediator.Send(new GetDanhSachTepDinhKemQuery
-        {
-            GroupId = [entity.Id.ToString()]
-        }, cancellationToken);
+        var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()]
+        ), cancellationToken)).ToAttachmentEntities();
 
         return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
     }
@@ -110,7 +113,7 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
             IsNoTracking = true,
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
-           
+
             PageSize = dto.PageSize,
             PageIndex = dto.PageIndex,
             GlobalFilter = dto.GlobalFilter,

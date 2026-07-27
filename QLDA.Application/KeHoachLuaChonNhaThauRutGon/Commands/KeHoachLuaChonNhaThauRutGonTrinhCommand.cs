@@ -69,9 +69,10 @@ internal class KeHoachLuaChonNhaThauRutGonTrinhCommandHandler : IRequestHandler<
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
-            NoiDung = request.NoiDung,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
+            NoiDung = $"Gói thầu {entity.GoiThau?.Ten}" +
+                        $"{(!string.IsNullOrEmpty(request.NoiDung) ? " với nội dung: " + request.NoiDung : " ")}",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 
