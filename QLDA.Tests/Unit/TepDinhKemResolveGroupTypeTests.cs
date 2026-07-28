@@ -12,6 +12,13 @@ namespace QLDA.Tests.Unit;
 /// </summary>
 public class TepDinhKemResolveGroupTypeTests
 {
+    private static void SetKySo(TepDinhKemModel model, bool value)
+    {
+        var property = typeof(TepDinhKemModel).GetProperty("KySo");
+        property.Should().NotBeNull("signed attachments need an explicit KySo flag when ParentId is null");
+        property!.SetValue(model, value);
+    }
+
     [Fact]
     public void ToEntities_FormBase_IgnoresEmptyFeGroupType_SignedChild()
     {
@@ -111,5 +118,29 @@ public class TepDinhKemResolveGroupTypeTests
 
         entities.Should().ContainSingle()
             .Which.GroupType.Should().Be(nameof(EGroupType.BanGiaoHoSo));
+    }
+
+    [Fact]
+    public void ToEntities_FormBase_UsesKySoFlag_WhenParentIdIsNull()
+    {
+        var groupId = Guid.NewGuid();
+        var model = new TepDinhKemModel
+        {
+            FileName = "ky.pdf",
+            OriginalName = "ky.pdf",
+            Path = "/ky.pdf",
+            Size = 2,
+            ParentId = null,
+            GroupType = ""
+        };
+        SetKySo(model, true);
+
+        var entities = new List<TepDinhKemModel> { model }
+            .ToEntities(groupId, EGroupType.DeXuatChuyenTiep)
+            .ToList();
+
+        entities.Should().ContainSingle();
+        entities[0].GroupType.Should().Be("KySo_DeXuatChuyenTiep");
+        entities[0].ParentId.Should().BeNull();
     }
 }

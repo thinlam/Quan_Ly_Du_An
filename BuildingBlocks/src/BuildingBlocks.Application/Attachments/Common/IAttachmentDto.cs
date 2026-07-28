@@ -9,6 +9,7 @@ public interface IAttachmentDto
 {
     Guid? Id { get; set; }
     Guid? ParentId { get; set; }
+    bool KySo { get; set; }
     string? GroupId { get; set; }
     string? GroupType { get; set; }
     string? Type { get; set; }

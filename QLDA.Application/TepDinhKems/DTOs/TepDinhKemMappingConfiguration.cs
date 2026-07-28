@@ -23,7 +23,7 @@ public static class TepDinhKemMappingConfiguration
             ParentId = insertDto.ParentId,
             GroupId = groupId.ToString(),
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                groupType.ToString(), insertDto.ParentId != null),
+                groupType.ToString(), insertDto.ParentId, insertDto.KySo),
             Type = insertDto.Type,
             FileName = insertDto.FileName,
             OriginalName = insertDto.OriginalName,
@@ -38,7 +38,7 @@ public static class TepDinhKemMappingConfiguration
             ParentId = insertDto.ParentId,
             GroupId = groupId.ToString(),
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                groupType, insertDto.ParentId != null),
+                groupType, insertDto.ParentId, insertDto.KySo),
             Type = insertDto.Type,
             FileName = insertDto.FileName,
             OriginalName = insertDto.OriginalName,
@@ -53,7 +53,7 @@ public static class TepDinhKemMappingConfiguration
             ParentId = insertOrUpdateDto.ParentId,
             GroupId = groupId.ToString(),
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                groupType.ToString(), insertOrUpdateDto.ParentId != null),
+                groupType.ToString(), insertOrUpdateDto.ParentId, insertOrUpdateDto.KySo),
             Type = insertOrUpdateDto.Type,
             FileName = insertOrUpdateDto.FileName,
             OriginalName = insertOrUpdateDto.OriginalName,
@@ -68,7 +68,7 @@ public static class TepDinhKemMappingConfiguration
             ParentId = insertOrUpdateDto.ParentId,
             GroupId = groupId.ToString(),
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                groupType, insertOrUpdateDto.ParentId != null),
+                groupType, insertOrUpdateDto.ParentId, insertOrUpdateDto.KySo),
             Type = insertOrUpdateDto.Type,
             FileName = insertOrUpdateDto.FileName,
             OriginalName = insertOrUpdateDto.OriginalName,

@@ -45,7 +45,11 @@ public static class TepDinhKemMappingConfigurations
         if (string.IsNullOrWhiteSpace(baseType))
             return string.Empty;
 
-        return SignedGroupTypeHelper.ResolveSignedGroupType(baseType, model.ParentId != null);
+        return SignedGroupTypeHelper.ResolveSignedGroupType(
+            baseType,
+            model.ParentId,
+            model.KySo,
+            model.GroupType);
     }
 
     /// <summary>
@@ -148,6 +152,7 @@ public static class TepDinhKemMappingConfigurations
         => new()
         {
             Id = entity.Id,
+            KySo = entity.GroupType.IsSignedVariant(),
             GroupId = entity.GroupId,
             GroupType = entity.GroupType,
             Type = entity.Type,

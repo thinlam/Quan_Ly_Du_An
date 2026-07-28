@@ -36,7 +36,7 @@ public static class AttachmentCollectionExtensions
             Id = d.Id.GetId(),
             GroupId = groupIdStr,
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                baseGroupType, d.ParentId != null),
+                baseGroupType, d.ParentId, d.KySo, d.GroupType),
             ParentId = d.ParentId,
             Type = d.Type,
             FileName = d.FileName,
@@ -66,7 +66,7 @@ public static class AttachmentCollectionExtensions
             Id = d.Id ?? GuidExtensions.GetSequentialGuidId(),
             GroupId = groupIdStr,
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                baseGroupType, d.ParentId != null),
+                baseGroupType, d.ParentId, d.KySo, d.GroupType),
             ParentId = d.ParentId,
             Type = d.Type,
             FileName = d.FileName,
@@ -119,7 +119,7 @@ public static class AttachmentCollectionExtensions
             Id = GuidExtensions.GetSequentialGuidId(),
             GroupId = groupIdStr,
             GroupType = SignedGroupTypeHelper.ResolveSignedGroupType(
-                baseGroupType, d.ParentId != null),
+                baseGroupType, d.ParentId, d.KySo),
             ParentId = d.ParentId,
             Type = d.Type,
             FileName = d.FileName,
@@ -221,9 +221,12 @@ public static class AttachmentCollectionExtensions
                 entity.Size = request.Size;
                 entity.ParentId = request.ParentId;
 
-                // Re-derive GroupType khi ParentId đổi — tránh KySo_KySo_
+                // Re-derive GroupType khi signed intent đổi — tránh KySo_KySo_
                 var baseType = request.GroupType.ToBaseGroupType() ?? request.GroupType;
-                entity.GroupType = baseType.ResolveSignedGroupType(request.ParentId != null);
+                entity.GroupType = baseType.ResolveSignedGroupType(
+                    request.ParentId,
+                    request.GroupType.IsSignedVariant(),
+                    request.GroupType);
             },
             cancellationToken: cancellationToken);
     }

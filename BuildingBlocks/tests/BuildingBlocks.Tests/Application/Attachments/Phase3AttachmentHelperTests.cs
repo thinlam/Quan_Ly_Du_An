@@ -64,6 +64,13 @@ public class SignedGroupTypeHelperTests
 
 public class AttachmentCollectionExtensionsTests
 {
+    private static void SetKySo(AttachmentInsertOrUpdateModel model, bool value)
+    {
+        var property = typeof(AttachmentInsertOrUpdateModel).GetProperty("KySo");
+        Assert.NotNull(property);
+        property!.SetValue(model, value);
+    }
+
     [Fact]
     public void ToEntities_FromInsertOrUpdate_ResolvesSignedByParentId()
     {
@@ -134,5 +141,26 @@ public class AttachmentCollectionExtensionsTests
 
         Assert.Equal("ThanhToan", entities[0].GroupType);
         Assert.Equal("KySo_ThanhToan", entities[1].GroupType);
+    }
+
+    [Fact]
+    public void ToEntities_FromInsertOrUpdate_UsesKySoFlagWhenParentIdNull()
+    {
+        var groupId = Guid.NewGuid();
+        var dto = new AttachmentInsertOrUpdateModel
+        {
+            FileName = "ky.pdf",
+            OriginalName = "ky.pdf",
+            Size = 11,
+            ParentId = null
+        };
+        SetKySo(dto, true);
+
+        var entities = new List<AttachmentInsertOrUpdateModel> { dto }
+            .ToEntities(groupId, "BanGiaoHoSo");
+
+        var entity = Assert.Single(entities);
+        Assert.Equal("KySo_BanGiaoHoSo", entity.GroupType);
+        Assert.Null(entity.ParentId);
     }
 }
