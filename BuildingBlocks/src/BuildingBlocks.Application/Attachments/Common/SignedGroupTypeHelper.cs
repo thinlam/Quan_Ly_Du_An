@@ -2,7 +2,7 @@ namespace BuildingBlocks.Application.Attachments.Common;
 
 /// <summary>
 /// Single source of truth cho convention ký số trên GroupType.
-/// ParentId == null → baseGroupType; ParentId != null → KySo_&lt;baseGroupType&gt;.
+/// ParentId/KySo/signed GroupType hiện có → signed variant của baseGroupType.
 /// Không tạo double prefix KySo_KySo_.
 /// </summary>
 public static class SignedGroupTypeHelper
@@ -24,6 +24,18 @@ public static class SignedGroupTypeHelper
     }
 
     /// <summary>
+    /// Resolve GroupType theo signed intent. Signed intent có thể đến từ:
+    /// ParentId, cờ KySo của request, hoặc GroupType hiện có đã là KySo_*.
+    /// </summary>
+    public static string ResolveSignedGroupType(
+        this string baseGroupType,
+        Guid? parentId,
+        bool kySo,
+        string? currentGroupType = null)
+        => baseGroupType.ResolveSignedGroupType(
+            IsSignedIntent(parentId: parentId, kySo: kySo, currentGroupType: currentGroupType));
+
+    /// <summary>
     /// Strip prefix KySo_ để lấy base GroupType. "KySo_QLHD" → "QLHD"; "QLHD" → "QLHD".
     /// </summary>
     public static string? ToBaseGroupType(this string? groupType)
@@ -33,6 +45,9 @@ public static class SignedGroupTypeHelper
 
     public static bool IsSignedVariant(this string? groupType)
         => groupType?.StartsWith(Prefix, StringComparison.Ordinal) == true;
+
+    public static bool IsSignedIntent(Guid? parentId, bool kySo, string? currentGroupType = null)
+        => kySo || parentId != null || currentGroupType.IsSignedVariant();
 
     /// <summary>
     /// GroupType trống hoặc chỉ còn prefix (vd <c>KySo_</c> → base rỗng).

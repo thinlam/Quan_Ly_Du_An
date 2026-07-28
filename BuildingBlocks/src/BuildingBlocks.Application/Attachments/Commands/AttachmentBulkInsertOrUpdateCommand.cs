@@ -95,7 +95,7 @@ internal class AttachmentBulkInsertOrUpdateCommandHandler(
             if (SignedGroupTypeHelper.IsBlankOrPrefixOnly(entity.GroupType))
             {
                 entity.GroupType = allowedBases[0]
-                    .ResolveSignedGroupType(entity.ParentId != null);
+                    .ResolveSignedGroupType(entity.ParentId, false, entity.GroupType);
                 continue;
             }
 
@@ -111,7 +111,10 @@ internal class AttachmentBulkInsertOrUpdateCommandHandler(
                     ?? entityBaseType;
 
                 entity.GroupType = matchedBase
-                    .ResolveSignedGroupType(entity.ParentId != null);
+                    .ResolveSignedGroupType(
+                        entity.ParentId,
+                        entity.GroupType.IsSignedVariant(),
+                        entity.GroupType);
                 continue;
             }
 

@@ -10,6 +10,7 @@ public class AttachmentDto : IAttachmentDto
 {
     public Guid? Id { get; set; }
     public Guid? ParentId { get; set; }
+    public bool KySo { get; set; }
     public string? GroupId { get; set; }
     public string? GroupType { get; set; }
 
