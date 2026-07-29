@@ -168,7 +168,7 @@ CanBoChuTriId = chuTriUser.Id;
 
 ### 4.4 Spec cũ ghi nhầm
 
-`docs/feature/KeHoachTrienKhaiHangMuc/IMPLEMENTATION_GUIDE.md` ghi `CanBoChuTriId = UserMaster.Id` — convention thực tế là **`UserPortalId`**. Cần cập nhật (pending).
+`docs/issues/9469/import-template.md` ghi `CanBoChuTriId = UserMaster.Id` — convention thực tế là **`UserPortalId`**. Cần cập nhật (pending).
 
 ---
 

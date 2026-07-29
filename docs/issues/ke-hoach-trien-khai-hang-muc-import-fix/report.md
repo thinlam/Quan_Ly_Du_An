@@ -362,7 +362,7 @@ Commit file: `QLDA.WebApi/PrintTemplates/Import_KeHoachTrienKhaiHangMuc.xlsx`
 | 5   | `KeHoachTrienKhaiHangMucImportDto.cs`                             | Cột mới, xóa tờ trình                |
 | 6   | `KeHoachTrienKhaiHangMucImportRangeCommand.cs`                    | Logic map + group mới                |
 | 7   | `KeHoachTrienKhaiHangMucImportTests.cs`                           | Assert số cột / import hợp lệ        |
-| 8   | `docs/feature/KeHoachTrienKhaiHangMuc/IMPLEMENTATION_GUIDE.md`    | Cập nhật spec cột (sau implement)    |
+| 8   | `docs/issues/9469/import-template.md`    | Cập nhật spec cột (sau implement)    |
 
 
 **Không cần:** migration, WebApi model mới (`CLAUDE.md`).

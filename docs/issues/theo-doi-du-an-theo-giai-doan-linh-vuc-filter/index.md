@@ -57,6 +57,6 @@ Authorization: Bearer <JWT_TOKEN>
 
 ## Tham chiếu
 
-- [Theo dõi theo giai đoạn #118](../../feature/DuAn/IMPLEMENTATION_GUIDE_118_theo-doi-du-an-theo-giai-doan.md)
+- [Theo dõi theo giai đoạn #118](../../issues/118-theo-doi-du-an-theo-giai-doan/report.md)
 - [Ticket gốc — 6 filter dashboard](../ke-hoach-trien-khai-hang-muc-import-fix/index.md) (Phần 2)
 - Pattern danh sách dự án: `DuAnGetDanhSachQuery` (chỉ tham chiếu `> 0`, **không** copy nhánh `-1`)

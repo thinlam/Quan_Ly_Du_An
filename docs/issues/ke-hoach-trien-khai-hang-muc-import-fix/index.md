@@ -85,7 +85,7 @@ Logic tham chiếu: `DuAnGetDanhSachQuery` — filter không truyền thì khôn
 
 ## Tham chiếu
 
-- [Import KH triển khai — guide gốc #9469](../../feature/KeHoachTrienKhaiHangMuc/IMPLEMENTATION_GUIDE.md)
-- [Theo dõi theo giai đoạn #118](../../feature/DuAn/IMPLEMENTATION_GUIDE_118_theo-doi-du-an-theo-giai-doan.md)
-- [Filter phòng phân công #9527](../../feature/DuAn/IMPLEMENTATION_GUIDE_theo-doi-du-an-phong-phan-cong-search-filters.md)
+- [Import KH triển khai — guide gốc #9469](../../issues/9469/import-template.md)
+- [Theo dõi theo giai đoạn #118](../../issues/118-theo-doi-du-an-theo-giai-doan/report.md)
+- [Filter phòng phân công #9527](../../issues/9527/search-filters.md)
 - Export cột chuẩn: `KeHoachTrienKhaiHangMucExportDescriptor.cs`
