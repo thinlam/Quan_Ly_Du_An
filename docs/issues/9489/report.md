@@ -72,4 +72,4 @@ Use case UC89 mô tả chức năng cho phép phòng ban chủ trì tạo lập 
 ## Ghi chú triển khai
 
 - Chức năng tạo lập hồ sơ đã được triển khai trong module `BanGiaoHoSo`
-- Xem chi tiết tại `docs/use-cases/TaoLapHoSoDeBanGiao/UC89-TaoLapHoSoDeBanGiao.md`
+- Xem chi tiết tại `docs/usecases/uc89/uc89.md`

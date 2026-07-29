@@ -368,8 +368,8 @@ dotnet build QLDA.WebApi/QLDA.WebApi.csproj
 
 - `docs/issues/9609/fe-endpoint-mapping.md` — mapping FE print endpoint
 - `docs/issues/9609/report.md` — `LoaiDuAnTheoNamId` trên print
-- `docs/feature/PhanKhaiKinhPhi/task-export-ket-qua-phan-khai-von-duoc-duyet.md` — pattern export LINQ
-- `docs/feature/DeXuatChuyenTiep/task-export-danh-sach-de-xuat-chu-truong-chuyen-tiep.md` — export đã implement (Hướng B)
+- `docs/issues/9467/export-ket-qua-da-duyet.md` — pattern export LINQ
+- `docs/issues/de-xuat-chuyen-tiep/export.md` — export đã implement (Hướng B)
 - `docs/issues/server-overload-503/CRITICAL-FINDINGS.md` — rủi ro `PageSize=0` trên print endpoints
 
 ---

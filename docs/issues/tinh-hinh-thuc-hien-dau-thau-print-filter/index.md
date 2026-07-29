@@ -52,7 +52,7 @@ Bỏ `namDuAn` khỏi URL — backend không áp dụng WHERE năm.
 | File | Nội dung |
 |------|----------|
 | **[report.md](report.md)** | Spec as-built, SQL verify, test plan, checklist |
-| [task-export gốc](../../feature/GoiThau/task-export-tinh-hinh-thuc-hien-dau-thau.md) | ⏳ Cần cập nhật filter as-built |
+| [task-export gốc](../../issues/103-export-tinh-hinh-thuc-hien-dau-thau/report.md) | ⏳ Cần cập nhật filter as-built |
 
 ## QA còn lại
 

@@ -41,15 +41,82 @@ This project is indexed by GitNexus as **Quan_Ly_Du_An** (20640 symbols, 41796 r
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
-<!-- gitnexus:end -->
 
-## Rule bổ sung về Architecture Clean + CQRS
 
-Dự án đang dùng **Clean Architecture + CQRS**, nên khi sinh code hoặc đề xuất cấu trúc code phải tuân thủ đúng boundary hiện tại.
+## Docs layout (`/docs`)
 
-### Application Layer
+Keep documentation under two primary folders. Do **not** invent free-form folder names.
 
-`QLDA.Application` chỉ nên chứa các nhóm chính sau:
+```text
+docs/
+├── issues/      # Real PMIS / Redmine work
+├── usecases/    # Excel business use cases
+└── *.md         # Shared project docs only (architecture, code standards, README, …)
+```
+
+### `/docs/issues` — PMIS / Redmine work
+
+Put bugs, change requests, development tasks, issue analysis, acceptance criteria, and fix results here.
+
+**Naming (mandatory):** folder = the issue number only.
+
+| Correct | Incorrect |
+|---------|-----------|
+| `docs/issues/118/` | `docs/issues/118-theo-doi-du-an/` |
+| `docs/issues/9459/` | `docs/issues/quan-ly-phe-duyet/` |
+
+**Template:** mirror `docs/issues/9459/`:
+
+| File | Purpose |
+|------|---------|
+| `index.md` | Issue / BA description, actors, UI notes, related issues |
+| `report.md` | Implementation report (summary, architecture, status, PR) |
+| `journal.md` | Work log by date (commits, decisions) |
+| `test-workflow.md` | How to run tests, coverage, verification steps |
+| `image*.png` | Screenshots referenced from `index.md` (optional) |
+
+Do not add agent brainstorms, Superpowers plans, or temporary prompts under `issues/`.
+
+### `/docs/usecases` — Excel business use cases
+
+Put business flows synthesized from Excel use-case docs here: actors, preconditions, steps, expected results, business rules, DB/API design for the UC.
+
+**Naming (mandatory):** folder + main file = `uc{N}` (lowercase `uc` + use-case number).
+
+| Correct | Incorrect |
+|---------|-----------|
+| `docs/usecases/uc63/uc63.md` | `docs/usecases/nghiem-thu-hop-dong/` |
+| `docs/usecases/uc89/uc89.md` | `docs/usecases/UC89-TaoLapHoSo/` |
+
+**Template:** mirror `docs/usecases/uc63/uc63.md` sections:
+
+1. Original content (name, UC id, actors, business description)
+2. Business analysis (related issues, process overview, steps, permissions)
+3. Database design
+4. API mapping for frontend
+5. Sample workflow (FE flow)
+6. Change history
+
+### Shared docs at `/docs` root
+
+Truly shared references (e.g. `architecture.md`, `code-standards.md`, `README.md`) stay directly under `/docs`. Do **not** put them under `issues/` or `usecases/`. Do **not** use `/docs` for agent journals or temporary prompts.
+
+### Never
+
+* Free-form issue folder names (must be the Redmine/PMIS id).
+* Free-form use-case folder names (must be `uc{N}`).
+* Recreate deleted folders: `feature/`, `features/`, `journals/`, `superpowers/`, `archive/`, `misc/`.
+* Store the same lasting content in both `issues/` and `usecases/` — link across folders instead.
+
+---
+
+## Clean Architecture + CQRS
+
+This project uses **Clean Architecture + CQRS**. Generated or proposed code must respect the existing layer boundaries.
+
+### Application layer
+
+`QLDA.Application` should only contain:
 
 * `Commands`
 * `Queries`
@@ -57,24 +124,57 @@ Dự án đang dùng **Clean Architecture + CQRS**, nên khi sinh code hoặc đ
 * `Dtos` / `DTOs`
 * `Validators`
 
-**Không tạo thêm `Services` trong Application layer.**
+**Do not add `Services` in the Application layer.**
 
-Lý do: với CQRS, bản thân `CommandHandler` và `QueryHandler` đã đóng vai trò xử lý use case / application service rồi. Nếu tách thêm `Service` trong Application sẽ làm sai pattern, dễ sinh thêm tầng trung gian không cần thiết và làm lệch kiến trúc dự án.
+With CQRS, `CommandHandler` and `QueryHandler` already act as the use-case / application-service layer. Extra Application `Service` classes add an unnecessary middle tier and break the project pattern.
 
-### Khi cần xử lý nghiệp vụ
+### Where business logic belongs
 
-* Logic ghi dữ liệu đặt trong `Command` + `CommandHandler`.
-* Logic đọc dữ liệu đặt trong `Query` + `QueryHandler`.
-* Dữ liệu request/response đặt trong `Dto`.
-* Validate input đặt trong `Validator`.
-* Business model/entity đặt ở `Domain`.
-* EF configuration/repository/db context đặt ở `Persistence`.
-* Controller ở `WebApi` chỉ gọi command/query, không chứa business logic.
+* Writes → `Command` + `CommandHandler`
+* Reads → `Query` + `QueryHandler`
+* Request/response shapes → `Dto`
+* Input validation → `Validator`
+* Business models/entities → `Domain`
+* EF configuration / repository / DbContext → `Persistence`
+* Controllers (`WebApi`) only send commands/queries — no business logic
 
-### Tuyệt đối tránh
+### Never
 
-* Không tạo folder/class kiểu `Application/Services`.
-* Không tạo `SomethingService` để xử lý CRUD nếu có thể xử lý bằng `CommandHandler` / `QueryHandler`.
-* Không đưa business logic vào Controller.
-* Không tạo model trong WebApi nếu đã có DTO/Application pattern.
-* Không sửa architecture theo kiểu MVC service layer truyền thống.
+* Create `Application/Services` folders or classes
+* Add a `SomethingService` for CRUD when a `CommandHandler` / `QueryHandler` can do it
+* Put business logic in Controllers
+* Add WebApi models when Application DTOs already exist
+* Reshape the architecture into a traditional MVC service layer
+
+---
+
+## Code comments
+
+Comment only to explain **why**, never to narrate **what** the code already says.
+
+### Do comment when
+
+* A non-obvious business rule, exception, or temporary workaround needs context
+* Domain / authorization / mapping constraints are easy to misread without context
+* You intentionally deviate from the usual pattern (e.g. skip `FilterVisible` because of X)
+* A short TODO/FIXME includes a ticket or concrete reason — never a vague TODO
+
+### Do not
+
+* Line-by-line narration (`// get list`, `// assign value`, `// return result`)
+* Restate a clear method/class/property name
+* Write long architecture essays already covered in `AGENTS.md` / docs
+* Leave stale comments after a refactor — delete or update them
+
+### Examples
+
+```csharp
+// ✅ WHY — explains the decision
+// FE omits Id → use GetId() so GroupId stays stable when syncing files
+entity.Id = model.Id == Guid.Empty ? model.GetId() : model.Id;
+
+// ❌ WHAT — redundant; the code is already clear
+// Assign Id on the entity
+entity.Id = model.Id;
+```
+<!-- gitnexus:end -->

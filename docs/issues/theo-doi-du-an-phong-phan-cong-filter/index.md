@@ -55,7 +55,7 @@ Bổ sung filter (logic **giống** `GET /api/du-an/danh-sach` — `DuAnGetDanhS
 
 ## Tham chiếu
 
-- [Theo dõi phòng phân công #9527](../../feature/DuAn/IMPLEMENTATION_GUIDE_9527_theo-doi-du-an-phong-phan-cong.md)
-- [Filter `lanhDaoPhuTrachId` & `trangThaiDuAnId` #9527](../../feature/DuAn/IMPLEMENTATION_GUIDE_theo-doi-du-an-phong-phan-cong-search-filters.md)
+- [Theo dõi phòng phân công #9527](../../issues/9527/report.md)
+- [Filter `lanhDaoPhuTrachId` & `trangThaiDuAnId` #9527](../../issues/9527/search-filters.md)
 - Pattern danh sách dự án: `DuAnGetDanhSachQuery`, `DuAnSearchDto`
 - Ticket lớn (API giai đoạn khác): [ke-hoach-trien-khai-hang-muc-import-fix](../ke-hoach-trien-khai-hang-muc-import-fix/index.md) Phần 2

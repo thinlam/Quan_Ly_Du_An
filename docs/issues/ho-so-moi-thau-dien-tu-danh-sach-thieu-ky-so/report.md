@@ -3,7 +3,7 @@
 > Ngày ghi nhận / sửa: 2026-07-24  
 > Trạng thái: ✅ Đã sửa (Approach A)  
 > Phạm vi: **chỉ** logic load/tổng hợp attachment của API danh sách  
-> Liên quan: `docs/superpowers/specs/2026-07-23-attachment-include-signed-default-true-design.md`, Attachment Phase 4 (`AttachmentSubquery.ExpandGroupTypes`)
+> Liên quan: `docs/code-standards.md §14 (Attachment / IncludeSigned)`, Attachment Phase 4 (`AttachmentSubquery.ExpandGroupTypes`)
 
 ---
 

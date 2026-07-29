@@ -53,7 +53,7 @@ Use case UC90 mô tả chức năng cho phép phòng ban chủ trì thực hiệ
 ## Ghi chú triển khai
 
 - Chức năng bàn giao đã được triển khai trong module `BanGiaoHoSo` (Version 1-3)
-- Xem chi tiết tại `docs/feature/BanGiaoHoSo/task-ban-giao-ho-so version 3.md`
+- Xem chi tiết tại `docs/issues/ban-giao-ho-so/task-v3.md`
 - Entity `BanGiaoHoSo` có hỗ trợ `PhongBanNhanId` cho phòng HC-TH nhận hồ sơ
 
 ---

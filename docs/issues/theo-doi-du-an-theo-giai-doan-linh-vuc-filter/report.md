@@ -378,7 +378,7 @@ Kỳ vọng: list ⊆ (giai đoạn 2) ∩ (lĩnh vực 1) ∩ (panel ConHan); c
 
 ### Bước 6 — (Tùy chọn) Cập nhật guide #118
 
-**File:** `docs/feature/DuAn/IMPLEMENTATION_GUIDE_118_theo-doi-du-an-theo-giai-doan.md`
+**File:** `docs/issues/118-theo-doi-du-an-theo-giai-doan/report.md`
 
 Thêm `linhVucId` vào bảng request param (mục 5.2) với note `-1 = Tất cả`. Chỉ làm sau khi code merge.
 

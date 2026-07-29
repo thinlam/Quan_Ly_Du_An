@@ -3,7 +3,7 @@
 > Ngày ghi nhận / sửa: 2026-07-24  
 > Trạng thái: ✅ Đã sửa (BE) — FE còn nên đồng bộ payload metadata  
 > Phạm vi BE: `NoiDungDaKyCommand` + filter list nội dung đã ký  
-> Liên quan: `docs/feature/KySo/task-9460-noi-dung-da-ky.md`
+> Liên quan: `docs/issues/9460/noi-dung-da-ky.md`
 
 ---
 
@@ -77,7 +77,7 @@ File tham chiếu:
 
 - `QLDA.WebApi/Controllers/QuanLyKySoController.cs`
 - `QLDA.Application/KySos/Commands/NoiDungDaKyCommand.cs`
-- Spec: `docs/feature/KySo/task-9460-noi-dung-da-ky.md`
+- Spec: `docs/issues/9460/noi-dung-da-ky.md`
 
 ### 1.3 Hành vi cũ (đã bỏ) — chỗ throw
 
@@ -184,7 +184,7 @@ Không gửi: `groupName`; metadata Word trên item PDF đã ký.
 | Application | `QLDA.Application/KySos/Commands/NoiDungDaKyCommand.cs` | Insert file ký (đã nới ParentId) |
 | Application | `QLDA.Application/KySos/Queries/NoiDungDaKyQueryableExtensions.cs` | List nội dung đã ký — filter `GroupType.Contains("KySo")` |
 | WebApi | `QLDA.WebApi/Models/TepDinhKems/TepDinhKemMappingConfigurations.cs` | `ToEntities` / `ResolveGroupType` |
-| Docs | `docs/feature/KySo/task-9460-noi-dung-da-ky.md` | Spec gốc (parent bắt buộc — **đã lệch nghiệp vụ mới**) |
+| Docs | `docs/issues/9460/noi-dung-da-ky.md` | Spec gốc (parent bắt buộc — **đã lệch nghiệp vụ mới**) |
 
 ---
 

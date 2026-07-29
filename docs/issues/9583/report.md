@@ -230,4 +230,4 @@ IF trangThaiId == 2 (ĐTr) && currentUser.HasRole("BGĐ"):
 - `QLDA.Tests/Integration/PheDuyetDuToanControllerTests.cs`
 
 ### Docs
-- `docs/feature/PheDuyetDuToan/fe-mapping-report.md` (FE mapping chi tiết)
+- `docs/issues/9583/fe-mapping-phe-duyet-du-toan.md` (FE mapping chi tiết)

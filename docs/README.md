@@ -57,8 +57,19 @@ QLDA.Solution/
 3. Chạy migration: `dotnet ef database update`
 4. Chạy ứng dụng: `dotnet run`
 
+## Cấu trúc tài liệu
+
+```text
+docs/
+├── issues/      # Công việc thực tế từ PMIS/Redmine
+├── usecases/    # Use case nghiệp vụ từ Excel
+└── *.md         # Tài liệu dùng chung (kiến trúc, chuẩn code, …)
+```
+
 ## Tài liệu bổ sung
 
+- [Issues (PMIS/Redmine)](issues/)
+- [Use cases](usecases/)
 - [Use Cases và Tính năng](features.md)
 - [Kiến trúc hệ thống](system-architecture.md)
 - [Mô hình dữ liệu](data-model.md)

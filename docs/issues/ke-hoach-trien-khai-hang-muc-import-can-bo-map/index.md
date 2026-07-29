@@ -65,4 +65,4 @@ Import **thành công** (không báo lỗi) nhưng tên hiển thị trên màn 
 
 - [Import template column fix](../ke-hoach-trien-khai-hang-muc-import-fix/index.md) — đổi cấu trúc cột template
 - [Export danh sách dự án — fix UserPortalId](../danh-sach-du-an-export-excel/report.md) — cùng pattern bug ID user
-- [IMPLEMENTATION_GUIDE #9469](../../feature/KeHoachTrienKhaiHangMuc/IMPLEMENTATION_GUIDE.md) — spec cũ ghi `UserMaster.Id` (cần cập nhật sau fix)
+- [IMPLEMENTATION_GUIDE #9469](../../issues/9469/import-template.md) — spec cũ ghi `UserMaster.Id` (cần cập nhật sau fix)
