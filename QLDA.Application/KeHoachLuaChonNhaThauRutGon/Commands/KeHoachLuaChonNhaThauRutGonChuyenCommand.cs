@@ -55,14 +55,15 @@ internal class KeHoachLuaChonNhaThauRutGonChuyenCommandHandler : IRequestHandler
         entity.TrangThaiId = trangThaiDaChuyen.Id;
         // entity.NgayTrinh = DateTime.UtcNow;
         // Create history record
-        var history = new PheDuyetHistory
-        {
+        var history = new PheDuyetHistory {
             Id = Guid.NewGuid(),
             EntityName = PheDuyetEntityNames.KeHoachLuaChonNhaThauRutGon,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaChuyen.Id,
+            NoiDung = !string.IsNullOrEmpty(entity.GoiThau?.Ten) ? $"Gói thầu {entity.GoiThau.Ten}" : ""
+                      + $" chuyển xem xét",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

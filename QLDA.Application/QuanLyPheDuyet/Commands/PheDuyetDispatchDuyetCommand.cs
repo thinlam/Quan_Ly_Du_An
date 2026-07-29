@@ -27,7 +27,8 @@ namespace QLDA.Application.QuanLyPheDuyet.Commands;
 
 /// <summary>
 /// Dispatch duyet phe duyet theo type → den dung entity command.
-/// Phân quyền ở tầng dispatch: chỉ Lãnh đạo phụ trách chính của DuAn hoặc role QLDA_LDDV mới được duyệt.
+/// Phân quyền ở tầng dispatch: chỉ Lãnh đạo phụ trách chính của DuAn hoặc role QLDA_LDDV mới được duyệt.( có vài toTrinh chỉ Lãnh đạo mới dc duyệt/Trả như 
+/// 
 /// </summary>
 public record PheDuyetDispatchDuyetCommand(string Type, Guid Id, string? NoiDung) : IRequest<int>;
 

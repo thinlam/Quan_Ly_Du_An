@@ -161,12 +161,19 @@ public static class HoSoMoiThauDienTuMappingConfiguration
        this HoSoMoiThauThamDinhModel model, Guid groupId)
        => model.DinhKemQuyetDinh?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhTD).ToList() ?? [];
 
+    /// <summary>
+    /// groupId = HoSoMoiThauDienTu.Id, không dùng ToTrinh.Id.
+    /// </summary>
     public static List<Attachment> GetDanhSachTepDinhKemToTrinh(
-       this ToTrinhQuyetDinhModel model, long groupId)
-       => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
+       this ToTrinhQuyetDinhModel model, Guid groupId)
+       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuToTrinh).ToList() ?? [];
+
+    /// <summary>
+    /// groupId = HoSoMoiThauDienTu.Id, không dùng QuyetDinh.Id.
+    /// </summary>
     public static List<Attachment> GetDanhSachTepDinhKemQuyetDinh(
-      this ToTrinhQuyetDinhModel model, long groupId)
-      => model.DanhSachTepDinhKem?.ToEntities(groupId.ToString(), EGroupType.HoSoMoiThauDienTuQuyetDinh).ToList() ?? [];
+      this ToTrinhQuyetDinhModel model, Guid groupId)
+      => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinh).ToList() ?? [];
 
     public static List<Attachment> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)

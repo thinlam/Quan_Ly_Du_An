@@ -19,6 +19,7 @@ public static class AttachmentMapping
         {
             Id = entity.Id,
             ParentId = entity.ParentId,
+            KySo = entity.GroupType.IsSignedVariant(),
             GroupId = entity.GroupId,
             GroupType = entity.GroupType,
             Type = entity.Type,
@@ -34,7 +35,9 @@ public static class AttachmentMapping
             Id = GuidExtensions.GetSequentialGuidId(),
             ParentId = model.ParentId,
             GroupId = groupId,
-            GroupType = baseGroupType.ResolveSignedGroupType(model.ParentId != null),
+            GroupType = baseGroupType.ResolveSignedGroupType(
+                model.ParentId,
+                model.KySo),
             Type = model.Type,
             FileName = model.FileName,
             OriginalName = model.OriginalName,
@@ -48,7 +51,10 @@ public static class AttachmentMapping
             Id = model.Id.GetId(),
             ParentId = model.ParentId,
             GroupId = groupId,
-            GroupType = baseGroupType.ResolveSignedGroupType(model.ParentId != null),
+            GroupType = baseGroupType.ResolveSignedGroupType(
+                model.ParentId,
+                model.KySo,
+                model.GroupType),
             Type = model.Type,
             FileName = model.FileName,
             OriginalName = model.OriginalName,

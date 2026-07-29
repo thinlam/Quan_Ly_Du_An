@@ -17,32 +17,36 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
     [HttpGet("{id}")]
     public async Task<ResultApi> Get(Guid id) {
         var entity = await Mediator.Send(new HoSoMoiThauDienTuGetQuery { Id = id });
+        var groupId = entity.Id.ToString();
         var files = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
+            GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTu.ToString()]
         ))).ToAttachmentEntities();
-        var filesToTrinh = new  List<Attachment>();
-        if(entity.ToTrinh!= null)
+
+        // Dữ liệu mới lưu theo HoSo.Id; giữ thêm Id cũ để đọc bản ghi legacy.
+        var filesToTrinh = new List<Attachment>();
+        if (entity.ToTrinh != null)
             filesToTrinh = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.ToTrinh != null ? entity.ToTrinh.Id.ToString() : ""],
+            GroupIds: [groupId, entity.ToTrinh.Id.ToString()],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuToTrinh.ToString()]
         ))).ToAttachmentEntities();
-        var filesQuyetDinh = new  List<Attachment>();
+
+        var filesQuyetDinh = new List<Attachment>();
         if (entity.QuyetDinh != null)
             filesQuyetDinh = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.QuyetDinh != null ? entity.QuyetDinh.Id.ToString() : ""],
+            GroupIds: [groupId, entity.QuyetDinh.Id.ToString()],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString()]
         ))).ToAttachmentEntities();
         var fileCamKets = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
+            GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()]
         ))).ToAttachmentEntities();
         var fileThamDinhs = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
+            GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()]
         ))).ToAttachmentEntities();
         var fileBaoCaos = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
+            GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()]
         ))).ToAttachmentEntities();
         return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh, filesQuyetDinh));
@@ -91,45 +95,45 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
         return ResultApi.Ok(1);
     }
     private async Task SaveDanhSachTepDinhKemAsync(HoSoMoiThauDienTuModel model, HoSoMoiThauDienTu entity, HoSoMoiThauDienTu? entityOld, CancellationToken cancellationToken) {
+        // Tất cả tệp HSMTĐT dùng chung GroupId = HoSoMoiThauDienTu.Id.
         var entityId = entity.Id;
+        var groupId = entityId.ToString();
 
         await SyncTepDinhKemAsync(
-            entityId.ToString(),
+            groupId,
             model.GetDanhSachTepDinhKem(entityId),
             EGroupType.HoSoMoiThauDienTu.ToString(),
             cancellationToken);
 
         if (entity.ToTrinh != null || entityOld?.ToTrinh != null) {
-            var toTrinhId = entity.ToTrinh != null  ? entity.ToTrinh.Id : entityOld?.ToTrinh?.Id;
             await SyncTepDinhKemAsync(
-                (toTrinhId??0).ToString(),
-                model.ToTrinh?.GetDanhSachTepDinhKemToTrinh(toTrinhId??0) ?? [],
+                groupId,
+                model.ToTrinh?.GetDanhSachTepDinhKemToTrinh(entityId) ?? [],
                 EGroupType.HoSoMoiThauDienTuToTrinh.ToString(),
                 cancellationToken);
         }
         if (entity.QuyetDinh != null || entityOld?.QuyetDinh != null) {
-            var quyetDinhId = entity.QuyetDinh != null ? entity.QuyetDinh.Id : entityOld?.QuyetDinh?.Id;
             await SyncTepDinhKemAsync(
-                (quyetDinhId ?? 0).ToString(),
-                model.QuyetDinh?.GetDanhSachTepDinhKemQuyetDinh(quyetDinhId??0) ?? [],
+                groupId,
+                model.QuyetDinh?.GetDanhSachTepDinhKemQuyetDinh(entityId) ?? [],
                 EGroupType.HoSoMoiThauDienTuQuyetDinh.ToString(),
                 cancellationToken);
         }
 
         await SyncTepDinhKemAsync(
-                   entityId.ToString(),
+                   groupId,
                     model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId) ?? [],
                    EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
                    cancellationToken) ;
 
         await SyncTepDinhKemAsync(
-            entityId.ToString(),
+            groupId,
             model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemCamKetThamDinh(entityId)??[],
             EGroupType.HoSoMoiThauDienTuCamKetTD.ToString(),
             cancellationToken);
 
         await SyncTepDinhKemAsync(
-            entityId.ToString(),
+            groupId,
             model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId) ?? [],
             EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
             cancellationToken);

@@ -1,8 +1,10 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.QuanLyPheDuyet.DTOs;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.QuanLyPheDuyet.Queries;
 
@@ -10,6 +12,20 @@ internal record PheDuyetDanhSachFilter(string? Type, string? TrangThai);
 internal static class PheDuyetQueryableExtensions
 
 {
+    /// <summary>
+    /// Base GroupType của HSMTĐT — khớp API chi tiết / danh sách hồ sơ.
+    /// ExpandGroupTypes thêm KySo_* khi IncludeSigned = true.
+    /// </summary>
+    private static readonly string[] HoSoMoiThauDienTuBaseGroupTypes =
+    [
+        nameof(EGroupType.HoSoMoiThauDienTu),
+        nameof(EGroupType.HoSoMoiThauDienTuToTrinh),
+        nameof(EGroupType.HoSoMoiThauDienTuQuyetDinh),
+        nameof(EGroupType.HoSoMoiThauDienTuQuyetDinhTD),
+        nameof(EGroupType.HoSoMoiThauDienTuCamKetTD),
+        nameof(EGroupType.HoSoMoiThauDienTuBaoCaoTD),
+    ];
+
     public static List<PheDuyetListItemDto> ApplyDanhSachFilters(
         PheDuyetDanhSachFilter filter,
         IRepository<PheDuyet, Guid> pheDuyetRepo,
@@ -18,7 +34,8 @@ internal static class PheDuyetQueryableExtensions
         IRepository<Attachment, Guid>? tepDinhKemRepo,
         IAuthorizationContext authContext,
         long userId,
-        bool includeAttachments)
+        bool includeAttachments,
+        bool includeSigned = true)
     {
         var pheDuyetQuery = pheDuyetRepo.GetQueryableSet().AsNoTracking()
             .Where(e => !e.IsDeleted)
@@ -45,6 +62,7 @@ internal static class PheDuyetQueryableExtensions
             TenGiaiDoan = x.b != null && x.b.Buoc != null && x.b.Buoc.GiaiDoan != null ? x.b.Buoc.GiaiDoan.Ten : "",
             TrichYeu = x.e.NoiDung,
             TrangThaiId = x.e.TrangThaiId,
+            LanhDaoPhuTrachId = x.da !=null ? x.da.LanhDaoPhuTrachId : 0,
             MaTrangThai = x.e.TrangThai != null && x.e.TrangThai!.Ma != "LEG"
                 ? x.e.TrangThai!.Ma
                 : TrangThaiPheDuyetCodes.Default.DuThao,
@@ -58,7 +76,7 @@ internal static class PheDuyetQueryableExtensions
         .OrderByDescending(i => i.NgayXuLyMoiNhat ?? DateTimeOffset.MinValue)
         .ToList();
         if (includeAttachments && tepDinhKemRepo != null && items.Count > 0) {
-            AttachTepDinhKem(items, tepDinhKemRepo);
+            AttachTepDinhKem(items, tepDinhKemRepo, includeSigned);
         }
         else {
             EnsureEmptyAttachments(items);
@@ -68,6 +86,7 @@ internal static class PheDuyetQueryableExtensions
     /// <summary>
     /// Gán tệp đính kèm theo GroupId == EntityId (chuỗi từ Guid/long.ToString()).
     /// Không có file → [] (không null) — tương thích API cũ.
+    /// Không lọc bỏ vì ParentId / KySo — file ký số vẫn được gán.
     /// </summary>
     internal static void AssignAttachments(
         List<PheDuyetListItemDto> items,
@@ -78,7 +97,10 @@ internal static class PheDuyetQueryableExtensions
             .GroupBy(f => f.GroupId!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 g => g.Key,
-                g => g.Select(i => i.ToDto()).ToList(),
+                g => g
+                    .DistinctBy(f => f.Id)
+                    .Select(i => i.ToDto())
+                    .ToList(),
                 StringComparer.OrdinalIgnoreCase);
         foreach (var item in items) {
             item.DanhSachTepDinhKem = !string.IsNullOrEmpty(item.EntityId)
@@ -89,7 +111,8 @@ internal static class PheDuyetQueryableExtensions
     }
     private static void AttachTepDinhKem(
         List<PheDuyetListItemDto> items,
-        IRepository<Attachment, Guid> tepDinhKemRepo)
+        IRepository<Attachment, Guid> tepDinhKemRepo,
+        bool includeSigned = true)
     {
         var groupIds = items
             .Select(i => i.EntityId)
@@ -101,9 +124,31 @@ internal static class PheDuyetQueryableExtensions
             EnsureEmptyAttachments(items);
             return;
         }
-        var files = tepDinhKemRepo.GetQueryableSet()
+        var query = tepDinhKemRepo.GetQueryableSet()
             .AsNoTracking()
-            .Where(i => groupIds.Contains(i.GroupId))
+            .Where(i => groupIds.Contains(i.GroupId));
+
+        // HSMTĐT: scope GroupType qua ExpandGroupTypes (gốc + KySo_*) — khớp GetAttachmentsQuery / list hồ sơ.
+        // Loại phê duyệt khác: giữ load theo GroupId (mọi GroupType) để không đổi hành vi.
+        var hsmtGroupIds = items
+            .Where(i => i.EntityName == PheDuyetEntityNames.HoSoMoiThauDienTu
+                        && !string.IsNullOrEmpty(i.EntityId))
+            .Select(i => i.EntityId)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (hsmtGroupIds.Count > 0) {
+            var hsmtGroupTypes = AttachmentSubquery.ExpandGroupTypes(
+                includeSigned,
+                HoSoMoiThauDienTuBaseGroupTypes);
+            query = query.Where(i =>
+                !hsmtGroupIds.Contains(i.GroupId!)
+                || hsmtGroupTypes.Contains(i.GroupType));
+        }
+
+        var files = query
+            .ToList()
+            .DistinctBy(f => f.Id)
             .ToList();
         AssignAttachments(items, files);
     }

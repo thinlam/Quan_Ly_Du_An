@@ -38,6 +38,7 @@ public class AttachmentInsertOrUpdateModel : IHasKey<Guid?>
     #region Ký số
 
     public Guid? ParentId { get; set; } //ban đầu sẽ có 1 file gốc, sau đó đem file này đi ký số sẽ tạo ra file child
+    public bool KySo { get; set; }
 
     #endregion
 }

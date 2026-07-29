@@ -62,8 +62,11 @@ internal class ThoaThuanGiaoViecChuyenCommandHandler : IRequestHandler<ThoaThuan
             EntityName = PheDuyetEntityNames.ThoaThuanGiaoViec,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId, 
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaChuyen.Id,
+            NoiDung = !string.IsNullOrEmpty(entity.GoiThau?.Ten)
+                        ? $"Gói thầu {entity.GoiThau.Ten}" : "",
             NgayXuLy = DateTimeOffset.UtcNow
         };
 

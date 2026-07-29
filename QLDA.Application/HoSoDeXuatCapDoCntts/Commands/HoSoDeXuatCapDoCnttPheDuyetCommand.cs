@@ -104,6 +104,7 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
                 ManagedException.Throw("Không tìm thấy trạng thái hợp lệ với tài khoản này!");
 
             entity.TrangThaiId = trangThaiTiepTheoItems?.Id;
+            
             var history = new PheDuyetHistory
             {
                 Id = Guid.NewGuid(),
@@ -111,7 +112,10 @@ internal class HoSoDeXuatCapDoCnttPheDuyetCommandHandler : IRequestHandler<HoSoD
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
-                NoiDung = !string.IsNullOrEmpty(request.noiDung) ? request.noiDung
+                
+                NoiDung = trangThaiTiepTheoItems?.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DaTrinh
+                ? $"Nội dung :{ request.noiDung?? ""} đã trình"
+                :  !string.IsNullOrEmpty(request.noiDung) ? request.noiDung
                         : $"{PheDuyetEntityNames.HoSoDeXuatCapDoCntt.GetDescriptionFromName()} đã {trangThaiTiepTheoItems?.Ten}",
                 NguoiXuLyId = _userProvider.Info.UserID,
                 TrangThaiId = trangThaiTiepTheoItems?.Id,

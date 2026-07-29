@@ -87,12 +87,15 @@ internal class ToTrinhCoThamDinhThaoTacCommandHandler : IRequestHandler<ToTrinhC
                 EntityId = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
-                NoiDung = request.noiDung ?? string.Empty,
+                NoiDung = entity.So??""
+                            + (entity.NgayToTrinh != null ? " - ngày " +entity.NgayToTrinh?.ToDateOnlyVn().ToString("dd/MM/yyyy") :"")
+                            + (! string.IsNullOrEmpty(entity.TrichYeu) ? " - " +entity.TrichYeu:""),
                 NguoiXuLyId = _userProvider.Info.UserID,
                 TrangThaiId = trangThaiTiepTheoItems?.Id,
                 NgayXuLy = DateTimeOffset.UtcNow
             };
 
+            await _repository.UpdateAsync(entity, cancellationToken);
             await _historyRepository.AddAsync(history, cancellationToken);
 
             return await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -88,26 +88,10 @@ public static class PheDuyetEntityNames
     [Description("Tờ trình kế hoạch triển khai các hạng mục dự án")]
     public const string KeHoachTrienKhaiHangMuc = "KeHoachTrienKhaiHangMuc";
 
-    [Description("Dự toán chuẩn bị đầu tư ")]
+    [Description("Tờ trình dự toán chuẩn bị đầu tư")]
     public const string DuToanDauTu = "DuToanDauTu";
     [Description("Chủ trương lập kế hoạch")]
     public const string ChuTruongLapKeHoach = "ChuTruongLapKeHoach";
-
-    [ExcludeFromTypeList]
-    [Description("ToTrinhKhongCanDuyet-UseForCoding")]
-    public const string ToTrinhKhongDuyet = "ToTrinhKhongDuyet";
-
-    [Description("Kế hoạch lcnt dự toán hoặc sẵn có")]
-    public const string KHLCNTDuToanSanCo = "KHLCNTDuToanSanCo";
-
-    [Description("KHLCNT dự toán/KHTDV yêu cầu riêng")]
-    public const string KHLCNTDuToanYeuCauRieng = "KHLCNTDuToanYeuCauRieng";
-    
-    [Description("Kế hoạch tổng thể lựa chọn nhà thầu")]
-    public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
-
-    [Description("Kế hoạch LCNT giai đoạn CBĐT")]
-    public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
 
     [Description("Tờ trình phê duyệt giao nhiệm vụ")]
     public const string ThoaThuanGiaoViec = "ThoaThuanGiaoViec";
@@ -133,6 +117,23 @@ public static class PheDuyetEntityNames
     [Description("Thanh lý hợp đồng")]
     public const string ThanhLyHopDong = "ThanhLyHopDong";
 
+    [ExcludeFromTypeList]
+    [Description("ToTrinhKhongCanDuyet-UseForCoding")]
+    public const string ToTrinhKhongDuyet = "ToTrinhKhongDuyet";
+    #region Đây là các tờ trình chỉ trình (ko duyệt thuộc entity ToTrinhKhongCanDuyet)
+
+    [Description("Kế hoạch lcnt dự toán hoặc sẵn có")]
+    public const string KHLCNTDuToanSanCo = "KHLCNTDuToanSanCo";
+
+    [Description("KHLCNT dự toán/KHTDV yêu cầu riêng")]
+    public const string KHLCNTDuToanYeuCauRieng = "KHLCNTDuToanYeuCauRieng";
+
+    [Description("Kế hoạch tổng thể lựa chọn nhà thầu")]
+    public const string KeHoachTongTheLCNT = "KeHoachTongTheLCNT";
+
+    [Description("Kế hoạch LCNT giai đoạn CBĐT")]
+    public const string KeHoachLCNTChuanBiDauTu = "KeHoachLCNTChuanBiDauTu";
+    #endregion
 
 }
 public static class LoaiToTrinhKhongDuyetExtensions

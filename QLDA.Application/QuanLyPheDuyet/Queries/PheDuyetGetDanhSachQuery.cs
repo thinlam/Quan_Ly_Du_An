@@ -25,6 +25,12 @@ public record PheDuyetGetDanhSachQuery : AggregateRootPagination, IMayHaveGlobal
     /// Đặt <c>false</c> chỉ khi caller chắc chắn không cần file (tối ưu).
     /// </summary>
     public bool IncludeAttachments { get; set; } = true;
+
+    /// <summary>
+    /// Mặc định <c>true</c> — lấy cả file gốc và <c>KySo_*</c> (qua ExpandGroupTypes).
+    /// Chỉ đặt <c>false</c> khi caller tường minh không cần file ký số.
+    /// </summary>
+    public bool IncludeSigned { get; set; } = true;
 }
 
 internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanhSachQuery, PaginatedList<PheDuyetListItemDto>>
@@ -77,19 +83,20 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
         var duongDi = await _duongDiTrangThaiToTrinh.GetQueryableSet().AsNoTracking()
            .Where(x => x.Used && !(x.IsDeleted ?? false)).ToListAsync(cancellationToken);
         var duongDiLookup = duongDi
-              .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
-              .GroupBy(x => (
-                  x.MaTrangThaiHienTai!.Trim(), x.Loai))
-              .ToDictionary(
-                  g => g.Key,
-                  g => g.Select(x => new DuongDiTrangThaiToTrinhDto {
-                      MaTrangThaiHienTai = x.MaTrangThaiHienTai,
-                      MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
-                      TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
-                      RoleId = x.RoleId,
-                      RoleLevel = x.RoleLevel
-                  }).ToList()
-              );
+          .Where(x => !string.IsNullOrWhiteSpace(x.MaTrangThaiHienTai))
+         
+        .GroupBy(x => (
+            x.MaTrangThaiHienTai!.Trim(), x.Loai))
+        .ToDictionary(
+            g => g.Key,
+            g => g.Select(x => new DuongDiTrangThaiToTrinhDto {
+                MaTrangThaiHienTai = x.MaTrangThaiHienTai,
+                MaTrangThaiTiepTheo = x.MaTrangThaiTiepTheo,
+                TenTrangThaiTiepTheo = x.TenTrangThaiTiepTheo,
+                RoleId = x.RoleId,
+                RoleLevel = x.RoleLevel
+            }).ToList()
+        );
 
         var finalQuery = PheDuyetQueryableExtensions.ApplyDanhSachFilters(
             new PheDuyetDanhSachFilter(request.Type, request.TrangThai),
@@ -99,18 +106,41 @@ internal class PheDuyetGetDanhSachQueryHandler : IRequestHandler<PheDuyetGetDanh
             request.IncludeAttachments ? _tepDinhKemRepo : null,
             _authContext,
             userId,
-            includeAttachments: request.IncludeAttachments);
+            includeAttachments: request.IncludeAttachments,
+            includeSigned: request.IncludeSigned);
 
         // PageSize=0 / Take()=0 → lấy hết (dùng cho export Excel)
         var pagiList = PaginatedList<PheDuyetListItemDto>.Create(finalQuery, request.Skip(), request.Take());
         await ResolveUserNamesAsync(pagiList.Data, cancellationToken);
+        var phongBanId = _userProvider.Info.PhongBanID;
+
         foreach (var item in pagiList.Data) {
-            item.ThaoTacTiepTheo =  !string.IsNullOrEmpty(item.MaTrangThai)
-                                    && duongDiLookup.TryGetValue((
-                                        item.MaTrangThai.Trim(),
-                                        item.EntityName ),
-                                    out var actions)
-                                    ? actions : [];}
+            item.ThaoTacTiepTheo = [];
+
+            if (string.IsNullOrWhiteSpace(item.MaTrangThai))
+                continue;
+
+            if (!duongDiLookup.TryGetValue(( item.MaTrangThai.Trim(), item.EntityName),  out var actions)) {
+                continue;
+            }
+
+            item.ThaoTacTiepTheo = actions
+                .Where(x =>
+                    // RoleLevel = 0
+                    // Không giới hạn Role
+                    x.RoleLevel == 0
+                    || ( x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChuTri // Phòng ban chủ trì
+                       && x.RoleId == phongBanId )
+                    // Người phụ trách chính
+                    || (x.RoleLevel == DuongDiToTrinhRoleLevel.NguoiPhuTrachChinh
+                        && item.LanhDaoPhuTrachId == userId  )
+                    // Phòng ban chỉ định
+                    || ( x.RoleLevel == DuongDiToTrinhRoleLevel.PhongBanChiDinh
+                        && x.RoleId == phongBanId  )
+                )
+                .ToList();
+        }
+       
         return pagiList;
        
     }

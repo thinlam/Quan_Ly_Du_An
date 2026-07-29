@@ -59,6 +59,7 @@ internal class DuToanDauTuTrinhCommandHandler : IRequestHandler<DuToanDauTuTrinh
             EntityName = PheDuyetEntityNames.DuToanDauTu,
             EntityId = entity.Id,
             DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
             NoiDung = $"Số {entity.SoToTrinh} {(entity.NgayTrinh!= null? " - ngày " + entity.NgayTrinh.ToDateOnlyVn()?.ToString("dd/MM/yyyy") : "")} " +

@@ -66,7 +66,7 @@ internal class BaoCaoKetQuaKhaoSatTrinhCommandHandler
             BuocId = entity.BuocId,
             NguoiXuLyId = _userProvider.Info.UserID,
             TrangThaiId = trangThaiDaTrinh!.Id,
-            NoiDung = request.NoiDung,
+            NoiDung = $"Nội dung: {(!string.IsNullOrEmpty(entity.NoiDungBaoCao) ?  entity.NoiDungBaoCao : "")} " ,
             NgayXuLy = DateTimeOffset.UtcNow
         };
 
