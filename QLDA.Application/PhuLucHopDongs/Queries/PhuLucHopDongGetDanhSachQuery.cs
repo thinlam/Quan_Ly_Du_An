@@ -1,9 +1,12 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.PhuLucHopDongs.DTOs;
+using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.PhuLucHopDongs.Queries;
 
@@ -71,7 +74,9 @@ internal class
                 e => e.SoPhuLucHopDong,
                 e => e.HopDong!.Ten
             );
-
+        var groupTypesOnEntityId = AttachmentSubquery.ExpandGroupTypes(
+           includeSigned: true,
+           nameof(EGroupType.PhuLucHopDong));
         return await queryable
             .Select(e => new PhuLucHopDongDto()
             {
@@ -84,7 +89,10 @@ internal class
                 Ngay = e.Ngay,
                 HopDongId = e.HopDongId,
                 GiaTri = e.GiaTri,
-                NgayDuKienKetThuc = e.NgayDuKienKetThuc
+                NgayDuKienKetThuc = e.NgayDuKienKetThuc,
+                DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
+                .Where(i => i.GroupId == e.Id.ToString() && groupTypesOnEntityId.Contains(i.GroupType)
+                ).Select(i => i.ToDto()).ToList()
             }).PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
     }
 }
