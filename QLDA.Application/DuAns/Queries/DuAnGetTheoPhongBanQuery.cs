@@ -28,6 +28,7 @@ internal class DuAnGetTheoPhongBanGetQueryHandler( IServiceProvider serviceProvi
                 .FirstOrDefaultAsync(  s => s.Ma == "HT", cancellationToken);
 
         var queryable = DuAnRepository.GetOriginalSet()
+            .Where(o => !o.IsDeleted)
             .Where(o => o.TrangThaiDuAnId != trangThaiHoanThanh!.Id)
             .Where(o => o.DonViPhuTrachChinhId == phongBanId)
             .Include(e => e.BuocHienTai!.Buoc!.GiaiDoan)
