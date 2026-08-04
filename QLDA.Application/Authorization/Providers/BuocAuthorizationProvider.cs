@@ -241,7 +241,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         if (ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)) return;
 
         var buoc = await buocRepo.GetQueryableSet()
-            .Include(e => e.DuAn)
+            .Include(e => e.DuAn).ThenInclude(e => e!.DuAnChiuTrachNhiemXuLys)
             .Include(e => e.DuAnBuocPhongBanPhoiHops)
             .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
 
