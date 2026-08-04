@@ -51,7 +51,7 @@ using QLDA.WebApi.Models.PhuLucHopDongs;
 using QLDA.WebApi.Models.TongHopDeXuatChuTruongs;
 using QLDA.WebApi.Models.TongHopVanBanQuyetDinhs;
 using Serilog;
-
+using Aspose.Words;
 
 namespace QLDA.WebApi.Controllers;
 
@@ -1331,7 +1331,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
                 IsNoTracking = true
             });
 
-            var doc = new Aspose.Words.Document(templatePath);
+            var doc = new Document(templatePath);
             doc.MailMerge.UseNonMergeFields = true;
             DateTime? ngayToTrinh = entity.NgayToTrinh?.ToOffset(TimeSpan.FromHours(7)).Date;
 
@@ -1496,7 +1496,7 @@ public class PrintController(IServiceProvider serviceProvider) : AggregateRootCo
         _asposeHelper.EnsureLicense();
         var doc = new Aspose.Words.Document(templatePath);
         var replaceOptions = new Aspose.Words.Replacing.FindReplaceOptions(
-            Aspose.Words.FindReplaceDirection.Forward);
+        Aspose.Words.FindReplaceDirection.Forward);
         foreach (var (key, value) in replacements) {
             doc.Range.Replace($"«{key}»", value ?? string.Empty, replaceOptions);
         }

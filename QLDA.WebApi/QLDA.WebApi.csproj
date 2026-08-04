@@ -60,4 +60,10 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Aspose.Words">
+        <HintPath>..\bin\Aspose.Words.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

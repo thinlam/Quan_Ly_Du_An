@@ -32,8 +32,6 @@ internal class DanhMucTinhTrangThucHienLcntInsertCommandHandler : IRequestHandle
         await _danhMuc.AddAsync(entity, cancellationToken);
         await _danhMuc.UnitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.Information("Created {EntityName} with Id {Id}", nameof(DanhMucTinhTrangThucHienLcnt), entity.Id);
-
         return entity!;
     }
 
