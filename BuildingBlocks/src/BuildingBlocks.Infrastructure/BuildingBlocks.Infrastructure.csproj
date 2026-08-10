@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspose.Cells" Version="20.11.0" />
+      <PackageReference Include="Aspose.Words" Version="20.11.0" />
+      <PackageReference Include="Aspose.Cells" Version="20.11.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
   </ItemGroup>
 
@@ -25,7 +26,7 @@
 
   <ItemGroup>
     <Reference Include="Aspose.Words">
-      <HintPath>..\..\bin\Aspose.Words.dll</HintPath>
+      <HintPath>..\..\..\..\pml\bin\Aspose.Words.dll</HintPath>
     </Reference>
   </ItemGroup>
 
