@@ -5,7 +5,7 @@ using QLDA.Application.NghiemThus.DTOs;
 
 namespace QLDA.Application.NghiemThus.Commands;
 
-public record NghiemThuUpdateCommand(NghiemThuUpdateDto Dto, List<Guid>? PhuLucHopDongIds = null) : IRequest<NghiemThu>;
+public record NghiemThuUpdateCommand(NghiemThuUpdateDto Dto) : IRequest<NghiemThu>;
 
 internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCommand, NghiemThu> {
     private readonly IRepository<NghiemThu, Guid> NghiemThu;
@@ -58,7 +58,11 @@ internal class NghiemThuUpdateCommandHandler : IRequestHandler<NghiemThuUpdateCo
     }
 
     private async Task SyncNghiemThuPhuLucHopDongAsync(Guid nghiemThuId, List<Guid>? newPhuLucHopDongIds, CancellationToken cancellationToken) {
-        var dbContext = NghiemThu.UnitOfWork as DbContext;
+        if (NghiemThu.UnitOfWork is not DbContext dbContext) {
+            throw new InvalidOperationException("UnitOfWork must be a DbContext.");
+        }
+
+   //     var dbContext = NghiemThu.UnitOfWork as DbContext;// dbcontext are readly defined
         if (dbContext == null) return;
 
         // Delete existing junction records for this NghiemThu
