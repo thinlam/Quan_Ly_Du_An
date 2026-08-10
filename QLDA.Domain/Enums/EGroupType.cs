@@ -16,6 +16,10 @@ public enum EGroupType {
     KhoKhanVuongMac,
     KetQuaXuLyKhoKhanVuongMac,
     KetQuaTrungThau,
+    /// <summary>
+    /// Biên bản thương thảo của Kết quả trúng thầu (Issue #169)
+    /// </summary>
+    KetQuaTrungThau_BienBanThuongThao,
     BaoCaoTienDo,
     PhuLucHopDong,
     NghiemThu,

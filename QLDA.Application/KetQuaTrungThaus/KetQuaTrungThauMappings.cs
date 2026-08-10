@@ -21,10 +21,14 @@ public static class KetQuaTrungThauMappings {
             SoNgayThucHienHopDong = dto.SoNgayThucHienHopDong,
             LoaiHopDongId = dto.LoaiHopDongId,
             HinhThucHopDong = dto.HinhThucHopDong,
+            TrangThaiDangTai = dto.TrangThaiDangTai,
         };
     }
 
-    public static KetQuaTrungThauDto ToDto(this KetQuaTrungThau entity, IEnumerable<Attachment>? files = null) {
+    public static KetQuaTrungThauDto ToDto(
+        this KetQuaTrungThau entity,
+        IEnumerable<Attachment>? files = null,
+        IEnumerable<Attachment>? bienBanThuongThao = null) {
         return new KetQuaTrungThauDto {
             Id = entity.Id,
             BuocId = entity.BuocId,
@@ -42,7 +46,9 @@ public static class KetQuaTrungThauMappings {
             SoNgayThucHienHopDong = entity.SoNgayThucHienHopDong,
             LoaiHopDongId = entity.LoaiHopDongId,
             HinhThucHopDong = entity.HinhThucHopDong,
-            DanhSachTepDinhKem = [.. files?.ToDtos() ?? []]
+            TrangThaiDangTai = entity.TrangThaiDangTai,
+            DanhSachTepDinhKem = [.. files?.ToDtos() ?? []],
+            DanhSachBienBanThuongThao = [.. bienBanThuongThao?.ToDtos() ?? []],
         };
     }
     public static void Update(this KetQuaTrungThau entity, KetQuaTrungThauUpdateDto dto) {
@@ -59,5 +65,6 @@ public static class KetQuaTrungThauMappings {
         entity.SoNgayThucHienHopDong = dto.SoNgayThucHienHopDong;
         entity.LoaiHopDongId = dto.LoaiHopDongId;
         entity.HinhThucHopDong = dto.HinhThucHopDong;
+        entity.TrangThaiDangTai = dto.TrangThaiDangTai;
     }
 }

@@ -3,6 +3,8 @@ using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.KetQuaTrungThaus.DTOs;
+using BuildingBlocks.Application.Attachments.Common;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.KetQuaTrungThaus.Queries;
 
@@ -56,6 +58,11 @@ internal class
                 e => e.DonViTrungThau!.Ten
             );
 
+        var groupTypesKetQua = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.KetQuaTrungThau));
+        var groupTypesBienBan = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.KetQuaTrungThau_BienBanThuongThao));
+
         return await queryable
             .Select(e => new KetQuaTrungThauDto()
             {
@@ -75,8 +82,12 @@ internal class
                 SoNgayThucHienHopDong = e.SoNgayThucHienHopDong,
                 LoaiHopDongId = e.LoaiHopDongId,
                 HinhThucHopDong = e.HinhThucHopDong,
+                TrangThaiDangTai = e.TrangThaiDangTai,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesKetQua.Contains(i.GroupType))
+                    .Select(i => i.ToDto()).ToList(),
+                DanhSachBienBanThuongThao = TepDinhKem.GetQueryableSet()
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesBienBan.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
