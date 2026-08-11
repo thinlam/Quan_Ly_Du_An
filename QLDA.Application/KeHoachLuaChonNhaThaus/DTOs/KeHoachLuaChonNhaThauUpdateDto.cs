@@ -12,5 +12,9 @@ public class KeHoachLuaChonNhaThauUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDt
     public string? TrichYeu { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public string? NguoiKy { get; set; }
+    public long? TongDuToan { get; set; }
+    public long? DuToanThamDinh { get; set; }
+    public int? NguonVonId { get; set; }
+    public int? ThoiGianThucHien { get; set; }
     public List<TepDinhKemInsertOrUpdateDto>? DanhSachTepDinhKem { get; set; }
 }

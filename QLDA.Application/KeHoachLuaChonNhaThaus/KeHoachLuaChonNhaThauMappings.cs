@@ -14,7 +14,11 @@ public static class KeHoachLuaChonNhaThauMappings {
             Ngay = dto.NgayQuyetDinh,
             TrichYeu = dto.TrichYeu,
             NgayKy = dto.NgayKy,
-            NguoiKy = dto.NguoiKy
+            NguoiKy = dto.NguoiKy,
+            TongDuToan = dto.TongDuToan!.Value,
+            DuToanThamDinh = dto.DuToanThamDinh,
+            NguonVonId = dto.NguonVonId,
+            ThoiGianThucHien = dto.ThoiGianThucHien
         };
     }
 
@@ -29,6 +33,10 @@ public static class KeHoachLuaChonNhaThauMappings {
             TrichYeu = entity.TrichYeu,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy,
+            TongDuToan = entity.TongDuToan,
+            DuToanThamDinh = entity.DuToanThamDinh,
+            NguonVonId = entity.NguonVonId,
+            ThoiGianThucHien = entity.ThoiGianThucHien,
             DanhSachTepDinhKem = [.. files?.ToDtos() ?? []]
         };
     }
@@ -39,5 +47,9 @@ public static class KeHoachLuaChonNhaThauMappings {
         entity.TrichYeu = dto.TrichYeu;
         entity.NgayKy = dto.NgayKy;
         entity.NguoiKy = dto.NguoiKy;
+        entity.TongDuToan = dto.TongDuToan!.Value;
+        entity.DuToanThamDinh = dto.DuToanThamDinh;
+        entity.NguonVonId = dto.NguonVonId;
+        entity.ThoiGianThucHien = dto.ThoiGianThucHien;
     }
 }

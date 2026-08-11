@@ -51,6 +51,10 @@ internal class
                 TrichYeu = e.TrichYeu,
                 NgayKy = e.NgayKy,
                 NguoiKy = e.NguoiKy,
+                TongDuToan = e.TongDuToan,
+                DuToanThamDinh = e.DuToanThamDinh,
+                NguonVonId = e.NguonVonId,
+                ThoiGianThucHien = e.ThoiGianThucHien,
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
                     .Where(i => i.GroupId == e.Id.ToString())
                     .Select(i => i.ToDto()).ToList(),
