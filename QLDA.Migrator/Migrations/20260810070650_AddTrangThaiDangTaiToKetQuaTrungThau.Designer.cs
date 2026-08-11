@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260810070650_AddTrangThaiDangTaiToKetQuaTrungThau")]
+    partial class AddTrangThaiDangTaiToKetQuaTrungThau
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -8774,25 +8777,11 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.HasBaseType("QLDA.Domain.Entities.VanBanQuyetDinh");
 
-                    b.Property<long?>("DuToanThamDinh")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("LoaiKeHoach")
                         .HasColumnType("varchar(500)");
 
-                    b.Property<int?>("NguonVonId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Ten")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ThoiGianThucHien")
-                        .HasColumnType("int");
-
-                    b.Property<long>("TongDuToan")
-                        .HasColumnType("bigint");
-
-                    b.HasIndex("NguonVonId");
 
                     b.ToTable("KeHoachLuaChonNhaThau", (string)null);
                 });
@@ -10415,13 +10404,6 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("QLDA.Domain.Entities.KeHoachLuaChonNhaThau", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNguonVon", "NguonVon")
-                        .WithMany()
-                        .HasForeignKey("NguonVonId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("NguonVon");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.PheDuyetDuToan", b =>

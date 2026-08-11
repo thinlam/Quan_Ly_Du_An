@@ -35,10 +35,16 @@ public class KetQuaTrungThauController : AggregateRootController {
             IsNoTracking = true,
         });
 
+        var groupId = entity.Id.ToString();
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()]
+            GroupIds: [groupId],
+            BaseGroupTypes: [nameof(EGroupType.KetQuaTrungThau)]
         ))).ToAttachmentEntities();
-        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem));
+        var danhSachBienBanThuongThao = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [groupId],
+            BaseGroupTypes: [nameof(EGroupType.KetQuaTrungThau_BienBanThuongThao)]
+        ))).ToAttachmentEntities();
+        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem, danhSachBienBanThuongThao));
     }
 
 
@@ -85,6 +91,15 @@ public class KetQuaTrungThauController : AggregateRootController {
             Entities = files,
             AutoDeleteMissing = true
         }, cancellationToken);
+
+        List<Attachment> bienBanFiles = [.. insertDto.DanhSachBienBanThuongThao?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau_BienBanThuongThao) ?? []];
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.KetQuaTrungThau_BienBanThuongThao)],
+            Entities = bienBanFiles,
+            AutoDeleteMissing = true
+        }, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
         return ResultApi.Ok(new { entity.Id });
@@ -118,9 +133,17 @@ public class KetQuaTrungThauController : AggregateRootController {
             AutoDeleteMissing = true
         }, cancellationToken);
 
+        List<Attachment> bienBanFiles = [.. updateDto.DanhSachBienBanThuongThao?.ToEntities(entity.Id, EGroupType.KetQuaTrungThau_BienBanThuongThao) ?? []];
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
+            GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.KetQuaTrungThau_BienBanThuongThao)],
+            Entities = bienBanFiles,
+            AutoDeleteMissing = true
+        }, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
         await unitOfWork.CommitTransactionAsync(cancellationToken);
-        return ResultApi.Ok(entity.ToDto(files));
+        return ResultApi.Ok(entity.ToDto(files, bienBanFiles));
     }
 
     /// <summary>

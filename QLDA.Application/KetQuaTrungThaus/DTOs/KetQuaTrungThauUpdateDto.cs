@@ -41,5 +41,17 @@ public class KetQuaTrungThauUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto, ITr
     /// </summary>
     public string? HinhThucHopDong { get; set; }
     #endregion
+
+    #region Issue #169
+    /// <summary>
+    /// Trạng thái đăng tải — false = chưa, true = đã đăng tải
+    /// </summary>
+    public bool TrangThaiDangTai { get; set; }
+    /// <summary>
+    /// Biên bản thương thảo
+    /// </summary>
+    public List<TepDinhKemInsertOrUpdateDto>? DanhSachBienBanThuongThao { get; set; }
+    #endregion
+
     public List<TepDinhKemInsertOrUpdateDto>? DanhSachTepDinhKem { get; set; }
 }
