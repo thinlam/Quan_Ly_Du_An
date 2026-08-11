@@ -49,3 +49,14 @@ ef.bat add AddTrangThaiDangTaiToKetQuaTrungThau
 ```
 
 Hoặc tương đương `dotnet ef migrations add ...` qua Migrator. **Không** sửa ModelSnapshot tay.
+
+---
+
+## 2026-08-11 — Enum riêng `ETrangThaiDangTai` (1/2)
+
+Không reuse `ETrangThaiMoiThau`. Enum mới:
+
+- `1` = Đã đăng (`DaDang`)
+- `2` = Chưa đăng (`ChuaDang`)
+
+FE: `api/danh-muc-enum/danh-sach?enumName=ETrangThaiDangTai`
