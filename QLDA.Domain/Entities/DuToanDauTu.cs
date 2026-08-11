@@ -10,6 +10,7 @@ public class DuToanDauTu : Entity<Guid>, IAggregateRoot, ITienDo
 {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
+    public string? Ten { get; set; }
     public int? PhuongAnThietKeId { get; set; }
     public long? TongMucDauTu { get; set; }
     public long? TongDuToan { get; set; }

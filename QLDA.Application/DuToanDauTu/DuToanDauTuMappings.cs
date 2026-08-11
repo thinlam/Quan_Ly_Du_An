@@ -9,6 +9,7 @@ public static class DuToanDauTuMappings {
             Id = dto.Id ?? Guid.NewGuid(),
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
+            Ten = dto.Ten?.Trim(),
             NgayTrinh = dto.NgayTrinh,
             TrichYeu = dto.TrichYeu,
             SoToTrinh = dto.SoToTrinh,
@@ -24,12 +25,16 @@ public static class DuToanDauTuMappings {
 
 
 
-    public static DuToanDauTuDto ToDto(this DuToanDauTu entity, List<Attachment>? files = null) {
+    public static DuToanDauTuDto ToDto(
+        this DuToanDauTu entity,
+        List<Attachment>? files = null,
+        List<Attachment>? filesKhac = null) {
         return new DuToanDauTuDto
         {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
+            Ten = entity.Ten,
             NgayTrinh = entity.NgayTrinh,
             TrichYeu = entity.TrichYeu ?? string.Empty,
             SoToTrinh = entity.SoToTrinh ?? string.Empty,
@@ -47,6 +52,7 @@ public static class DuToanDauTuMappings {
             TenTrangThai = entity.TrangThai?.Ten,
 
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
+            DanhSachTepDinhKemKhac = filesKhac?.Select(x => x.ToDto()).ToList(),
         };
     }
 }

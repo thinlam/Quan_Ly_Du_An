@@ -29,6 +29,8 @@ internal class DuToanDauTuInsertCommandHandler : IRequestHandler<DuToanDauTuInse
 
     public async Task<DuToanDauTu> Handle(DuToanDauTuInsertCommand request, CancellationToken cancellationToken = default)
     {
+        ManagedException.ThrowIf(string.IsNullOrWhiteSpace(request.Dto.Ten), "Tên dự toán là bắt buộc");
+
         await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
         await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
 

@@ -49,6 +49,9 @@ internal class DuToanDauTuUpdateCommandHandler : IRequestHandler<DuToanDauTuUpda
             throw new ManagedException("Trạng thái không thể cập nhật!");
         }
 
+        ManagedException.ThrowIf(string.IsNullOrWhiteSpace(request.Dto.Ten), "Tên dự toán là bắt buộc");
+
+        entity.Ten = request.Dto.Ten?.Trim();
         entity.SoToTrinh = request.Dto.SoToTrinh;
         entity.NgayTrinh = request.Dto.NgayTrinh;
         entity.TrichYeu = request.Dto.TrichYeu;

@@ -15,6 +15,7 @@ public class DuToanDauTuDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo, IMayHa
 
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
+    public string? Ten { get; set; }
     public DateTimeOffset? NgayTrinh { get; set; }
     public string SoToTrinh { get; set; } = string.Empty;
     public string? TrichYeu { get; set; }
@@ -35,4 +36,5 @@ public class DuToanDauTuDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITienDo, IMayHa
     public string? MaTrangThai { get; set; }
     public string? TenTrangThai { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepDinhKemKhac { get; set; }
 }
