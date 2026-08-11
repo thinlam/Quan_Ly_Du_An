@@ -48,9 +48,18 @@ internal class KeHoachLuaChonNhaThauInsertCommandHandler : IRequestHandler<KeHoa
     private async Task ValidateAsync(KeHoachLuaChonNhaThauInsertCommand request, CancellationToken cancellationToken) {
         ManagedException.ThrowIf(!await DuAn.GetQueryableSet().AnyAsync(e => e.Id == request.Dto.DuAnId, cancellationToken: cancellationToken),
            "Không tồn tại dự án");
+        ManagedException.ThrowIf(!request.Dto.TongDuToan.HasValue, "Tổng dự toán là bắt buộc");
+        ManagedException.ThrowIf(
+            when: request.Dto.NguonVonId > 0 &&
+                  !await DuAn.GetQueryableSet().AnyAsync(
+                      e => e.Id == request.Dto.DuAnId &&
+                           e.DuAnNguonVons!.Any(nv => nv.RightId == request.Dto.NguonVonId),
+                      cancellationToken),
+            message: "Nguồn vốn không thuộc dự án"
+        );
         ManagedException.ThrowIf(
             when: await KeHoachLuaChonNhaThau.GetQueryableSet().AnyAsync(e => e.DuAnId == request.Dto.DuAnId && e.So == request.Dto.SoQuyetDinh && !e.IsDeleted, cancellationToken: cancellationToken),
-            message: "Số quyết định đã tồn tại"
+            message: "Số tờ trình đã tồn tại"
         );
     }
 

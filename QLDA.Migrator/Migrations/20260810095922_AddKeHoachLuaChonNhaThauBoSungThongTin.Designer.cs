@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260810095922_AddKeHoachLuaChonNhaThauBoSungThongTin")]
+    partial class AddKeHoachLuaChonNhaThauBoSungThongTin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6666,11 +6669,6 @@ namespace QLDA.Migrator.Migrations
                     b.Property<string>("SoQuyetDinh")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("TrangThaiDangTai")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("TrichYeu")
                         .HasColumnType("nvarchar(max)");
 
@@ -8774,9 +8772,6 @@ namespace QLDA.Migrator.Migrations
                 {
                     b.HasBaseType("QLDA.Domain.Entities.VanBanQuyetDinh");
 
-                    b.Property<long?>("DuToanThamDinh")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("LoaiKeHoach")
                         .HasColumnType("varchar(500)");
 
@@ -8790,6 +8785,9 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("int");
 
                     b.Property<long>("TongDuToan")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("TongDuToanThamDinhGia")
                         .HasColumnType("bigint");
 
                     b.HasIndex("NguonVonId");

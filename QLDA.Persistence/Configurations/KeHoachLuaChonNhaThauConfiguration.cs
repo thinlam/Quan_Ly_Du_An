@@ -8,6 +8,11 @@ public class KeHoachLuaChonNhaThauConfiguration : AggregateRootConfiguration<KeH
         builder.ToTable(nameof(KeHoachLuaChonNhaThau));
         builder.Property(e => e.LoaiKeHoach)
             .HasColumnType("varchar(500)");
-           
+
+        builder.HasOne(e => e.NguonVon)
+            .WithMany()
+            .HasForeignKey(e => e.NguonVonId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
     }
 }
