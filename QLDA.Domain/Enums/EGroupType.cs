@@ -78,6 +78,10 @@ public enum EGroupType {
     ThoaThuanGiaoViec,
     KeHoachLuaChonNhaThauRutGon,
     DuToanDauTu,
+    /// <summary>
+    /// File Khác của Dự toán CBĐT / Trình duyệt dự toán (Issue #175)
+    /// </summary>
+    DuToanDauTu_Khac,
     ThanhLyHopDong,
     ThanhLyHopDong_BienBanNghiemThu,
     ThanhLyHopDong_Khac,

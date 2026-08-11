@@ -4,8 +4,11 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.DuToanDauTus.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
+using BuildingBlocks.Application.Attachments.Common;
 
 namespace QLDA.Application.DuToanDauTus.Queries;
+
 
 public record DuToanDauTuGetPaginatedQuery : AggregateRootPagination, IMayHaveGlobalFilter, IFromDateToDate, IRequest<PaginatedList<DuToanDauTuDto>> {
     public int? BuocId { get; set; }
@@ -40,14 +43,21 @@ internal class
             .WhereIf(request.DenNgay.HasValue, e => e.NgayTrinh.HasValue && e.NgayTrinh.Value <= request.DenNgay!.Value.ToEndOfDayUtc())
             .WhereGlobalFilter(
                 request,
-                e => e.TrichYeu
+                e => e.TrichYeu,
+                e => e.Ten
             );
+
+        var groupTypesCongVan = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.DuToanDauTu));
+        var groupTypesKhac = AttachmentSubquery.ExpandGroupTypes(
+            includeSigned: true, nameof(EGroupType.DuToanDauTu_Khac));
 
         return await queryable
             .Select(e => new DuToanDauTuDto() {
                 Id = e.Id,
                 DuAnId = e.DuAnId,
                 BuocId = e.BuocId,
+                Ten = e.Ten,
                 SoToTrinh = e.SoToTrinh ?? string.Empty,
                 TrichYeu = e.TrichYeu,
                 NgayTrinh = e.NgayTrinh,
@@ -63,7 +73,10 @@ internal class
                 TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : TrangThaiPheDuyetCodes.Default.TenDuThao,
 
                 DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesCongVan.Contains(i.GroupType))
+                    .Select(i => i.ToDto()).ToList(),
+                DanhSachTepDinhKemKhac = TepDinhKem.GetQueryableSet()
+                    .Where(i => i.GroupId == e.Id.ToString() && groupTypesKhac.Contains(i.GroupType))
                     .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);

@@ -8,6 +8,7 @@ using QLDA.Application.DuToanDauTus;
 using QLDA.Application.DuToanDauTus.Commands;
 using QLDA.Application.DuToanDauTus.DTOs;
 using QLDA.Application.DuToanDauTus.Queries;
+using QLDA.Domain.Enums;
 using System.Net.Mime;
 
 namespace QLDA.WebApi.Controllers;
@@ -29,10 +30,15 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
         });
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()]
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.DuToanDauTu)]
+        ))).ToAttachmentEntities();
+        var danhSachTepDinhKemKhac = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.DuToanDauTu_Khac)]
         ))).ToAttachmentEntities();
 
-        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
+        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList(), danhSachTepDinhKemKhac.ToList()));
     }
 
     [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]
@@ -53,19 +59,30 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
+        ManagedException.ThrowIf(
+            dto.DanhSachTepDinhKem == null || dto.DanhSachTepDinhKem.Count == 0,
+            "Công văn đề nghị báo giá là bắt buộc");
+
         var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step));
 
         var entity = await Mediator.Send(new DuToanDauTuInsertCommand(dto), cancellationToken);
-        // nếu dùng DuToanDauTu cho nhìu màn hình thì lấy  EGroupType.DuToanDauTu theo Loai
-        //tạo contanst LoaiDuToanDauTu
 
-        List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DuToanDauTu) ?? []];
+        List<Attachment> files = [.. dto.DanhSachTepDinhKem.ToEntities(entity.Id, EGroupType.DuToanDauTu)];
         await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
             GroupTypes = [nameof(EGroupType.DuToanDauTu)],
             Entities = files,
+            AutoDeleteMissing = true
+        }, cancellationToken);
+
+        List<Attachment> fileKhacs = [.. dto.DanhSachTepDinhKemKhac?.ToEntities(entity.Id, EGroupType.DuToanDauTu_Khac) ?? []];
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.DuToanDauTu_Khac)],
+            Entities = fileKhacs,
             AutoDeleteMissing = true
         }, cancellationToken);
 
@@ -82,9 +99,13 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
         [FromServices] IUnitOfWork unitOfWork,
         CancellationToken cancellationToken = default)
     {
+        ManagedException.ThrowIf(
+            dto.DanhSachTepDinhKem == null || dto.DanhSachTepDinhKem.Count == 0,
+            "Công văn đề nghị báo giá là bắt buộc");
+
         var entity = await Mediator.Send(new DuToanDauTuUpdateCommand(dto), cancellationToken);
 
-        List<Attachment> files = [.. dto.DanhSachTepDinhKem?.ToEntities(entity.Id, EGroupType.DuToanDauTu) ?? []];
+        List<Attachment> files = [.. dto.DanhSachTepDinhKem.ToEntities(entity.Id, EGroupType.DuToanDauTu)];
         await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
         {
             GroupId = entity.Id.ToString(),
@@ -93,13 +114,27 @@ public class DuToanDauTuController(IServiceProvider serviceProvider) : Aggregate
             AutoDeleteMissing = true
         }, cancellationToken);
 
+        List<Attachment> fileKhacs = [.. dto.DanhSachTepDinhKemKhac?.ToEntities(entity.Id, EGroupType.DuToanDauTu_Khac) ?? []];
+        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+        {
+            GroupId = entity.Id.ToString(),
+            GroupTypes = [nameof(EGroupType.DuToanDauTu_Khac)],
+            Entities = fileKhacs,
+            AutoDeleteMissing = true
+        }, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()]
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.DuToanDauTu)]
+        ), cancellationToken)).ToAttachmentEntities();
+        var danhSachTepDinhKemKhac = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.DuToanDauTu_Khac)]
         ), cancellationToken)).ToAttachmentEntities();
 
-        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList()));
+        return ResultApi.Ok(entity.ToDto(danhSachTepDinhKem.ToList(), danhSachTepDinhKemKhac.ToList()));
     }
 
     [ProducesResponseType<ResultApi<PaginatedList<DuToanDauTuDto>>>(StatusCodes.Status200OK)]

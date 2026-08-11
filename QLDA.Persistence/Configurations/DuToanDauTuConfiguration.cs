@@ -17,6 +17,7 @@ public class DuToanDauTuConfiguration : AggregateRootConfiguration<DuToanDauTu> 
                 toDb => toDb == 0 ? null : toDb,
                 fromDb => fromDb 
             );
+        builder.Property(x => x.Ten).HasMaxLength(500);
         builder.Property(x => x.SoToTrinh).HasMaxLength(30);
 
         builder.Property(e => e.NgayTrinh)
