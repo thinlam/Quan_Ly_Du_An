@@ -29,7 +29,7 @@ Setup data gợi ý:
 `POST /api/ket-qua-trung-thau/them-moi` body gồm:
 
 - fields cũ
-- `TrangThaiDangTai` (`boolean`: `false` = chưa đăng tải, `true` = đã đăng tải)
+- `TrangThaiDangTai` (`ETrangThaiMoiThau`: `0`=Đã đăng, `1`=Chưa đăng, `2`=Hủy)
 - `DanhSachBienBanThuongThao` (file upload theo contract hiện tại)
 - `DanhSachTepDinhKem` (nếu có) — không bị xóa nhầm khi sync biên bản
 
@@ -45,7 +45,7 @@ Setup data gợi ý:
 
 `PUT /api/ket-qua-trung-thau/cap-nhat`
 
-- Đổi `TrangThaiDangTai` (đã ↔ chưa), thêm/xóa file biên bản → persist đúng
+- Đổi `TrangThaiDangTai` (0/1/2), thêm/xóa file biên bản → persist đúng
 - `AutoDeleteMissing` chỉ trong GroupType biên bản
 
 ## 4. FE (repo ngoài) — checklist
@@ -53,11 +53,11 @@ Setup data gợi ý:
 - [ ] CBB Gói thầu gọi `IsThamDinh=true`
 - [ ] Label **Đơn vị trúng thầu**
 - [ ] Control upload Biên bản thương thảo bind `DanhSachBienBanThuongThao`
-- [ ] CBB Trạng thái đăng tải bind `TrangThaiDangTai` (`boolean` — đã / chưa đăng tải)
+- [ ] CBB Trạng thái đăng tải bind `TrangThaiDangTai` (`ETrangThaiMoiThau` via `danh-muc-enum`)
 - [ ] Create / Detail / Edit bind đủ
 
 ## 5. Regression
 
 - [ ] Màn khác dùng `goi-thau/combobox` không truyền `IsThamDinh` vẫn bình thường
 - [ ] Attachment cũ `EGroupType.KetQuaTrungThau` không bị mất khi update có biên bản
-- [ ] Migration apply lên DB local thành công (cột `TrangThaiDangTai` bit)
+- [ ] Migration apply lên DB local thành công (cột `TrangThaiDangTai` int)

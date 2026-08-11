@@ -1,7 +1,7 @@
 # Issue #169 — Report: Chỉnh sửa màn hình 9667 (KetQuaTrungThau)
 
-> **Status:** BE implemented — **chờ user tạo migration** (`TrangThaiDangTai`)  
-> **Date:** 2026-08-10
+> **Status:** BE updated — `TrangThaiDangTai` = `ETrangThaiMoiThau` (0/1/2); apply migration `ChangeKetQuaTrungThauTrangThaiDangTaiToEnum`  
+> **Date:** 2026-08-11
 
 ## Summary
 
@@ -43,7 +43,7 @@ Attachment hiện tại:
 | Ngày đăng EHSMT | `NgayEHSMT` | ✅ |
 | Thời gian thực hiện hợp đồng | `SoNgayThucHienHopDong` | ✅ |
 | Biên bản thương thảo | — | ❌ cần GroupType + list DTO |
-| Trạng thái đăng tải | — | ❌ cần `bool TrangThaiDangTai` (đã/chưa) + migration |
+| Trạng thái đăng tải | — | ✅ `ETrangThaiMoiThau TrangThaiDangTai` (DaDang=0, ChuaDang=1, Huy=2) |
 | Trích yếu | `TrichYeu` | ✅ |
 
 ## 2. Design đề xuất
@@ -97,27 +97,23 @@ GET api/goi-thau/combobox                    → behavior cũ
 
 **Migration:** không cần cho attachment (chỉ thêm enum value → string `GroupType`).
 
-### 2.4. Trạng thái đăng tải (boolean — đã / chưa đăng tải)
+### 2.4. Trạng thái đăng tải (`ETrangThaiMoiThau` — 0/1/2)
 
-> **Chốt nghiệp vụ:** `dataType = boolean`. UI có thể là CBB 2 option; BE lưu `bool`, **không** dùng `TrangThaiDangTaiId` / danh mục.
-
-**Approach (recommended):** Theo pattern `HoSoMoiThauDienTu.TrangThaiDangTai` (`bool`).
+> **Cập nhật 2026-08-11:** đổi từ `bool` sang enum `ETrangThaiMoiThau` (reuse danh mục đã có).
 
 | Layer | Thay đổi |
 |-------|----------|
-| Domain | `bool TrangThaiDangTai` trên `KetQuaTrungThau` |
-| Persistence | cột `bit` (default `false` = chưa đăng tải, nếu cần) |
-| DTO / Mapping / Commands | copy field insert/update/get |
-| Migration | **Có** — `ef.bat add ...` (không sửa ModelSnapshot tay) |
+| Domain / DTO | `ETrangThaiMoiThau TrangThaiDangTai` (default `ChuaDang`) |
+| Persistence | cột `int` |
+| Migration | `ChangeKetQuaTrungThauTrangThaiDangTaiToEnum` (bit→int, AlterColumn only) |
 
-| Giá trị | UI |
-|---------|-----|
-| `false` | Chưa đăng tải |
-| `true` | Đã đăng tải |
+| id | rawName | ten |
+|----|---------|-----|
+| 0 | `DaDang` | Đã đăng |
+| 1 | `ChuaDang` | Chưa đăng |
+| 2 | `Huy` | Hủy |
 
-**FE:** CBB 2 option bind `TrangThaiDangTai` (boolean). Không gọi API danh mục.
-
-**Không** dùng `int? TrangThaiDangTaiId` như `ToTrinhKetQuaGoiThau` / `TrienKhaiKeHoachLCNT` / `ToTrinhThamDinhNhaThau` — đó là pattern khác, không khớp dataType boolean của #169.
+**FE:** CBB bind `TrangThaiDangTai` (`0|1|2`) qua `api/danh-muc-enum/danh-sach?enumName=ETrangThaiMoiThau`.
 ## 3. Danh sách file dự kiến phải sửa
 
 ### 3.1. BE — bắt buộc (trong repo này)
@@ -127,14 +123,13 @@ GET api/goi-thau/combobox                    → behavior cũ
 | `QLDA.Application/GoiThaus/DTOs/GoiThauSearchDto.cs` | Thêm `bool? IsThamDinh` |
 | `QLDA.Application/GoiThaus/Queries/GoiThauGetDanhSachQuery.cs` | Filter theo `HoSoMoiThauDienTu.ThamDinh` |
 | `QLDA.Domain/Enums/EGroupType.cs` | Thêm `KetQuaTrungThau_BienBanThuongThao` |
-| `QLDA.Domain/Entities/KetQuaTrungThau.cs` | Thêm `bool TrangThaiDangTai` |
-| `QLDA.Persistence/Configurations/KetQuaTrungThauConfiguration.cs` | Configure property (nếu cần default) |
+| `QLDA.Domain/Entities/KetQuaTrungThau.cs` | `ETrangThaiMoiThau TrangThaiDangTai` |
 | `QLDA.Application/KetQuaTrungThaus/DTOs/KetQuaTrungThauDto.cs` | `TrangThaiDangTai` + `DanhSachBienBanThuongThao` |
 | `QLDA.Application/KetQuaTrungThaus/DTOs/KetQuaTrungThauInsertDto.cs` |同上 |
 | `QLDA.Application/KetQuaTrungThaus/DTOs/KetQuaTrungThauUpdateDto.cs` |同上 |
 | `QLDA.Application/KetQuaTrungThaus/KetQuaTrungThauMappings.cs` | Map field mới |
 | `QLDA.WebApi/Controllers/KetQuaTrungThauController.cs` | Sync/load attachment GroupType mới |
-| `QLDA.Migrator/Migrations/<new>_AddTrangThaiDangTaiToKetQuaTrungThau.cs` | Migration auto-gen |
+| `QLDA.Migrator/Migrations/..._ChangeKetQuaTrungThauTrangThaiDangTaiToEnum.cs` | bit → int + remap |
 
 Có thể cần cập nhật list query / validators nếu project bắt buộc map đầy đủ field trên list DTO.
 
@@ -145,7 +140,7 @@ Có thể cần cập nhật list query / validators nếu project bắt buộc 
 | Form màn 9667 | Label Đơn vị trúng thầu |
 | CBB Gói thầu | `goi-thau/combobox?IsThamDinh=true` |
 | Upload Biên bản thương thảo | Bind `DanhSachBienBanThuongThao` |
-| CBB Trạng thái đăng tải | Bind `TrangThaiDangTai` (`boolean`: đã / chưa đăng tải) |
+| CBB Trạng thái đăng tải | Bind `TrangThaiDangTai` (`0|1|2` = `ETrangThaiMoiThau`) |
 
 ### 3.3. Không sửa
 
@@ -160,14 +155,14 @@ Có thể cần cập nhật list query / validators nếu project bắt buộc 
 |----------|----------------|
 | `IsThamDinh` filter | ❌ |
 | `EGroupType` mới (attachment) | ❌ |
-| `TrangThaiDangTai` (`bool`) trên `KetQuaTrungThau` | ✅ |
+| `TrangThaiDangTai` (`ETrangThaiMoiThau` / int) trên `KetQuaTrungThau` | ✅ |
 | Label FE | ❌ |
 
 Tạo migration bằng `ef.bat add` sau khi Domain + Persistence.Configuration đã cập nhật (cùng commit group theo rule dự án).
 
 ## 5. Rủi ro / điểm cần xác nhận trước khi code
 
-1. **Default `TrangThaiDangTai`:** đề xuất `false` (chưa đăng tải) cho bản ghi mới / dữ liệu migrate.
+1. **Default `TrangThaiDangTai`:** `ChuaDang` (1) cho bản ghi mới (property initializer).
 2. **Nhiều E-HSMT / 1 gói thầu:** filter `Any(ThamDinh == true)` — nếu nghiệp vụ yêu cầu “E-HSMT mới nhất đã thẩm định” thì cần siết thêm (hiện issue chỉ nói “đã tích thẩm định”).
 3. **GetAttachmentsQuery hiện tại** trên chi tiết `KetQuaTrungThau` không truyền `BaseGroupTypes` → lấy mọi GroupType của GroupId. Sau khi thêm GroupType biên bản, **phải** split rõ 2 list (hoặc filter bằng `BaseGroupType()`), tránh nhét biên bản vào `DanhSachTepDinhKem`.
 ## 6. Approaches đã cân nhắc
@@ -178,15 +173,15 @@ Tạo migration bằng `ef.bat add` sau khi Domain + Persistence.Configuration �
 | B | Endpoint combobox riêng cho 9667 | Cách ly | Duplicate API | ❌ |
 | C | Attachment GroupType riêng cho biên bản | Đúng multi-file pattern | Thêm enum | ✅ |
 | D | Nhét biên bản vào `DanhSachTepDinhKem` | Ít code | FE khó tách field | ❌ |
-| E | `bool TrangThaiDangTai` như E-HSMT (đã/chưa) | Đúng dataType boolean #169 | Cần migration | ✅ |
-| F | `TrangThaiDangTaiId int?` như ToTrinh… | Có sẵn ở màn khác | Sai dataType (không phải boolean) | ❌ |
+| E | `bool TrangThaiDangTai` như E-HSMT (đã/chưa) | Đúng dataType boolean ban đầu | Không đủ 3 trạng thái | ❌ (superseded) |
+| F | `ETrangThaiMoiThau` (0/1/2) reuse enum + danh-muc-enum | Đủ DaDang/ChuaDang/Huy, FE CBB sẵn | Cần migration bit→int | ✅ |
 
 ## 7. Next step
 
-BE code đã xong (build OK). **User tạo migration sau:**
+Apply migration rồi FE bind enum:
 
 ```bat
-ef.bat add AddTrangThaiDangTaiToKetQuaTrungThau
+ef.bat QLDA update
 ```
 
-Sau đó apply DB + làm FE (label, `IsThamDinh=true`, bind `TrangThaiDangTai` / `DanhSachBienBanThuongThao`). Verify theo [test-workflow.md](./test-workflow.md).
+FE: `api/danh-muc-enum/danh-sach?enumName=ETrangThaiMoiThau`, gửi `trangThaiDangTai: 0|1|2`. Verify theo [test-workflow.md](./test-workflow.md).

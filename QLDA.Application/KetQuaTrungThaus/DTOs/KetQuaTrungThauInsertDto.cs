@@ -1,5 +1,6 @@
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.TepDinhKems.DTOs;
+using QLDA.Domain.Enums;
 using QLDA.Domain.Interfaces;
 
 namespace QLDA.Application.KetQuaTrungThaus.DTOs;
@@ -45,9 +46,9 @@ public class KetQuaTrungThauInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo, IT
 
     #region Issue #169
     /// <summary>
-    /// Trạng thái đăng tải — false = chưa, true = đã đăng tải
+    /// Trạng thái đăng tải — ETrangThaiMoiThau: DaDang=0, ChuaDang=1, Huy=2
     /// </summary>
-    public bool TrangThaiDangTai { get; set; }
+    public ETrangThaiMoiThau TrangThaiDangTai { get; set; } = ETrangThaiMoiThau.ChuaDang;
     /// <summary>
     /// Biên bản thương thảo
     /// </summary>
