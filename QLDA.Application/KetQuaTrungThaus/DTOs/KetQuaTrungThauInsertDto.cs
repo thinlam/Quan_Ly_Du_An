@@ -46,9 +46,9 @@ public class KetQuaTrungThauInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo, IT
 
     #region Issue #169
     /// <summary>
-    /// Trạng thái đăng tải — ETrangThaiMoiThau: DaDang=0, ChuaDang=1, Huy=2
+    /// Trạng thái đăng tải — ETrangThaiDangTai: DaDang=1, ChuaDang=2
     /// </summary>
-    public ETrangThaiMoiThau TrangThaiDangTai { get; set; } = ETrangThaiMoiThau.ChuaDang;
+    public ETrangThaiDangTai TrangThaiDangTai { get; set; } = ETrangThaiDangTai.ChuaDang;
     /// <summary>
     /// Biên bản thương thảo
     /// </summary>

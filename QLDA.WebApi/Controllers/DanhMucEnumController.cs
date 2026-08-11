@@ -18,6 +18,7 @@ namespace QLDA.WebApi.Controllers {
                 nameof(EDanhMuc),
                 nameof(EnumLoaiVanBanQuyetDinh),
                 nameof(ETrangThaiMoiThau),
+                nameof(ETrangThaiDangTai),
                 nameof(EChiuTrachNhiemXuLy),
                 nameof(ELoaiDeXuatKeHoachLCNT),
                 nameof(PhanQuyenChucNangLevel),
@@ -43,6 +44,7 @@ namespace QLDA.WebApi.Controllers {
                 nameof(ELoaiDeXuatKeHoachLCNT) => EnumsExtensions.EnumAll<ELoaiDeXuatKeHoachLCNT>(),
                 nameof(ELoaiVanBanQuyetDinh) => EnumsExtensions.EnumAll<EnumLoaiVanBanQuyetDinh>(), //nameof(ELoaiVanBanQuyetDinh) table name cho store procedure query - EnumLoaiVanBanQuyetDinh cho code first
                 nameof(ETrangThaiMoiThau) => EnumsExtensions.EnumAll<ETrangThaiMoiThau>(),
+                nameof(ETrangThaiDangTai) => EnumsExtensions.EnumAll<ETrangThaiDangTai>(),
                 nameof(EChiuTrachNhiemXuLy) => EnumsExtensions.EnumAll<EChiuTrachNhiemXuLy>(),
                 nameof(PhanQuyenChucNangLevel) => EnumsExtensions.EnumAll<PhanQuyenChucNangLevel>(),
                 nameof(EGroupType) => EnumsExtensions.EnumAll<EGroupType>(),

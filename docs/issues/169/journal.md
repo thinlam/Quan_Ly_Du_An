@@ -52,14 +52,11 @@ Hoặc tương đương `dotnet ef migrations add ...` qua Migrator. **Không** 
 
 ---
 
-## 2026-08-11 — Đổi `TrangThaiDangTai` bool → `ETrangThaiMoiThau`
+## 2026-08-11 — Enum riêng `ETrangThaiDangTai` (1/2)
 
-**Lý do:** FE cần CBB 3 trạng thái (Đã đăng / Chưa đăng / Hủy) — `bool` không đủ; lỗi 400 khi gửi không phải boolean.
+Không reuse `ETrangThaiMoiThau`. Enum mới:
 
-**Đã làm:**
+- `1` = Đã đăng (`DaDang`)
+- `2` = Chưa đăng (`ChuaDang`)
 
-- Entity + Insert/Update/Dto: `ETrangThaiMoiThau TrangThaiDangTai` (default `ChuaDang`)
-- Migration `ChangeKetQuaTrungThauTrangThaiDangTaiToEnum`: `bit` → `int` (EF AlterColumn only)
-- FE lấy options: `api/danh-muc-enum/danh-sach?enumName=ETrangThaiMoiThau`
-
-**Không đổi:** `HoSoMoiThauDienTu.TrangThaiDangTai` vẫn `bool`.
+FE: `api/danh-muc-enum/danh-sach?enumName=ETrangThaiDangTai`

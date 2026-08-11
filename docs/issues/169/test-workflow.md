@@ -29,7 +29,7 @@ Setup data gợi ý:
 `POST /api/ket-qua-trung-thau/them-moi` body gồm:
 
 - fields cũ
-- `TrangThaiDangTai` (`ETrangThaiMoiThau`: `0`=Đã đăng, `1`=Chưa đăng, `2`=Hủy)
+- `TrangThaiDangTai` (`ETrangThaiDangTai`: `1`=Đã đăng, `2`=Chưa đăng)
 - `DanhSachBienBanThuongThao` (file upload theo contract hiện tại)
 - `DanhSachTepDinhKem` (nếu có) — không bị xóa nhầm khi sync biên bản
 
@@ -53,7 +53,7 @@ Setup data gợi ý:
 - [ ] CBB Gói thầu gọi `IsThamDinh=true`
 - [ ] Label **Đơn vị trúng thầu**
 - [ ] Control upload Biên bản thương thảo bind `DanhSachBienBanThuongThao`
-- [ ] CBB Trạng thái đăng tải bind `TrangThaiDangTai` (`ETrangThaiMoiThau` via `danh-muc-enum`)
+- [ ] CBB Trạng thái đăng tải bind `TrangThaiDangTai` (`ETrangThaiDangTai` via `danh-muc-enum`)
 - [ ] Create / Detail / Edit bind đủ
 
 ## 5. Regression
