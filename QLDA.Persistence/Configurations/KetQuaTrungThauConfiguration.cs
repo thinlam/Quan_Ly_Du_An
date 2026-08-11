@@ -35,6 +35,10 @@ public class KetQuaTrungThauConfiguration : AggregateRootConfiguration<KetQuaTru
         builder.Property(e => e.HinhThucHopDong)
             .HasMaxLength(500);
 
+        // Issue #169 — default chưa đăng tải
+        builder.Property(e => e.TrangThaiDangTai)
+            .HasDefaultValue(false);
+
         builder.HasOne(e => e.LoaiHopDong)
             .WithMany()
             .HasForeignKey(e => e.LoaiHopDongId)

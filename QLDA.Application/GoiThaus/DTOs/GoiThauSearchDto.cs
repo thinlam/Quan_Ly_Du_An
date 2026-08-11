@@ -17,4 +17,11 @@ public record GoiThauSearchDto : CommonSearchDto {
     /// </summary>
     /// <remarks>PMIS #9609</remarks>
     public int? LoaiDuAnTheoNamId { get; set; }
+
+    /// <summary>
+    /// Khi true: chỉ lấy gói thầu đã tích thẩm định bên E-HSMT (HoSoMoiThauDienTu.ThamDinh).
+    /// Không truyền / null: giữ behavior cũ.
+    /// </summary>
+    /// <remarks>Issue #169 — màn 9667</remarks>
+    public bool? IsThamDinh { get; set; }
 }
