@@ -18,6 +18,7 @@ internal class
     private readonly IRepository<Attachment, Guid> TepDinhKem;
     private readonly IRepository<HopDong, Guid> HopDong;
     private readonly IRepository<KetQuaTrungThau, Guid> KetQuaTrungThau;
+    private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
     private readonly IAuthorizationManager _authManager;
 
     public GoiThauGetDanhSachQueryHandler(IServiceProvider serviceProvider) {
@@ -25,6 +26,7 @@ internal class
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         HopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
         KetQuaTrungThau = serviceProvider.GetRequiredService<IRepository<KetQuaTrungThau, Guid>>();
+        HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
@@ -46,6 +48,10 @@ internal class
                 e => e.PhuongThucLuaChonNhaThauId == request.SearchDto.PhuongThucLuaChonNhaThauId)
             .WhereIf(request.SearchDto.HinhThucLuaChonNhaThauId > 0,
                 e => e.HinhThucLuaChonNhaThauId == request.SearchDto.HinhThucLuaChonNhaThauId)
+            // Issue #169: IsThamDinh=true → chỉ gói thầu đã tích thẩm định E-HSMT
+            .WhereIf(request.SearchDto.IsThamDinh == true,
+                e => HoSoMoiThauDienTu.GetQueryableSet()
+                    .Any(h => h.GoiThauId == e.Id && h.ThamDinh == true))
             .WhereGlobalFilter(
                 request.SearchDto,
                 e => e.Ten,

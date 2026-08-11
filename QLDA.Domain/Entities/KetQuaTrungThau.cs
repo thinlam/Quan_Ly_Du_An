@@ -48,6 +48,13 @@ public class KetQuaTrungThau : Entity<Guid>, IAggregateRoot, ITienDo, IQuyetDinh
     public string? HinhThucHopDong { get; set; }
     #endregion
 
+    #region Issue #169
+    /// <summary>
+    /// Trạng thái đăng tải — false = chưa đăng tải, true = đã đăng tải
+    /// </summary>
+    public bool TrangThaiDangTai { get; set; }
+    #endregion
+
     #region Navigation Properties
 
     public GoiThau? GoiThau { get; set; }

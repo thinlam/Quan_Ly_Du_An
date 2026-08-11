@@ -17,5 +17,10 @@
       <ProjectReference Include="..\BuildingBlocks\src\BuildingBlocks.Infrastructure\BuildingBlocks.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Aspose.Words">
+        <HintPath>..\BuildingBlocks\bin\Aspose.Words.dll</HintPath>
+      </Reference>
+    </ItemGroup>
 
 </Project>
