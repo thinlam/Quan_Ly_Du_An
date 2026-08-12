@@ -84,51 +84,123 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         return ResultApi.Ok(res);
     }
 
+    /// <summary>
+    /// Tạo mới Tờ trình thẩm định nhà thầu (Issue #179) — 1 gói thầu / 1 nhà thầu,
+    /// gồm Đối chiếu/Thương thảo/Thẩm định (ToTrinhThamDinhBuocXuLy), Tờ trình kết quả
+    /// (ToTrinhQuyetDinh) và Quyết định phê duyệt (VanBanQuyetDinh, trạng thái Chờ duyệt).
+    /// </summary>
     [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpPost("them-moi")]
     [Consumes(MediaTypeNames.Application.Json)]
-    public async Task<ResultApi> Create([FromBody] ToTrinhThamDinhNhaThauModel dto, [FromServices] IUnitOfWork unitOfWork, CancellationToken cancellationToken = default)
+    public async Task<ResultApi> Create([FromBody] ToTrinhThamDinhNhaThauThemMoiDto dto, CancellationToken cancellationToken = default)
     {
-        var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId));
+        var step = await Mediator.Send(new DuAnUpdateStepCommand(dto.DuAnId, dto.BuocId), cancellationToken);
         await Mediator.Send(new DuAnUpdatePhaseCommand(dto.DuAnId, step), cancellationToken);
 
-        var entity = await Mediator.Send(new ToTrinhThamDinhNhaThauInsertCommand(dto.ToEntity()), cancellationToken);
-        var danhSachTepDinhKem = dto.GetDanhSachTepDinhKem(entity.Id).ToList();
+        var result = await Mediator.Send(new ToTrinhThamDinhNhaThauThemMoiCommand(dto), cancellationToken);
+        var entity = result.Entity;
 
-        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+        if (dto.ThongTinNhaThau?.FileEHSDT is { Count: > 0 } fileEHSDT)
         {
-            GroupId = entity.Id.ToString(),
-            GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau)],
-            Entities = danhSachTepDinhKem,
-            AutoDeleteMissing = true
-        });
-        var danhSachFileThamDinh = dto.GetDanhSachTepThamDinh(entity.Id).ToList();
-
-        await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            {
+                GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_FileEHSDT)],
+                Entities = [.. fileEHSDT.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_FileEHSDT)],
+                AutoDeleteMissing = true
+            }, cancellationToken);
+        }
+        if (dto.ThongTinNhaThau?.FileDanhGia is { Count: > 0 } fileDanhGia)
         {
-            GroupId = entity.Id.ToString(),
-            GroupTypes = [nameof(EGroupType.NoiDungToTrinhThamDinhNhaThau)],
-            Entities = danhSachFileThamDinh,
-            AutoDeleteMissing = true
-        });
-        var danhSachFileKetQua = new List<Attachment>();
-        foreach (var nhaThaus in dto.DanhSachNhaThaus!)
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            {
+                GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_FileDanhGia)],
+                Entities = [.. fileDanhGia.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_FileDanhGia)],
+                AutoDeleteMissing = true
+            }, cancellationToken);
+        }
+        if (dto.ThongTinDoiChieu?.File is { Count: > 0 } fileDoiChieu)
         {
-            var id = nhaThaus.GetId();
-            danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            {
+                GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_DoiChieu)],
+                Entities = [.. fileDoiChieu.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_DoiChieu)],
+                AutoDeleteMissing = true
+            }, cancellationToken);
+        }
+        if (dto.ThongTinThuongThao?.File is { Count: > 0 } fileThuongThao)
+        {
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            {
+                GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThuongThao)],
+                Entities = [.. fileThuongThao.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_ThuongThao)],
+                AutoDeleteMissing = true
+            }, cancellationToken);
+        }
+        if (dto.ThongTinThamDinh?.File is { Count: > 0 } fileThamDinh)
+        {
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            {
+                GroupId = entity.Id.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)],
+                Entities = [.. fileThamDinh.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)],
+                AutoDeleteMissing = true
+            }, cancellationToken);
+        }
+        if (result.ToTrinhQuyetDinhId is { } toTrinhQuyetDinhId && dto.ToTrinhKetQua?.File is { Count: > 0 } fileToTrinhKetQua)
+        {
+            // ToTrinhQuyetDinh.Id là long (không phải Guid) — không dùng được overload
+            // ToEntities(Guid groupId,...), map thủ công GroupId theo id dạng long.
+            var files = fileToTrinhKetQua.Select(f => new Attachment {
+                Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
+                ParentId = f.ParentId,
+                GroupId = toTrinhQuyetDinhId.ToString(),
+                GroupType = nameof(EGroupType.ToTrinhQuyetDinh),
+                Type = f.Type,
+                FileName = f.FileName,
+                OriginalName = f.OriginalName,
+                Path = f.Path,
+                Size = f.Size,
+            }).ToList();
 
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
-                GroupId = id.ToString(),
-                GroupTypes = [nameof(EGroupType.KetQuaThamDinhNhaThau)],
-                Entities = danhSachFileKetQua,
+                GroupId = toTrinhQuyetDinhId.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhQuyetDinh)],
+                Entities = files,
                 AutoDeleteMissing = true
-            });
+            }, cancellationToken);
+        }
+        if (result.VanBanQuyetDinhId is { } vanBanQuyetDinhId && dto.QuyetDinhPheDuyet?.File is { Count: > 0 } fileQuyetDinh)
+        {
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
+            {
+                GroupId = vanBanQuyetDinhId.ToString(),
+                GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_QuyetDinh)],
+                Entities = [.. fileQuyetDinh.ToEntities(vanBanQuyetDinhId, EGroupType.ToTrinhThamDinhNhaThau_QuyetDinh)],
+                AutoDeleteMissing = true
+            }, cancellationToken);
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
-        return ResultApi.Ok(new { entity.Id });
+        return ResultApi.Ok(new { entity.Id, ToTrinhQuyetDinhId = result.ToTrinhQuyetDinhId, VanBanQuyetDinhId = result.VanBanQuyetDinhId });
+    }
+
+    /// <summary>
+    /// Duyệt Quyết định phê duyệt (VanBanQuyetDinh) của Tờ trình thẩm định nhà thầu.
+    /// Chuyển trạng thái Chờ duyệt → Đã duyệt (Ma = "ĐD") để xuất hiện trong
+    /// <c>api/tong-hop-van-ban-quyet-dinh/danh-sach-day-du</c>.
+    /// </summary>
+    [ProducesResponseType<ResultApi<int>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
+    [HttpPut("quyet-dinh/{vanBanQuyetDinhId}/duyet")]
+    public async Task<ResultApi> DuyetQuyetDinh(Guid vanBanQuyetDinhId, CancellationToken cancellationToken = default)
+    {
+        var res = await Mediator.Send(new ToTrinhThamDinhNhaThauDuyetQuyetDinhCommand(vanBanQuyetDinhId), cancellationToken);
+        return ResultApi.Ok(res);
     }
 
     [ProducesResponseType<ResultApi<ToTrinhThamDinhNhaThauDto>>(StatusCodes.Status200OK)]

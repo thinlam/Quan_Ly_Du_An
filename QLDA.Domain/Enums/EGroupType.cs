@@ -99,5 +99,30 @@ public enum EGroupType {
     QuyetDinhDuyetDuToan,
     ToTrinhCoThamDinh,
 
-
+    #region Issue #179 — Tờ trình thẩm định nhà thầu (đối chiếu/thương thảo/thẩm định/quyết định)
+    /// <summary>
+    /// File E-HSDT của ThongTinNhaThau
+    /// </summary>
+    ToTrinhThamDinhNhaThau_FileEHSDT,
+    /// <summary>
+    /// File đánh giá của ThongTinNhaThau
+    /// </summary>
+    ToTrinhThamDinhNhaThau_FileDanhGia,
+    /// <summary>
+    /// File của ThongTinDoiChieu
+    /// </summary>
+    ToTrinhThamDinhNhaThau_DoiChieu,
+    /// <summary>
+    /// File của ThongTinThuongThao
+    /// </summary>
+    ToTrinhThamDinhNhaThau_ThuongThao,
+    /// <summary>
+    /// File của ThongTinThamDinh
+    /// </summary>
+    ToTrinhThamDinhNhaThau_ThamDinh,
+    /// <summary>
+    /// File của QuyetDinhPheDuyet (VanBanQuyetDinh)
+    /// </summary>
+    ToTrinhThamDinhNhaThau_QuyetDinh,
+    #endregion
 }

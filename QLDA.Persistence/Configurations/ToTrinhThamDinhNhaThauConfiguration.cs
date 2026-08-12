@@ -34,5 +34,14 @@ public class ToTrinhThamDinhNhaThauConfiguration : AggregateRootConfiguration<To
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false);
+
+        // Issue #179 — Tờ trình thẩm định nhà thầu (1 gói thầu / 1 nhà thầu)
+        builder.Property(x => x.TenNhaThau).HasMaxLength(500);
+
+        builder.HasOne(e => e.GoiThau)
+            .WithMany()
+            .HasForeignKey(e => e.GoiThauId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
     }
 }

@@ -26,5 +26,19 @@ public class VanBanQuyetDinhConfiguration : AggregateRootConfiguration<VanBanQuy
                 toDb => toDb.HasValue ? toDb.Value.ToUniversalTime() : (DateTimeOffset?)null,
                 fromDb => fromDb
             );
+
+        // Issue #179 — TrangThaiDuyetId nullable: dữ liệu cũ NULL mặc định là ĐÃ DUYỆT,
+        // không bắt nghiệp vụ cũ truyền giá trị này.
+        builder.HasOne(e => e.TrangThaiDuyet)
+            .WithMany()
+            .HasForeignKey(e => e.TrangThaiDuyetId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+
+        builder.HasOne(e => e.NguoiKyChucVu)
+            .WithMany()
+            .HasForeignKey(e => e.NguoiKyChucVuId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
     }
 }

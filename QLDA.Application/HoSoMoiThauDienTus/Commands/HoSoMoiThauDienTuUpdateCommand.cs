@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -10,6 +11,7 @@ public record HoSoMoiThauDienTuUpdateCommand(HoSoMoiThauDienTuUpdateModel Model)
 internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiThauDienTuUpdateCommand, HoSoMoiThauDienTu> {
     private readonly IRepository<HoSoMoiThauDienTu, Guid> HoSoMoiThauDienTu;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
+    private readonly IRepository<ToTrinhQuyetDinh, long> _toTrinhQuyetDinhRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
@@ -18,6 +20,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
     public HoSoMoiThauDienTuUpdateCommandHandler(IServiceProvider serviceProvider) {
         HoSoMoiThauDienTu = serviceProvider.GetRequiredService<IRepository<HoSoMoiThauDienTu, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _toTrinhQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<ToTrinhQuyetDinh, long>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -26,9 +29,15 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
 
     public async Task<HoSoMoiThauDienTu> Handle(HoSoMoiThauDienTuUpdateCommand request, CancellationToken cancellationToken = default) {
        
-        var entity = await HoSoMoiThauDienTu.GetQueryableSet().Include( e => e.ToTrinh).Include(e => e.QuyetDinh)
+        var entity = await HoSoMoiThauDienTu.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Model.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity, "Không tìm thấy hồ sơ mời thầu điện tử");
+
+        // ToTrinh/QuyetDinh (ToTrinhQuyetDinh) dùng chung bảng qua EntityId + Loai — load thủ công (Issue #179).
+        entity.ToTrinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
+            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauToTrinh, cancellationToken);
+        entity.QuyetDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
+            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauQuyetDinh, cancellationToken);
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
         await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId ?? Guid.Empty, _authContext, cancellationToken);
@@ -67,26 +76,29 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                 entity.ToTrinh.Ngay = dto.Ngay;
                 entity.ToTrinh.ChucVu = dto.ChucVu;
                 entity.ToTrinh.TrichYeu = dto.TrichYeu;
-
+                await _toTrinhQuyetDinhRepo.UpdateAsync(entity.ToTrinh, cancellationToken);
             }
             else
             {
                 entity.ToTrinh = new ToTrinhQuyetDinh()
                 {
+                    EntityId = entity.Id,
+                    Loai = (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauToTrinh,
                     NguoiKy = dto.NguoiKy,
                     So = dto.So,
                     Ngay = dto.Ngay,
                     ChucVu = dto.ChucVu,
                     TrichYeu = dto.TrichYeu,
                 };
-                // await _chiDinhThau.AddAsync(entity.ToTrinh, cancellationToken);
+                await _toTrinhQuyetDinhRepo.AddAsync(entity.ToTrinh, cancellationToken);
             }
         }
-        else
+        else if (entity.ToTrinh != null)
         {
-            if (entity.ToTrinh != null)
-                entity.ToTrinh = null;
+            _toTrinhQuyetDinhRepo.Delete(entity.ToTrinh);
+            entity.ToTrinh = null;
         }
+
         if (request.Model.QuyetDinh != null)
         {
             ToTrinhQuyetDinhDto dto = request.Model.QuyetDinh;
@@ -98,23 +110,27 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                 entity.QuyetDinh.Ngay = dto.Ngay;
                 entity.QuyetDinh.ChucVu = dto.ChucVu;
                 entity.QuyetDinh.TrichYeu = dto.TrichYeu;
+                await _toTrinhQuyetDinhRepo.UpdateAsync(entity.QuyetDinh, cancellationToken);
             }
             else
             {
                 entity.QuyetDinh = new ToTrinhQuyetDinh()
                 {
+                    EntityId = entity.Id,
+                    Loai = (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauQuyetDinh,
                     NguoiKy = dto.NguoiKy,
                     So = dto.So,
                     Ngay = dto.Ngay,
                     ChucVu = dto.ChucVu,
                     TrichYeu = dto.TrichYeu
                 };
+                await _toTrinhQuyetDinhRepo.AddAsync(entity.QuyetDinh, cancellationToken);
             }
         }
-        else
+        else if (entity.QuyetDinh != null)
         {
-            if (entity.QuyetDinh != null)
-                entity.QuyetDinh = null;
+            _toTrinhQuyetDinhRepo.Delete(entity.QuyetDinh);
+            entity.QuyetDinh = null;
         }
 
         await HoSoMoiThauDienTu.UpdateAsync(entity, cancellationToken);

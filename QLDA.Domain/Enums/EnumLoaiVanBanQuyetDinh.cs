@@ -14,4 +14,5 @@ public enum EnumLoaiVanBanQuyetDinh {
   [Description("Kế hoạch lựa chọn nhà thầu")] KeHoachLuaChonNhaThau,
   [Description("Quyết định phê duyệt dự toán")] PheDuyetDuToan,
   [Description("Quyết định hồ sơ mời thầu điện tử")] HoSoMoiThauDienTu,
+  [Description("Tờ trình thẩm định nhà thầu")] ToTrinhThamDinhNhaThau,
 }

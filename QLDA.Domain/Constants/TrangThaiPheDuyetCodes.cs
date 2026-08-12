@@ -135,4 +135,15 @@ public static class TrangThaiPheDuyetCodes
         public const string DaDuyet = "ĐD";
         public const string TraLai = "TL";
     }
+
+    /// <summary>
+    /// Trạng thái của <c>VanBanQuyetDinh</c> (Quyết định phê duyệt) tạo từ
+    /// Tờ trình thẩm định nhà thầu (#179). Chỉ 2 trạng thái: Chờ duyệt (dùng chung mã "ĐTr" —
+    /// Đã trình, theo đúng convention có sẵn) và Đã duyệt ("ĐD").
+    /// </summary>
+    public static class ToTrinhThamDinhNhaThauQuyetDinh
+    {
+        public const string ChoDuyet = "ĐTr";
+        public const string DaDuyet = "ĐD";
+    }
 }
