@@ -18,7 +18,8 @@ public static class KeHoachLuaChonNhaThauMappings {
             TongDuToan = dto.TongDuToan!.Value,
             DuToanThamDinh = dto.DuToanThamDinh,
             NguonVonId = dto.NguonVonId,
-            ThoiGianThucHien = dto.ThoiGianThucHien
+            ThoiGianThucHien = dto.ThoiGianThucHien,
+            SoLuongGoiThau = dto.SoLuongGoiThau
         };
     }
 
@@ -37,6 +38,7 @@ public static class KeHoachLuaChonNhaThauMappings {
             DuToanThamDinh = entity.DuToanThamDinh,
             NguonVonId = entity.NguonVonId,
             ThoiGianThucHien = entity.ThoiGianThucHien,
+            SoLuongGoiThau = entity.SoLuongGoiThau,
             DanhSachTepDinhKem = [.. files?.ToDtos() ?? []]
         };
     }
@@ -51,5 +53,6 @@ public static class KeHoachLuaChonNhaThauMappings {
         entity.DuToanThamDinh = dto.DuToanThamDinh;
         entity.NguonVonId = dto.NguonVonId;
         entity.ThoiGianThucHien = dto.ThoiGianThucHien;
+        entity.SoLuongGoiThau = dto.SoLuongGoiThau;
     }
 }
