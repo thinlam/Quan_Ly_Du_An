@@ -66,19 +66,24 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         }*/
         var ids = nhaThauModel.Select(x => x.Id.ToString() ?? "").ToList();
 
+        // GetAttachmentsQuery không cho GroupIds rỗng — chỉ gọi khi thực sự có NhaThaus (list kiểu cũ).
+        // Tờ trình tạo bằng API them-moi mới (Issue #179) không dùng NhaThaus nên danh sách này rỗng.
+        if (ids.Count > 0)
+        {
             var allFiles = (await Mediator.Send(new GetAttachmentsQuery(
                 GroupIds: ids,
                 BaseGroupTypes: [nameof(EGroupType.KetQuaThamDinhNhaThau)]
             ))).ToAttachmentEntities();
-        var lookup = allFiles.GroupBy(x => x.GroupId)
-                    .ToDictionary(g => g.Key, g => g.ToList());
-        foreach (var item in nhaThauModel)
-        {
-            if (lookup.TryGetValue(item.Id.ToString() ?? "", out var files))
+            var lookup = allFiles.GroupBy(x => x.GroupId)
+                        .ToDictionary(g => g.Key, g => g.ToList());
+            foreach (var item in nhaThauModel)
             {
-                item.DanhSachTepDinhKem = files
-                    .Select(x => x.ToModel())
-                    .ToList();
+                if (lookup.TryGetValue(item.Id.ToString() ?? "", out var files))
+                {
+                    item.DanhSachTepDinhKem = files
+                        .Select(x => x.ToModel())
+                        .ToList();
+                }
             }
         }
 
@@ -242,7 +247,8 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             AutoDeleteMissing = true
         });
         var danhSachFileKetQua = new List<Attachment>();
-        foreach (var nhaThaus in model.DanhSachNhaThaus!)
+        // Danh sách nhà thầu kiểu cũ (NhaThaus) — không dùng cho Tờ trình tạo bằng API them-moi mới.
+        foreach (var nhaThaus in model.DanhSachNhaThaus ?? [])
         {
             var id = nhaThaus.GetId();
             danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
