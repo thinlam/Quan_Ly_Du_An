@@ -25,5 +25,6 @@ public class KeHoachLuaChonNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, ITien
     public long? DuToanThamDinh { get; set; }
     public int? NguonVonId { get; set; }
     public int? ThoiGianThucHien { get; set; }
+    public int? SoLuongGoiThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
 }
