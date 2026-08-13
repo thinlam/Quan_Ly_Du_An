@@ -22,7 +22,6 @@ public record ToTrinhThamDinhNhaThauThemMoiCommand(ToTrinhThamDinhNhaThauThemMoi
 internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
     : IRequestHandler<ToTrinhThamDinhNhaThauThemMoiCommand, ToTrinhThamDinhNhaThauThemMoiResult> {
     private readonly IRepository<ToTrinhThamDinhNhaThau, Guid> _repo;
-    private readonly IRepository<ToTrinhThamDinhBuocXuLy, long> _buocXuLyRepo;
     private readonly IRepository<ToTrinhQuyetDinh, long> _toTrinhQuyetDinhRepo;
     private readonly IRepository<VanBanQuyetDinh, Guid> _vanBanQuyetDinhRepo;
     private readonly IRepository<GoiThau, Guid> _goiThauRepo;
@@ -33,7 +32,6 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
 
     public ToTrinhThamDinhNhaThauThemMoiCommandHandler(IServiceProvider serviceProvider) {
         _repo = serviceProvider.GetRequiredService<IRepository<ToTrinhThamDinhNhaThau, Guid>>();
-        _buocXuLyRepo = serviceProvider.GetRequiredService<IRepository<ToTrinhThamDinhBuocXuLy, long>>();
         _toTrinhQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<ToTrinhQuyetDinh, long>>();
         _vanBanQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
         _goiThauRepo = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
@@ -53,6 +51,8 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
             .AnyAsync(e => e.Id == dto.GoiThauId, cancellationToken);
         ManagedException.ThrowIf(!goiThauTonTai, "Không tìm thấy gói thầu");
 
+        // Dùng lại đúng convention 4 trạng thái chung (DT/ĐTr/ĐD/TL) của DeXuatMacDinh —
+        // không tạo bộ trạng thái riêng cho Tờ trình thẩm định nhà thầu.
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
             .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.DuThao && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
@@ -69,30 +69,16 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
             TenNhaThau = dto.ThongTinNhaThau?.TenNhaThau,
             NgayKetThucDanhGia = dto.ThongTinNhaThau?.NgayKetThucDanhGia,
         };
+        entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao, dto.ThamDinh));
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
-
-        foreach (var (buocDto, loai) in new (ThongTinBuocXuLyDto? Dto, ELoaiBuocXuLyThamDinhNhaThau Loai)[] {
-            (dto.ThongTinDoiChieu, ELoaiBuocXuLyThamDinhNhaThau.DoiChieu),
-            (dto.ThongTinThuongThao, ELoaiBuocXuLyThamDinhNhaThau.ThuongThao),
-            (dto.ThongTinThamDinh, ELoaiBuocXuLyThamDinhNhaThau.ThamDinh),
-        }) {
-            if (buocDto == null) continue;
-            await _buocXuLyRepo.AddAsync(new ToTrinhThamDinhBuocXuLy {
-                ToTrinhId = entity.Id,
-                So = buocDto.So,
-                Ngay = buocDto.Ngay,
-                NoiDung = buocDto.NoiDung,
-                Loai = (int)loai,
-            }, cancellationToken);
-        }
 
         ToTrinhQuyetDinh? toTrinhQuyetDinh = null;
         if (dto.ToTrinhKetQua != null) {
             toTrinhQuyetDinh = new ToTrinhQuyetDinh {
                 EntityId = entity.Id,
-                Loai = (int)ELoaiToTrinhQuyetDinh.ToTrinhThamDinhNhaThau,
+                Loai = ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau,
                 So = dto.ToTrinhKetQua.So,
                 Ngay = dto.ToTrinhKetQua.Ngay,
                 NguoiKy = dto.ToTrinhKetQua.NguoiKy,
@@ -104,14 +90,11 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
 
         VanBanQuyetDinh? vanBanQuyetDinh = null;
         if (dto.QuyetDinhPheDuyet != null) {
-            // Quyết định mới của Tờ trình thẩm định nhà thầu PHẢI ở trạng thái CHỜ DUYỆT,
-            // không được để TrangThaiDuyetId = null (khác dữ liệu cũ) — mục 20-21 yêu cầu task #179.
-            var trangThaiChoDuyet = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
-                .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.ToTrinhThamDinhNhaThauQuyetDinh.ChoDuyet
-                    && s.Loai == PheDuyetEntityNames.ToTrinhThamDinhNhaThau, cancellationToken);
-            ManagedException.ThrowIfNull(trangThaiChoDuyet, "Không tìm thấy trạng thái 'Chờ duyệt' cho Quyết định phê duyệt");
-
+            // Id = entity.Id (giống pattern HoSoMoiThauDienTuDuyetCommand) để ToTrinhThamDinhNhaThauDuyetCommand
+            // (dispatch qua QuanLyPheDuyet) tra được đúng VanBanQuyetDinh cần đồng bộ trạng thái khi duyệt.
+            // TrangThaiDuyetId đồng bộ với TrangThaiId của Tờ trình (Dự thảo) — không tạo trạng thái "Chờ duyệt" riêng.
             vanBanQuyetDinh = new VanBanQuyetDinh {
+                Id = entity.Id,
                 DuAnId = entity.DuAnId,
                 BuocId = entity.BuocId,
                 So = dto.QuyetDinhPheDuyet.So,
@@ -121,7 +104,7 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
                 NguoiKyChucVuId = dto.QuyetDinhPheDuyet.ChucVuId,
                 TrichYeu = dto.QuyetDinhPheDuyet.TrichYeu,
                 Loai = nameof(EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau),
-                TrangThaiDuyetId = trangThaiChoDuyet!.Id,
+                TrangThaiDuyetId = trangThaiDuThao?.Id,
             };
             await _vanBanQuyetDinhRepo.AddAsync(vanBanQuyetDinh, cancellationToken);
         }

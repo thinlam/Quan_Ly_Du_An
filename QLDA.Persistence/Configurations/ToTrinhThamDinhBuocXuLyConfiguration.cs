@@ -10,6 +10,7 @@ public class ToTrinhThamDinhBuocXuLyConfiguration : AggregateRootConfiguration<T
 
         builder.Property(e => e.So).HasMaxLength(200);
         builder.Property(e => e.NoiDung).HasColumnType("nvarchar(max)");
+        builder.Property(e => e.Loai).HasMaxLength(50);
 
         builder.HasOne(e => e.ToTrinh)
             .WithMany(e => e.BuocXuLys)

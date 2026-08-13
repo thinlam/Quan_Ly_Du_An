@@ -23,9 +23,9 @@ public class ToTrinhThamDinhNhaThauThemMoiDto
     public int? TrangThaiDangTaiId { get; set; }
 
     public ThongTinNhaThauDto? ThongTinNhaThau { get; set; }
-    public ThongTinBuocXuLyDto? ThongTinDoiChieu { get; set; }
-    public ThongTinBuocXuLyDto? ThongTinThuongThao { get; set; }
-    public ThongTinBuocXuLyDto? ThongTinThamDinh { get; set; }
+    public ToTrinhThamDinhBuocXuLyDto? DoiChieu { get; set; }
+    public ToTrinhThamDinhBuocXuLyDto? ThuongThao { get; set; }
+    public ToTrinhThamDinhBuocXuLyDto? ThamDinh { get; set; }
     public ToTrinhKetQuaDto? ToTrinhKetQua { get; set; }
     public QuyetDinhPheDuyetDto? QuyetDinhPheDuyet { get; set; }
 }
@@ -41,9 +41,9 @@ public class ThongTinNhaThauDto
 
 /// <summary>
 /// Dùng chung cho mục 3/4/5 (Đối chiếu / Thương thảo / Thẩm định) — phân biệt bằng
-/// <see cref="Domain.Enums.ELoaiBuocXuLyThamDinhNhaThau"/> khi map sang entity.
+/// <see cref="Domain.Constants.ToTrinhThamDinhBuocXuLyLoai"/> khi map sang entity.
 /// </summary>
-public class ThongTinBuocXuLyDto
+public class ToTrinhThamDinhBuocXuLyDto
 {
     public string? So { get; set; }
     public DateTimeOffset? Ngay { get; set; }

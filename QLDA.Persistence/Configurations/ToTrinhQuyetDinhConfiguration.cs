@@ -11,6 +11,8 @@ public class ToTrinhQuyetDinhConfiguration : AggregateRootConfiguration<ToTrinhQ
 
         builder.ConfigureForBase();
 
+        builder.Property(e => e.Loai).HasMaxLength(50);
+
         // Dùng chung nhiều nghiệp vụ qua EntityId + Loai thay vì FK riêng (Issue #179).
         builder.HasIndex(e => new { e.EntityId, e.Loai });
     }

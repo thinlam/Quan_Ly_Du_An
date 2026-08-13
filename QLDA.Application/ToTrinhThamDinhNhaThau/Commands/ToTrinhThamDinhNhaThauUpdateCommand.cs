@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
+using QLDA.Application.ToTrinhThamDinhNhaThaus;
 using QLDA.Domain.Constants;
 
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
@@ -33,6 +34,7 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
 
         var entity = await _repo.GetQueryableSet()
             .Include(e => e.NhaThaus)
+            .Include(e => e.BuocXuLys)
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu.");
@@ -51,6 +53,7 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
         entity.DaThamDinh = request.Dto.DaThamDinh;
         entity.SyncNhaThauIds(request.Dto.NhaThaus);
+        entity.SyncBuocXuLys(request.Dto.BuocXuLys ?? []);
         // insert file cho TepDinhKem
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.UpdateAsync(entity, cancellationToken);

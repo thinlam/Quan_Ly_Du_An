@@ -109,15 +109,15 @@ public enum EGroupType {
     /// </summary>
     ToTrinhThamDinhNhaThau_FileDanhGia,
     /// <summary>
-    /// File của ThongTinDoiChieu
+    /// File của bước Đối chiếu
     /// </summary>
     ToTrinhThamDinhNhaThau_DoiChieu,
     /// <summary>
-    /// File của ThongTinThuongThao
+    /// File của bước Thương thảo
     /// </summary>
     ToTrinhThamDinhNhaThau_ThuongThao,
     /// <summary>
-    /// File của ThongTinThamDinh
+    /// File của bước Thẩm định
     /// </summary>
     ToTrinhThamDinhNhaThau_ThamDinh,
     /// <summary>

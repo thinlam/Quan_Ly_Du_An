@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -51,14 +50,14 @@ internal class HoSoMoiThauDienTuInsertCommandHandler : IRequestHandler<HoSoMoiTh
         if (toTrinh != null)
         {
             toTrinh.EntityId = entity.Id;
-            toTrinh.Loai = (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauToTrinh;
+            toTrinh.Loai = ToTrinhQuyetDinhLoai.HoSoMoiThauToTrinh;
             await _toTrinhQuyetDinhRepo.AddAsync(toTrinh, cancellationToken);
             entity.ToTrinh = toTrinh;
         }
         if (quyetDinh != null)
         {
             quyetDinh.EntityId = entity.Id;
-            quyetDinh.Loai = (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauQuyetDinh;
+            quyetDinh.Loai = ToTrinhQuyetDinhLoai.HoSoMoiThauQuyetDinh;
             await _toTrinhQuyetDinhRepo.AddAsync(quyetDinh, cancellationToken);
             entity.QuyetDinh = quyetDinh;
         }

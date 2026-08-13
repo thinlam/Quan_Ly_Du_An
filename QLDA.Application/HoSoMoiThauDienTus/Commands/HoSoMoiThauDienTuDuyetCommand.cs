@@ -63,7 +63,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
 
         // ToTrinhQuyetDinh dùng chung bảng qua EntityId + Loai — load thủ công (Issue #179).
         var quyetDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
-            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauQuyetDinh, cancellationToken);
+            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == ToTrinhQuyetDinhLoai.HoSoMoiThauQuyetDinh, cancellationToken);
 
         var VanBanQuyetDinh = new VanBanQuyetDinh {
             Id = entity.Id,

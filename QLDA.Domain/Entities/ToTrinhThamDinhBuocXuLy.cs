@@ -1,11 +1,9 @@
-using QLDA.Domain.Enums;
-
 namespace QLDA.Domain.Entities;
 
 /// <summary>
 /// Bảng dùng chung cho 3 bước xử lý của "Tờ trình thẩm định nhà thầu" (Issue #179):
 /// Đối chiếu / Thương thảo / Thẩm định — phân biệt bằng <see cref="Loai"/>
-/// (<see cref="ELoaiBuocXuLyThamDinhNhaThau"/>), không tạo 3 bảng riêng.
+/// (<see cref="Constants.ToTrinhThamDinhBuocXuLyLoai"/>), không tạo 3 bảng riêng.
 /// </summary>
 public class ToTrinhThamDinhBuocXuLy : IAggregateRoot, IHasKey<long>
 {
@@ -19,9 +17,9 @@ public class ToTrinhThamDinhBuocXuLy : IAggregateRoot, IHasKey<long>
     public string? NoiDung { get; set; }
 
     /// <summary>
-    /// DoiChieu / ThuongThao / ThamDinh — xem <see cref="ELoaiBuocXuLyThamDinhNhaThau"/>.
+    /// DoiChieu / ThuongThao / ThamDinh — xem <see cref="Constants.ToTrinhThamDinhBuocXuLyLoai"/>.
     /// </summary>
-    public int Loai { get; set; }
+    public string Loai { get; set; } = string.Empty;
 
     #region Navigation Properties
     public ToTrinhThamDinhNhaThau? ToTrinh { get; set; }

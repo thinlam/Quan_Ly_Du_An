@@ -66,10 +66,7 @@ public class DanhMucTrangThaiPheDuyetConfiguration : AggregateRootConfiguration<
             new DanhMucTrangThaiPheDuyet { Id = 67, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.DuThao, Ten = TrangThaiPheDuyetCodes.Default.TenDuThao, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 68, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.DaTrinh, Ten = TrangThaiPheDuyetCodes.Default.TenDaTrinh, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 2, Used = true, CreatedAt = SeedCreatedAt },
             new DanhMucTrangThaiPheDuyet { Id = 69, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.DaDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaDuyet, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 3, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 70, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 4, Used = true, CreatedAt = SeedCreatedAt },
-            // VanBanQuyetDinh.TrangThaiId của Tờ trình thẩm định nhà thầu (Issue #179) — Chờ duyệt / Đã duyệt
-            new DanhMucTrangThaiPheDuyet { Id = 71, Ma = TrangThaiPheDuyetCodes.ToTrinhThamDinhNhaThauQuyetDinh.ChoDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaTrinh, Loai = PheDuyetEntityNames.ToTrinhThamDinhNhaThau, Stt = 1, Used = true, CreatedAt = SeedCreatedAt },
-            new DanhMucTrangThaiPheDuyet { Id = 72, Ma = TrangThaiPheDuyetCodes.ToTrinhThamDinhNhaThauQuyetDinh.DaDuyet, Ten = TrangThaiPheDuyetCodes.Default.TenDaDuyet, Loai = PheDuyetEntityNames.ToTrinhThamDinhNhaThau, Stt = 2, Used = true, CreatedAt = SeedCreatedAt }
+            new DanhMucTrangThaiPheDuyet { Id = 70, Ma = TrangThaiPheDuyetCodes.ThanhLyHopDong.TraLai, Ten = TrangThaiPheDuyetCodes.Default.TenTraLai, Loai = PheDuyetEntityNames.ThanhLyHopDong, Stt = 4, Used = true, CreatedAt = SeedCreatedAt }
         );
     }
 }

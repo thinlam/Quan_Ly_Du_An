@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Bảng dùng chung cho các "Tờ trình/Quyết định" dạng So/Ngay/NguoiKy/ChucVu/TrichYeu.
-/// Dùng <see cref="EntityId"/> + <see cref="Loai"/> (<see cref="Enums.ELoaiToTrinhQuyetDinh"/>)
+/// Dùng <see cref="EntityId"/> + <see cref="Loai"/> (<see cref="Constants.ToTrinhQuyetDinhLoai"/>)
 /// để phân biệt nghiệp vụ sở hữu thay vì mỗi nghiệp vụ 1 FK riêng (Issue #179).
 /// </summary>
 public class ToTrinhQuyetDinh : IAggregateRoot, IHasKey<long>
@@ -22,7 +22,7 @@ public class ToTrinhQuyetDinh : IAggregateRoot, IHasKey<long>
     public int? ChucVu { get; set; }
 
     /// <summary>
-    /// Xác định nghiệp vụ sở hữu — xem <see cref="Enums.ELoaiToTrinhQuyetDinh"/>.
+    /// Xác định nghiệp vụ sở hữu — xem <see cref="Constants.ToTrinhQuyetDinhLoai"/>.
     /// </summary>
-    public int Loai { get; set; }
+    public string Loai { get; set; } = string.Empty;
 }

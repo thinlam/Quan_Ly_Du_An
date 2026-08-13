@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.HoSoMoiThauDienTus.DTOs;
 using QLDA.Domain.Constants;
-using QLDA.Domain.Enums;
 
 namespace QLDA.Application.HoSoMoiThauDienTus.Commands;
 
@@ -35,9 +34,9 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
 
         // ToTrinh/QuyetDinh (ToTrinhQuyetDinh) dùng chung bảng qua EntityId + Loai — load thủ công (Issue #179).
         entity.ToTrinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
-            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauToTrinh, cancellationToken);
+            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == ToTrinhQuyetDinhLoai.HoSoMoiThauToTrinh, cancellationToken);
         entity.QuyetDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
-            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauQuyetDinh, cancellationToken);
+            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == ToTrinhQuyetDinhLoai.HoSoMoiThauQuyetDinh, cancellationToken);
 
         await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
         await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId ?? Guid.Empty, _authContext, cancellationToken);
@@ -83,7 +82,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                 entity.ToTrinh = new ToTrinhQuyetDinh()
                 {
                     EntityId = entity.Id,
-                    Loai = (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauToTrinh,
+                    Loai = ToTrinhQuyetDinhLoai.HoSoMoiThauToTrinh,
                     NguoiKy = dto.NguoiKy,
                     So = dto.So,
                     Ngay = dto.Ngay,
@@ -117,7 +116,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
                 entity.QuyetDinh = new ToTrinhQuyetDinh()
                 {
                     EntityId = entity.Id,
-                    Loai = (int)ELoaiToTrinhQuyetDinh.HoSoMoiThauQuyetDinh,
+                    Loai = ToTrinhQuyetDinhLoai.HoSoMoiThauQuyetDinh,
                     NguoiKy = dto.NguoiKy,
                     So = dto.So,
                     Ngay = dto.Ngay,

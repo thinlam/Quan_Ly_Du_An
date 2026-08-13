@@ -25,6 +25,11 @@ public class ToTrinhThamDinhNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
     public List<KetQuaThamDinhNhaThauDto>? DanhSachNhaThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }
+
+    /// <summary>3 bước xử lý (Issue #179) — expose trực tiếp, không bắt FE tự find/filter theo Loai.</summary>
+    public ToTrinhThamDinhBuocXuLyDto? DoiChieu { get; set; }
+    public ToTrinhThamDinhBuocXuLyDto? ThuongThao { get; set; }
+    public ToTrinhThamDinhBuocXuLyDto? ThamDinh { get; set; }
 }
 //Id = model.GetId(),
 
