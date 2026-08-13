@@ -21,6 +21,7 @@ internal class DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) : I
     {
         var queryable = _authManager.FilterVisible(DuAn.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
             .Include(e => e.DuToans)
+            .Include(e => e.BuocHienTai)
             .WhereIf(request.SearchDto.TenDuAn.IsNotNullOrWhitespace(),
                 e => e.TenDuAn!.ToLower()!.Contains(request.SearchDto.TenDuAn!.ToLower()))
             .WhereIf(request.SearchDto.MaDuAn.IsNotNullOrWhitespace(),
@@ -105,6 +106,7 @@ internal class DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) : I
                 LoaiDuAnTheoNamId = e.LoaiDuAnTheoNamId,
                 TenBuoc = e.BuocHienTai != null ? e.BuocHienTai.TenBuoc : null,
                 BuocId = e.BuocHienTai != null ? e.BuocHienTai.BuocId : null,
+                BuocHienTaiId = e.BuocHienTaiId
                 #endregion
             })
             .PaginatedListAsync(request.SearchDto.Skip(), request.SearchDto.Take(), cancellationToken: cancellationToken);

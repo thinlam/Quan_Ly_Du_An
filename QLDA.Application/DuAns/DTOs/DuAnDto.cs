@@ -178,6 +178,7 @@ public class DuAnDto : IHasKey<Guid> {
     /// </remarks>
     public string? TenBuoc { get; set; }
     public int? BuocId { get; set; }
+    public int? BuocHienTaiId { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<DuToanDto>? DuToans { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

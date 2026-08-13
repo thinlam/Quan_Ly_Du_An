@@ -77,33 +77,36 @@ internal class DuAnUpdateStepCommandHandler
                 .Where(e => e.DuAnId == request.DuAnId)
                 .ToListAsync(cancellationToken);
 
-            var orderedSteps = all.ToSteps().ToTreeList();
+            var orderedSteps = all.ToSteps().ToTreeList();// 28 rows
 
             var latestStep = orderedSteps.First(e => e.Id == request.BuocId);
-
-
+          
             // Duyệt cây theo pre-order dựa vào ParentId và Stt
             var lookup = orderedSteps.GroupBy(e => e.ParentId)
                 .ToDictionary(g => g.Key, g => g.OrderBy(e => e.Stt).ToList());
 
-            var ordered = new List<(int Id, int Level, int Stt, string? Path)>();
+            var ordered = new List<(int Id,int? BuocId, int Level, int Stt, string? Path)>();
 
             void Traverse(int parentId) {
-                if (!lookup.TryGetValue(parentId, out var children)) return;
+                if (!lookup.TryGetValue(parentId, out var children))
+                    return;
                 foreach (var node in children) {
-                    ordered.Add((node.Id, node.Level, node.Stt, node.Path));
-                    Traverse(node.Id);
+                    ordered.Add((node.Id, node.BuocId,node.Level, node.Stt, node.Path));
+
+                    Traverse(node.BuocId??0); // ✅
                 }
             }
 
-            Traverse(0); // bắt đầu từ gốc (ParentId = 0)
+            Traverse(0);// bắt đầu từ gốc (ParentId = 0)
+
 
             // So sánh vị trí bước hiện tại và bước mới trong thứ tự đã flatten
-            var currentIndex =
-                ordered.IndexOf((buocHienTaiMapping.Id, buocHienTaiMapping.Level, buocHienTaiMapping.Stt, buocHienTaiMapping.Path));
-            var nextIndex = ordered.IndexOf((latestStep.Id, latestStep.Level, latestStep.Stt, latestStep.Path));
-            if (nextIndex > currentIndex) {
-                await SetStep(request, cancellationToken);
+            var currentIndex = ordered.FindIndex( x => x.Id == buocHienTaiMapping.Id);
+
+            var nextIndex = ordered.FindIndex(  x => x.Id == latestStep.Id);
+
+           if (nextIndex > currentIndex) {
+              await SetStep(request, cancellationToken);
             }
             return all.First(e => e.Id == request.BuocId);
         }
