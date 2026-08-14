@@ -12,20 +12,27 @@ dotnet build SER.sln
 
 ## 2. Migration
 
-Migration `20260812075056_Issue179_ToTrinhThamDinhNhaThau` đã được tạo sẵn (xem `QLDA.Migrator/Migrations/`), **chưa apply vào DB**. Trước khi test cần tự chạy (đúng theo yêu cầu — không tự động migrate):
+Các migration Issue 179 (EF generate). **Chưa apply** trừ khi đã chạy tay:
+
+| Migration | Việc |
+|---|---|
+| `20260812075056_Issue179_ToTrinhThamDinhNhaThau` | EntityId/Loai, BuocXuLy, GoiThauId, TenNhaThau (sau đó bị thay) |
+| `20260813032522_Issue179_LoaiToString` | `Loai` int → string |
+| `20260814075120_Issue179_RemoveLegacyToTrinhThamDinhNhaThauFields` | Drop `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh` trên `ToTrinhThamDinhNhaThau` |
+| `20260814075953_Issue179_ReplaceTenNhaThauWithNhaThauId` | Drop `TenNhaThau`, add `NhaThauId` FK `DmNhaThau` |
 
 ```powershell
 ef.bat QLDA update
 ```
 
-hoặc trực tiếp:
+hoặc:
 
 ```powershell
 dotnet ef database update --project QLDA.Migrator\QLDA.Migrator.csproj --startup-project QLDA.Migrator\QLDA.Migrator.csproj --context AppDbContext
 ```
 
-- Xác nhận đúng connection string dev/test trong `QLDA.WebApi/appsettings.Development.json` trước khi chạy.
-- Sau khi update, kiểm tra nhanh: bảng `ToTrinhQuyetDinh` có cột `EntityId`/`Loai`, không còn `HoSoMoiThauQuyetDinhId`; bảng `VanBanQuyetDinh` có cột `TrangThaiDuyetId`/`NguoiKyChucVuId`; bảng `ToTrinhThamDinhBuocXuLy` được tạo mới; `DmTrangThaiPheDuyet` có 2 dòng mới `Id=71` (`Ma="ĐTr"`) và `Id=72` (`Ma="ĐD"`) với `Loai="ToTrinhThamDinhNhaThau"`.
+- Xác nhận connection string dev/test trong `QLDA.WebApi/appsettings.Development.json` trước khi chạy.
+- Sau khi update: `ToTrinhThamDinhNhaThau` **không** còn cột `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`TenNhaThau`; có `NhaThauId` (uniqueidentifier, nullable) + FK `DmNhaThau`. `ToTrinhThamDinhBuocXuLy.Loai` là string (`DoiChieu`/`ThuongThao`/`ThamDinh`). Không seed `DmTrangThaiPheDuyet` Id=71/72.
 
 ## 3. Chạy API
 
@@ -43,6 +50,7 @@ Cần có sẵn (lấy qua Swagger các API GET tương ứng, hoặc query DB):
 - 1 `DuAnId` hợp lệ (`GET api/du-an/...`).
 - 1 `BuocId` hợp lệ thuộc dự án đó (bảng `DuAnBuoc`).
 - 1 `GoiThauId` hợp lệ (`GET api/goi-thau/danh-sach` hoặc query bảng `GoiThau`).
+- 1 `NhaThauId` hợp lệ (`GET` danh mục nhà thầu / bảng `DmNhaThau` — **Guid**, không phải int).
 - 1 `ChucVuId` hợp lệ (`GET api/dm-chuc-vu`).
 - Không bắt buộc phải có file thật để test nhanh — có thể để `null`/bỏ trống các mảng `File`, `FileEHSDT`, `FileDanhGia` (Command chỉ gọi `AttachmentBulkInsertOrUpdateCommand` khi `Count > 0`).
 
@@ -53,29 +61,26 @@ Cần có sẵn (lấy qua Swagger các API GET tương ứng, hoặc query DB):
   "duAnId": "00000000-0000-0000-0000-000000000000",
   "buocId": 1,
   "goiThauId": "00000000-0000-0000-0000-000000000000",
-  "so": "TT-179-001",
-  "ngayTrinh": "2026-08-12T00:00:00+07:00",
-  "trichYeu": "Tờ trình thẩm định nhà thầu test issue 179",
   "trangThaiDangTaiId": null,
   "thongTinNhaThau": {
-    "tenNhaThau": "Công ty TNHH Test",
+    "nhaThauId": "00000000-0000-0000-0000-000000000000",
     "fileEHSDT": [],
     "ngayKetThucDanhGia": "2026-08-10T00:00:00+07:00",
     "fileDanhGia": []
   },
-  "thongTinDoiChieu": {
+  "doiChieu": {
     "so": "DC-001",
     "ngay": "2026-08-05T00:00:00+07:00",
     "noiDung": null,
     "file": []
   },
-  "thongTinThuongThao": {
+  "thuongThao": {
     "so": "TT-002",
     "ngay": "2026-08-06T00:00:00+07:00",
     "noiDung": "Nội dung thương thảo",
     "file": []
   },
-  "thongTinThamDinh": {
+  "thamDinh": {
     "ngay": "2026-08-07T00:00:00+07:00",
     "so": null,
     "noiDung": "Nội dung thẩm định",
@@ -101,29 +106,30 @@ Cần có sẵn (lấy qua Swagger các API GET tương ứng, hoặc query DB):
 }
 ```
 
-Thay `duAnId`/`goiThauId`/`chucVuId` bằng dữ liệu thật lấy ở bước 4.0.
+Thay `duAnId`/`goiThauId`/`nhaThauId`/`chucVuId` bằng dữ liệu thật lấy ở bước 4.0. Payload **không** gửi `so`/`ngayTrinh`/`trichYeu`/`tenNhaThau` ở cấp tờ trình.
 
 ### 4.2. Happy path
 1. Gọi `POST /api/to-trinh-tham-dinh-nha-thau/them-moi` với payload trên.
 2. Kiểm tra response trả về `{ id, toTrinhQuyetDinhId, vanBanQuyetDinhId }`.
 3. Query DB xác nhận:
-   - `ToTrinhThamDinhNhaThau.GoiThauId` = đúng giá trị gửi lên; không có cột `GiaTri`/`HinhThucLCNT` trên bảng này.
-   - `ToTrinhThamDinhBuocXuLy` có đúng 3 dòng (`Loai=1,2,3` tương ứng Đối chiếu/Thương thảo/Thẩm định), cùng `ToTrinhId` = id vừa tạo.
-   - `ToTrinhQuyetDinh` có 1 dòng mới, `EntityId` = id Tờ trình, `Loai = 3` (`ToTrinhThamDinhNhaThau`), `So/Ngay/NguoiKy/ChucVu/TrichYeu` khớp `toTrinhKetQua`.
-   - `VanBanQuyetDinh` có 1 dòng mới, `TrangThaiDuyetId` **khác null** và trỏ tới bản ghi `Id=71` (`Ma="ĐTr"`), `Loai = "ToTrinhThamDinhNhaThau"`, `So/Ngay/NguoiKy/NgayKy/NguoiKyChucVuId/TrichYeu` khớp `quyetDinhPheDuyet`.
+   - `ToTrinhThamDinhNhaThau.GoiThauId` / `NhaThauId` / `NgayKetThucDanhGia` khớp payload; **không** có cột `TenNhaThau`/`So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`; không có `GiaTri`/`HinhThucLCNT`.
+   - `ToTrinhThamDinhBuocXuLy` có đúng 3 dòng (`Loai='DoiChieu'|'ThuongThao'|'ThamDinh'`), cùng `ToTrinhId`.
+   - `ToTrinhQuyetDinh` 1 dòng, `EntityId` = id Tờ trình, `Loai = 'ToTrinhThamDinhNhaThau'`.
+   - `VanBanQuyetDinh.Id` = id Tờ trình, `Loai = 'ToTrinhThamDinhNhaThau'`, `TrangThaiDuyetId` = trạng thái **Dự thảo** (`DeXuatMacDinh.DT`), không phải seed 71/72.
 
 ### 4.3. Validate
 1. Gọi API với `goiThauId` không tồn tại → kỳ vọng lỗi `ManagedException` "Không tìm thấy gói thầu", không tạo record rác.
-2. Gọi API để trống `thongTinDoiChieu.noiDung` → kỳ vọng lưu thành công (nullable).
-3. Gọi API không truyền `toTrinhKetQua`/`quyetDinhPheDuyet` (null) → kỳ vọng không tạo `ToTrinhQuyetDinh`/`VanBanQuyetDinh`, response trả `toTrinhQuyetDinhId`/`vanBanQuyetDinhId` = null.
+2. Gọi API với `thongTinNhaThau.nhaThauId` không tồn tại → kỳ vọng lỗi `ManagedException` "Không tìm thấy nhà thầu".
+3. Gọi API để trống `doiChieu.noiDung` → kỳ vọng lưu thành công (nullable).
+4. Gọi API không truyền `toTrinhKetQua`/`quyetDinhPheDuyet` (null) → kỳ vọng không tạo `ToTrinhQuyetDinh`/`VanBanQuyetDinh`, response trả `toTrinhQuyetDinhId`/`vanBanQuyetDinhId` = null.
 
 ## 5. Test API tổng hợp `GET api/tong-hop-van-ban-quyet-dinh/danh-sach-day-du`
 
-1. Trước khi duyệt Quyết định phê duyệt vừa tạo ở bước 4.2 → gọi API tổng hợp (`?duAnId=...`), xác nhận record **không xuất hiện** trong danh sách trả về.
-2. Gọi `PUT /api/to-trinh-tham-dinh-nha-thau/quyet-dinh/{vanBanQuyetDinhId}/duyet` → kiểm tra `VanBanQuyetDinh.TrangThaiDuyetId` được cập nhật sang `Id=72` (`Ma="ĐD"`).
-3. Gọi lại API tổng hợp → xác nhận record **xuất hiện** trong danh sách.
-4. Kiểm tra hồi quy: các `VanBanQuyetDinh` cũ có `TrangThaiDuyetId = null` (dữ liệu trước migration) **vẫn xuất hiện** trong danh sách (không bị lọc mất).
-5. Kiểm tra hồi quy: `VanBanQuyetDinh` của nghiệp vụ khác (`HoSoMoiThauDienTu`, `VanBanPhapLy`, ...) tạo mới sau migration này (không set `TrangThaiDuyetId`) — xác nhận **vẫn xuất hiện** đúng như hành vi cũ.
+1. Trước khi duyệt Tờ trình vừa tạo → gọi API tổng hợp (`?duAnId=...`), xác nhận quyết định **không xuất hiện** (trạng thái chưa `ĐD`).
+2. Duyệt qua `QuanLyPheDuyet` (không còn `PUT quyet-dinh/{id}/duyet`) — `ToTrinhThamDinhNhaThauDuyetCommand` đồng bộ `VanBanQuyetDinh.TrangThaiDuyetId` sang `ĐD`.
+3. Gọi lại API tổng hợp → record **xuất hiện**.
+4. Hồi quy: `VanBanQuyetDinh` cũ `TrangThaiDuyetId = null` **vẫn xuất hiện**.
+5. Hồi quy: nghiệp vụ khác tạo mới không set `TrangThaiDuyetId` — vẫn xuất hiện.
 
 ## 6. Test hồi quy `HoSoMoiThauDienTu` (module bị ảnh hưởng gián tiếp do đổi `ToTrinhQuyetDinh`)
 
@@ -141,16 +147,18 @@ Thay `duAnId`/`goiThauId`/`chucVuId` bằng dữ liệu thật lấy ở bước
 
 | ID | Test case | Input | Kỳ vọng | Trạng thái |
 |---|---|---|---|---|
-| **TC-01** | Happy path — tạo mới đủ 7 mục | Payload đầy đủ (mục 4.1), `duAnId=1690F8E4-...`, `goiThauId=79CF32A2-...`, `buocId=5613`, `chucVuId=1` | `200 OK`, trả `{id, toTrinhQuyetDinhId, vanBanQuyetDinhId}`; `ToTrinhThamDinhNhaThau` lưu đúng `GoiThauId/TenNhaThau/NgayKetThucDanhGia`, không có `GiaTri/HinhThucLCNT` | ✅ **Pass** (đã verify qua SQL, dòng `Id=08DEF855-...` khớp 100%) |
-| **TC-02** | Bảng `ToTrinhThamDinhBuocXuLy` tạo đủ 3 dòng | Cùng payload TC-01 | 3 dòng `ToTrinhId` = Id TC-01, `Loai=1` (Đối chiếu), `Loai=2` (Thương thảo), `Loai=3` (Thẩm định), đúng `So/Ngay/NoiDung` | ⬜ Chưa xác nhận — anh chạy SQL mục 4.2 câu 1 |
-| **TC-03** | `ToTrinhQuyetDinh` (Tờ trình kết quả) tạo đúng | Cùng payload TC-01 | 1 dòng `EntityId` = Id TC-01, `Loai=3`, `So=KQ-001`, `NguoiKy=Nguyễn Văn A`, `ChucVu=1`, `TrichYeu` khớp | ⬜ Chưa xác nhận — anh chạy SQL mục 4.2 câu 2 |
-| **TC-04** | `VanBanQuyetDinh` (Quyết định phê duyệt) tạo đúng, trạng thái Chờ duyệt | Cùng payload TC-01 | 1 dòng mới, `Loai='ToTrinhThamDinhNhaThau'`, `So=QD-001`, `NguoiKyChucVuId=1`, `TrangThaiDuyetId=71` (ĐTr) — **không phải NULL** | ⬜ Chưa xác nhận |
-| **TC-05** | API tổng hợp — Quyết định Chờ duyệt KHÔNG hiển thị | `GET danh-sach-day-du?duAnId=1690F8E4-...` (trước khi duyệt) | Record `QD-001` không có trong kết quả | ⬜ |
-| **TC-06** | Duyệt Quyết định phê duyệt | `PUT quyet-dinh/{vanBanQuyetDinhId}/duyet` | `200 OK`; `VanBanQuyetDinh.TrangThaiDuyetId` chuyển `71 → 72` (ĐD) | ⬜ |
-| **TC-07** | API tổng hợp — sau khi duyệt PHẢI hiển thị | `GET danh-sach-day-du?duAnId=...` (sau khi duyệt) | Record `QD-001` xuất hiện trong kết quả | ⬜ |
-| **TC-08** | Duyệt 2 lần liên tiếp (đã Đã duyệt lại duyệt nữa) | Gọi lại `PUT .../duyet` lần 2 với cùng Id | Lỗi `ManagedException`: "Chỉ có thể duyệt Quyết định khi đang ở trạng thái Chờ duyệt" | ⬜ |
-| **TC-09** | `goiThauId` không tồn tại | Payload với `goiThauId` random GUID | Lỗi `ManagedException`: "Không tìm thấy gói thầu"; không tạo record rác trong `ToTrinhThamDinhNhaThau` | ⬜ |
-| **TC-10** | Không gửi `toTrinhKetQua`/`quyetDinhPheDuyet` (null) | Payload bỏ 2 field này | `200 OK`; không tạo dòng `ToTrinhQuyetDinh`/`VanBanQuyetDinh`; response `toTrinhQuyetDinhId=null`, `vanBanQuyetDinhId=null` | ⬜ |
-| **TC-11** | `thongTinDoiChieu.noiDung = null` | Payload để trống `noiDung` mục Đối chiếu | `200 OK`; dòng `ToTrinhThamDinhBuocXuLy` (Loai=1) có `NoiDung=NULL` | ⬜ |
-| **TC-12** | Hồi quy — `HoSoMoiThauDienTu` tạo/sửa/duyệt vẫn hoạt động | Tạo mới + cập nhật `ToTrinh`/`QuyetDinh` + duyệt qua `api/ho-so-moi-thau-dien-tu` | `ToTrinhQuyetDinh` ghi đúng `EntityId/Loai=1,2`; `VanBanQuyetDinh` tạo ra có `TrangThaiDuyetId = NULL` (không bị set) | ⬜ |
-| **TC-13** | Hồi quy — dữ liệu `VanBanQuyetDinh` cũ (trước migration) vẫn hiển thị API tổng hợp | `GET danh-sach-day-du` không filter theo `duAnId` cụ thể | Các record cũ có `TrangThaiDuyetId=NULL` vẫn xuất hiện đầy đủ, không bị lọc mất | ⬜ |
+| **TC-01** | Happy path — tạo mới đủ 7 mục | Payload mục 4.1, `nhaThauId` = Guid `DmNhaThau` | `200 OK`, `{id, toTrinhQuyetDinhId, vanBanQuyetDinhId}`; lưu `GoiThauId`/`NhaThauId`/`NgayKetThucDanhGia`; **không** cột `TenNhaThau`/`So`/`NgayTrinh`/`TrichYeu` | ⬜ Cần re-test sau migration 2026-08-14 |
+| **TC-02** | `ToTrinhThamDinhBuocXuLy` đủ 3 dòng | Cùng payload TC-01 | 3 dòng, `Loai='DoiChieu'/'ThuongThao'/'ThamDinh'` | ⬜ |
+| **TC-03** | `ToTrinhQuyetDinh` tạo đúng | Cùng payload TC-01 | `EntityId` = Id TC-01, `Loai='ToTrinhThamDinhNhaThau'` | ⬜ |
+| **TC-04** | `VanBanQuyetDinh` tạo đúng, trạng thái Dự thảo | Cùng payload TC-01 | `Id` = Id tờ trình, `Loai='ToTrinhThamDinhNhaThau'`, `TrangThaiDuyetId` = DT (không phải 71) | ⬜ |
+| **TC-05** | API tổng hợp — chưa duyệt KHÔNG hiển thị | `GET danh-sach-day-du?duAnId=...` | Record QD không có | ⬜ |
+| **TC-06** | Duyệt qua QuanLyPheDuyet | Dispatch duyệt `ToTrinhThamDinhNhaThau` | `VanBanQuyetDinh.TrangThaiDuyetId` → ĐD | ⬜ |
+| **TC-07** | API tổng hợp — sau duyệt PHẢI hiển thị | Sau TC-06 | Record xuất hiện | ⬜ |
+| **TC-08** | Duyệt 2 lần | Gọi duyệt lần 2 | Lỗi: chỉ duyệt khi Đã trình | ⬜ |
+| **TC-09** | `goiThauId` không tồn tại | GUID random | `ManagedException` "Không tìm thấy gói thầu" | ⬜ |
+| **TC-09b** | `nhaThauId` không tồn tại | GUID random trong `thongTinNhaThau` | `ManagedException` "Không tìm thấy nhà thầu" | ⬜ |
+| **TC-10** | Không gửi `toTrinhKetQua`/`quyetDinhPheDuyet` | Bỏ 2 field | Không tạo dòng tương ứng | ⬜ |
+| **TC-11** | `doiChieu.noiDung = null` | Để trống nội dung Đối chiếu | `NoiDung=NULL` trên dòng `Loai='DoiChieu'` | ⬜ |
+| **TC-12** | Hồi quy `HoSoMoiThauDienTu` | Tạo/sửa/duyệt | `ToTrinhQuyetDinh.Loai` string `HoSoMoiThauToTrinh`/`HoSoMoiThauQuyetDinh` | ⬜ |
+| **TC-13** | Hồi quy VanBanQuyetDinh cũ | `GET danh-sach-day-du` | `TrangThaiDuyetId=NULL` vẫn hiện | ⬜ |
+| **TC-14** | Get/Update/List dùng `nhaThauId` | Chi tiết + cap-nhat + danh-sach-tien-do | JSON `nhaThauId` (Guid), không `tenNhaThau` | ⬜ |

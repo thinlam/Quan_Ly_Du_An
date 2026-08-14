@@ -1,6 +1,7 @@
 # Báo cáo khảo sát — Issue 179: API `to-trinh-tham-dinh-nha-thau/them-moi`
 
-> Trạng thái: **KHẢO SÁT XONG — CHƯA CODE**. Tài liệu này trả lời đầy đủ 28 câu hỏi bắt buộc ở mục 36 của yêu cầu task, kèm phát hiện quan trọng cần chốt hướng trước khi implement.
+> Trạng thái khảo sát gốc: **KHẢO SÁT XONG** (2026-08-12). Code đã implement theo hướng (A).  
+> **Cập nhật schema 2026-08-14:** xóa `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`NhaThaus` trên `ToTrinhThamDinhNhaThau`; `TenNhaThau` → `NhaThauId` (`Guid?` FK `DmNhaThau`). Nội dung Q1–Q28 bên dưới giữ làm hồ sơ khảo sát lúc đó; chỗ mô tả entity/cột hiện tại xem mục **0.3**.
 
 ---
 
@@ -24,7 +25,28 @@
 - API này **không có**: `GoiThauId` cấp cha đơn lẻ, `ThongTinNhaThau` (1 nhà thầu + file E-HSDT/đánh giá), `ThongTinDoiChieu`/`ThongTinThuongThao`/`ThongTinThamDinh`, `ToTrinhKetQua` (dùng `ToTrinhQuyetDinh`), `QuyetDinhPheDuyet` (dùng `VanBanQuyetDinh`).
 - Đây rõ ràng là **một tính năng "Tờ trình thẩm định nhà thầu" khác, phiên bản cũ hơn**, được thiết kế trước khi có UI mới (`e-hsdt1.lovable.app`). Task hiện tại mô tả một **business flow mới, đơn giản hơn** (1 gói thầu / 1 nhà thầu / đối chiếu / thương thảo / thẩm định / tờ trình / quyết định).
 
-**→ Cần quyết định hướng trước khi code** (xem mục "Xung đột cần xác nhận" cuối file). Bản thân việc "implement đúng yêu cầu" và "reuse tối đa, thay đổi tối thiểu" đang mâu thuẫn nhau vì API endpoint đã có chủ nhưng hành vi khác hẳn.
+**→ Đã chốt hướng (A)** — viết đè `them-moi` theo spec mới. Chi tiết implement: `journal.md`.
+
+### 0.3. Schema `ToTrinhThamDinhNhaThau` sau 2026-08-14 (nguồn sự thật hiện tại)
+
+```csharp
+public class ToTrinhThamDinhNhaThau : Entity<Guid>, IAggregateRoot, ITienDo
+{
+    public Guid DuAnId { get; set; }
+    public int? BuocId { get; set; }
+    public int? TrangThaiId { get; set; }
+    public int? TrangThaiDangTaiId { get; set; }
+    public Guid? GoiThauId { get; set; }
+    public Guid? NhaThauId { get; set; }          // FK DmNhaThau — không lưu TenNhaThau
+    public DateTimeOffset? NgayKetThucDanhGia { get; set; }
+    public List<ToTrinhThamDinhBuocXuLy>? BuocXuLys { get; set; } = [];
+    public DanhMucNhaThau? NhaThau { get; set; }
+    public GoiThau? GoiThau { get; set; }
+}
+```
+
+Đã drop: `So`, `NgayTrinh`, `TrichYeu`, `DaThamDinh`, `NhaThaus`, `TenNhaThau`.  
+`NhaThauId` là **Guid?** (không phải `int?`) vì `DanhMucNhaThau : DanhMuc<Guid>`.
 
 ---
 
@@ -52,7 +74,7 @@ public class ToTrinhThamDinhNhaThau : Entity<Guid>, IAggregateRoot, ITienDo
 **Q2. Table nào lưu thông tin chính?**
 Bảng `ToTrinhThamDinhNhaThau` (đúng tên entity, xem `ToTrinhThamDinhNhaThauConfiguration.cs`). Entity **chưa có `GoiThauId`** ở cấp cha — hiện tại `GoiThauId` chỉ nằm trong bảng con `KetQuaThamDinhNhaThau` (1-nhiều nhà thầu, mỗi nhà thầu 1 gói thầu). Theo spec mới, `GoiThauId` là 1-1 ở cấp Tờ trình (1 tờ trình ứng với đúng 1 gói thầu, 1 nhà thầu).
 
-→ **Cần thêm `GoiThauId` (Guid) vào `ToTrinhThamDinhNhaThau`** (migration mới), giữ nguyên các field workflow hiện có (`DuAnId`, `BuocId`, `So`, `NgayTrinh`, `TrichYeu`, `TrangThaiId`, `TrangThaiDangTaiId`).
+→ **Cần thêm `GoiThauId` (Guid) vào `ToTrinhThamDinhNhaThau`** (migration mới). Các field workflow `DuAnId`/`BuocId`/`TrangThaiId`/`TrangThaiDangTaiId` giữ. **Sau 2026-08-14:** `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`NhaThaus` đã xóa — không còn trên entity/DB.
 
 ---
 
@@ -61,14 +83,15 @@ Bảng `ToTrinhThamDinhNhaThau` (đúng tên entity, xem `ToTrinhThamDinhNhaThau
 **Q3. Reuse entity/table nào?**
 Không có entity nào lưu đúng "1 nhà thầu + ngày kết thúc đánh giá" theo cấp Tờ trình hiện tại — bảng gần nhất là `KetQuaThamDinhNhaThau` (`Id`, `ToTrinhId`, `NhaThauId`, `GoiThauId`, `KetQuaDanhGia`) nhưng nó được thiết kế cho **N nhà thầu / tờ trình**, không có `NgayKetThucDanhGia`.
 
-Theo spec mới (1 tờ trình = 1 nhà thầu), đề xuất **field hóa trực tiếp** trên `ToTrinhThamDinhNhaThau` thay vì bảng con riêng:
+Theo spec mới (1 tờ trình = 1 nhà thầu), **field hóa trực tiếp** trên `ToTrinhThamDinhNhaThau`. Lần implement đầu (2026-08-12) dùng `TenNhaThau` (string) — **sai requirement**. **2026-08-14 đã sửa:**
 
 ```csharp
-public string? TenNhaThau { get; set; }
+public Guid? NhaThauId { get; set; }              // FK DmNhaThau
+public DanhMucNhaThau? NhaThau { get; set; }
 public DateTimeOffset? NgayKetThucDanhGia { get; set; }
 ```
 
-(Không cần bảng con `KetQuaThamDinhNhaThau` cho spec mới — bảng này vẫn giữ nguyên cho code cũ nếu quyết định giữ cả 2 flow, xem mục xung đột).
+Không lưu tên nhà thầu trên tờ trình. API: `thongTinNhaThau.nhaThauId` (them-moi) / `nhaThauId` (Get/Update/List). Bảng `KetQuaThamDinhNhaThau` vẫn giữ (flow cũ / dữ liệu lịch sử); collection `NhaThaus` trên parent đã bỏ.
 
 File `FileEHSDT` / `FileDanhGia` → `TepDinhKem` (`Attachment`), `GroupId = ToTrinhThamDinhNhaThau.Id`, `GroupType` cần 2 giá trị `EGroupType` mới (chưa có sẵn — xem mục File).
 
@@ -287,7 +310,7 @@ Cần thêm navigation `VanBanQuyetDinh.TrangThai` (→ `DanhMucTrangThaiPheDuye
 
 1. `ToTrinhQuyetDinh`: xóa cột `HoSoMoiThauToTrinhId`, `HoSoMoiThauQuyetDinhId`; thêm cột `EntityId` (uniqueidentifier, nullable), `Loai` (int, not null).
 2. `VanBanQuyetDinh`: thêm cột `TrangThaiId` (int, nullable) + FK → `DanhMucTrangThaiPheDuyet` (`OnDelete Restrict`, `IsRequired(false)`), thêm cột `ChucVuId` (int, nullable) + FK → `DanhMucChucVu`.
-3. `ToTrinhThamDinhNhaThau`: thêm `GoiThauId` (uniqueidentifier, not null) + FK → `GoiThau`; thêm `TenNhaThau` (nvarchar), `NgayKetThucDanhGia` (datetimeoffset, nullable).
+3. `ToTrinhThamDinhNhaThau`: thêm `GoiThauId` (uniqueidentifier, nullable) + FK → `GoiThau`; thêm `NgayKetThucDanhGia`. **2026-08-14:** drop `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`TenNhaThau`; add `NhaThauId` (uniqueidentifier, nullable) + FK → `DmNhaThau`.
 4. Bảng mới `ToTrinhThamDinhBuocXuLy` (hoặc tên tương đương đã chốt) cho Đối chiếu/Thương thảo/Thẩm định: `Id (bigint identity), ToTrinhId (uniqueidentifier, FK), So (nvarchar), Ngay (datetimeoffset?), NoiDung (nvarchar(max)?), Loai (int)`.
 5. `DanhMucTrangThaiPheDuyet`: seed thêm 2 dòng `Loai="ToTrinhThamDinhNhaThau"` (`Ma="ĐTr"`, `Ma="ĐD"`) — cần xác nhận thêm `Ma="DT"/"TL"/"TC"` nếu Command insert cũng cần trạng thái dự thảo/trả lại/từ chối cho Quyết định (task chỉ mô tả 2 trạng thái Chờ duyệt/Đã duyệt cho `VanBanQuyetDinh`, nên tối thiểu chỉ cần `ĐTr` + `ĐD`).
 6. `EnumLoaiVanBanQuyetDinh`: thêm `ToTrinhThamDinhNhaThau` (chỉ là C# enum, không đổi schema, nhưng giá trị string được lưu trong cột `VanBanQuyetDinh.Loai` sẵn có).
@@ -322,7 +345,7 @@ Cần thêm navigation `VanBanQuyetDinh.TrangThai` (→ `DanhMucTrangThaiPheDuye
 - `QLDA.Application/TongHopVanBanQuyetDinhs/Queries/TongHopVanBanQuyetDinhGetListQuery.cs` — thêm filter `ĐD OR NULL`.
 - `QLDA.Domain/Enums/EnumLoaiVanBanQuyetDinh.cs` — thêm `ToTrinhThamDinhNhaThau`.
 - `QLDA.Domain/Enums/EGroupType.cs` — thêm các GroupType mới ở mục File.
-- `QLDA.Domain/Entities/ToTrinhThamDinhNhaThau.cs` — thêm `GoiThauId`, `TenNhaThau`, `NgayKetThucDanhGia`.
+- `QLDA.Domain/Entities/ToTrinhThamDinhNhaThau.cs` — thêm `GoiThauId`, `NhaThauId` (thay `TenNhaThau`), `NgayKetThucDanhGia`; xóa `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`NhaThaus`.
 - `QLDA.Persistence/Configurations/ToTrinhThamDinhNhaThauConfiguration.cs` — map FK `GoiThauId`.
 
 ### Tạo mới

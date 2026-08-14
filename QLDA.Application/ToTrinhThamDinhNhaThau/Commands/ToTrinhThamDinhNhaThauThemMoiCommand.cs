@@ -25,6 +25,7 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
     private readonly IRepository<ToTrinhQuyetDinh, long> _toTrinhQuyetDinhRepo;
     private readonly IRepository<VanBanQuyetDinh, Guid> _vanBanQuyetDinhRepo;
     private readonly IRepository<GoiThau, Guid> _goiThauRepo;
+    private readonly IRepository<DanhMucNhaThau, Guid> _nhaThauRepo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepo;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
@@ -35,6 +36,7 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
         _toTrinhQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<ToTrinhQuyetDinh, long>>();
         _vanBanQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
         _goiThauRepo = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
+        _nhaThauRepo = serviceProvider.GetRequiredService<IRepository<DanhMucNhaThau, Guid>>();
         _statusRepo = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
@@ -51,6 +53,12 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
             .AnyAsync(e => e.Id == dto.GoiThauId, cancellationToken);
         ManagedException.ThrowIf(!goiThauTonTai, "Không tìm thấy gói thầu");
 
+        if (dto.ThongTinNhaThau?.NhaThauId is { } nhaThauId && nhaThauId != Guid.Empty) {
+            var nhaThauTonTai = await _nhaThauRepo.GetQueryableSet()
+                .AnyAsync(e => e.Id == nhaThauId, cancellationToken);
+            ManagedException.ThrowIf(!nhaThauTonTai, "Không tìm thấy nhà thầu");
+        }
+
         // Dùng lại đúng convention 4 trạng thái chung (DT/ĐTr/ĐD/TL) của DeXuatMacDinh —
         // không tạo bộ trạng thái riêng cho Tờ trình thẩm định nhà thầu.
         var trangThaiDuThao = await _statusRepo.GetQueryableSet(OnlyUsed: true, OnlyNotDeleted: true, OrderByIndex: false)
@@ -61,12 +69,9 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             GoiThauId = dto.GoiThauId,
-            So = dto.So ?? string.Empty,
-            NgayTrinh = dto.NgayTrinh ?? DateTimeOffset.UtcNow,
-            TrichYeu = dto.TrichYeu,
             TrangThaiDangTaiId = dto.TrangThaiDangTaiId,
             TrangThaiId = trangThaiDuThao?.Id,
-            TenNhaThau = dto.ThongTinNhaThau?.TenNhaThau,
+            NhaThauId = dto.ThongTinNhaThau?.NhaThauId is { } id && id != Guid.Empty ? id : null,
             NgayKetThucDanhGia = dto.ThongTinNhaThau?.NgayKetThucDanhGia,
         };
         entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao, dto.ThamDinh));

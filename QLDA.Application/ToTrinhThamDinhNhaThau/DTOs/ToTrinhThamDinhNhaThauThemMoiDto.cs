@@ -17,9 +17,6 @@ public class ToTrinhThamDinhNhaThauThemMoiDto
     /// </summary>
     public Guid GoiThauId { get; set; }
 
-    public string? So { get; set; }
-    public DateTimeOffset? NgayTrinh { get; set; }
-    public string? TrichYeu { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
 
     public ThongTinNhaThauDto? ThongTinNhaThau { get; set; }
@@ -33,7 +30,7 @@ public class ToTrinhThamDinhNhaThauThemMoiDto
 /// <summary>Mục 2 — Thông tin nhà thầu.</summary>
 public class ThongTinNhaThauDto
 {
-    public string? TenNhaThau { get; set; }
+    public Guid? NhaThauId { get; set; }
     public List<TepDinhKemDto>? FileEHSDT { get; set; }
     public DateTimeOffset? NgayKetThucDanhGia { get; set; }
     public List<TepDinhKemDto>? FileDanhGia { get; set; }

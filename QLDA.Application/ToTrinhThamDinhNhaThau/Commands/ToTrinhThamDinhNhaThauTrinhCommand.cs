@@ -54,7 +54,6 @@ internal class ToTrinhThamDinhNhaThauTrinhCommandHandler : IRequestHandler<ToTri
         }
 
         entity.TrangThaiId = trangThaiDaTrinh!.Id;
-       // entity.NgayTrinh = DateTime.UtcNow;
 
         var history = new PheDuyetHistory
         {

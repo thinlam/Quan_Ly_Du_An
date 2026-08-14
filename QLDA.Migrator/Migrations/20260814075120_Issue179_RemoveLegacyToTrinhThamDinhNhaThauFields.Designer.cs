@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814075120_Issue179_RemoveLegacyToTrinhThamDinhNhaThauFields")]
+    partial class Issue179_RemoveLegacyToTrinhThamDinhNhaThauFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -8570,8 +8573,9 @@ namespace QLDA.Migrator.Migrations
                     b.Property<DateTimeOffset?>("NgayKetThucDanhGia")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("NhaThauId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("TenNhaThau")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int?>("TrangThaiDangTaiId")
                         .HasColumnType("int");
@@ -8595,8 +8599,6 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("Index");
 
                     SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Index"), false);
-
-                    b.HasIndex("NhaThauId");
 
                     b.HasIndex("TrangThaiId");
 
@@ -10361,11 +10363,6 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("GoiThauId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNhaThau", "NhaThau")
-                        .WithMany()
-                        .HasForeignKey("NhaThauId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucTrangThaiPheDuyet", "TrangThai")
                         .WithMany()
                         .HasForeignKey("TrangThaiId")
@@ -10374,8 +10371,6 @@ namespace QLDA.Migrator.Migrations
                     b.Navigation("DuAn");
 
                     b.Navigation("GoiThau");
-
-                    b.Navigation("NhaThau");
 
                     b.Navigation("TrangThai");
                 });
