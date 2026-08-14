@@ -33,4 +33,9 @@ public class ToTrinhThamDinhNhaThauModel : IHasKey<Guid?>, IMustHaveId<Guid>, IM
     public List<KetQuaThamDinhNhaThauModel>? DanhSachNhaThaus { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemModel>? DanhSachTepThamDinh { get; set; }
+
+    /// <summary>3 bước xử lý (Issue #179) — FE truyền trực tiếp, BE tự set Loai tương ứng.</summary>
+    public ToTrinhThamDinhBuocXuLyModel? DoiChieu { get; set; }
+    public ToTrinhThamDinhBuocXuLyModel? ThuongThao { get; set; }
+    public ToTrinhThamDinhBuocXuLyModel? ThamDinh { get; set; }
 }

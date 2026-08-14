@@ -42,6 +42,9 @@ public record TongHopVanBanQuyetDinhGetListQueryHandler(IServiceProvider Service
         #region Concat() => Union all (không loại bỏ trùng) / Union() => loại bỏ trùng
 
         var query = _authManager.FilterVisible(VanBanQuyetDinh.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
+                // Issue #179 — chỉ hiển thị Quyết định ĐÃ DUYỆT ("ĐD") hoặc dữ liệu cũ (TrangThaiDuyetId = null
+                // mặc định hiểu là đã duyệt). Quyết định đang Chờ duyệt (nghiệp vụ mới) sẽ không xuất hiện.
+                .Where(e => e.TrangThaiDuyetId == null || e.TrangThaiDuyet!.Ma == "ĐD")
                 .WhereIf(request.Loai.HasValue, e => e.Loai == request.Loai.ToString())
                 .WhereIf(request.DuAnId.HasValue, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)

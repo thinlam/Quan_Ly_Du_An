@@ -16,6 +16,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<VanBanQuyetDinh, Guid> _quyetDinhRepo;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
+    private readonly IRepository<ToTrinhQuyetDinh, long> _toTrinhQuyetDinhRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -27,6 +28,7 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _quyetDinhRepo = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _toTrinhQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<ToTrinhQuyetDinh, long>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -58,13 +60,18 @@ internal class HoSoMoiThauDienTuDuyetCommandHandler : IRequestHandler<HoSoMoiTha
         }
 
         entity.TrangThaiId = trangThaiDaDuyet!.Id;
+
+        // ToTrinhQuyetDinh dùng chung bảng qua EntityId + Loai — load thủ công (Issue #179).
+        var quyetDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
+            .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == ToTrinhQuyetDinhLoai.HoSoMoiThauQuyetDinh, cancellationToken);
+
         var VanBanQuyetDinh = new VanBanQuyetDinh {
             Id = entity.Id,
-            So = entity.QuyetDinh?.So,
-            TrichYeu = entity.QuyetDinh?.TrichYeu,
-            NguoiKy = entity.QuyetDinh?.NguoiKy,
-            Ngay = entity.QuyetDinh?.Ngay,
-            NgayKy = entity.QuyetDinh?.NgayKy,
+            So = quyetDinh?.So,
+            TrichYeu = quyetDinh?.TrichYeu,
+            NguoiKy = quyetDinh?.NguoiKy,
+            Ngay = quyetDinh?.Ngay,
+            NgayKy = quyetDinh?.NgayKy,
             DuAnId = entity.DuAnId ?? Guid.Empty,
             BuocId = entity.BuocId,
             Loai = EnumLoaiVanBanQuyetDinh.HoSoMoiThauDienTu.ToString(),

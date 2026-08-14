@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace QLDA.Persistence.Configurations;
 
-public class ChiDinhThauConfiguration : AggregateRootConfiguration<ToTrinhQuyetDinh> {
+public class ToTrinhQuyetDinhConfiguration : AggregateRootConfiguration<ToTrinhQuyetDinh> {
     public override void Configure(EntityTypeBuilder<ToTrinhQuyetDinh> builder)
     {
 
@@ -11,12 +11,9 @@ public class ChiDinhThauConfiguration : AggregateRootConfiguration<ToTrinhQuyetD
 
         builder.ConfigureForBase();
 
-        builder.HasOne<HoSoMoiThauDienTu>()
-        .WithOne(e => e.ToTrinh)
-        .HasForeignKey<ToTrinhQuyetDinh>(e => e.HoSoMoiThauToTrinhId);
+        builder.Property(e => e.Loai).HasMaxLength(50);
 
-        builder.HasOne<HoSoMoiThauDienTu>()
-            .WithOne(e => e.QuyetDinh)
-            .HasForeignKey<ToTrinhQuyetDinh>(e => e.HoSoMoiThauQuyetDinhId);
+        // Dùng chung nhiều nghiệp vụ qua EntityId + Loai thay vì FK riêng (Issue #179).
+        builder.HasIndex(e => new { e.EntityId, e.Loai });
     }
 }

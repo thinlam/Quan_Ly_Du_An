@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Authorization;
 using QLDA.Application.Providers;
 using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 
@@ -14,6 +15,7 @@ internal class ToTrinhThamDinhNhaThauDuyetCommandHandler : IRequestHandler<ToTri
     private readonly IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid> _repository;
     private readonly IRepository<PheDuyetHistory, Guid> _historyRepository;
     private readonly IRepository<DanhMucTrangThaiPheDuyet, int> _statusRepository;
+    private readonly IRepository<VanBanQuyetDinh, Guid> _vanBanQuyetDinhRepo;
     private readonly IBuocAuthorizationProvider _auth;
     private readonly IAuthorizationContext _authContext;
     private readonly IUserProvider _userProvider;
@@ -24,6 +26,7 @@ internal class ToTrinhThamDinhNhaThauDuyetCommandHandler : IRequestHandler<ToTri
         _repository = serviceProvider.GetRequiredService<IRepository<Domain.Entities.ToTrinhThamDinhNhaThau, Guid>>();
         _historyRepository = serviceProvider.GetRequiredService<IRepository<PheDuyetHistory, Guid>>();
         _statusRepository = serviceProvider.GetRequiredService<IRepository<DanhMucTrangThaiPheDuyet, int>>();
+        _vanBanQuyetDinhRepo = serviceProvider.GetRequiredService<IRepository<VanBanQuyetDinh, Guid>>();
         _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _userProvider = serviceProvider.GetRequiredService<IUserProvider>();
@@ -56,6 +59,15 @@ internal class ToTrinhThamDinhNhaThauDuyetCommandHandler : IRequestHandler<ToTri
 
         // Update status to Đã duyệt
         entity.TrangThaiId = trangThaiDaDuyet!.Id;
+
+        // Đồng bộ trạng thái Quyết định phê duyệt (VanBanQuyetDinh) — Id = ToTrinhThamDinhNhaThau.Id
+        // (Issue #179, không tạo API duyệt quyết định riêng — dùng chung flow duyệt qua QuanLyPheDuyet).
+        var vanBanQuyetDinh = await _vanBanQuyetDinhRepo.GetQueryableSet()
+            .FirstOrDefaultAsync(x => x.Id == entity.Id && x.Loai == nameof(EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau), cancellationToken);
+        if (vanBanQuyetDinh != null) {
+            vanBanQuyetDinh.TrangThaiDuyetId = trangThaiDaDuyet!.Id;
+            await _vanBanQuyetDinhRepo.UpdateAsync(vanBanQuyetDinh, cancellationToken);
+        }
 
         // Create history record
         var history = new PheDuyetHistory {

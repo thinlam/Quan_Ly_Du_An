@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260812075056_Issue179_ToTrinhThamDinhNhaThau")]
+    partial class Issue179_ToTrinhThamDinhNhaThau
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4777,6 +4780,34 @@ namespace QLDA.Migrator.Migrations
                             Ten = "Trả lại",
                             UpdatedBy = "",
                             Used = true
+                        },
+                        new
+                        {
+                            Id = 71,
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "",
+                            Index = 0L,
+                            IsDeleted = false,
+                            Loai = "ToTrinhThamDinhNhaThau",
+                            Ma = "ĐTr",
+                            Stt = 1,
+                            Ten = "Đã trình",
+                            UpdatedBy = "",
+                            Used = true
+                        },
+                        new
+                        {
+                            Id = 72,
+                            CreatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "",
+                            Index = 0L,
+                            IsDeleted = false,
+                            Loai = "ToTrinhThamDinhNhaThau",
+                            Ma = "ĐD",
+                            Stt = 2,
+                            Ten = "Đã duyệt",
+                            UpdatedBy = "",
+                            Used = true
                         });
                 });
 
@@ -8438,10 +8469,8 @@ namespace QLDA.Migrator.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Loai")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Loai")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("Ngay")
                         .HasColumnType("datetimeoffset");
@@ -8499,10 +8528,8 @@ namespace QLDA.Migrator.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Loai")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Loai")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("Ngay")
                         .HasColumnType("datetimeoffset");
@@ -8860,9 +8887,6 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("varchar(500)");
 
                     b.Property<int?>("NguonVonId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SoLuongGoiThau")
                         .HasColumnType("int");
 
                     b.Property<string>("Ten")

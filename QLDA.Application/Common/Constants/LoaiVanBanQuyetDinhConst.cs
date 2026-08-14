@@ -56,6 +56,11 @@ public static class LoaiVanBanQuyetDinhConst {
     /// Phê duyệt dự toán
     /// </summary>
     private const string PheDuyetDuToan = "PHEDUYETDUTOAN";
+
+    /// <summary>
+    /// Tờ trình thẩm định nhà thầu (Issue #179)
+    /// </summary>
+    public const string ToTrinhThamDinhNhaThau = "TOTRINHTHAMDINHNHATHAU";
     // Dictionary constant (readonly)
     public static readonly Dictionary<string, string> Dictionary = new() {
         { nameof(EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetDuAn), QuyetDinhDuyetDuAn },
@@ -68,5 +73,6 @@ public static class LoaiVanBanQuyetDinhConst {
         { nameof(EnumLoaiVanBanQuyetDinh.VanBanChuTruong), VanBanChuTruong },
         { nameof(EnumLoaiVanBanQuyetDinh.KeHoachLuaChonNhaThau), KeHoachLuaChonNhaThau },
         { nameof(EnumLoaiVanBanQuyetDinh.PheDuyetDuToan), PheDuyetDuToan },
+        { nameof(EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau), ToTrinhThamDinhNhaThau },
     };
 }

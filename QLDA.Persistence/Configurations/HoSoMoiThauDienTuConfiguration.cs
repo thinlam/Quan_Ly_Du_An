@@ -39,14 +39,8 @@ public class HoSoMoiThauDienTuConfiguration : AggregateRootConfiguration<HoSoMoi
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasOne(e => e.ToTrinh)
-            .WithOne()
-            .HasForeignKey<ToTrinhQuyetDinh>(
-            x => x.HoSoMoiThauToTrinhId);
-
-          builder.HasOne(e => e.QuyetDinh)
-                .WithOne()
-                .HasForeignKey<ToTrinhQuyetDinh>(
-                    x => x.HoSoMoiThauQuyetDinhId);
+        // ToTrinh/QuyetDinh (ToTrinhQuyetDinh) không còn là navigation EF 1-1 qua FK riêng —
+        // dùng chung bảng qua EntityId + Loai (Issue #179), load thủ công ở Command/Query,
+        // xem HoSoMoiThauDienTuMappings/HoSoMoiThauDienTuUpdateCommand/HoSoMoiThauDienTuDuyetCommand.
     }
 }
