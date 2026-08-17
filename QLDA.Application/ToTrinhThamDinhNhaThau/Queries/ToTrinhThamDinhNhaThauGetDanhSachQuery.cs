@@ -43,20 +43,37 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
             .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId);
-        return await queryable
+        var result = await queryable
             .Select(e => new ToTrinhThamDinhNhaThauDto() {
                 Id = e.Id,
                 DuAnId=e.DuAnId,
                 BuocId=e.BuocId,
+                GoiThauId = e.GoiThauId,
                 NhaThauId = e.NhaThauId,
                 TrangThaiDangTaiId = e.TrangThaiDangTaiId,
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,
-                DanhSachTepDinhKem = TepDinhKem.GetQueryableSet()
-                    .Where(i => i.GroupId == e.Id.ToString())
-                    .Select(i => i.ToDto()).ToList(),
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
+
+        // TepDinhKem load riêng theo GroupId thay vì correlated subquery trong Select
+        // (correlated subquery → SQL APPLY — SQL Server chạy được nhưng SQLite thì không).
+        var groupIds = result.Data.Where(x => x.Id != null).Select(x => x.Id!.ToString()).ToList();
+        var tepDinhKems = groupIds.Count == 0
+            ? []
+            : await TepDinhKem.GetQueryableSet().AsNoTracking()
+                .Where(i => groupIds.Contains(i.GroupId))
+                .Select(i => i.ToDto())
+                .ToListAsync(cancellationToken);
+        var tepDinhKemByGroupId = tepDinhKems.GroupBy(x => x.GroupId)
+            .Where(g => g.Key is not null)
+            .ToDictionary(g => g.Key!, g => g.ToList());
+        foreach (var item in result.Data)
+            item.DanhSachTepDinhKem = item.Id is { } id && tepDinhKemByGroupId.TryGetValue(id.ToString(), out var files)
+                ? files
+                : [];
+
+        return result;
     }
 }
