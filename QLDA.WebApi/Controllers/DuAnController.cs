@@ -24,8 +24,6 @@ namespace QLDA.WebApi.Controllers
     {
         private readonly IRepository<DuAn, Guid> _duAnRepo =
             serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
-            serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
 
         /// <summary>
         /// Chi tiết
@@ -321,8 +319,7 @@ namespace QLDA.WebApi.Controllers
 
             var entity = await Mediator.Send(new DuAnUpdateCommand(updateDto), cancellationToken);
 
-            if (oldQuyTrinhId != entity.QuyTrinhId
-                && !await HasDuAnBuocTienDoAsync(entity.Id, cancellationToken))
+            if (oldQuyTrinhId != entity.QuyTrinhId)
             {
                 await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
             }
@@ -382,22 +379,6 @@ namespace QLDA.WebApi.Controllers
         {
             var result = await Mediator.Send(new DuAnGetDanhSachTepDinhKemQuery { DuAnId = id });
             return ResultApi.Ok(result);
-        }
-
-        private async Task<bool> HasDuAnBuocTienDoAsync(Guid duAnId, CancellationToken cancellationToken)
-        {
-            return await _duAnBuocRepo.GetQueryableSet(OnlyUsed: false)
-                .AnyAsync(e =>
-                    e.DuAnId == duAnId && (
-                        e.NgayDuKienBatDau != null
-                        || e.NgayDuKienKetThuc != null
-                        || e.NgayThucTeBatDau != null
-                        || e.NgayThucTeKetThuc != null
-                        || e.TrangThaiId != null
-                        || e.IsKetThuc
-                        || (e.GhiChu != null && e.GhiChu != "")
-                        || (e.TrachNhiemThucHien != null && e.TrachNhiemThucHien != "")
-                    ), cancellationToken);
         }
 
         private async Task<DuAnDto> GetDuAnWithFiles(Guid duAnId, CancellationToken cancellationToken)

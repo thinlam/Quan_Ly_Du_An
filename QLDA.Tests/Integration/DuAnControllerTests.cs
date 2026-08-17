@@ -134,7 +134,7 @@ public class DuAnControllerTests(WebApiFixture fixture)
     }
 
     [Fact]
-    public async Task Update_ChangeQuyTrinh_WithProgress_DoesNotClone()
+    public async Task Update_ChangeQuyTrinh_WithProgress_RejectsAndKeepsOldQuyTrinh()
     {
         var (qtAId, qtBId, _) = await SeedQuyTrinhAsync();
         var duAnId = await CreateDuAnAsync(qtAId);
@@ -142,7 +142,29 @@ public class DuAnControllerTests(WebApiFixture fixture)
         await SetFirstBuocProgressAsync(duAnId, ngayThucTe);
         var before = await SnapshotBuocsAsync(duAnId);
 
-        await PutCapNhatAsync(duAnId, qtBId);
+        await using var dbBefore = CreateDb();
+        var ghiChuTruoc = await dbBefore.Set<DuAn>().AsNoTracking()
+            .Where(e => e.Id == duAnId)
+            .Select(e => e.GhiChu)
+            .FirstAsync();
+
+        var dto = new DuAnUpdateModelFaker(duAnId).Generate();
+        dto.QuyTrinhId = qtBId;
+        dto.LanhDaoPhuTrachId = 1;
+        dto.GhiChu = "Issue182 ghi chu se khong luu";
+
+        var response = await AuthedClient.PutAsJsonAsync("/api/du-an/cap-nhat", dto);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<ResultApi>();
+        result.Should().NotBeNull();
+        result!.Result.Should().BeFalse();
+        result.ErrorMessage.Should().Be("Quy trình không thể đổi");
+
+        await using var db = CreateDb();
+        var entity = await db.Set<DuAn>().AsNoTracking().FirstAsync(e => e.Id == duAnId);
+        entity.QuyTrinhId.Should().Be(qtAId);
+        entity.GhiChu.Should().Be(ghiChuTruoc, "T4 không được save dở các field khác của PUT");
 
         var after = await SnapshotBuocsAsync(duAnId);
         after.Should().BeEquivalentTo(before);

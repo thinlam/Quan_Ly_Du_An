@@ -1,8 +1,10 @@
 # Báo cáo khảo sát — Issue 182: reset tiến độ `DuAnBuoc` khi cập nhật Dự án
 
-> Trạng thái: **ĐÃ CODE.** Không đổi schema / không migration. `dotnet test --filter FullyQualifiedName~DuAnControllerTests.Update_` — 5 case T1–T5 pass.
+> Trạng thái: **Phase 1 đã merge.** **Phase 2 ĐÃ CODE** — cấm đổi QT khi đã có tiến độ. Không đổi schema. Chi tiết phase 2: mục 11.
 
-**Cách sửa (tóm tắt):** chỉ bọc lời gọi `DuAnBuocCloneCommand` trong `DuAnController.Update`. Đọc `QuyTrinhId` cũ (AsNoTracking) **trước** `DuAnUpdateCommand`. Chỉ clone khi QT đổi **và** chưa có tiến độ trên `DuAnBuoc`. Chi tiết mục 6–7.
+**Phase 1 (G-312):** chỉ clone khi QT đổi và chưa có tiến độ. Mục 6–7.
+
+**Phase 2:** Case 2 không chỉ skip clone — **reject cả PUT**, `DuAn.QuyTrinhId` giữ A. Mục 11.
 
 ---
 
@@ -99,7 +101,7 @@ Query tiến độ: `DuAnBuoc` theo `DuAnId`, **không** `FilterVisible` — ph�
 
 ## 5. Trùng `BuocId` giữa hai quy trình
 
-Clone đã match theo `BuocId` (giữ dòng cũ, thêm mới, xóa thiếu). **Không implement merge phức tạp** — spec chỉ yêu cầu 3 case: nếu đã có tiến độ thì **không gọi clone**. Bước trùng `BuocId` được bảo vệ vì không chạy sync/wipe.
+Clone đã match theo `BuocId`. Phase 1: đã có tiến độ thì không gọi clone. **Phase 2:** đã có tiến độ thì **không cho đổi QT** (reject) — không còn lệch `QuyTrinhId=B` / bước A.
 
 ---
 
@@ -244,4 +246,142 @@ Case 3 reuse nguyên command (insert bước mới / xóa bước cũ / sync met
 - `GetQueryableSet(OnlyUsed: false)` — xác nhận signature repo đúng (BuildingBlocks). Nếu không có overload, dùng set không lọc `Used` tương đương.
 - Helper chạy trong transaction của `Update` — `AsNoTracking` cho `oldQuyTrinhId` tránh dính tracked entity sau đó.
 - Test SQLite: unique `DmQuyTrinh.MacDinh` có thể fail nếu seed 2 quy trình `MacDinh=true` (lọc unique SQL Server không áp SQLite). Seed QT thứ 2 với `MacDinh=false`, hoặc chỉ gán `DanhMucBuoc.QuyTrinhId` giả.
+
+---
+
+## 11. Phase 2 — Không cho đổi `QuyTrinhId` khi đã có tiến độ
+
+> **ĐÃ CODE.** Không migration. Không đổi clone Case 3 (`them-moi` / đổi QT chưa tiến độ).
+
+### 11.1. Root cause (còn lại sau phase 1)
+
+Phase 1 chỉ chặn **clone** ở `DuAnController.Update`. `DuAnUpdateCommand` vẫn chạy **trước** cửa đó:
+
+```
+Controller.Update
+  tx.Begin
+  oldQuyTrinhId = AsNoTracking          // A
+  DuAnUpdateCommand
+    load entity                         // QuyTrinhId = A
+    entity.Update(dto)                  // gán QuyTrinhId = B  ← quá sớm
+    UpdateAsync (tracked, chưa SaveChanges nếu đang có tx)
+  if (old != new && !HasTienDo) clone   // Case 2: skip clone
+  attachments
+  SaveChanges + Commit                  // DuAn.QuyTrinhId = B vẫn được lưu
+```
+
+`DuAn.Update()`:
+
+```65:65:QLDA.Application/DuAns/DTOs/DuAnMappings.cs
+        entity.QuyTrinhId = dto.QuyTrinhId;//PHẢI CLONE LẠI BƯỚC
+```
+
+Case 2 hiện tại: bước còn A, `DuAn.QuyTrinhId` thành B. Đúng bug phase 2.
+
+Chặn clone ở controller **không đủ**. Phải reject **trước** `entity.Update()`.
+
+### 11.2. Chỗ đặt validate (CQRS)
+
+**Đặt trong `DuAnUpdateCommandHandler`**, sau load + auth, **trước** `entity.Update(request.Model)`.
+
+| Chỗ | Được? | Lý do |
+|---|---|---|
+| FluentValidation trên DTO | Không | Không có `QuyTrinhId` cũ / tiến độ DB |
+| `DuAnController` sau `DuAnUpdateCommand` | Không | `entity.Update` đã gán B; field khác đã map; dễ save dở nếu quên rollback |
+| `DuAnMappings.Update` | Không | Mapping không query `DuAnBuoc` |
+| `DuAnBuocCloneCommand` | Không | Case 2 không gọi clone; sửa clone ảnh hưởng `them-moi` |
+| **`DuAnUpdateCommandHandler` trước `entity.Update`** | **Có** | Đúng lớp Application; chưa gán QT; chưa `SaveChanges` |
+
+Pattern lỗi: `ManagedException` — cùng `ValidateAsync` nguồn vốn. **Không** tạo exception type mới.
+
+```csharp
+throw new ManagedException("Quy trình không thể đổi");
+// hoặc
+ManagedException.ThrowIf(doiQt && daCoTienDo, "Quy trình không thể đổi");
+```
+
+`ExceptionMiddleware`: `ManagedException` → HTTP **200**, body `result: false`, `errorMessage` = message trên (không phải HTTP 400).
+
+### 11.3. Điều kiện
+
+```text
+entity.QuyTrinhId != request.Model.QuyTrinhId
+AND HasDuAnBuocTienDo(entity.Id)
+    → throw "Quy trình không thể đổi"
+```
+
+`HasDuAnBuocTienDo`: **cùng predicate phase 1** (mục 4). Không `Any()` theo sự tồn tại dòng `DuAnBuoc` — `them-moi` luôn clone bước; nếu dùng `Any()` thì Case 3 không bao giờ đổi QT.
+
+Không `PhongPhuTrachChinhId`. Không `FilterVisible`. `GetQueryableSet(OnlyUsed: false)`.
+
+### 11.4. Snippet handler
+
+File: `QLDA.Application/DuAns/Commands/DuAnUpdateCommand.cs`.
+
+Inject thêm `IRepository<DuAnBuoc, int>` (cùng pattern handler hiện tại).
+
+Sau `CanExecuteAsync`, trước `entity.Update`:
+
+```csharp
+var doiQuyTrinh = entity.QuyTrinhId != request.Model.QuyTrinhId;
+ManagedException.ThrowIf(
+    doiQuyTrinh && await HasDuAnBuocTienDoAsync(entity.Id, cancellationToken),
+    "Quy trình không thể đổi");
+
+entity.Update(request.Model);
+```
+
+Helper `HasDuAnBuocTienDoAsync`: copy LINQ từ controller (mục 7.3). Không tạo `Application/Services`.
+
+Không gọi `SaveChanges` trong nhánh throw. Controller đang bọc tx: `HasTransaction == true` → handler không commit riêng. Exception → không tới `SaveChanges`/`Commit` ở controller → `using tx` dispose rollback. Field khác của request không vào DB.
+
+### 11.5. Controller (phạm vi nhỏ)
+
+Sau khi handler reject Case 2, `DuAnUpdateCommand` không return → không clone, không attachment, không `SaveChanges`.
+
+Giữ đọc `oldQuyTrinhId` + clone Case 3:
+
+```csharp
+if (oldQuyTrinhId != entity.QuyTrinhId)
+    await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
+```
+
+`!HasDuAnBuocTienDo` trên controller **thừa** (Case 2 đã throw trong handler). Được xóa helper controller nếu đã chuyển LINQ sang handler — tránh 2 chỗ lệch predicate. Không đụng `Create`.
+
+### 11.6. Map case
+
+| Case | Kết quả |
+|---|---|
+| Không đổi QT | Update OK, không clone |
+| A→B, chưa tiến độ | Update OK, `QuyTrinhId=B`, clone QT B |
+| A→B, đã tiến độ | `"Quy trình không thể đổi"`. DB: `QuyTrinhId` vẫn A. Không clone/reset/xóa bước. Không lưu field khác của PUT |
+
+### 11.7. File đụng tới (phase 2)
+
+| File | Việc |
+|---|---|
+| `QLDA.Application/DuAns/Commands/DuAnUpdateCommand.cs` | **Bắt buộc.** Validate trước `entity.Update`. Inject `DuAnBuoc` repo + helper tiến độ. |
+| `QLDA.WebApi/Controllers/DuAnController.cs` | Đơn giản hóa cửa clone (`old != new` thôi). Xóa helper nếu đã chuyển sang handler. |
+| `QLDA.Tests/Integration/DuAnControllerTests.cs` | Đổi T4: reject + `QuyTrinhId` còn A + bước/ghi chú không đổi. |
+
+**Không sửa:** `DuAnBuocCloneCommand`, `DuAnMappings.Update` (vẫn gán QT — handler không gọi khi reject), `Create`, entity/EF/migration, contract DTO.
+
+### 11.8. Việc không làm
+
+- Không migration / schema.
+- Không đổi Case 3 (chưa tiến độ vẫn clone).
+- Không đổi `them-moi`.
+- Không Application Service mới.
+- Không merge từng `BuocId`.
+- Không HTTP status mới — giữ `ManagedException`.
+
+### 11.9. Xác nhận Case A→B đã có tiến độ
+
+Sau implement, một PUT với `QuyTrinhId=B` + bước đã có `NgayThucTeBatDau`/`TrangThaiId`:
+
+1. Response `errorMessage == "Quy trình không thể đổi"`.
+2. SQL `DuAn.QuyTrinhId` vẫn A.
+3. `DuAnBuoc` snapshot = trước PUT.
+4. `DuAn.GhiChu` (nếu payload đổi) không đổi — chứng minh không save dở.
+
 

@@ -1,14 +1,15 @@
 # Kế hoạch kiểm thử — Issue 182
 
-> Đã code. Verify: `dotnet build SER.sln` + `dotnet test --filter DuAnControllerTests`. Không migration.
+> Phase 2 **đã code.** Verify: build + filter test dưới. Không migration.
 
 ## 1. Build
 
 ```powershell
 dotnet build SER.sln
+dotnet test QLDA.Tests/QLDA.Tests.csproj --filter "FullyQualifiedName~QLDA.Tests.Integration.DuAnControllerTests.Update_SameQuyTrinh|FullyQualifiedName~QLDA.Tests.Integration.DuAnControllerTests.Update_Change"
 ```
 
-Kỳ vọng: 0 Error.
+Kỳ vọng: 0 Error; T1–T5 (T4 đổi nghĩa — xem bảng).
 
 ## 2. Điều kiện “đã nhập tiến độ”
 
@@ -19,29 +20,36 @@ Một `DuAnBuoc` của dự án thỏa **bất kỳ** điều kiện:
 - `GhiChu` hoặc `TrachNhiemThucHien` không rỗng
 - `IsKetThuc == true`
 
-Không dùng `PhongPhuTrachChinhId`.
+Không dùng `PhongPhuTrachChinhId`. Không dùng “chỉ cần có dòng `DuAnBuoc`”.
 
 ## 3. Test case
 
-Chuẩn bị: 2 quy trình A/B (`DanhMucQuyTrinh` + `DanhMucBuoc`). Dự án có `DuAnBuoc` sau `them-moi`. API `PUT api/du-an/cap-nhat`.
+Chuẩn bị: 2 quy trình A/B. API `PUT api/du-an/cap-nhat`.
+
+`ManagedException` → HTTP **200**, body `result: false`, `errorMessage` như dưới (pattern hiện tại, không phải HTTP 400).
 
 | ID | Input | Kỳ vọng |
 |---|---|---|
-| **T1** | Không đổi `QuyTrinhId` + chưa nhập tiến độ | Không clone. Số bước / `BuocId` / ngày giữ nguyên. |
-| **T2** | Không đổi `QuyTrinhId` + ≥ 1 bước đã nhập tiến độ (vd. `NgayThucTeBatDau`) | Không clone. Tiến độ còn nguyên. |
-| **T3** | Đổi `QuyTrinhId` A→B + mọi bước chưa tiến độ | Clone theo QT B. Bước mới theo `DanhMucBuoc` của B. |
-| **T4** | Đổi `QuyTrinhId` A→B + ≥ 1 bước đã nhập tiến độ | Không clone/reset. Tiến độ + tập `BuocId` cũ còn nguyên. |
-| **T5** | Chỉ đổi `GhiChu` / `LanhDaoPhuTrachId` / `DonViPhuTrachChinhId` (không đổi QT) | `DuAnBuoc` không đổi (regression). |
+| **T1** | Không đổi `QuyTrinhId` + chưa nhập tiến độ | Update OK. `DuAnBuoc` giữ nguyên. |
+| **T2** | Không đổi `QuyTrinhId` + ≥ 1 bước đã nhập tiến độ | Update OK. Tiến độ còn. `QuyTrinhId` vẫn A. |
+| **T3** | Đổi A→B + mọi bước chưa tiến độ | Update OK. `DuAn.QuyTrinhId = B`. Clone bước theo QT B. |
+| **T4** | Đổi A→B + ≥ 1 bước đã nhập tiến độ | **Reject.** `errorMessage = "Quy trình không thể đổi"`. `DuAn.QuyTrinhId` vẫn **A**. `DuAnBuoc` không clone/reset. Field khác của payload (vd. `GhiChu`) **không** lưu. |
+| **T5** | Chỉ đổi `GhiChu` / lãnh đạo / phòng, không đổi QT | Update OK. `DuAnBuoc` không đổi. |
 
-## 4. Gợi ý kiểm tra DB sau T4
+## 4. SQL sau T4 (reject)
 
 ```sql
--- số bước và tiến độ không đổi so với trước PUT
-SELECT Id, BuocId, NgayDuKienBatDau, NgayDuKienKetThuc, NgayThucTeBatDau, TrangThaiId, IsKetThuc
+SELECT QuyTrinhId, GhiChu FROM DuAn
+WHERE Id = CAST('...' AS uniqueidentifier);
+
+SELECT Id, BuocId, NgayThucTeBatDau, TrangThaiId, IsKetThuc
 FROM DuAnBuoc
-WHERE DuAnId = @id AND IsDeleted = 0;
+WHERE DuAnId = CAST('...' AS uniqueidentifier) AND IsDeleted = 0
+ORDER BY Id;
 ```
+
+`QuyTrinhId` phải còn A. Snapshot bước = trước PUT. `GhiChu` dự án không đổi nếu payload có ghi chú mới.
 
 ## 5. Regression thêm mới
 
-`POST api/du-an/them-moi` vẫn clone + `DuAnBuocMapPhongBanCommand`. Không đổi hành vi.
+`POST api/du-an/them-moi` vẫn clone + `DuAnBuocMapPhongBanCommand`.
