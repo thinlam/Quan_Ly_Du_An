@@ -15,6 +15,7 @@ public class ToTrinhThamDinhNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid? GoiThauId { get; set; }
+    public string TenGoiThau { get; set; } = string.Empty;
     public Guid? NhaThauId { get; set; }
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }

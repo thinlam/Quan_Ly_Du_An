@@ -39,6 +39,7 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
         CancellationToken cancellationToken = default) {
 
         var queryable = ToTrinhThamDinhNhaThau.GetQueryableSet().AsNoTracking()
+            .Include(e => e.GoiThau)
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
@@ -49,6 +50,7 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
                 DuAnId=e.DuAnId,
                 BuocId=e.BuocId,
                 GoiThauId = e.GoiThauId,
+                TenGoiThau = e.GoiThau != null ? e.GoiThau.Ten ?? string.Empty : string.Empty,
                 NhaThauId = e.NhaThauId,
                 TrangThaiDangTaiId = e.TrangThaiDangTaiId,
                 TrangThaiId = e.TrangThaiId,
