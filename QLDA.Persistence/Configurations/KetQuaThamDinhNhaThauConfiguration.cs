@@ -26,7 +26,7 @@ public class KetQuaThamDinhNhaThauConfiguration : AggregateRootConfiguration<Ket
 
         builder.Property(e => e.KetQuaDanhGia).HasColumnType("nvarchar(max)");
         builder.HasOne(e => e.ToTrinhThamDinhNhaThau)
-            .WithMany(e => e.NhaThaus)
+            .WithMany()
             .HasForeignKey(e => e.ToTrinhId)
             .OnDelete(DeleteBehavior.Cascade);
      

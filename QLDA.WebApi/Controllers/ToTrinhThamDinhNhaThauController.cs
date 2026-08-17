@@ -8,7 +8,6 @@ using QLDA.Application.ToTrinhThamDinhNhaThaus;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.Queries;
-using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
 using System.Net.Mime;
@@ -54,41 +53,13 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)]
         ))).ToAttachmentEntities().Select(x => x.ToModel()).ToList();
 
-        var nhaThauModel = entity.NhaThaus!.Select(o => o.ToModel()).ToList();
-        /*foreach (var item in nhaThauModel)
-        {
-            var dsTep = await Mediator.Send(new GetDanhSachTepDinhKemQuery()
-            {
-                GroupId = [item.Id.ToString()],
-                EGroupTypes = [EGroupType.KetQuaThamDinhNhaThau]
-            });
-            item.DanhSachTepDinhKem = dsTep.Select(o => o.ToModel()).ToList(); // i need ways
-        }*/
-        var ids = nhaThauModel.Select(x => x.Id.ToString() ?? "").ToList();
-
-            var allFiles = (await Mediator.Send(new GetAttachmentsQuery(
-                GroupIds: ids,
-                BaseGroupTypes: [nameof(EGroupType.KetQuaThamDinhNhaThau)]
-            ))).ToAttachmentEntities();
-        var lookup = allFiles.GroupBy(x => x.GroupId)
-                    .ToDictionary(g => g.Key, g => g.ToList());
-        foreach (var item in nhaThauModel)
-        {
-            if (lookup.TryGetValue(item.Id.ToString() ?? "", out var files))
-            {
-                item.DanhSachTepDinhKem = files
-                    .Select(x => x.ToModel())
-                    .ToList();
-            }
-        }
-
-        return ResultApi.Ok(entity.ToModel(nhaThauModel: nhaThauModel,
-    danhSachTepDinhKem: danhSachTepDinhKem.ToList(),
-    danhSachTepThamDinh: danhSachTepThamDinh.ToList(),
-    filesDoiChieu: filesDoiChieu,
-    filesThuongThao: filesThuongThao,
-    filesThamDinh: filesThamDinhBuoc
-    ));
+        return ResultApi.Ok(entity.ToModel(
+            danhSachTepDinhKem: danhSachTepDinhKem.ToList(),
+            danhSachTepThamDinh: danhSachTepThamDinh.ToList(),
+            filesDoiChieu: filesDoiChieu,
+            filesThuongThao: filesThuongThao,
+            filesThamDinh: filesThamDinhBuoc
+        ));
     }
 
     [ProducesResponseType<ResultApi<IHasKey<Guid>>>(StatusCodes.Status200OK)]
@@ -241,20 +212,6 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             Entities = danhSachFileThamDinh,
             AutoDeleteMissing = true
         });
-        var danhSachFileKetQua = new List<Attachment>();
-        foreach (var nhaThaus in model.DanhSachNhaThaus!)
-        {
-            var id = nhaThaus.GetId();
-            danhSachFileKetQua = nhaThaus.GetDanhSachTep(id).ToList();
-
-            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
-            {
-                GroupId = id.ToString(),
-                GroupTypes = [nameof(EGroupType.KetQuaThamDinhNhaThau)],
-                Entities = danhSachFileKetQua,
-                AutoDeleteMissing = true
-            });
-        }
 
         // File của 3 bước xử lý (Đối chiếu/Thương thảo/Thẩm định) — Issue #179.
         List<TepDinhKemDto>? filesDoiChieu = null;

@@ -65,44 +65,17 @@ public static class ToTrinhThamDinhNhaThauMappings
             File = files,
         };
 
-    public static void SyncNhaThauIds(this ToTrinhThamDinhNhaThau entity, List<KetQuaThamDinhNhaThau>? NhaThaus) {
-        if (NhaThaus is null) {
-            entity.NhaThaus = [];
-            return;
-        }
-        entity.NhaThaus ??= [];
-        entity.NhaThaus.Clear();
-        foreach (var item in NhaThaus) {
-            entity.NhaThaus.Add(new KetQuaThamDinhNhaThau
-            {
-                Id = item.Id,
-                ToTrinhId = entity.Id,
-                NhaThauId = item.NhaThauId,
-                GoiThauId = item.GoiThauId,
-                KetQuaDanhGia = item.KetQuaDanhGia,
-            }); 
-           
-        }
-    }
-
     public static ToTrinhThamDinhNhaThauDto ToDto(this ToTrinhThamDinhNhaThau entity, List<Attachment>? files = null, List<Attachment>? filesThamDinh = null,
         List<TepDinhKemDto>? filesDoiChieu = null, List<TepDinhKemDto>? filesThuongThao = null, List<TepDinhKemDto>? filesThamDinhBuoc = null) =>
         new() {
             Id = entity.Id,
-            So = entity.So,
-            NgayTrinh = entity.NgayTrinh,
-            TrichYeu = entity.TrichYeu,
             TrangThaiId = entity.TrangThaiId,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
-            DaThamDinh= entity.DaThamDinh,
-            
+            NhaThauId = entity.NhaThauId,
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
             DanhSachTepThamDinh = filesThamDinh?.Select(x => x.ToDto()).ToList(),
             DoiChieu = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.DoiChieu)?.ToDto(filesDoiChieu),
             ThuongThao = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.ThuongThao)?.ToDto(filesThuongThao),
             ThamDinh = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.ThamDinh)?.ToDto(filesThamDinhBuoc),
-            //DanhSachNhaThau = entity.DanhSachNhaThau?.Select(x => new KetQuaThamDinhNhaThau() { 
-                                
-            //}).ToList(),
         };
 }

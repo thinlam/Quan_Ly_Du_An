@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using QLDA.Domain.Interfaces;
 using QLDA.WebApi.Models.TepDinhKems;
-using QLDA.WebApi.Models.KetQuaThamDinhNhaThaus;
 using SequentialGuid;
 
 namespace QLDA.WebApi.Models.ToTrinhThamDinhNhaThaus;
@@ -25,12 +24,8 @@ public class ToTrinhThamDinhNhaThauModel : IHasKey<Guid?>, IMustHaveId<Guid>, IM
  
     public int? BuocId { get; set; }
     public Guid DuAnId { get; set; }
-    public string So { get; set; } = string.Empty;
-    public DateTimeOffset NgayTrinh     { get; set; } 
-    public string? TrichYeu { get; set; } = string.Empty;
+    public Guid? NhaThauId { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
-    public bool? DaThamDinh { get; set; }
-    public List<KetQuaThamDinhNhaThauModel>? DanhSachNhaThaus { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemModel>? DanhSachTepThamDinh { get; set; }
 

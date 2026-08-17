@@ -73,3 +73,17 @@ Người yêu cầu xác nhận implement theo `report-dieu-chinh.md` (dùng ph�
 11. `dotnet build SER.sln` — 0 lỗi. `dotnet ef migrations list` xác nhận migration mới ở trạng thái `(Pending)`.
 
 **Không tạo thêm** API Trình/Duyệt/Trả lại riêng — xác nhận `ToTrinhThamDinhNhaThau` đã dispatch đầy đủ qua `QuanLyPheDuyet` từ trước, không cần đụng vào 3 file dispatch.
+
+## 2026-08-14 — Dọn schema tờ trình (5 prop cũ + `TenNhaThau` → `NhaThauId`)
+
+Requirement ban đầu nhầm `TenNhaThau` (lưu tên). Đổi sang FK nhà thầu; đồng thời xóa 5 property/cột cũ trên `ToTrinhThamDinhNhaThau` không còn dùng sau spec 1 gói / 1 nhà thầu.
+
+1. **Xóa 5 prop** trên entity `ToTrinhThamDinhNhaThau`: `So`, `NgayTrinh`, `TrichYeu`, `DaThamDinh`, `NhaThaus` (`List<KetQuaThamDinhNhaThau>`). Bảng `KetQuaThamDinhNhaThau` **giữ** (FK `ToTrinhId` → `WithMany()`). `So`/`Ngay`/`TrichYeu` trên `ToTrinhThamDinhBuocXuLy` / `ToTrinhQuyetDinh` / `VanBanQuyetDinh` không đụng.
+2. **`TenNhaThau` → `NhaThauId`**: `Guid?` (không phải `int` — `DanhMucNhaThau : DanhMuc<Guid>`, PK `DmNhaThau.Id` là `uniqueidentifier`) + navigation `DanhMucNhaThau? NhaThau`. EF: FK Restrict, nullable, index `IX_ToTrinhThamDinhNhaThau_NhaThauId`.
+3. **Application / WebApi**: `ThongTinNhaThauDto.NhaThauId`; ThemMoi validate nhà thầu tồn tại; Update/Get/List map `nhaThauId`. Contract `them-moi`: `thongTinNhaThau.nhaThauId` (Guid). Get/Update/List: top-level `nhaThauId`. Không trả `tenNhaThau`.
+4. Migration (EF generate, không sửa tay / không sửa snapshot thủ công):
+   - `20260814075120_Issue179_RemoveLegacyToTrinhThamDinhNhaThauFields` — drop `DaThamDinh`, `NgayTrinh`, `So`, `TrichYeu`.
+   - `20260814075953_Issue179_ReplaceTenNhaThauWithNhaThauId` — drop `TenNhaThau`, add `NhaThauId` + FK `DmNhaThau`.
+5. `dotnet build SER.sln` — 0 lỗi. **Chưa** `database update` trừ khi người dùng chạy tay.
+
+Dead code còn sót (không map cột đã xóa, ngoài scope tối thiểu): `ToTrinhThamDinhNhaThauSearchDto.So`/`TrichYeu`, `ToTrinhThamDinhNhaThauDanhSachQuery.So`/`TrichYeu` (list không filter theo 2 field này nữa), class `KetQuaThamDinhNhaThauDto` không còn caller.
