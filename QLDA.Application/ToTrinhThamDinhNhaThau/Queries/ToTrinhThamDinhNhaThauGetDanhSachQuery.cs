@@ -38,36 +38,18 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
     public async Task<PaginatedList<ToTrinhThamDinhNhaThauDto>> Handle(ToTrinhThamDinhNhaThauDanhSachQuery request,
         CancellationToken cancellationToken = default) {
 
-        DateTimeOffset? tuNgayDto = null;
-        DateTimeOffset? denNgayExclusiveDto = null; 
-        if (request.TuNgay.HasValue) {
-            var dt = request.TuNgay.Value.ToDateTime(TimeOnly.MinValue);
-            tuNgayDto = new DateTimeOffset(dt);
-        }
-        if (request.DenNgay.HasValue) {
-            var dt = request.DenNgay.Value.ToDateTime(TimeOnly.MinValue);
-            denNgayExclusiveDto = new DateTimeOffset(dt).AddDays(1);
-        }
-
         var queryable = ToTrinhThamDinhNhaThau.GetQueryableSet().AsNoTracking()
             .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
             .WhereIf(request.BuocId != null, e => e.BuocId == request.BuocId)
-            .WhereIf(request.So != null, e => e.So!.Contains(request.So!))
-            .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId)
-            .WhereIf(tuNgayDto != null, e => e.NgayTrinh >= tuNgayDto)
-            .WhereIf(denNgayExclusiveDto != null, e => e.NgayTrinh < denNgayExclusiveDto);
+            .WhereIf(request.TrangThaiDangTaiId != null, e => e.TrangThaiDangTaiId == request.TrangThaiDangTaiId);
         return await queryable
             .Select(e => new ToTrinhThamDinhNhaThauDto() {
                 Id = e.Id,
                 DuAnId=e.DuAnId,
                 BuocId=e.BuocId,
-                So = e.So,
-                NgayTrinh = e.NgayTrinh,
-                TrichYeu = e.TrichYeu,
+                NhaThauId = e.NhaThauId,
                 TrangThaiDangTaiId = e.TrangThaiDangTaiId,
-                DaThamDinh = e.DaThamDinh,
-                // trả thêm tên dự án
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,

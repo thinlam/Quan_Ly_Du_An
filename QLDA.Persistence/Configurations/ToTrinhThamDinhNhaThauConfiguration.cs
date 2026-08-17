@@ -16,19 +16,7 @@ public class ToTrinhThamDinhNhaThauConfiguration : AggregateRootConfiguration<To
             .HasConversion(
                 toDb => toDb == 0 ? null : toDb,
                 fromDb => fromDb 
-            );
-        builder.Property(x => x.So).HasMaxLength(200);
-
-        builder.Property(e => e.NgayTrinh)
-            .HasConversion(
-                toDb => toDb.ToUniversalTime(),
-                fromDb => fromDb
-            );
-    
-        builder.Property(x => x.TrichYeu)
-            .HasMaxLength(4000);
-      
-
+            );  
         builder.HasOne(e => e.TrangThai)
             .WithMany()
             .HasForeignKey(e => e.TrangThaiId)
@@ -36,11 +24,15 @@ public class ToTrinhThamDinhNhaThauConfiguration : AggregateRootConfiguration<To
             .IsRequired(false);
 
         // Issue #179 — Tờ trình thẩm định nhà thầu (1 gói thầu / 1 nhà thầu)
-        builder.Property(x => x.TenNhaThau).HasMaxLength(500);
-
         builder.HasOne(e => e.GoiThau)
             .WithMany()
             .HasForeignKey(e => e.GoiThauId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+
+        builder.HasOne(e => e.NhaThau)
+            .WithMany()
+            .HasForeignKey(e => e.NhaThauId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false);
     }

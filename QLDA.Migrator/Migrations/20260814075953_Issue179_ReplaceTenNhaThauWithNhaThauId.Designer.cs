@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLDA.Persistence;
 
@@ -11,9 +12,11 @@ using QLDA.Persistence;
 namespace QLDA.Migrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814075953_Issue179_ReplaceTenNhaThauWithNhaThauId")]
+    partial class Issue179_ReplaceTenNhaThauWithNhaThauId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -8846,9 +8849,6 @@ namespace QLDA.Migrator.Migrations
                         .HasColumnType("varchar(500)");
 
                     b.Property<int?>("NguonVonId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SoLuongGoiThau")
                         .HasColumnType("int");
 
                     b.Property<string>("Ten")

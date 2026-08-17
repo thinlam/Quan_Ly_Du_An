@@ -14,15 +14,11 @@ public class ToTrinhThamDinhNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
 
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
-    public string So { get; set; } = string.Empty;
-    public DateTimeOffset NgayTrinh { get; set; }
-    public string? TrichYeu { get; set; }
+    public Guid? NhaThauId { get; set; }
     public int? TrangThaiId { get; set; }
     public string? MaTrangThai { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
-    public bool? DaThamDinh { get; set; }
     public string? TenTrangThai { get; set; }
-    public List<KetQuaThamDinhNhaThauDto>? DanhSachNhaThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }
 

@@ -1,6 +1,7 @@
 # Báo cáo khảo sát — Điều chỉnh nghiệp vụ Tờ trình thẩm định nhà thầu (tiếp theo Issue #179)
 
-> Trạng thái: **ĐÃ IMPLEMENT** (xem `journal.md` mục "2026-08-13 (tiếp — implement điều chỉnh)" để biết chi tiết code đã sửa + migration mới `20260813032522_Issue179_LoaiToString`, chưa apply DB). Nội dung dưới đây giữ nguyên làm hồ sơ khảo sát/thiết kế trước khi code.
+> Trạng thái: **ĐÃ IMPLEMENT** (xem `journal.md`).  
+> **Cập nhật 2026-08-14:** entity không còn `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`NhaThaus`/`TenNhaThau`; dùng `NhaThauId` (`Guid?`). Các câu Q11–Q15 bên dưới mô tả source **tại thời điểm khảo sát 2026-08-13** — Update/Get/List sau đó đã được sửa (BuocXuLys + `NhaThauId`).
 
 ---
 
@@ -83,15 +84,15 @@ Chỉ có `ToTrinhThamDinhNhaThauThemMoiCommand` (API `them-moi` mới) lưu —
 
 **Q13. Update đang sync `BuocXuLys` như thế nào?**
 
-**Chưa xử lý gì** — `ToTrinhThamDinhNhaThauUpdateCommand.cs` hiện tại chỉ update `So/NgayTrinh/TrichYeu/TrangThaiDangTaiId/DaThamDinh` + gọi `SyncNhaThauIds` (cho `NhaThaus`, tính năng cũ khác) — **hoàn toàn không đụng đến `BuocXuLys`**. Đây là lỗ hổng cần bổ sung trong task này.
+**Chưa xử lý gì** *(tại thời điểm khảo sát 2026-08-13)* — `ToTrinhThamDinhNhaThauUpdateCommand.cs` lúc đó chỉ update `So/NgayTrinh/TrichYeu/TrangThaiDangTaiId/DaThamDinh` + `SyncNhaThauIds`. **Đã bổ sung** `Include(BuocXuLys)` + `SyncBuocXuLys` (2026-08-13). **2026-08-14:** Update không còn gán `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`; gán `NhaThauId`; `SyncNhaThauIds` đã xóa.
 
 **Q14. List đang map `BuocXuLys` như thế nào?**
 
-**Không map** — `ToTrinhThamDinhNhaThauDanhSachQuery` (đã đọc lại toàn bộ) chỉ select `Id/DuAnId/BuocId/So/NgayTrinh/TrichYeu/TrangThaiDangTaiId/DaThamDinh/TrangThaiId/MaTrangThai/TenTrangThai/DanhSachTepDinhKem` — không có `GoiThauId/TenNhaThau/BuocXuLys` nào cả.
+**Không map 3 bước** — `ToTrinhThamDinhNhaThauDanhSachQuery` không trả `DoiChieu`/`ThuongThao`/`ThamDinh` (đã xác nhận không bắt buộc). **2026-08-14:** list select `NhaThauId` (không còn `So`/`NgayTrinh`/`TrichYeu`/`DaThamDinh`/`TenNhaThau`).
 
 **Q15. GetById đang map `BuocXuLys` như thế nào?**
 
-`ToTrinhThamDinhNhaThauGetQuery.cs` hiện chỉ `.Include(e => e.NhaThaus)` (list cũ) — **không `Include(e => e.BuocXuLys)`**, và `ToTrinhThamDinhNhaThauMappingConfiguration.ToModel()` cũng không có field `ThuongThao/DoiChieu/ThamDinh`. Đây cũng là lỗ hổng cần bổ sung.
+`ToTrinhThamDinhNhaThauGetQuery` **đã** `.Include(e => e.BuocXuLys)` (2026-08-13). `ToModel()` trả `DoiChieu`/`ThuongThao`/`ThamDinh` + `NhaThauId`. Không còn `.Include(e => e.NhaThaus)`.
 
 **Kết luận D:** hiện tại `BuocXuLys` **chỉ mới được ghi ở bước Insert (`them-moi`)**, hoàn toàn chưa được đọc lại ở Update/List/GetById. Việc chuyển từ `List<>` sang 3 property riêng (`ThuongThao/DoiChieu/ThamDinh`) là làm **lần đầu** cho Update/List/GetById (không phải sửa lại code cũ dùng List), và **sửa lại phần đã có** ở `them-moi`.
 
@@ -178,7 +179,7 @@ Thứ tự thao tác trong migration (giống pattern đã dùng ở migration #
 ### Application
 - `ToTrinhThamDinhNhaThauThemMoiCommand.cs` — sửa gán `Loai` (enum → constant string), sửa set `VanBanQuyetDinh.TrangThaiDuyetId` (bỏ `ToTrinhThamDinhNhaThauQuyetDinh.ChoDuyet`, dùng `DeXuatMacDinh.DuThao` — đồng bộ với `TrangThaiId` của Tờ trình vừa tạo).
 - `ToTrinhThamDinhNhaThauUpdateCommand.cs` — bổ sung sync 3 field `ThuongThao/DoiChieu/ThamDinh` (theo pattern sync child entity hiện có trong project — cần khảo sát thêm pattern `SyncNhaThauIds`/tương tự trước khi implement).
-- `ToTrinhThamDinhNhaThauDanhSachQuery.cs` — cân nhắc bổ sung `GoiThauId/TenNhaThau` (đang thiếu) — **chỉ nếu task yêu cầu**, việc thêm `ThuongThao/DoiChieu/ThamDinh` vào danh sách cần xác nhận thêm (mục 11 task: "nếu danh sách không cần full dữ liệu thì kiểm tra contract trước" — danh sách hiện KHÔNG trả `BuocXuLys` nên về nguyên tắc **không bắt buộc phải thêm**, chỉ thêm nếu anh xác nhận cần).
+- `ToTrinhThamDinhNhaThauDanhSachQuery.cs` — danh sách không trả 3 bước; **2026-08-14** trả `NhaThauId` (không `TenNhaThau`).
 - `ToTrinhThamDinhNhaThauGetQuery.cs` — thêm `.Include(e => e.BuocXuLys)`.
 - `ToTrinhThamDinhNhaThauMappings.cs` / `ToTrinhThamDinhNhaThauDto.cs` — thêm 3 property `ThuongThao/DoiChieu/ThamDinh` (kiểu DTO tương ứng), map từ `entity.BuocXuLys` sang 3 property qua `FirstOrDefault(x => x.Loai == ...)`.
 - Xóa `ToTrinhThamDinhNhaThauDuyetQuyetDinhCommand.cs`.
@@ -211,7 +212,7 @@ Thứ tự thao tác trong migration (giống pattern đã dùng ở migration #
 
    → Đề xuất chọn **(A)** vì đúng pattern có sẵn của hệ thống (`HoSoMoiThauDienTu`), đơn giản, không cần thêm cột. Xin xác nhận trước khi implement.
 
-2. **Danh sách (`danh-sach-tien-do`) có cần trả `ThuongThao/DoiChieu/ThamDinh` không?** Hiện tại danh sách hoàn toàn không trả các field này (và cũng chưa trả `GoiThauId/TenNhaThau`). Theo đúng câu chữ mục 11 của task ("nếu danh sách hiện tại không cần full dữ liệu... thì kiểm tra contract trước") — em hiểu là **không bắt buộc thêm vào danh sách**, chỉ bắt buộc ở **GetById/Chi tiết**. Xin xác nhận.
+2. **Danh sách (`danh-sach-tien-do`) có cần trả `ThuongThao/DoiChieu/ThamDinh` không?** Đã chốt **không**. List trả `NhaThauId` (2026-08-14), không trả `TenNhaThau`.
 
 3. **`ToTrinhQuyetDinhLoai`/`ToTrinhThamDinhBuocXuLyLoai` đặt ở đâu** — đề xuất `QLDA.Domain/Constants/` (cùng nơi với `TrangThaiPheDuyetCodes`, `PheDuyetEntityNames`) — xin xác nhận tên file/namespace nếu muốn khác.
 

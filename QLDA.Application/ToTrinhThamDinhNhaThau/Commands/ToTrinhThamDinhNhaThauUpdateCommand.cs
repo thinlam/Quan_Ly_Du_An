@@ -33,7 +33,6 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         .FirstOrDefaultAsync(s => s.Ma == TrangThaiPheDuyetCodes.DeXuatMacDinh.TraLai && s.Loai == PheDuyetEntityNames.DeXuatMacDinhStt, cancellationToken);
 
         var entity = await _repo.GetQueryableSet()
-            .Include(e => e.NhaThaus)
             .Include(e => e.BuocXuLys)
             .Include(e => e.TrangThai)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
@@ -47,12 +46,8 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         }
         entity.DuAnId = request.Dto.DuAnId;
         entity.BuocId = request.Dto.BuocId;
-        entity.So = request.Dto.So;
-        entity.NgayTrinh = request.Dto.NgayTrinh;
-        entity.TrichYeu = request.Dto.TrichYeu;
+        entity.NhaThauId = request.Dto.NhaThauId;
         entity.TrangThaiDangTaiId = request.Dto.TrangThaiDangTaiId;
-        entity.DaThamDinh = request.Dto.DaThamDinh;
-        entity.SyncNhaThauIds(request.Dto.NhaThaus);
         entity.SyncBuocXuLys(request.Dto.BuocXuLys ?? []);
         // insert file cho TepDinhKem
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
