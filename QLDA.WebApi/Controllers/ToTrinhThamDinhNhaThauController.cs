@@ -18,17 +18,13 @@ namespace QLDA.WebApi.Controllers;
 [Tags("Tờ trình thẩm định nhà thầu")]
 public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
 {
-    [ProducesResponseType<ResultApi<ToTrinhThamDinhNhaThauDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ResultApi<ToTrinhThamDinhNhaThauChiTietDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
     [HttpGet("{id}/chi-tiet")]
     public async Task<ResultApi> Get(Guid id)
     {
-        var entity = await Mediator.Send(new ToTrinhThamDinhNhaThauGetQuery()
-        {
-            Id = id,
-            ThrowIfNull = true,
-            IsNoTracking = true
-        });
+        var loaded = await Mediator.Send(new ToTrinhThamDinhNhaThauGetChiTietQuery(id));
+        var entity = loaded.Entity;
 
         var danhSachTepDinhKem = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
@@ -43,22 +39,58 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         var filesDoiChieu = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
             BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_DoiChieu)]
-        ))).ToAttachmentEntities().Select(x => x.ToModel()).ToList();
+        ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
         var filesThuongThao = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
             BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThuongThao)]
-        ))).ToAttachmentEntities().Select(x => x.ToModel()).ToList();
+        ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
         var filesThamDinhBuoc = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [entity.Id.ToString()],
             BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)]
-        ))).ToAttachmentEntities().Select(x => x.ToModel()).ToList();
+        ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
 
-        return ResultApi.Ok(entity.ToModel(
-            danhSachTepDinhKem: danhSachTepDinhKem.ToList(),
-            danhSachTepThamDinh: danhSachTepThamDinh.ToList(),
+        // File của Thông tin nhà thầu (E-HSDT / Đánh giá) — Issue #179.
+        var fileEHSDT = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_FileEHSDT)]
+        ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
+        var fileDanhGia = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [entity.Id.ToString()],
+            BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_FileDanhGia)]
+        ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
+
+        // File Tờ trình kết quả — GroupId là ToTrinhQuyetDinh.Id (long), chỉ khi có bản ghi.
+        List<TepDinhKemDto>? filesToTrinhKetQua = null;
+        if (loaded.ToTrinhKetQua != null)
+        {
+            filesToTrinhKetQua = (await Mediator.Send(new GetAttachmentsQuery(
+                GroupIds: [loaded.ToTrinhKetQua.Id.ToString()],
+                BaseGroupTypes: [nameof(EGroupType.ToTrinhQuyetDinh)]
+            ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
+        }
+
+        // File Quyết định phê duyệt — GroupId là VanBanQuyetDinh.Id (= entity.Id), chỉ khi có bản ghi.
+        List<TepDinhKemDto>? filesQuyetDinh = null;
+        if (loaded.QuyetDinhPheDuyet != null)
+        {
+            filesQuyetDinh = (await Mediator.Send(new GetAttachmentsQuery(
+                GroupIds: [loaded.QuyetDinhPheDuyet.Id.ToString()],
+                BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_QuyetDinh)]
+            ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
+        }
+
+        return ResultApi.Ok(entity.ToChiTietDto(
+            danhSachTepDinhKem: danhSachTepDinhKem.Select(x => x.ToDto()).ToList(),
+            danhSachTepThamDinh: danhSachTepThamDinh.Select(x => x.ToDto()).ToList(),
             filesDoiChieu: filesDoiChieu,
             filesThuongThao: filesThuongThao,
-            filesThamDinh: filesThamDinhBuoc
+            filesThamDinh: filesThamDinhBuoc,
+            fileEHSDT: fileEHSDT,
+            fileDanhGia: fileDanhGia,
+            toTrinhKetQua: loaded.ToTrinhKetQua,
+            filesToTrinhKetQua: filesToTrinhKetQua,
+            quyetDinh: loaded.QuyetDinhPheDuyet,
+            filesQuyetDinh: filesQuyetDinh
         ));
     }
 

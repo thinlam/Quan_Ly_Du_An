@@ -162,3 +162,15 @@ Thay `duAnId`/`goiThauId`/`nhaThauId`/`chucVuId` bằng dữ liệu thật lấy
 | **TC-12** | Hồi quy `HoSoMoiThauDienTu` | Tạo/sửa/duyệt | `ToTrinhQuyetDinh.Loai` string `HoSoMoiThauToTrinh`/`HoSoMoiThauQuyetDinh` | ⬜ |
 | **TC-13** | Hồi quy VanBanQuyetDinh cũ | `GET danh-sach-day-du` | `TrangThaiDuyetId=NULL` vẫn hiện | ⬜ |
 | **TC-14** | Get/Update/List dùng `nhaThauId` | Chi tiết + cap-nhat + danh-sach-tien-do | JSON `nhaThauId` (Guid), không `tenNhaThau` | ⬜ |
+| **TC-15** | GET chi tiết đủ 4 field mới | Sau TC-01, `GET .../{id}/chi-tiet` | Có `goiThauId`, `thongTinNhaThau`, `toTrinhKetQua`, `quyetDinhPheDuyet` khớp payload ThemMoi; file đúng GroupType | ⬜ Chờ test (đã implement 2026-08-17) |
+| **TC-16** | GET chi tiết khi ThemMoi bỏ mục 6–7 | Sau TC-10 | `toTrinhKetQua`/`quyetDinhPheDuyet` = `null`; `goiThauId` + `thongTinNhaThau` vẫn có | ⬜ Chờ test (đã implement 2026-08-17) |
+
+## 9. Test API `GET api/to-trinh-tham-dinh-nha-thau/{id}/chi-tiet`
+
+> **Đã implement 2026-08-17** (branch `bugfix/to-trinh-td-nha-thau-chi-tiet`). `dotnet build QLDA.WebApi` — 0 warning / 0 error. Chạy các bước sau để verify.
+
+1. Happy path: tạo tờ trình đủ 7 mục (TC-01) → GET chi tiết → JSON có `goiThauId`, `thongTinNhaThau` (`nhaThauId`, `ngayKetThucDanhGia`, `fileEHSDT`, `fileDanhGia`), `toTrinhKetQua`, `quyetDinhPheDuyet`. Giữ field cũ: `doiChieu`/`thuongThao`/`thamDinh`, top-level `nhaThauId`.
+2. File: EHSDT/Đánh giá `GroupId` = id tờ trình; file tờ trình kết quả `GroupId` = `ToTrinhQuyetDinh.Id` (long); file quyết định `GroupId` = id tờ trình (`VanBanQuyetDinh.Id`).
+3. Bỏ `toTrinhKetQua`/`quyetDinhPheDuyet` khi tạo → GET trả `null` 2 object đó; `goiThauId` + `thongTinNhaThau` vẫn có.
+4. Record sẵn `08defc12-4e20-3b60-687a-7b38f8073d8e`: đối chiếu cột DB với JSON, không đoán.
+5. Hồi quy `danh-sach-tien-do`: gọi GET danh sách → shape list **không đổi** (không thêm field chi-tiet vào list).

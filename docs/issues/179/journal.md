@@ -87,3 +87,29 @@ Requirement ban đầu nhầm `TenNhaThau` (lưu tên). Đổi sang FK nhà th�
 5. `dotnet build SER.sln` — 0 lỗi. **Chưa** `database update` trừ khi người dùng chạy tay.
 
 Dead code còn sót (không map cột đã xóa, ngoài scope tối thiểu): `ToTrinhThamDinhNhaThauSearchDto.So`/`TrichYeu`, `ToTrinhThamDinhNhaThauDanhSachQuery.So`/`TrichYeu` (list không filter theo 2 field này nữa), class `KetQuaThamDinhNhaThauDto` không còn caller.
+
+## 2026-08-17 — Khảo sát GET chi tiết (chưa code)
+
+Người yêu cầu: `GET /api/to-trinh-tham-dinh-nha-thau/{id}/chi-tiet` thiếu `GoiThauId`, `ThongTinNhaThauDto`, `ToTrinhKetQuaDto`, `QuyetDinhPheDuyetDto`. Viết docs trước, chờ xác nhận rồi mới implement.
+
+Đã đọc flow Controller → GetQuery → DTO/Model mapping → Persistence. Kết luận chính:
+
+- `GoiThauId` / `NhaThauId` / `NgayKetThucDanhGia` **đã có trên entity**; Get DTO/Model + `ToModel`/`ToDto` không expose `GoiThauId` và không dựng object `ThongTinNhaThau`.
+- `ToTrinhKetQua` / `QuyetDinhPheDuyet` **không nằm trên parent** — lưu `ToTrinhQuyetDinh` (`EntityId`+`Loai`) và `VanBanQuyetDinh` (`Id` trùng tờ trình + `Loai`). GetQuery không đọc 2 bảng này; không load file `ToTrinhQuyetDinh` / `ToTrinhThamDinhNhaThau_QuyetDinh` / `FileEHSDT` / `FileDanhGia`.
+- Nested DTO **đã có** trong `ToTrinhThamDinhNhaThauThemMoiDto.cs` — không tạo type mới.
+- Get runtime trả `ToModel` (WebApi) dù `[ProducesResponseType]` khai `ToTrinhThamDinhNhaThauDto`.
+- Không cần migration.
+
+Ghi nhận root cause từng field, file sửa, nguồn dữ liệu ngay tại mục này; cập nhật `index.md`, `test-workflow.md`. **Chưa sửa code** (implement ở phần tiếp theo).
+
+## 2026-08-17 (tiếp — implement GET chi tiết + check conflict với dev D)
+
+Sau khi xác nhận plan, implement `GET /api/to-trinh-tham-dinh-nha-thau/{id}/chi-tiet` trên branch `bugfix/to-trinh-td-nha-thau-chi-tiet`. Chi tiết đã sửa:
+
+1. **Check conflict trước khi làm**: dev D đang bổ sung `GoiThauId` cho `danh-sach-tien-do` — phần đó nằm ở list DTO `ToTrinhThamDinhNhaThauDto` + projection inline trong `ToTrinhThamDinhNhaThauGetDanhSachQueryHandler` (`ToTrinhThamDinhNhaThauGetDanhSachQuery.cs`). Task chi-tiet **không đụng** 2 file đó; điểm chung duy nhất là file Controller nhưng **khác method** (`Get(Guid id)` chi-tiet vs `Get([FromQuery])` danh-sach), diff xác nhận không đè vùng code của dev D → không bắt buộc sửa chung DTO/Query/Mapping của dev D, an toàn để implement mà không động logic danh-sach-tien-do.
+2. **`ToTrinhThamDinhNhaThauChiTietDto`** (file mới): DTO riêng cho chi-tiet — `GoiThauId`, `NhaThauId`, `ThongTinNhaThau`, `DoiChieu`/`ThuongThao`/`ThamDinh`, `ToTrinhKetQua`, `QuyetDinhPheDuyet`. Nested DTO tái dùng từ `ToTrinhThamDinhNhaThauThemMoiDto.cs` (`ThongTinNhaThauDto`/`ToTrinhKetQuaDto`/`QuyetDinhPheDuyetDto`) — không tạo type mới.
+3. **`ToTrinhThamDinhNhaThauGetChiTietQuery`** (file mới): load entity kèm `BuocXuLys`; đọc `ToTrinhQuyetDinh` (`EntityId == request.Id && Loai == ToTrinhThamDinhNhaThau`) và `VanBanQuyetDinh` (`Id == request.Id && Loai == ToTrinhThamDinhNhaThau`); trả `ToTrinhThamDinhNhaThauChiTietResult`.
+4. **`ToTrinhThamDinhNhaThauMappings.ToChiTietDto`**: map đủ 4 thành phần bổ sung; **không sửa `ToDto`** (dùng cho list/PUT) để tránh đổi shape list của dev D.
+5. **Controller `Get(Guid id)`**: bỏ `ToTrinhThamDinhNhaThauGetQuery` cũ, gọi `ToTrinhThamDinhNhaThauGetChiTietQuery`; load thêm file `FileEHSDT`/`FileDanhGia` (GroupId = id tờ trình), file Tờ trình kết quả (GroupId = `ToTrinhQuyetDinh.Id`, kiểu long), file Quyết định (GroupId = `VanBanQuyetDinh.Id`); trả `ResultApi.Ok(entity.ToChiTietDto(...))`. Method `Get([FromQuery])` của `danh-sach-tien-do` **giữ nguyên**.
+6. `dotnet build QLDA.WebApi` — 0 warning / 0 error. Không cần migration (schema đã có đủ `GoiThauId`/`NhaThauId`/`NgayKetThucDanhGia`, và 2 bảng `ToTrinhQuyetDinh`/`VanBanQuyetDinh` đã có từ trước).
+
