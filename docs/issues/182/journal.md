@@ -14,7 +14,18 @@
 - Test T1–T5 trong `QLDA.Tests/Integration/DuAnControllerTests.cs`.
 - Không migration. Không commit/push đến khi user review diff.
 
+### Việc tiếp theo (cũ — phase 1 xong)
+
+- Phase 1 đã commit/PR #184.
+
+## 2026-08-17
+
+- Spec mới: Case 2 không chỉ “không clone” — **cấm đổi `QuyTrinhId`**. Reject `"Quy trình không thể đổi"`, rollback cả request.
+- Root cause còn lại: `DuAnUpdateCommand` gọi `entity.Update(dto)` **trước** cửa clone ở controller → `DuAn.QuyTrinhId` vẫn thành B dù bước còn A.
+- Viết docs phase 2 (`index.md` rule, `report.md` mục 11, `test-workflow.md` T4).
+- **Đã code.** Validate trong `DuAnUpdateCommandHandler` sau load entity, **trước** `entity.Update()`. Message `"Quy trình không thể đổi"`. T4 test reject + giữ `QuyTrinhId` cũ.
+
 ### Việc tiếp theo
 
-- User tự migration nếu cần (issue này không đổi schema).
 - Review diff rồi commit khi user yêu cầu.
+- Không migration.

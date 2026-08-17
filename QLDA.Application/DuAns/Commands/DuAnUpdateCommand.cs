@@ -15,6 +15,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
     private readonly IRepository<DuToan, Guid> DuToan;
     private readonly IRepository<KeHoachVon, Guid> KeHoachVon;
     private readonly IRepository<DanhMucNguonVon, int> DanhMucNguonVon;
+    private readonly IRepository<DuAnBuoc, int> DuAnBuoc;
     private readonly IAuthorizationManager _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger = Serilog.Log.ForContext<DuAnUpdateCommandHandler>();
@@ -24,6 +25,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         DuToan = serviceProvider.GetRequiredService<IRepository<DuToan, Guid>>();
         KeHoachVon = serviceProvider.GetRequiredService<IRepository<KeHoachVon, Guid>>();
         DanhMucNguonVon = serviceProvider.GetRequiredService<IRepository<DanhMucNguonVon, int>>();
+        DuAnBuoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
         _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _unitOfWork = DuAn.UnitOfWork;
     }
@@ -43,6 +45,13 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         // Phòng ban phối hợp (thuộc DuAnChiuTrachNhiemXuLys, Loai=DonViPhoiHop) mới được chỉnh sửa.
         if (!await _auth.CanExecuteAsync(AuthorizationResourceKeys.DuAn, entity, cancellationToken))
             throw new ForbiddenException("User không có quyền chỉnh sửa dự án này");
+
+        // Cấm đổi QuyTrinhId khi đã nhập tiến độ: validate trước khi map request vào entity,
+        // tránh DuAn.QuyTrinhId=B nhưng DuAnBuoc vẫn thuộc QT A.
+        var doiQuyTrinh = entity.QuyTrinhId != request.Model.QuyTrinhId;
+        ManagedException.ThrowIf(
+            doiQuyTrinh && await HasDuAnBuocTienDoAsync(entity.Id, cancellationToken),
+            "Quy trình không thể đổi");
 
         // Store the original ParentId to check if it changed
         var originalParentId = entity.ParentId;
@@ -100,6 +109,21 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
 
     private async Task UpdateAsync(DuAn entity, CancellationToken cancellationToken) {
         await DuAn.UpdateAsync(entity, cancellationToken);
+    }
+
+    private async Task<bool> HasDuAnBuocTienDoAsync(Guid duAnId, CancellationToken cancellationToken) {
+        return await DuAnBuoc.GetQueryableSet(OnlyUsed: false)
+            .AnyAsync(e =>
+                e.DuAnId == duAnId && (
+                    e.NgayDuKienBatDau != null
+                    || e.NgayDuKienKetThuc != null
+                    || e.NgayThucTeBatDau != null
+                    || e.NgayThucTeKetThuc != null
+                    || e.TrangThaiId != null
+                    || e.IsKetThuc
+                    || (e.GhiChu != null && e.GhiChu != "")
+                    || (e.TrachNhiemThucHien != null && e.TrachNhiemThucHien != "")
+                ), cancellationToken);
     }
     #endregion
 }

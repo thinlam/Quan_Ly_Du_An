@@ -17,11 +17,13 @@ PUT api/du-an/cap-nhat
 
 | Quy trình thay đổi? | Đã nhập tiến độ `DuAnBuoc`? | Xử lý |
 |---|---|---|
-| Không | Không quan trọng | Không clone — giữ nguyên bước/tiến độ |
-| Có | Có (≥ 1 bước đã có tiến độ) | Không clone/reset — không được mất tiến độ |
-| Có | Chưa | Được clone lại theo quy trình mới (`DuAnBuocCloneCommand`) |
+| Không | Không quan trọng | Update bình thường. Không clone. |
+| Có | Có (≥ 1 bước đã có tiến độ) | **Reject.** Message `"Quy trình không thể đổi"`. Không đổi `DuAn.QuyTrinhId`, không clone/reset bước, không save field khác của request. |
+| Có | Chưa | Cho đổi QT + clone bước theo quy trình mới (`DuAnBuocCloneCommand`) |
 
 `them-moi` dự án **không đổi** — vẫn clone + map phòng ban như hiện tại.
+
+> **Không** hiểu “đã phát sinh `DuAnBuoc`” = chỉ cần có dòng bước. `them-moi` luôn clone bước. Predicate tiến độ = user đã nhập (mục 4 `report.md`), giống phase 1.
 
 ## 4. Field nguồn sự thật (source)
 
@@ -31,10 +33,11 @@ PUT api/du-an/cap-nhat
 
 ## 5. Tài liệu liên quan
 
-- [`report.md`](./report.md) — khảo sát source, root cause, **cách sửa + snippet** (mục 6–7).
+- [`report.md`](./report.md) — khảo sát + cách sửa. **Phase 2 (chặn đổi QT): mục 11.**
 - [`journal.md`](./journal.md) — nhật ký.
-- [`test-workflow.md`](./test-workflow.md) — 5 case verify.
+- [`test-workflow.md`](./test-workflow.md) — case verify (T4 đổi: reject).
 
 ## 6. Trạng thái
 
-**Đã code.** `DuAnController.Update` chỉ clone khi QT đổi và chưa có tiến độ. Không migration/schema.
+**Phase 1 (G-312 skip clone): đã merge PR #184.**  
+**Phase 2 (không cho đổi `QuyTrinhId` khi đã có tiến độ): ĐÃ CODE.** Validate trong `DuAnUpdateCommandHandler` trước `entity.Update()`. Không migration/schema.
