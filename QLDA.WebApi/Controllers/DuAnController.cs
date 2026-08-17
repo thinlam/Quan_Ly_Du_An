@@ -15,12 +15,18 @@ using BuildingBlocks.Application.Attachments.Queries;
 using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Domain.Constants;
 using QLDA.WebApi.Models.DuAns;
+using Microsoft.EntityFrameworkCore;
 
 namespace QLDA.WebApi.Controllers
 {
     [Tags("Dự án")]
     public class DuAnController(IServiceProvider serviceProvider) : AggregateRootController(serviceProvider)
     {
+        private readonly IRepository<DuAn, Guid> _duAnRepo =
+            serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
+        private readonly IRepository<DuAnBuoc, int> _duAnBuocRepo =
+            serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+
         /// <summary>
         /// Chi tiết
         /// </summary>
@@ -307,9 +313,19 @@ namespace QLDA.WebApi.Controllers
         {
             using var tx = await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
+            var oldQuyTrinhId = await _duAnRepo.GetQueryableSet()
+                .AsNoTracking()
+                .Where(e => e.Id == updateDto.Id)
+                .Select(e => e.QuyTrinhId)
+                .FirstOrDefaultAsync(cancellationToken);
+
             var entity = await Mediator.Send(new DuAnUpdateCommand(updateDto), cancellationToken);
 
-            await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
+            if (oldQuyTrinhId != entity.QuyTrinhId
+                && !await HasDuAnBuocTienDoAsync(entity.Id, cancellationToken))
+            {
+                await Mediator.Send(new DuAnBuocCloneCommand(entity), cancellationToken);
+            }
 
             // Xử lý DuToan và TepDinhKem tương tự như trong hàm tạo mới
             List<(DuToan, List<Attachment>)> duToans = [.. updateDto.DuToans?.Select(e => e.ToEntityWithFiles(entity.Id)) ?? []];
@@ -366,6 +382,22 @@ namespace QLDA.WebApi.Controllers
         {
             var result = await Mediator.Send(new DuAnGetDanhSachTepDinhKemQuery { DuAnId = id });
             return ResultApi.Ok(result);
+        }
+
+        private async Task<bool> HasDuAnBuocTienDoAsync(Guid duAnId, CancellationToken cancellationToken)
+        {
+            return await _duAnBuocRepo.GetQueryableSet(OnlyUsed: false)
+                .AnyAsync(e =>
+                    e.DuAnId == duAnId && (
+                        e.NgayDuKienBatDau != null
+                        || e.NgayDuKienKetThuc != null
+                        || e.NgayThucTeBatDau != null
+                        || e.NgayThucTeKetThuc != null
+                        || e.TrangThaiId != null
+                        || e.IsKetThuc
+                        || (e.GhiChu != null && e.GhiChu != "")
+                        || (e.TrachNhiemThucHien != null && e.TrachNhiemThucHien != "")
+                    ), cancellationToken);
         }
 
         private async Task<DuAnDto> GetDuAnWithFiles(Guid duAnId, CancellationToken cancellationToken)
