@@ -11,6 +11,11 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
         {
             Id = entity.Id,
             KeHoachLuaChonNhaThauId = entity.KeHoachLuaChonNhaThauId,
+            TongDuToan = entity.KeHoachLuaChonNhaThau?.TongDuToan ?? 0,
+            DuToanThamDinh = entity.KeHoachLuaChonNhaThau?.DuToanThamDinh,
+            NguonVonId = entity.KeHoachLuaChonNhaThau?.NguonVonId,
+            ThoiGianThucHien = entity.KeHoachLuaChonNhaThau?.ThoiGianThucHien,
+            SoLuongGoiThau = entity.KeHoachLuaChonNhaThau?.SoLuongGoiThau,
             VanBanQuyetDinh = new TongHopVanBanQuyetDinhs.VanBanQuyetDinhModel()
             {
                 DuAnId = entity.VanBanQuyetDinh!.DuAnId,

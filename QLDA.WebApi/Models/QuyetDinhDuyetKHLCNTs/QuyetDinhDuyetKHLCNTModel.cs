@@ -17,5 +17,11 @@ public class QuyetDinhDuyetKHLCNTModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
    
     public Guid? KeHoachLuaChonNhaThauId { get; set; }
 
+    public long TongDuToan { get; set; }
+    public long? DuToanThamDinh { get; set; }
+    public int? NguonVonId { get; set; }
+    public int? ThoiGianThucHien { get; set; }
+    public int? SoLuongGoiThau { get; set; }
+
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
 }
