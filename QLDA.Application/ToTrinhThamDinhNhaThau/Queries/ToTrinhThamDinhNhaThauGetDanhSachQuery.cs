@@ -1,8 +1,11 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
+using QLDA.Domain.Constants;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Queries;
 
@@ -32,6 +35,9 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
     private readonly IRepository<ToTrinhThamDinhNhaThau, Guid> ToTrinhThamDinhNhaThau =  ServiceProvider.GetRequiredService<IRepository<ToTrinhThamDinhNhaThau, Guid>>();
 
     private readonly IRepository<Attachment, Guid> TepDinhKem = ServiceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
+
+    private readonly IRepository<ToTrinhQuyetDinh, long> ToTrinhQuyetDinh =
+        ServiceProvider.GetRequiredService<IRepository<ToTrinhQuyetDinh, long>>();
 
     private readonly IUserProvider User = ServiceProvider.GetRequiredService<IUserProvider>();
 
@@ -75,6 +81,39 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
             item.DanhSachTepDinhKem = item.Id is { } id && tepDinhKemByGroupId.TryGetValue(id.ToString(), out var files)
                 ? files
                 : [];
+
+        // File "Tờ trình kết quả" — GroupId là ToTrinhQuyetDinh.Id (long), không nằm trong
+        // groupIds của toTrinh nên danh-sach-tien-do sót file mà chi-tiet vẫn đủ (Issue #179).
+        var toTrinhIds = result.Data.Select(x => x.Id).ToList();
+        var toTrinhQuyetDinhs = toTrinhIds.Count == 0
+            ? []
+            : await ToTrinhQuyetDinh.GetQueryableSet().AsNoTracking()
+                .Where(e => toTrinhIds.Contains(e.EntityId) && e.Loai == ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau)
+                .Select(e => new { e.Id, e.EntityId })
+                .ToListAsync(cancellationToken);
+
+        var ketQuaGroupIds = toTrinhQuyetDinhs.Select(x => x.Id.ToString()).ToList();
+        // Gồm cả KySo_ToTrinhQuyetDinh (file đã ký) — khớp GetAttachmentsQuery của chi-tiet.
+        var ketQuaGroupTypes = AttachmentSubquery.ExpandGroupTypes(
+            [nameof(EGroupType.ToTrinhQuyetDinh)], includeSigned: true);
+        var ketQuaFiles = ketQuaGroupIds.Count == 0
+            ? []
+            : await TepDinhKem.GetQueryableSet().AsNoTracking()
+                .Where(i => ketQuaGroupIds.Contains(i.GroupId) && ketQuaGroupTypes.Contains(i.GroupType))
+                .Select(i => i.ToDto())
+                .ToListAsync(cancellationToken);
+
+        var ketQuaByToTrinhId = toTrinhQuyetDinhs
+            .Where(x => x.EntityId.HasValue)
+            .SelectMany(x => ketQuaFiles.Where(f => f.GroupId == x.Id.ToString()), (x, f) => new { x.EntityId, f })
+            .GroupBy(x => x.EntityId!.Value)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.f).ToList());
+
+        foreach (var item in result.Data)
+        {
+            if (item.Id is { } id && ketQuaByToTrinhId.TryGetValue(id, out var files))
+                item.DanhSachTepDinhKem = item.DanhSachTepDinhKem!.Concat(files).DistinctBy(f => f.Id).ToList();
+        }
 
         return result;
     }
