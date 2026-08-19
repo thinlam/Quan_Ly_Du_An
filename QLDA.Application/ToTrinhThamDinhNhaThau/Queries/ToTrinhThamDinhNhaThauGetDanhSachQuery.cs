@@ -1,3 +1,4 @@
+using BuildingBlocks.Application.Attachments.Common;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Interfaces;
 using QLDA.Application.Common.Mapping;
@@ -92,10 +93,13 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
                 .ToListAsync(cancellationToken);
 
         var ketQuaGroupIds = toTrinhQuyetDinhs.Select(x => x.Id.ToString()).ToList();
+        // Gồm cả KySo_ToTrinhQuyetDinh (file đã ký) — khớp GetAttachmentsQuery của chi-tiet.
+        var ketQuaGroupTypes = AttachmentSubquery.ExpandGroupTypes(
+            [nameof(EGroupType.ToTrinhQuyetDinh)], includeSigned: true);
         var ketQuaFiles = ketQuaGroupIds.Count == 0
             ? []
             : await TepDinhKem.GetQueryableSet().AsNoTracking()
-                .Where(i => ketQuaGroupIds.Contains(i.GroupId) && i.GroupType == nameof(EGroupType.ToTrinhQuyetDinh))
+                .Where(i => ketQuaGroupIds.Contains(i.GroupId) && ketQuaGroupTypes.Contains(i.GroupType))
                 .Select(i => i.ToDto())
                 .ToListAsync(cancellationToken);
 

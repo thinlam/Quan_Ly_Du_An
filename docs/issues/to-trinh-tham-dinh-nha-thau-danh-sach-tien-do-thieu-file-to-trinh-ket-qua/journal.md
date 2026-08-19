@@ -23,3 +23,11 @@
     từng item qua `EntityId` (`DistinctBy(f => f.Id)`).
 - Build `QLDA.Application` — 0 Error(s), 0 Warning(s).
 - Build `QLDA.WebApi` bị chặn do process đang chạy (PID 13180) khóa DLL — chỉ là lỗi copy, không phải compile error.
+
+## 19/08 — Bổ sung variant ký số `KySo_ToTrinhQuyetDinh`
+
+- Báo lỗi từ tester: vẫn thiếu 1 file dù fix đầu đã chạy → nguyên nhân là **file Tờ trình kết quả đã ký số** (`GroupType = KySo_ToTrinhQuyetDinh`).
+- Phân tích: `chi-tiet` load nhóm Tờ trình kết quả qua `GetAttachmentsQuery` (IncludeSigned = true) → gồm cả `KySo_ToTrinhQuyetDinh`. Fix đầu dùng exact `GroupType == "ToTrinhQuyetDinh"` → sót variant ký số. 6 nhóm file trực tiếp load theo groupId không filter groupType nên không bị lệch.
+- Sửa lại: dùng `AttachmentSubquery.ExpandGroupTypes(["ToTrinhQuyetDinh"], includeSigned: true)` → `["ToTrinhQuyetDinh", "KySo_ToTrinhQuyetDinh"]`, khớp logic `GetAttachmentsQueryHandler`.
+- Build `QLDA.Application` — 0 Error(s), 0 Warning(s).
+- Cập nhật docs: `index.md`, `report.md` (§3.3 bảng lệch KySo), `test-workflow.md` (case file ký số).

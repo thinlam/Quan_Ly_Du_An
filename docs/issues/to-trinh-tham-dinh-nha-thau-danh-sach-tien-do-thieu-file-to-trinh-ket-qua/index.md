@@ -25,12 +25,17 @@ File của Tờ trình **được lưu ở 2 nhóm group khác nhau**:
 | Nhóm | `groupId` | `groupType` | Số file |
 | ---- | --------- | ----------- | ------- |
 | File trực tiếp của Tờ trình | `ToTrinhThamDinhNhaThau.Id` (Guid) | `ToTrinhThamDinhNhaThau_*` (EHSDT, FileDanhGia, DoiChieu, ThuongThao, ThamDinh, QuyetDinh) | 6 |
-| **File "Tờ trình kết quả"** | **`ToTrinhQuyetDinh.Id` (long)** | `ToTrinhQuyetDinh` | 1 |
+| **File "Tờ trình kết quả"** | **`ToTrinhQuyetDinh.Id` (long)** | `ToTrinhQuyetDinh` **và `KySo_ToTrinhQuyetDinh`** (file đã ký) | 1 |
 
 - **`chi-tiet`** (`ToTrinhThamDinhNhaThauController.cs:62–70`) gộp **cả 2 nhóm** → đủ 7 file.
 - **`danh-sach-tien-do`** (`ToTrinhThamDinhNhaThauGetDanhSachQuery.cs:64–77`) chỉ load attachment với
   `GroupId ∈ {toTrinh entity id}` → file Tờ trình kết quả có `groupId = ToTrinhQuyetDinh.Id`
   ("20089", dạng long) **không khớp** → bị sót → 6/7.
+
+> **Lưu ý variant ký số:** `chi-tiet` load nhóm Tờ trình kết quả qua `GetAttachmentsQuery`
+> (`IncludeSigned = true`) nên gồm cả `KySo_ToTrinhQuyetDinh`. Bản fix đầu (exact match
+> `GroupType == "ToTrinhQuyetDinh"`) vẫn sót file **đã ký** → phải mở rộng bằng
+> `AttachmentSubquery.ExpandGroupTypes(..., includeSigned: true)` để gồm cả 2 variant.
 
 Thiết kế lưu file theo `ToTrinhQuyetDinh.Id` là **có chủ đích** (comment controller dòng 62) →
 fix đúng chỗ là bổ sung vào query danh sách, không đổi cách lưu.
@@ -40,8 +45,9 @@ fix đúng chỗ là bổ sung vào query danh sách, không đổi cách lưu.
 | # | Hạng mục | Trạng thái |
 |---|----------|------------|
 | 1 | `ToTrinhThamDinhNhaThauGetDanhSachQuery` — gộp file ToTrinhQuyetDinh | ✅ |
-| 2 | `dotnet build` (QLDA.Application) | ✅ 0 Error |
-| 3 | Smoke test manual (2 item 7/7 file) | ⏳ Pending |
+| 2 | Mở rộng filter gồm `KySo_ToTrinhQuyetDinh` (file đã ký) | ✅ |
+| 3 | `dotnet build` (QLDA.Application) | ✅ 0 Error |
+| 4 | Smoke test manual (file chưa ký + đã ký) | ⏳ Pending |
 
 **Files sẽ sửa:**
 

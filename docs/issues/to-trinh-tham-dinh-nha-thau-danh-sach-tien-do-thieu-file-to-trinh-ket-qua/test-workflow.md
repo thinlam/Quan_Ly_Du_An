@@ -36,12 +36,25 @@ GET /QuanLyDuAn/api/to-trinh-tham-dinh-nha-thau/danh-sach-tien-do?DuAnId=08def36
 | --------- | --------- | ------- |
 | `08defd97-eaf5-c226-687a-7b350801bae5` | 6/7 | 7/7 |
 | `08defc12-4e20-3b60-687a-7b38f8073d8e` | 6/7 | 7/7 |
+| `08defda6-9246-b724-687a-7b347005c4ce` | 6/7 | 7/7 |
 
 Kiểm chứng: mỗi item trong `danhSachTepDinhKem` phải có đủ file `groupType = "ToTrinhQuyetDinh"` (Tờ trình kết quả), không trùng `id` với 6 file còn lại.
 
+### Case file ký số
+
+Cần 1 bản ghi có file Tờ trình kết quả **đã ký** (`groupType = "KySo_ToTrinhQuyetDinh"`):
+
+```http
+GET /QuanLyDuAn/api/to-trinh-tham-dinh-nha-thau/{id}/chi-tiet
+GET /QuanLyDuAn/api/to-trinh-tham-dinh-nha-thau/danh-sach-tien-do?DuAnId=<guid>&BuocId=7040&PageIndex=1&PageSize=10
+```
+
+Kỳ vọng: `danhSachTepDinhKem` có đủ cả `ToTrinhQuyetDinh` lẫn `KySo_ToTrinhQuyetDinh`, khớp chi-tiet.
+
 ## Verify
 
-- [ ] `dotnet build` — 0 Error(s)
+- [x] `dotnet build` — 0 Error(s)
 - [ ] Test tự động hiện có pass
-- [ ] Smoke test: 2 item đều 7/7 file, khớp chi-tiet
+- [ ] Smoke test: 3 item đều 7/7 file, khớp chi-tiet
+- [ ] Case file ký số: `KySo_ToTrinhQuyetDinh` hiện đủ, khớp chi-tiet
 - [ ] Item không có ToTrinhQuyetDinh vẫn giữ nguyên (không lỗi)
