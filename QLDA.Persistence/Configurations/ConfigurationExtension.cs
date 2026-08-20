@@ -26,7 +26,9 @@ public static class ConfigurationExtension {
                 );
             // builder.Property<string?>("TrichYeu");
         }
-
+        if (typeof(IMayHaveDelete).IsAssignableFrom(typeof(TEntity))) {
+            builder.HasQueryFilter(e => EF.Property<bool>(e, "IsDeleted") == false);
+        }
         builder.Property<DateTimeOffset>("CreatedAt")
             .HasDefaultValueSql("SYSDATETIMEOFFSET()")
             .HasConversion(

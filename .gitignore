@@ -1,4 +1,5 @@
 # IDE and Editor
+.zed/
 .kilocode/
 .specify/
 .vs/
