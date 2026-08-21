@@ -33,7 +33,7 @@ internal class
     public async Task<PaginatedList<GoiThauDto>> Handle(GoiThauGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
         var queryable = _authManager.FilterVisible(GoiThau.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
-            .Where(e => e.DaDuyet)
+            // .Where(e => e.DaDuyet)
             .Where(e => !e.DuAn!.IsDeleted)
             .WhereIf(request.SearchDto.DuAnId != null, e => e.DuAnId == request.SearchDto.DuAnId)
             .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0,
