@@ -39,6 +39,7 @@ Ngoài ra:
 ## 3. Tài liệu liên quan trong issue này
 
 - [`report.md`](./report.md) — Báo cáo khảo sát chi tiết source hiện tại + trả lời đầy đủ 28 câu hỏi bắt buộc + thiết kế đề xuất + rủi ro/xung đột cần xác nhận trước khi code.
+- [`hoso-danh-sach.md`](./hoso-danh-sach.md) — `GET ho-so-moi-thau-dien-tu/danh-sach` 400 vì Include `[NotMapped]` ToTrinh/QuyetDinh. **Chưa implement — chờ xác nhận.**
 - [`journal.md`](./journal.md) — Nhật ký công việc theo ngày (bao gồm khảo sát + implement `GET {id}/chi-tiet`).
 - [`test-workflow.md`](./test-workflow.md) — Kế hoạch kiểm thử.
 

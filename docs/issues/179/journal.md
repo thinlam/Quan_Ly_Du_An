@@ -113,3 +113,17 @@ Sau khi xác nhận plan, implement `GET /api/to-trinh-tham-dinh-nha-thau/{id}/c
 5. **Controller `Get(Guid id)`**: bỏ `ToTrinhThamDinhNhaThauGetQuery` cũ, gọi `ToTrinhThamDinhNhaThauGetChiTietQuery`; load thêm file `FileEHSDT`/`FileDanhGia` (GroupId = id tờ trình), file Tờ trình kết quả (GroupId = `ToTrinhQuyetDinh.Id`, kiểu long), file Quyết định (GroupId = `VanBanQuyetDinh.Id`); trả `ResultApi.Ok(entity.ToChiTietDto(...))`. Method `Get([FromQuery])` của `danh-sach-tien-do` **giữ nguyên**.
 6. `dotnet build QLDA.WebApi` — 0 warning / 0 error. Không cần migration (schema đã có đủ `GoiThauId`/`NhaThauId`/`NgayKetThucDanhGia`, và 2 bảng `ToTrinhQuyetDinh`/`VanBanQuyetDinh` đã có từ trước).
 
+## 2026-08-21 — Khảo sát GET danh sách HSMTĐT 400 (chưa code)
+
+`GET /api/ho-so-moi-thau-dien-tu/danh-sach` trả 400 `"Lỗi hệ thống, vui lòng thử lại sau"`.
+
+Xác nhận exception thật (terminal WebApi 09:06:39, URL `duAnId=08def36f-...`):
+
+`System.InvalidOperationException: The expression 'e.ToTrinh' is invalid inside an 'Include' operation...`
+
+Nổ tại `HoSoMoiThauDienTuGetDanhSachQuery.cs:68` (`PaginatedListAsync` → `CountAsync`) vì dòng 34–35 `.Include(e => e.ToTrinh).Include(e => e.QuyetDinh)` trong khi entity đã `[NotMapped]` từ Issue #179. Insert/Update/Duyệt đã load `EntityId + Loai`; Get/danh-sach sót Include cũ.
+
+`Loai` dùng constant: `ToTrinhQuyetDinhLoai.HoSoMoiThauToTrinh` / `HoSoMoiThauQuyetDinh`. Pattern batch: `ToTrinhThamDinhNhaThauGetDanhSachQuery`. GetQuery `{id}` cùng Include — đề xuất sửa cùng. Không migration.
+
+Docs: `hoso-danh-sach.md`. **Chưa sửa code.**
+
