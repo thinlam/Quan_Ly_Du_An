@@ -15,7 +15,7 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
             DuToanThamDinh = entity.KeHoachLuaChonNhaThau?.DuToanThamDinh,
             NguonVonId = entity.KeHoachLuaChonNhaThau?.NguonVonId,
             ThoiGianThucHien = entity.KeHoachLuaChonNhaThau?.ThoiGianThucHien,
-            SoLuongGoiThau = entity.KeHoachLuaChonNhaThau?.SoLuongGoiThau,
+            SoLuongGoiThau = entity.SoLuongGoiThau,
             VanBanQuyetDinh = new TongHopVanBanQuyetDinhs.VanBanQuyetDinhModel()
             {
                 DuAnId = entity.VanBanQuyetDinh!.DuAnId,
@@ -40,6 +40,7 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
         {
             Id = id,
             KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId,
+            SoLuongGoiThau = model.SoLuongGoiThau,
             VanBanQuyetDinh = new VanBanQuyetDinh()
             {
                 Id = id,
@@ -72,6 +73,7 @@ public static class QuyetDinhDuyetKHLCNTMappingConfiguration
             Loai = EnumLoaiVanBanQuyetDinh.QuyetDinhDuyetKHLCNT.ToString(),
         };
         entity.KeHoachLuaChonNhaThauId = model.KeHoachLuaChonNhaThauId;
+        entity.SoLuongGoiThau = model.SoLuongGoiThau;
 
     }
 }

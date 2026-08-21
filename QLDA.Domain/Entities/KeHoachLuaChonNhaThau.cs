@@ -34,11 +34,6 @@ public class KeHoachLuaChonNhaThau : VanBanQuyetDinh {
     /// </summary>
     public int? ThoiGianThucHien { get; set; }
 
-    /// <summary>
-    /// Số lượng gói thầu
-    /// </summary>
-    public int? SoLuongGoiThau { get; set; }
-
     #region Navigation Properties
 
     public DanhMucNguonVon? NguonVon { get; set; }
