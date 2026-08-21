@@ -11,6 +11,11 @@ public class QuyetDinhDuyetKHLCNTConfiguration : AggregateRootConfiguration<Quye
             .WithOne(e => e.QuyetDinhDuyetKHLCNT)
             .HasForeignKey<QuyetDinhDuyetKHLCNT>(e => e.KeHoachLuaChonNhaThauId);
 
+        // 1 kế hoạch chỉ 1 QĐ duyệt đang active; bản soft-delete không chiếm unique
+        builder.HasIndex(e => e.KeHoachLuaChonNhaThauId)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
         builder.HasOne(e => e.VanBanQuyetDinh)
        .WithMany()
        .HasForeignKey(e => e.Id)
