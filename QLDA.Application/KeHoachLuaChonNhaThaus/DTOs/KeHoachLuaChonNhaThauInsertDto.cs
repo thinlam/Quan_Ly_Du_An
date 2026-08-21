@@ -17,6 +17,5 @@ public class KeHoachLuaChonNhaThauInsertDto : IMayHaveTepDinhKemInsertDto, ITien
     public long? DuToanThamDinh { get; set; }
     public int? NguonVonId { get; set; }
     public int? ThoiGianThucHien { get; set; }
-    public int? SoLuongGoiThau { get; set; }
     public List<TepDinhKemInsertDto>? DanhSachTepDinhKem { get; set; }
 }

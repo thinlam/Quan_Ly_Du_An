@@ -74,6 +74,7 @@ internal class
                     {
                         // Cập nhật các trường của thực thể cha
                         dbEntity.KeHoachLuaChonNhaThauId = request.Entity.KeHoachLuaChonNhaThauId;
+                        dbEntity.SoLuongGoiThau = request.Entity.SoLuongGoiThau;
 
                         // Cập nhật các trường của thực thể con VanBanQuyetDinh
                         if (request.Entity.VanBanQuyetDinh != null)

@@ -7,9 +7,11 @@ public class QuyetDinhDuyetKHLCNT :  Entity<Guid>, IAggregateRoot
 {
 
     public Guid? KeHoachLuaChonNhaThauId { get; set; }
+
     /// <summary>
-    /// Số quyết định
+    /// Số lượng gói thầu — persist trên QĐ duyệt, không trên KHLCNT
     /// </summary>
+    public int? SoLuongGoiThau { get; set; }
 
     // Thêm khóa ngoại rõ ràng sang bảng văn bản
     #region Navigation Properties
