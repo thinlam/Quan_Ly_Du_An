@@ -53,7 +53,7 @@ public class KetQuaTrungThauDto : IHasKey<Guid>,
     /// <summary>
     /// Trạng thái đăng tải — ETrangThaiDangTai: DaDang=1, ChuaDang=2
     /// </summary>
-    public ETrangThaiDangTai TrangThaiDangTai { get; set; }
+    public ETrangThaiDangTai? TrangThaiDangTai { get; set; }
     /// <summary>
     /// Biên bản thương thảo
     /// </summary>

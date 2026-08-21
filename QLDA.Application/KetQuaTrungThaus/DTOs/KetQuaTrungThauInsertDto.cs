@@ -48,7 +48,7 @@ public class KetQuaTrungThauInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo, IT
     /// <summary>
     /// Trạng thái đăng tải — ETrangThaiDangTai: DaDang=1, ChuaDang=2
     /// </summary>
-    public ETrangThaiDangTai TrangThaiDangTai { get; set; } = ETrangThaiDangTai.ChuaDang;
+    public ETrangThaiDangTai? TrangThaiDangTai { get; set; } = ETrangThaiDangTai.ChuaDang;
     /// <summary>
     /// Biên bản thương thảo
     /// </summary>

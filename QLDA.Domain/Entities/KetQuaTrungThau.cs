@@ -1,4 +1,4 @@
-﻿using QLDA.Domain.Entities.DanhMuc;
+using QLDA.Domain.Entities.DanhMuc;
 using QLDA.Domain.Enums;
 using QLDA.Domain.Interfaces;
 
@@ -53,7 +53,7 @@ public class KetQuaTrungThau : Entity<Guid>, IAggregateRoot, ITienDo, IQuyetDinh
     /// <summary>
     /// Trạng thái đăng tải — ETrangThaiDangTai: DaDang=1, ChuaDang=2
     /// </summary>
-    public ETrangThaiDangTai TrangThaiDangTai { get; set; } = ETrangThaiDangTai.ChuaDang;
+    public ETrangThaiDangTai? TrangThaiDangTai { get; set; } = ETrangThaiDangTai.ChuaDang;
     #endregion
 
     #region Navigation Properties
