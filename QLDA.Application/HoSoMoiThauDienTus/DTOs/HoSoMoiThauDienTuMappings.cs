@@ -68,6 +68,16 @@ public static class HoSoMoiThauDienTuMappings
 
     }
 
+    public static ToTrinhQuyetDinhDto ToDto(this ToTrinhQuyetDinh entity) => new()
+    {
+        Id = entity.Id,
+        So = entity.So,
+        Ngay = entity.Ngay,
+        TrichYeu = entity.TrichYeu,
+        NguoiKy = entity.NguoiKy,
+        ChucVu = entity.ChucVu,
+    };
+
 
 
 }
