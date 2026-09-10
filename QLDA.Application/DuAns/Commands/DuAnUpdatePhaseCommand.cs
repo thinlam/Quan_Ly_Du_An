@@ -34,24 +34,25 @@ internal class DuAnUpdatePhaseCommandHandler : IRequestHandler<DuAnUpdatePhaseCo
     }
     #region Private helper methods
     private async Task UpdateCurrentPhaseAsync(DuAnUpdatePhaseCommand request, CancellationToken cancellationToken) {
-        var currentPhase = await DuAn.GetQueryableSet()
-            .Include(e => e.GiaiDoanHienTai)
+        // BuocHienTaiId đã được DuAnUpdateStepCommand guard chỉ tiến-tới, nên giai đoạn
+        // hợp lệ luôn là phase của bước hiện tại. Không so Stt của DmGiaiDoan: các phase
+        // mới (id 15-22) đều có Stt trùng (0) khiến guard cũ không bao giờ nâng phase.
+        var giaiDoanId = await DuAn.GetQueryableSet()
             .Where(e => e.Id == request.DuAnId)
-            .Select(e => e.GiaiDoanHienTai)
+            .Select(e => e.BuocHienTai != null && e.BuocHienTai.Buoc != null
+                ? e.BuocHienTai.Buoc.GiaiDoanId
+                : null)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var latestPhase = request.DuAnBuoc?.Buoc?.GiaiDoan;
+        if (giaiDoanId == null)
+            return;
 
-        if (latestPhase == null) return;
-
-        if (currentPhase == null || currentPhase.Stt < latestPhase.Stt) {
-            await SetPhase(request, cancellationToken);
-        }
+        await SetPhase(request.DuAnId, giaiDoanId.Value, cancellationToken);
     }
-    private async Task SetPhase(DuAnUpdatePhaseCommand request, CancellationToken cancellationToken = default) {
+    private async Task SetPhase(Guid duAnId, int giaiDoanId, CancellationToken cancellationToken = default) {
         await DuAn.GetQueryableSet()
-            .Where(e => e.Id == request.DuAnId)
-            .ExecuteUpdateAsync(setCall => setCall.SetProperty(e => e.GiaiDoanHienTaiId, request.DuAnBuoc!.Buoc!.GiaiDoanId),
+            .Where(e => e.Id == duAnId)
+            .ExecuteUpdateAsync(setCall => setCall.SetProperty(e => e.GiaiDoanHienTaiId, giaiDoanId),
                 cancellationToken);
     }
 

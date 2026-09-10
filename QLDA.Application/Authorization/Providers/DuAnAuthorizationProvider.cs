@@ -108,7 +108,6 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
         return duAnRepo.GetQueryableSet()
             .Where(e =>
                 e.LanhDaoPhuTrachId == userId ||
-                e.CreatedBy == userId.ToString() ||
                 e.DonViPhuTrachChinhId == phongBanId ||
                 e.DuAnChiuTrachNhiemXuLys!.Any(x =>
                     x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop))

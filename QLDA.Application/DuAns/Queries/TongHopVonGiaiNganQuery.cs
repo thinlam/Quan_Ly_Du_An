@@ -55,7 +55,14 @@ internal class TongHopVonGiaiNganQueryHandler
                 TenDuAn = d.TenDuAn,
                 MaDuAn = d.MaDuAn,
                 TenBuoc = d.BuocHienTai != null ? d.BuocHienTai.TenBuoc    : null,
-                TenGiaiDoanHienTai = d.GiaiDoanHienTai != null   ? d.GiaiDoanHienTai.Ten : null,
+                TenGiaiDoanHienTai = d.BuocHienTai != null && d.BuocHienTai.Buoc != null && d.BuocHienTai.Buoc.GiaiDoan != null
+                    ? d.BuocHienTai.Buoc.GiaiDoan.Ten
+                    : d.GiaiDoanHienTai != null ? d.GiaiDoanHienTai.Ten : null,
+                // GiaiDoanHienTaiId (denormalized) có thể stale so với bước hiện tại
+                // (xem docs/issues/fix-01) → lấy phase từ bước hiện tại làm nguồn chuẩn.
+                GiaiDoanHienTaiId = d.BuocHienTai != null && d.BuocHienTai.Buoc != null
+                    ? d.BuocHienTai.Buoc.GiaiDoanId
+                    : d.GiaiDoanHienTaiId,
                 PhongBanPhuTrach = _dmDonVi.GetQueryableSet()
                     .Where(x => x.Id == d.DonViPhuTrachChinhId)
                     .Select(x => x.TenDonVi).FirstOrDefault(),

@@ -127,3 +127,24 @@ Nổ tại `HoSoMoiThauDienTuGetDanhSachQuery.cs:68` (`PaginatedListAsync` → `
 
 Docs: `hoso-danh-sach.md`. **Chưa sửa code.**
 
+## 2026-09-10 — Fix `PUT cap-nhat` cập nhật đầy đủ 6 object (follow-up #179)
+
+Người yêu cầu: API `PUT api/to-trinh-tham-dinh-nha-thau/cap-nhat` không cập nhật đầy đủ `ThongTinNhaThau`/`DoiChieu`/`ThuongThao`/`ThamDinh`/`ToTrinhKetQua`/`QuyetDinhPheDuyet`.
+
+Khảo sát trước khi code:
+- `cap-nhat` vẫn bind **`ToTrinhThamDinhNhaThauModel`** (WebApi, shape pre-#179) — model thiếu `GoiThauId`/`ThongTinNhaThau`/`ToTrinhKetQua`/`QuyetDinhPheDuyet` → binding drop im lặng các field FE gửi.
+- `ToTrinhThamDinhNhaThauUpdateCommand` chỉ update `DuAnId`/`BuocId`/`NhaThauId`/`TrangThaiDangTaiId` + `SyncBuocXuLys` — **không đụng** `ToTrinhQuyetDinh`/`VanBanQuyetDinh`.
+- Controller `Update` không lưu file `FileEHSDT`/`FileDanhGia`/`ToTrinhQuyetDinh`/`..._QuyetDinh`.
+- `DoiChieu`/`ThuongThao`/`ThamDinh` (data + file) **đã chạy đúng** từ 2026-08-13 — không phải nguyên nhân bug.
+
+Implement:
+1. **`ToTrinhThamDinhNhaThauCapNhatDto`** (mới): `Id` + `GoiThauId` + `ThongTinNhaThau`/`DoiChieu`/`ThuongThao`/`ThamDinh`/`ToTrinhKetQua`/`QuyetDinhPheDuyet` + legacy `DanhSachTepDinhKem`/`DanhSachTepThamDinh`. Tái dùng nested DTO của `ToTrinhThamDinhNhaThauThemMoiDto`.
+2. **`ToTrinhThamDinhNhaThauMappings`**: thêm `ToToTrinhQuyetDinh`/`ApplyTo` (ToTrinhKetQua↔ToTrinhQuyetDinh) và `ToVanBanQuyetDinh`/`ApplyTo` (QuyetDinhPheDuyet↔VanBanQuyetDinh) — dùng chung Create + Update.
+3. **`ToTrinhThamDinhNhaThauUpdateCommand`**: nhận DTO mới; upsert `ToTrinhQuyetDinh` (theo `EntityId`+`Loai`) và `VanBanQuyetDinh` (theo `Id`+`Loai`); trả `ToTrinhThamDinhNhaThauUpdateResult` (Entity + child IDs).
+4. **`ToTrinhThamDinhNhaThauThemMoiCommand`**: refactor dùng helper chung, không đổi behavior.
+5. **Controller `Update`**: bind DTO mới; lưu thêm 4 nhóm file; thống nhất convention attachment `Count > 0` cho tất cả nhóm (null/`[]` = giữ file cũ — khớp `them-moi`, tránh xóa file ngoài ý muốn khi FE gửi `[]` mặc định).
+
+`dotnet build QLDA.WebApi` (output tạm, do `QLDA.WebApi.exe` đang chạy giữ khóa bin) — **0 warning / 0 error**. Không cần migration (schema đã đủ `GoiThauId`/`NgayKetThucDanhGia`, bảng `ToTrinhQuyetDinh`/`VanBanQuyetDinh`).
+
+Docs: `report.md` (mục 19), `test-workflow.md` (mục 10). Dead code còn giữ (chưa xóa): `ToTrinhThamDinhNhaThauModel`/`ToTrinhThamDinhNhaThauMappingConfiguration` + 2 extension `GetDanhSachTepDinhKem`/`GetDanhSachTepThamDinh` trong `TepDinhKemMappingConfigurations.cs`.
+
