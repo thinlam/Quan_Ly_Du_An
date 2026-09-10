@@ -187,7 +187,7 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
         CancellationToken cancellationToken)
     {
         var ids = request.Ids?.Select(e => e.ToString());
-        var query = DanhMucTrangThaiPheDuyet.GetQueryableSet()
+        var query = DanhMucTrangThaiPheDuyet.GetQueryableSet(OnlyUsed: false)
             .Where(x => !x.IsDeleted)
             .WhereIf(!string.IsNullOrWhiteSpace(request.Loai), x => x.Loai == request.Loai)
             .WhereIf(request.Ids != null, e => ids!.Contains(e.Id!.ToString()) || e.Used || request.GetAll,
@@ -232,7 +232,7 @@ internal class DanhMucGetDanhSachQueryHandler(IServiceProvider serviceProvider)
         where TDto : DanhMucDto<TKey>, new()
     {
         var ids = request.Ids?.Select(e => e.ToString());
-        var query = repo.GetQueryableSet()
+        var query = repo.GetQueryableSet(OnlyUsed: false)
             .Where(x => !x.IsDeleted)
             .WhereIf(request.Ids != null, e => ids!.Contains(e.Id!.ToString()) || e.Used || request.GetAll,
                 e => request.GetAll || e.Used);
