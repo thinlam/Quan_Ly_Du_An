@@ -217,7 +217,8 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         var entity = result.Entity;
 
         // Legacy — DanhSachTepDinhKem / DanhSachTepThamDinh (giữ contract cũ).
-        if (dto.DanhSachTepDinhKem is { Count: > 0 } danhSachTepDinhKem)
+        // Convention: null = giữ file cũ; [] = xóa hết; non-empty = sync (CapNhatAttachmentXoaFile).
+        if (dto.DanhSachTepDinhKem is { } danhSachTepDinhKem)
         {
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
@@ -227,7 +228,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
                 AutoDeleteMissing = true
             }, cancellationToken);
         }
-        if (dto.DanhSachTepThamDinh is { Count: > 0 } danhSachTepThamDinh)
+        if (dto.DanhSachTepThamDinh is { } danhSachTepThamDinh)
         {
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
@@ -239,7 +240,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         }
 
         // File E-HSDT / Đánh giá của Thông tin nhà thầu — Issue #179.
-        if (dto.ThongTinNhaThau?.FileEHSDT is { Count: > 0 } fileEHSDT)
+        if (dto.ThongTinNhaThau?.FileEHSDT is { } fileEHSDT)
         {
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
@@ -249,7 +250,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
                 AutoDeleteMissing = true
             }, cancellationToken);
         }
-        if (dto.ThongTinNhaThau?.FileDanhGia is { Count: > 0 } fileDanhGia)
+        if (dto.ThongTinNhaThau?.FileDanhGia is { } fileDanhGia)
         {
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
@@ -262,7 +263,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
 
         // File của 3 bước xử lý (Đối chiếu/Thương thảo/Thẩm định) — Issue #179.
         List<TepDinhKemDto>? filesDoiChieu = null;
-        if (dto.DoiChieu?.File is { Count: > 0 } fileDoiChieu)
+        if (dto.DoiChieu?.File is { } fileDoiChieu)
         {
             var entities = fileDoiChieu.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_DoiChieu).ToList();
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
@@ -275,7 +276,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             filesDoiChieu = entities.Select(x => x.ToDto()).ToList();
         }
         List<TepDinhKemDto>? filesThuongThao = null;
-        if (dto.ThuongThao?.File is { Count: > 0 } fileThuongThao)
+        if (dto.ThuongThao?.File is { } fileThuongThao)
         {
             var entities = fileThuongThao.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_ThuongThao).ToList();
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
@@ -288,7 +289,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             filesThuongThao = entities.Select(x => x.ToDto()).ToList();
         }
         List<TepDinhKemDto>? filesThamDinhBuoc = null;
-        if (dto.ThamDinh?.File is { Count: > 0 } fileThamDinh)
+        if (dto.ThamDinh?.File is { } fileThamDinh)
         {
             var entities = fileThamDinh.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_ThamDinh).ToList();
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
@@ -302,7 +303,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         }
 
         // File Tờ trình kết quả — GroupId là ToTrinhQuyetDinh.Id (long), chỉ khi có bản ghi.
-        if (result.ToTrinhQuyetDinhId is { } toTrinhQuyetDinhId && dto.ToTrinhKetQua?.File is { Count: > 0 } fileToTrinhKetQua)
+        if (result.ToTrinhQuyetDinhId is { } toTrinhQuyetDinhId && dto.ToTrinhKetQua?.File is { } fileToTrinhKetQua)
         {
             // ToTrinhQuyetDinh.Id là long (không phải Guid) — map thủ công GroupId theo id dạng long.
             var files = fileToTrinhKetQua.Select(f => new Attachment {
@@ -327,7 +328,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
         }
 
         // File Quyết định phê duyệt — GroupId = VanBanQuyetDinh.Id (= entity.Id), chỉ khi có bản ghi.
-        if (result.VanBanQuyetDinhId is { } vanBanQuyetDinhId && dto.QuyetDinhPheDuyet?.File is { Count: > 0 } fileQuyetDinh)
+        if (result.VanBanQuyetDinhId is { } vanBanQuyetDinhId && dto.QuyetDinhPheDuyet?.File is { } fileQuyetDinh)
         {
             await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
             {
