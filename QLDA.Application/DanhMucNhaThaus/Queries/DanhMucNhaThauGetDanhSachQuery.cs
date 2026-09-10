@@ -19,7 +19,7 @@ public record DanhMucNhaThauGetDanhSachQueryHandler(IServiceProvider ServiceProv
 
     public async Task<PaginatedList<DanhMucNhaThauDto>> Handle(DanhMucNhaThauGetDanhSachQuery request,
         CancellationToken cancellationToken) {
-        var query = DanhMucNhaThau.GetOrderedSet().AsNoTracking()
+        var query = DanhMucNhaThau.GetQueryableSet(OnlyUsed: false).AsNoTracking()
             .Where(e => !e.IsDeleted)
             .WhereIf(request.Ids != null, e => request.Ids!.Contains(e.Id) || e.Used || request.GetAll, e => request.GetAll || e.Used)
             .WhereGlobalFilter(

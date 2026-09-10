@@ -19,7 +19,7 @@ public record UserMasterGetDanhSachQueryHandler(IServiceProvider ServiceProvider
 
     public async Task<PaginatedList<UserMasterDto>> Handle(UserMasterGetDanhSachQuery request,
         CancellationToken cancellationToken) {
-        var queryable = _repository.GetQueryableSet().AsNoTracking()
+        var queryable = _repository.GetQueryableSet(OnlyUsed: false).AsNoTracking()
             .Where(e => e.LaDonViChinh == true)
             .WhereIf(request.Ids != null, e => request.Ids!.Contains((long)e.UserPortalId!) || e.Used == true || request.GetAll, e => request.GetAll || e.Used == true)
             .WhereIf(_userService.Info?.DonViID > 0, e => e.DonViId == _userService.Info!.DonViID);

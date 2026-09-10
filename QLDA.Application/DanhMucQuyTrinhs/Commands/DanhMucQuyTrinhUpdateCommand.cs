@@ -15,7 +15,7 @@ internal class DanhMucQuyTrinhUpdateCommandHandler : IRequestHandler<DanhMucQuyT
     }
 
     public async Task<DanhMucQuyTrinhDto> Handle(DanhMucQuyTrinhUpdateCommand request, CancellationToken cancellationToken) {
-        var entity = await DanhMucQuyTrinh.GetOrderedSet().FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+        var entity = await DanhMucQuyTrinh.GetQueryableSet(OnlyUsed: false).FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, "Danh mục quy trình không tồn tại.");
 
         entity!.Ma = request.Dto.Ma;

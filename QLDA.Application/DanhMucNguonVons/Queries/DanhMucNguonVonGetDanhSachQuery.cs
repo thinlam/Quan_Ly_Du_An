@@ -18,7 +18,7 @@ public record DanhMucNguonVonGetDanhSachQueryHandler(IServiceProvider ServicePro
 
     public async Task<PaginatedList<DanhMucNguonVonDto>> Handle(DanhMucNguonVonGetDanhSachQuery request,
         CancellationToken cancellationToken) {
-        var query = DanhMucNguonVon.GetQueryableSet().AsNoTracking()
+        var query = DanhMucNguonVon.GetQueryableSet(OnlyUsed: false).AsNoTracking()
             .WhereIf(request.Ids != null, e => request.Ids!.Contains(e.Id) || e.Used || request.GetAll, e => request.GetAll || e.Used)
 
             .WhereIf(!string.IsNullOrWhiteSpace(request.DuAnId),

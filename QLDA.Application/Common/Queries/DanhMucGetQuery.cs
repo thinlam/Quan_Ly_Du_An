@@ -82,7 +82,7 @@ public class DanhMucGetQueryHandler(IServiceProvider serviceProvider) : IRequest
         CancellationToken cancellationToken = default)
         where TEntity : class, IHasKey<TKey>, IAggregateRoot, new()
         where TKey : notnull {
-        var query = repo.GetOrderedSet();
+        var query = repo.GetQueryableSet(OnlyUsed: false);
         // var query = request is { Enum: true } ? repo.GetOriginalSet() : repo.GetQueryableSet();
 
 

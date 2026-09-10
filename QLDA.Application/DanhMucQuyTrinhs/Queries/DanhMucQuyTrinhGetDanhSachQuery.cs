@@ -18,7 +18,7 @@ public record DanhMucQuyTrinhGetDanhSachQueryHandler(IServiceProvider ServicePro
 
     public async Task<PaginatedList<DanhMucQuyTrinhDto>> Handle(DanhMucQuyTrinhGetDanhSachQuery request,
         CancellationToken cancellationToken) {
-        var query = DanhMucQuyTrinh.GetOrderedSet().AsNoTracking()
+        var query = DanhMucQuyTrinh.GetQueryableSet(OnlyUsed: false).AsNoTracking()
                 .WhereIf(request.HasStep, e => e.Buocs!.Any())
                 .WhereFunc(request.IsCbo,
                     q => q //Combobox
