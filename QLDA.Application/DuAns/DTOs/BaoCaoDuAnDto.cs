@@ -33,8 +33,8 @@ public class BaoCaoDuAnDto : IHasKey<Guid> {
     public string? TienDo { get; set; }
 
     // Aggregated fields
-    public long? GiaTriNghiemThu { get; set; }
-    public long? GiaTriGiaiNgan { get; set; }
+    public decimal? GiaTriNghiemThu { get; set; }
+    public decimal? GiaTriGiaiNgan { get; set; }
 
     public int? HinhThucDauTuId { get; set; }
     public int? LoaiDuAnId { get; set; }

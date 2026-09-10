@@ -27,6 +27,12 @@ internal class DashboardTienDoGiaiNganNguonVonQueryHandler(IServiceProvider serv
 
         var queryable = _authManager.FilterVisible(_thanhToan.GetQueryableSet(), AuthorizationResourceKeys.DuAn).Include(e => e.DuAn).ThenInclude(x => x!.DuAnNguonVons)
                     .Where(e => !e.DuAn!.IsDeleted)
+                //    .Where(e => e.NghiemThu != null
+                //&& e.NghiemThu.HopDong != null
+                //&& !e.NghiemThu.HopDong.IsDeleted // hd.IsDeleted = 0
+                //&& e.NghiemThu.HopDong.GoiThau != null
+                //&& e.NghiemThu.HopDong.GoiThau.DuAn != null
+                //&& !e.NghiemThu.HopDong.GoiThau.DuAn.IsDeleted)
                     .WhereIf(req.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == req.LoaiDuAnTheoNamId)
                     .WhereIf(req.LoaiDuAnId > 0, e => e.DuAn!.LoaiDuAnId == req.LoaiDuAnId)
                     .WhereIf(req.NguonVonId > 0, e => e.DuAn!.DuAnNguonVons!.Select(i => i.RightId).Contains(req.NguonVonId ?? 0))
@@ -34,23 +40,21 @@ internal class DashboardTienDoGiaiNganNguonVonQueryHandler(IServiceProvider serv
                     ;
         var result = await queryable
     .GroupBy(e => new {
+        NguonVonId = e.NghiemThu!.HopDong!.GoiThau!.NguonVonId,
         LoaiDuAnId = e.DuAn!.LoaiDuAnId,
         LoaiDuAnTheoNamId = e.DuAn!.LoaiDuAnTheoNamId,
         Nam = e.NgayHoaDon!.Value.Year,  
         Thang = e.NgayHoaDon!.Value.Month 
     })
     .Select(g => new TinhHinhGiaiNganDto {
+        NguonVonId = g.Key.NguonVonId,
         LoaiDuAnId = g.Key.LoaiDuAnId,
         LoaiDuAnTheoNamId = g.Key.LoaiDuAnTheoNamId,
         Nam = g.Key.Nam,
         Thang = g.Key.Thang,
-        // NguonVonId lấy từ req hoặc lấy từ bảng trung gian (nếu logic 1-1)
-        NguonVonId = req.NguonVonId,
-        GiaTriGiaiNgan = g.Sum(x => x.GiaTri) / 1000000
-    })
-    .ToListAsync();
-
-        return result;
+        GiaTriGiaiNgan = Math.Round( (g.Sum(x =>(decimal?)x.GiaTri)?? 0m ) / 1000000m, 6) 
+    }) .ToListAsync();
+     return result;
         /* old
          * 
         const string sql = """

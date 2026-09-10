@@ -34,9 +34,10 @@ internal class TongHopVonGiaiNganQueryHandler
         _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
     }
 
-    public async Task<List<BaoCaoDuAnDto>> Handle(
-       TongHopVonGiaiNganQuery request,
-       CancellationToken cancellationToken = default) {
+    public async Task<List<BaoCaoDuAnDto>> Handle(   TongHopVonGiaiNganQuery request, CancellationToken cancellationToken = default) {
+        var firstDayOfYear = new DateTimeOffset(request.Nam, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var firstDayOfNextYear = firstDayOfYear.AddYears(1);
+
         var query = _duAn.GetQueryableSet()
             .Include(d => d.GiaiDoanHienTai)
             .Include(d => d.BuocHienTai)
@@ -71,17 +72,20 @@ internal class TongHopVonGiaiNganQueryHandler
                     .Select(x => x.HoTen).FirstOrDefault(),
                 DonViPhoiHops = string.Empty,
                 LoaiDuAnTheoNamId = d.LoaiDuAnTheoNamId,
-                KeHoachVon = _keHoachVon.GetQueryableSet()
-                    .Where(k =>   !k.IsDeleted &&  k.Nam == request.Nam && k.DuAnId == d.Id)
-                    .Sum(k =>(k.SoVonDieuChinh ?? 0) != 0   ? (k.SoVonDieuChinh ?? 0) : k.SoVon),
-
-                GiaTriGiaiNgan = _thanhToan.GetQueryableSet()
-                    .Where(t =>
-                        !t.IsDeleted &&
-                        t.DuAnId == d.Id &&
-                        t.NgayHoaDon.HasValue &&
-                        t.NgayHoaDon.Value.Year == request.Nam)
-                    .Sum(t => (long?)t.GiaTri) ?? 0
+           
+                KeHoachVon = Math.Round((_keHoachVon.GetQueryableSet()
+                                            .Where(k => !k.IsDeleted && k.Nam == request.Nam && k.DuAnId == d.Id)
+                                            .Sum(k => (decimal?)(
+                                                (!k.SoVonDieuChinh.HasValue || k.SoVonDieuChinh.Value == 0)
+                                                    ? k.SoVon
+                                                    : k.SoVonDieuChinh.Value
+                                            )) ?? 0m) / 1000000m,6),
+                GiaTriGiaiNgan = Math.Round((_thanhToan.GetQueryableSet()
+                                                                            .Where(t =>   !t.IsDeleted &&   t.DuAnId == d.Id 
+                                                                                 && t.NgayHoaDon.HasValue && (t.NgayHoaDon.Value >= firstDayOfYear
+                                                                                && t.NgayHoaDon.Value < firstDayOfNextYear ))
+                                                                            .Sum(t => (decimal?)t.GiaTri) ?? 0m) / 1000000m
+                                                    , 6)
             }).ToListAsync(cancellationToken);
 
         var duAnIds = result.Select(x => x.Id).ToList();
