@@ -390,3 +390,41 @@ Cần thêm navigation `VanBanQuyetDinh.TrangThai` (→ `DanhMucTrangThaiPheDuye
 3. Xác nhận tên bảng mới cho Đối chiếu/Thương thảo/Thẩm định (`ToTrinhThamDinhBuocXuLy` là tên đề xuất, có thể đổi theo convention team muốn).
 4. Xác nhận tên hiển thị (`Ten`) + `PartialView` constant cho `EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau` trong `LoaiVanBanQuyetDinhConst`.
 5. Sau khi chốt, mới bắt đầu: (a) fix build lỗi hiện tại, (b) domain + EF configuration, (c) migration, (d) Application layer (Command/Query/DTO), (e) WebApi layer (Model/Controller), (f) sửa API tổng hợp, (g) build + test thủ công theo `test-workflow.md`.
+
+---
+
+## 19. Fix `cap-nhat` cập nhật đầy đủ 6 object (2026-09-10)
+
+> Follow-up của Issue #179 — mục 0.2/việc còn lại từ `journal.md` ("Chưa cập nhật `Update` ... chỉ mới đảm bảo `them-moi` hoạt động đúng").
+
+### 19.1. Hiện trạng trước khi sửa
+
+`PUT api/to-trinh-tham-dinh-nha-thau/cap-nhat` vẫn dùng contract/flow cũ (pre-#179):
+
+| Object | Trước khi sửa | Nguyên nhân |
+|---|---|---|
+| `DoiChieu`/`ThuongThao`/`ThamDinh` (data) | ✅ đã update | `SyncBuocXuLys` (retrofit 2026-08-13) |
+| File `DoiChieu`/`ThuongThao`/`ThamDinh` | ✅ đã lưu | Controller `Update` |
+| `NhaThauId` (top-level) | ✅ đã update | model cũ có property |
+| `GoiThauId` | ❌ | model cũ thiếu property → binding drop |
+| `ThongTinNhaThau.NgayKetThucDanhGia` | ❌ | handler không set |
+| `ThongTinNhaThau.FileEHSDT` / `FileDanhGia` | ❌ | controller không lưu |
+| `ToTrinhKetQua` → `ToTrinhQuyetDinh` | ❌ | handler không upsert |
+| `QuyetDinhPheDuyet` → `VanBanQuyetDinh` | ❌ | handler không upsert |
+
+**Root cause:** bản `them-moi` được viết lại theo #179 (DTO + Command + 6 object + 7 nhóm file) nhưng `cap-nhat` chỉ được retrofit `BuocXuLys`; `ToTrinhThamDinhNhaThauModel`/`ToTrinhThamDinhNhaThauUpdateCommand`/Controller `Update` vẫn là shape cũ → các field FE gửi không có property tương ứng nên bị bỏ im lặng khi binding.
+
+### 19.2. Giải pháp đã implement
+
+- **DTO mới** `ToTrinhThamDinhNhaThauCapNhatDto` (Application) — khớp contract `them-moi` + `Id` + legacy `DanhSachTepDinhKem`/`DanhSachTepThamDinh`. Tái dùng nested DTO có sẵn (`ThongTinNhaThauDto`, `ToTrinhThamDinhBuocXuLyDto`, `ToTrinhKetQuaDto`, `QuyetDinhPheDuyetDto`).
+- **`ToTrinhThamDinhNhaThauUpdateCommand`** — nhận DTO mới; upsert parent (`GoiThauId`/`NhaThauId`/`NgayKetThucDanhGia` + `SyncBuocXuLys`) + `ToTrinhQuyetDinh` (theo `EntityId`+`Loai`) + `VanBanQuyetDinh` (theo `Id`+`Loai`) trong 1 transaction; trả `ToTrinhThamDinhNhaThauUpdateResult` (Entity + child IDs) để Controller lưu file đúng GroupId.
+- **Controller `Update`** — bind DTO mới; lưu thêm 4 nhóm file (`FileEHSDT`, `FileDanhGia`, `ToTrinhQuyetDinh`, `..._QuyetDinh`).
+- **Convention attachment thống nhất `is { Count: > 0 }`** (giống `them-moi`): `null`/`[]` → giữ nguyên file cũ (không chạy bulk); list không rỗng → bulk `AutoDeleteMissing=true` (xóa file bị bỏ khỏi list). Tránh vô tình xóa file khi FE gửi `[]` mặc định.
+- **Reuse:** helper `ToTrinhKetQuaDto`↔`ToTrinhQuyetDinh` và `QuyetDinhPheDuyetDto`↔`VanBanQuyetDinh` dùng chung cho cả Create lẫn Update (không duplicate logic).
+
+Không cần migration (schema đã đủ `GoiThauId`/`NgayKetThucDanhGia`, bảng `ToTrinhQuyetDinh`/`VanBanQuyetDinh`).
+
+### 19.3. Dead code (giữ nguyên, chưa xóa)
+
+- `QLDA.WebApi/Models/ToTrinhThamDinhNhaThau/ToTrinhThamDinhNhaThauModel.cs` + `ToTrinhThamDinhNhaThauMappingConfiguration.cs`.
+- 2 extension `GetDanhSachTepDinhKem`/`GetDanhSachTepThamDinh` cho model này trong `QLDA.WebApi/Models/TepDinhKems/TepDinhKemMappingConfigurations.cs` (dòng 233-236).

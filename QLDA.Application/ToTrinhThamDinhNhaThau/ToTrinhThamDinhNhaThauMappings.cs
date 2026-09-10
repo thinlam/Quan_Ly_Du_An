@@ -58,6 +58,59 @@ public static class ToTrinhThamDinhNhaThauMappings
         }
     }
 
+    /// <summary>
+    /// Tờ trình kết quả (mục 6) → <see cref="ToTrinhQuyetDinh"/> (Loai=ToTrinhThamDinhNhaThau).
+    /// Dùng chung Create + Update (Issue #179).
+    /// </summary>
+    public static ToTrinhQuyetDinh ToToTrinhQuyetDinh(this ToTrinhKetQuaDto dto, Guid entityId)
+    {
+        var entity = new ToTrinhQuyetDinh
+        {
+            EntityId = entityId,
+            Loai = ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau,
+        };
+        dto.ApplyTo(entity);
+        return entity;
+    }
+
+    public static void ApplyTo(this ToTrinhKetQuaDto dto, ToTrinhQuyetDinh target)
+    {
+        target.So = dto.So;
+        target.Ngay = dto.Ngay;
+        target.NguoiKy = dto.NguoiKy;
+        target.ChucVu = dto.ChucVuId;
+        target.TrichYeu = dto.TrichYeu;
+    }
+
+    /// <summary>
+    /// Quyết định phê duyệt (mục 7) → <see cref="VanBanQuyetDinh"/>. Id = entity.Id
+    /// (giống pattern HoSoMoiThauDienTuDuyetCommand) để flow duyệt qua QuanLyPheDuyet
+    /// tra được đúng bản ghi cần đồng bộ trạng thái. Dùng chung Create + Update (Issue #179).
+    /// </summary>
+    public static VanBanQuyetDinh ToVanBanQuyetDinh(this QuyetDinhPheDuyetDto dto, ToTrinhThamDinhNhaThau entity, int? trangThaiDuyetId)
+    {
+        var quyetDinh = new VanBanQuyetDinh
+        {
+            Id = entity.Id,
+            DuAnId = entity.DuAnId,
+            BuocId = entity.BuocId,
+            Loai = nameof(EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau),
+            TrangThaiDuyetId = trangThaiDuyetId,
+        };
+        dto.ApplyTo(quyetDinh);
+        return quyetDinh;
+    }
+
+    public static void ApplyTo(this QuyetDinhPheDuyetDto dto, VanBanQuyetDinh target)
+    {
+        target.So = dto.So;
+        target.Ngay = dto.Ngay;
+        target.NguoiKy = dto.NguoiKy;
+        target.NgayKy = dto.NgayKy;
+        target.NguoiKyChucVuId = dto.ChucVuId;
+        target.TrichYeu = dto.TrichYeu;
+    }
+
     public static ToTrinhThamDinhBuocXuLyDto ToDto(this ToTrinhThamDinhBuocXuLy entity, List<TepDinhKemDto>? files = null) =>
         new() {
             So = entity.So,
