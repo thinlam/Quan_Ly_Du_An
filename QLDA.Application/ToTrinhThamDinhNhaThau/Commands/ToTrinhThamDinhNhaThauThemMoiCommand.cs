@@ -81,36 +81,13 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
 
         ToTrinhQuyetDinh? toTrinhQuyetDinh = null;
         if (dto.ToTrinhKetQua != null) {
-            toTrinhQuyetDinh = new ToTrinhQuyetDinh {
-                EntityId = entity.Id,
-                Loai = ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau,
-                So = dto.ToTrinhKetQua.So,
-                Ngay = dto.ToTrinhKetQua.Ngay,
-                NguoiKy = dto.ToTrinhKetQua.NguoiKy,
-                ChucVu = dto.ToTrinhKetQua.ChucVuId,
-                TrichYeu = dto.ToTrinhKetQua.TrichYeu,
-            };
+            toTrinhQuyetDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id);
             await _toTrinhQuyetDinhRepo.AddAsync(toTrinhQuyetDinh, cancellationToken);
         }
 
         VanBanQuyetDinh? vanBanQuyetDinh = null;
         if (dto.QuyetDinhPheDuyet != null) {
-            // Id = entity.Id (giống pattern HoSoMoiThauDienTuDuyetCommand) để ToTrinhThamDinhNhaThauDuyetCommand
-            // (dispatch qua QuanLyPheDuyet) tra được đúng VanBanQuyetDinh cần đồng bộ trạng thái khi duyệt.
-            // TrangThaiDuyetId đồng bộ với TrangThaiId của Tờ trình (Dự thảo) — không tạo trạng thái "Chờ duyệt" riêng.
-            vanBanQuyetDinh = new VanBanQuyetDinh {
-                Id = entity.Id,
-                DuAnId = entity.DuAnId,
-                BuocId = entity.BuocId,
-                So = dto.QuyetDinhPheDuyet.So,
-                Ngay = dto.QuyetDinhPheDuyet.Ngay,
-                NguoiKy = dto.QuyetDinhPheDuyet.NguoiKy,
-                NgayKy = dto.QuyetDinhPheDuyet.NgayKy,
-                NguoiKyChucVuId = dto.QuyetDinhPheDuyet.ChucVuId,
-                TrichYeu = dto.QuyetDinhPheDuyet.TrichYeu,
-                Loai = nameof(EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau),
-                TrangThaiDuyetId = trangThaiDuThao?.Id,
-            };
+            vanBanQuyetDinh = dto.QuyetDinhPheDuyet.ToVanBanQuyetDinh(entity, trangThaiDuThao?.Id);
             await _vanBanQuyetDinhRepo.AddAsync(vanBanQuyetDinh, cancellationToken);
         }
 

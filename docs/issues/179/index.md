@@ -49,6 +49,8 @@ Ngoài ra:
 
 **2026-08-17: hoàn tất `GET {id}/chi-tiet`** (branch `bugfix/to-trinh-td-nha-thau-chi-tiet`) — response đã bổ sung `goiThauId`, `thongTinNhaThau`, `toTrinhKetQua`, `quyetDinhPheDuyet` qua DTO riêng `ToTrinhThamDinhNhaThauChiTietDto` + query riêng `ToTrinhThamDinhNhaThauGetChiTietQuery` + `ToChiTietDto` mapping. Đã kiểm tra **không xung đột** với dev D đang thêm `GoiThauId` cho `danh-sach-tien-do` (chỉ chung file Controller nhưng khác method; task chi-tiet không đụng list DTO/Query/Mapping của dev D).
 
+**2026-09-10: hoàn tất `PUT cap-nhat` cập nhật đầy đủ 6 object** — chuyển sang DTO/flow giống `them-moi`: `ToTrinhThamDinhNhaThauCapNhatDto` + `ToTrinhThamDinhNhaThauUpdateCommand` upsert `ToTrinhQuyetDinh`/`VanBanQuyetDinh` + Controller lưu thêm file `FileEHSDT`/`FileDanhGia`/`ToTrinhQuyetDinh`/`..._QuyetDinh`. Convention attachment `Count > 0` (null/`[]` giữ file cũ). Không cần migration. Chi tiết: `report.md` mục 19, `test-workflow.md` mục 10.
+
 Entity `ToTrinhThamDinhNhaThau` (sau 2026-08-14):
 
 - **Đã xóa** (cột/prop cũ không dùng): `So`, `NgayTrinh`, `TrichYeu`, `DaThamDinh`, collection `NhaThaus`.
