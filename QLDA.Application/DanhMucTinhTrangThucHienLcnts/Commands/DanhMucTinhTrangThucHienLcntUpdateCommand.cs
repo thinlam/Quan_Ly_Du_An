@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucTinhTrangThucHienLcnts.DTOs;
 
 namespace QLDA.Application.DanhMucTinhTrangThucHienLcnts.Commands;
@@ -20,7 +20,7 @@ internal class DanhMucTinhTrangThucHienLcntUpdateCommandHandler : IRequestHandle
     {
         await ValidateAsync(request, cancellationToken);
 
-        var entity = await _danhMuc.GetOrderedSet()
+        var entity = await _danhMuc.GetQueryableSet(OnlyUsed: false)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken: cancellationToken);
 
         ManagedException.ThrowIf(entity == null, "Danh mục không tồn tại");
@@ -40,7 +40,7 @@ internal class DanhMucTinhTrangThucHienLcntUpdateCommandHandler : IRequestHandle
     private async Task ValidateAsync(DanhMucTinhTrangThucHienLcntUpdateCommand request, CancellationToken cancellationToken)
     {
         // Kiểm tra trùng tên (trừ chính nó)
-        var exists = await _danhMuc.GetQueryableSet()
+        var exists = await _danhMuc.GetQueryableSet(OnlyUsed: false)
             .AnyAsync(e => e.Ten == request.Dto.Ten && e.Id != request.Dto.Id, cancellationToken: cancellationToken);
 
         ManagedException.ThrowIf(exists, "Tên đã tồn tại");

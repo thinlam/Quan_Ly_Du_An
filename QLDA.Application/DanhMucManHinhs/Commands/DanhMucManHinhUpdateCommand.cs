@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucManHinhs.DTOs;
 
 namespace QLDA.Application.DanhMucManHinhs.Commands;
@@ -16,7 +16,7 @@ internal class DanhMucManHinhUpdateCommandHandler : IRequestHandler<DanhMucManHi
     public async Task<DanhMucManHinh> Handle(DanhMucManHinhUpdateCommand request, CancellationToken cancellationToken = default) {
         await ValidateAsync(request, cancellationToken);
 
-        var entity = await DanhMucManHinh.GetQueryableSet()
+        var entity = await DanhMucManHinh.GetQueryableSet(OnlyUsed: false)
             .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIfNull(entity);
 
@@ -30,7 +30,7 @@ internal class DanhMucManHinhUpdateCommandHandler : IRequestHandler<DanhMucManHi
 
     private async Task ValidateAsync(DanhMucManHinhUpdateCommand request, CancellationToken cancellationToken = default) {
         ManagedException.ThrowIf(
-            when: await DanhMucManHinh.GetQueryableSet().AnyAsync(e => e.Id != request.Dto.Id && e.Ten == request.Dto.Ten, cancellationToken: cancellationToken),
+            when: await DanhMucManHinh.GetQueryableSet(OnlyUsed: false).AnyAsync(e => e.Id != request.Dto.Id && e.Ten == request.Dto.Ten, cancellationToken: cancellationToken),
             message: "Tên không được trùng");
     }
 

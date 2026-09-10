@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace QLDA.Application.DanhMucLoaiDieuChinhs.Commands;
 
@@ -14,7 +14,7 @@ internal class DanhMucLoaiDieuChinhDeleteCommandHandler : IRequestHandler<DanhMu
     }
 
     public async Task<bool> Handle(DanhMucLoaiDieuChinhDeleteCommand request, CancellationToken cancellationToken) {
-        var entity = await DanhMucLoaiDieuChinh.GetOrderedSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        var entity = await DanhMucLoaiDieuChinh.GetQueryableSet(OnlyUsed: false).FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, $"Không tìm thấy loại điều chỉnh có ID {request.Id}");
 
         entity.IsDeleted = true;

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucLoaiDieuChinhs.DTOs;
 
 namespace QLDA.Application.DanhMucLoaiDieuChinhs.Queries;
@@ -13,7 +13,7 @@ internal class DanhMucLoaiDieuChinhGetByIdQueryHandler : IRequestHandler<DanhMuc
     }
 
     public async Task<DanhMucLoaiDieuChinhDto?> Handle(DanhMucLoaiDieuChinhGetByIdQuery request, CancellationToken cancellationToken) {
-        var entity = await DanhMucLoaiDieuChinh.GetOrderedSet().FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        var entity = await DanhMucLoaiDieuChinh.GetQueryableSet(OnlyUsed: false).FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
         if (entity == null) return null;
 
         return new DanhMucLoaiDieuChinhDto {

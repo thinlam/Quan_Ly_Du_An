@@ -1,4 +1,4 @@
-using QLDA.Application.Common.Mapping;
+﻿using QLDA.Application.Common.Mapping;
 using QLDA.Application.DanhMucLoaiDieuChinhs.DTOs;
 
 namespace QLDA.Application.DanhMucLoaiDieuChinhs.Queries;
@@ -13,7 +13,8 @@ internal class DanhMucLoaiDieuChinhGetDanhSachQueryHandler : IRequestHandler<Dan
     }
 
     public async Task<PaginatedList<DanhMucLoaiDieuChinhDto>> Handle(DanhMucLoaiDieuChinhGetDanhSachQuery request, CancellationToken cancellationToken) {
-        var query = DanhMucLoaiDieuChinh.GetQueryableSet()
+        var query = DanhMucLoaiDieuChinh.GetQueryableSet(OnlyUsed: false)
+            .WhereIf(!request.GetAll, e => e.Used)
             .OrderBy(x => x.Stt)
             .Select(e => new DanhMucLoaiDieuChinhDto {
                 Id = e.Id,

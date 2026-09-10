@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 
 namespace QLDA.Application.DmHinhThucLuaChonNhaThaus.Queries;
@@ -20,8 +20,7 @@ public record DanhMucNguonVonGetDanhSachQueryHandler(IServiceProvider servicePro
 
     public async Task<PaginatedList<DanhMucHinhThucLuaChonNhaThau>> Handle(DmHinhThucLuaChonNhaThauGetDanhSachQuery request,
         CancellationToken cancellationToken = default) {
-        var query = DmHinhThucLuaChonNhaThau.GetQueryableSet().AsNoTracking()
-           .WhereIf( request.GetAll, e => request.GetAll )
+        var query = DmHinhThucLuaChonNhaThau.GetQueryableSet(OnlyUsed: false).AsNoTracking()
            .WhereIf( !request.GetAll, e =>  e.Used)
            .WhereFunc(request.IsNoTracking, e => e.AsNoTracking());
 

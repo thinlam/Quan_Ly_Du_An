@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucBuocs.DTOs;
 
@@ -49,12 +49,12 @@ internal class DanhMucBuocInsertCommandHandler : IRequestHandler<DanhMucBuocInse
 
         DanhMucBuoc? parent = null;
         if (request.Dto.ParentId > 0) {
-            parent = await DanhMucBuoc.GetOrderedSet().FirstOrDefaultAsync(c => c.Id == request.Dto.ParentId, cancellationToken: cancellationToken);
+            parent = await DanhMucBuoc.GetQueryableSet(OnlyUsed: false).FirstOrDefaultAsync(c => c.Id == request.Dto.ParentId, cancellationToken: cancellationToken);
             ManagedException.ThrowIf(parent == null, "Bước cha không tồn tại.");
         }
 
         if (request.Dto.DanhSachManHinh?.Count > 0) {
-            var danhSachManHinh = await DanhMucManHinh.GetQueryableSet()
+            var danhSachManHinh = await DanhMucManHinh.GetQueryableSet(OnlyUsed: false)
                 .Where(e => request.Dto.DanhSachManHinh.Contains(e.Id))
                 .ToListAsync(cancellationToken: cancellationToken);
 

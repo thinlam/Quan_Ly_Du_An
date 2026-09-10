@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucLoaiDieuChinhs.DTOs;
 
 namespace QLDA.Application.DanhMucLoaiDieuChinhs.Commands;
@@ -15,7 +15,7 @@ internal class DanhMucLoaiDieuChinhUpdateCommandHandler : IRequestHandler<DanhMu
     }
 
     public async Task<DanhMucLoaiDieuChinhDto> Handle(DanhMucLoaiDieuChinhUpdateCommand request, CancellationToken cancellationToken) {
-        var entity = await DanhMucLoaiDieuChinh.GetOrderedSet().FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
+        var entity = await DanhMucLoaiDieuChinh.GetQueryableSet(OnlyUsed: false).FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
         ManagedException.ThrowIf(entity == null, $"Không tìm thấy loại điều chỉnh có ID {request.Dto.Id}");
 
         entity.Ma = request.Dto.Ma;
