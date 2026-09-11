@@ -68,6 +68,13 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
             entity.NhaThauId = dto.ThongTinNhaThau?.NhaThauId ?? dto.NhaThauId;
         if (dto.ThongTinNhaThau != null)
             entity.NgayKetThucDanhGia = dto.ThongTinNhaThau.NgayKetThucDanhGia;
+
+
+        entity.GiaTriTrungThau = dto.GiaTriTrungThau;
+        entity.SoNgayThucHienHopDong = dto.SoNgayThucHienHopDong;
+        entity.ThoiGianThucHienGoiThau = dto.ThoiGianThucHienGoiThau;   
+
+
         entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao, dto.ThamDinh));
 
         // Tờ trình kết quả (mục 6) — upsert ToTrinhQuyetDinh theo EntityId + Loai (Issue #179).

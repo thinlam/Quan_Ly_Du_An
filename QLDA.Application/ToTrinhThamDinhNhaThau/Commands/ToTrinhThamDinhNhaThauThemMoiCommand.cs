@@ -73,7 +73,13 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
             TrangThaiId = trangThaiDuThao?.Id,
             NhaThauId = dto.ThongTinNhaThau?.NhaThauId is { } id && id != Guid.Empty ? id : null,
             NgayKetThucDanhGia = dto.ThongTinNhaThau?.NgayKetThucDanhGia,
-        };
+            // thong tin kq trúng thầu
+            GiaTriTrungThau = dto.GiaTriTrungThau,
+            SoNgayThucHienHopDong = dto.SoNgayThucHienHopDong,
+            ThoiGianThucHienGoiThau = dto.ThoiGianThucHienGoiThau,
+            
+
+};
         entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao, dto.ThamDinh));
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);

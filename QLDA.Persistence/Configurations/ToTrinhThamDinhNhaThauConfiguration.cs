@@ -30,6 +30,7 @@ public class ToTrinhThamDinhNhaThauConfiguration : AggregateRootConfiguration<To
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false);
 
+
         builder.HasOne(e => e.NhaThau)
             .WithMany()
             .HasForeignKey(e => e.NhaThauId)

@@ -126,6 +126,11 @@ public static class ToTrinhThamDinhNhaThauMappings
             TrangThaiId = entity.TrangThaiId,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
             NhaThauId = entity.NhaThauId,
+            GoiThauId = entity.GoiThauId,
+            GiaTriTrungThau = entity.GiaTriTrungThau??0,
+            SoNgayThucHienHopDong = entity.SoNgayThucHienHopDong,
+            ThoiGianThucHienGoiThau = entity.ThoiGianThucHienGoiThau,
+    
             DanhSachTepDinhKem = files?.Select(x => x.ToDto()).ToList(),
             DanhSachTepThamDinh = filesThamDinh?.Select(x => x.ToDto()).ToList(),
             DoiChieu = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.DoiChieu)?.ToDto(filesDoiChieu),
@@ -158,6 +163,10 @@ public static class ToTrinhThamDinhNhaThauMappings
             GoiThauId = entity.GoiThauId,
             NhaThauId = entity.NhaThauId,
             TrangThaiDangTaiId = entity.TrangThaiDangTaiId,
+            SoNgayThucHienHopDong = entity.SoNgayThucHienHopDong,
+            ThoiGianThucHienGoiThau = entity.ThoiGianThucHienGoiThau    ,
+            GiaTriTrungThau = entity.GiaTriTrungThau,
+
             DanhSachTepDinhKem = danhSachTepDinhKem,
             DanhSachTepThamDinh = danhSachTepThamDinh,
             ThongTinNhaThau = new ThongTinNhaThauDto {
