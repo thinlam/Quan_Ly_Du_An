@@ -52,7 +52,7 @@ internal class DashboardTienDoGiaiNganNguonVonQueryHandler(IServiceProvider serv
         LoaiDuAnTheoNamId = g.Key.LoaiDuAnTheoNamId,
         Nam = g.Key.Nam,
         Thang = g.Key.Thang,
-        GiaTriGiaiNgan = Math.Round( (g.Sum(x =>(decimal?)x.GiaTri)?? 0m ) / 1000000m, 6) 
+        GiaTriGiaiNgan = Math.Round( (g.Sum(x =>(decimal?)x.GiaTri)?? 0m ) / 1000000m,3) 
     }) .ToListAsync();
      return result;
         /* old

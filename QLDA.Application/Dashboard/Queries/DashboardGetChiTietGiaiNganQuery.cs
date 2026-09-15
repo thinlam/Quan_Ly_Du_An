@@ -30,18 +30,18 @@ internal class DashboardGetChiTietGiaiNganQueryHandler(IServiceProvider serviceP
         var result = await queryable
                .Select(h => new DashboardChiTietGiaiNganDto {
                    TenDuAn = h.DuAn!.TenDuAn,
-                   GiaTriHopDong = Math.Round((h.GiaTri ?? 0m) / 1000000m, 6),
+                   GiaTriHopDong = Math.Round((h.GiaTri ?? 0m) / 1000000m, 3),
                    GiaTriGiaiNgan = Math.Round((h.NghiemThus!
                         .Where(n => !n.IsDeleted && n.ThanhToan != null)
                         .Select(n => n.ThanhToan!)
                         .Where(t => !t.IsDeleted  && (request.Nam <= 0
                                                 || (t.NgayHoaDon >= firstDayOfYear && t.NgayHoaDon < firstDayOfNextYear)))
-                        .Sum(t => (decimal?)t.GiaTri) ?? 0m) / 1000000m, 6),
+                        .Sum(t => (decimal?)t.GiaTri) ?? 0m) / 1000000m, 3),
                    Ngay = h.NgayKy,
                    TrangThaiGiaiNgan = h.NghiemThus!
                         .Where(n => !n.IsDeleted && n.ThanhToan != null)
                         .Select(n => n.ThanhToan!)
-                        .Any(t => !t.IsDeleted && (t.GiaTri ?? 0) > 0)    ? "Đã giải ngân"  : "Chưa giải ngân" })
+                        .Any(t => !t.IsDeleted && (t.GiaTri ?? 0) > 0)    ? true  : false })
                .ToListAsync(cancellationToken);
         return result;
         //var queryable = _authManager.FilterVisible(_thanhToan.GetQueryableSet(), AuthorizationResourceKeys.DuAn)

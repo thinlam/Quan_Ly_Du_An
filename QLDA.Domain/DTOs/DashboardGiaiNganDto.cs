@@ -22,5 +22,5 @@ public class DashboardChiTietGiaiNganDto {
     /// <summary>Giá trị hợp đồng (HopDong.GiaTri)</summary>
     public decimal? GiaTriHopDong { get; set; }
     public DateTimeOffset? Ngay { get; set; }
-    public string? TrangThaiGiaiNgan { get; set; }
+    public bool? TrangThaiGiaiNgan { get; set; }
 }
