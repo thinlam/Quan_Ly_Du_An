@@ -49,6 +49,7 @@ namespace QLDA.WebApi.Controllers {
                 PageIndex = req.PageIndex,
                 GlobalFilter = globalFilter,
                 PageSize = req.PageSize,
+                GetAll = true,
             });
             return ResultApi.Ok(res);
         }
