@@ -6,6 +6,7 @@ namespace QLDA.Application.ThanhToans.DTOs;
 public class ThanhToanUpdateDto : IMayHaveTepDinhKemInsertOrUpdateDto {
     public Guid Id { get; set; }
     public Guid NghiemThuId { get; set; }
+    public int? NguonVonId { get; set; }
     public string? SoHoaDon { get; set; }
     public DateTimeOffset? NgayHoaDon { get; set; }
     public long GiaTri { get; set; }

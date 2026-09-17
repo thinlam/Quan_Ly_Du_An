@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Constants;
 using QLDA.Application.DanhMucManHinhs.DTOs;
 
@@ -18,7 +18,7 @@ public record DanhMucManHinhGetDanhSachQueryHandler(IServiceProvider ServiceProv
 
     public async Task<PaginatedList<DanhMucManHinhDto>> Handle(DanhMucManHinhGetDanhSachQuery request,
         CancellationToken cancellationToken) {
-        var query = DanhMucManHinh.GetOrderedSet()
+        var query = DanhMucManHinh.GetQueryableSet(OnlyUsed: false)
             .WhereFunc(request.IsCbo,
                 q => q //Combobox
                        //Còn sử dụng (used = true) và thuộc ids
