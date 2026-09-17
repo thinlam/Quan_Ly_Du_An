@@ -37,7 +37,7 @@ internal class GoiThauUpdateCommandHandler : IRequestHandler<GoiThauUpdateComman
         ManagedException.ThrowIfNull(entity);
 
         // Check step authorization
-        await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+ 
         await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
 
         entity.Update(request.Dto);

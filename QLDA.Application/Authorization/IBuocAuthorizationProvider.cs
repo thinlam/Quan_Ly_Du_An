@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 namespace QLDA.Application.Authorization;
 
 public interface IBuocAuthorizationProvider {
-    IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx);
+    IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx, string type ="Edit");
     IQueryable<T> FilterVisibleChildEntities<T>(
         IQueryable<T> query,
         IRepository<DuAnBuoc, int> buocRepo,

@@ -15,12 +15,16 @@ internal class DuAnDeleteCommandHandler : IRequestHandler<DuAnDeleteCommand> {
     private readonly IAuthorizationManager _auth;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DuAnDeleteCommandHandler> _logger;
-
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     public DuAnDeleteCommandHandler(IServiceProvider serviceProvider,
         ILogger<DuAnDeleteCommandHandler> logger) {
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         TepDinhKem = serviceProvider.GetRequiredService<IRepository<Attachment, Guid>>();
         _auth = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
+
         _logger = logger;
         _unitOfWork = DuAn.UnitOfWork;
     }
@@ -75,7 +79,7 @@ internal class DuAnDeleteCommandHandler : IRequestHandler<DuAnDeleteCommand> {
         // Ownership: chỉ Lãnh đạo phụ trách / Người tạo / Phòng ban phụ trách chính /
         // Phòng ban phối hợp (thuộc DuAnChiuTrachNhiemXuLys, Loai=DonViPhoiHop) mới được xóa.
         if (!await _auth.CanExecuteAsync(AuthorizationResourceKeys.DuAn, entity, cancellationToken))
-            throw new ForbiddenException("User không có quyền xóa dự án này");
+            throw new ForbiddenException("Bạn không có quyền xóa dự án này");
 
         // Check for related entities that prevent deletion
         ManagedException.ThrowIf(entity.VanBanQuyetDinhs != null && entity.VanBanQuyetDinhs.Any(e => !e.IsDeleted), DeleteMessageConstants.VanBanQuyetDinh);

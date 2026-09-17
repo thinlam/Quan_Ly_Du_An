@@ -1,5 +1,7 @@
 using System.Data;
+using BuildingBlocks.Domain.Entities.Abstractions;
 using Microsoft.Extensions.Logging;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.BaoCaoTienDos.Commands;
 
@@ -9,21 +11,19 @@ public record BaoCaoTienDoInsertOrUpdateCommand(BaoCaoTienDo Entity) : IRequest 
 internal class BaoCaoTienDoInsertOrUpdateCommandHandler : IRequestHandler<BaoCaoTienDoInsertOrUpdateCommand> {
     private readonly IRepository<BaoCaoTienDo, Guid> BaoCaoTienDo;
     private readonly IRepository<DuAn, Guid> DuAn;
-    private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
-    private readonly IRepository<DanhMucLoaiVanBan, int> DanhMucLoaiVanBan;
-    private readonly IRepository<DanhMucChuDauTu, int> DanhMucChuDauTu;
-    private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IBuocAuthorizationProvider _auth;
+    private readonly IAuthorizationManager _authManager;
+    private readonly IAuthorizationContext _authContext;
     private readonly ILogger<BaoCaoTienDoInsertOrUpdateCommandHandler> _logger;
 
     public BaoCaoTienDoInsertOrUpdateCommandHandler(IServiceProvider serviceProvider,
         ILogger<BaoCaoTienDoInsertOrUpdateCommandHandler> logger) {
         BaoCaoTienDo = serviceProvider.GetRequiredService<IRepository<BaoCaoTienDo, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
-        DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
-        DanhMucLoaiVanBan = serviceProvider.GetRequiredService<IRepository<DanhMucLoaiVanBan, int>>();
-        DanhMucChuDauTu = serviceProvider.GetRequiredService<IRepository<DanhMucChuDauTu, int>>();
-        DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _logger = logger;
         _unitOfWork = BaoCaoTienDo.UnitOfWork;
     }
@@ -33,8 +33,12 @@ internal class BaoCaoTienDoInsertOrUpdateCommandHandler : IRequestHandler<BaoCao
             ManagedException.ThrowIf(!DuAn.GetQueryableSet().Any(e => e.Id == request.Entity.DuAnId),
                 "Không tồn tại dự án");
 
+          
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 var isExist = BaoCaoTienDo.GetQueryableSet().Any(o => o.Id == request.Entity.Id);
+                var entity = request.Entity;
+                await _auth.EnsureCanExecuteStepAsync(entity.BuocId, _authContext, cancellationToken);
+                await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
                 if (isExist) {
                     await BaoCaoTienDo.UpdateAsync(request.Entity, cancellationToken);
                     await _unitOfWork.SaveChangesAsync(cancellationToken);

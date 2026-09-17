@@ -7,6 +7,7 @@ namespace QLDA.Application.PheDuyetDuToans.DTOs;
 public class PheDuyetDuToanInsertDto : IMayHaveTepDinhKemDto, ITienDo {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
+    public Guid DuToanId { get; set; }
     public string? SoVanBan { get; set; }
     public DateTimeOffset? NgayKy { get; set; }
     public string? NguoiKy { get; set; }

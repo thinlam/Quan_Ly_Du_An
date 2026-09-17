@@ -2,6 +2,7 @@ using System.Reflection;
 using BuildingBlocks.Application;
 using QLDA.Application.Authorization;
 using QLDA.Application.Authorization.Behaviors;
+using QLDA.Application.Common;
 
 namespace QLDA.Application;
 

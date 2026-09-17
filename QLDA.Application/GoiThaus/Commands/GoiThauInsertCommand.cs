@@ -36,8 +36,6 @@ internal class GoiThauInsertCommandHandler : IRequestHandler<GoiThauInsertComman
 
         await ValidateAsync(request, cancellationToken);
 
-        // Check step authorization
-        await _auth.EnsureCanExecuteStepAsync(request.Dto.BuocId, _authContext, cancellationToken);
         await _authManager.EnsureCanExecuteAsync(request.Dto.BuocId, request.Dto.DuAnId, _authContext, cancellationToken);
 
         var entity = request.Dto.ToEntity();

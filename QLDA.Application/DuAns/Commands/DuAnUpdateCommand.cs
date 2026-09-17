@@ -44,7 +44,7 @@ internal class DuAnUpdateCommandHandler : IRequestHandler<DuAnUpdateCommand, DuA
         // Ownership: chỉ Lãnh đạo phụ trách / Người tạo / Phòng ban phụ trách chính /
         // Phòng ban phối hợp (thuộc DuAnChiuTrachNhiemXuLys, Loai=DonViPhoiHop) mới được chỉnh sửa.
         if (!await _auth.CanExecuteAsync(AuthorizationResourceKeys.DuAn, entity, cancellationToken))
-            throw new ForbiddenException("User không có quyền chỉnh sửa dự án này");
+            throw new ForbiddenException("Bạn không có quyền chỉnh sửa dự án này");
 
         // Cấm đổi QuyTrinhId khi đã nhập tiến độ: validate trước khi map request vào entity,
         // tránh DuAn.QuyTrinhId=B nhưng DuAnBuoc vẫn thuộc QT A.

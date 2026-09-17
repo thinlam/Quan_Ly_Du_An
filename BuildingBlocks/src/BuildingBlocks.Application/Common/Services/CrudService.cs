@@ -23,7 +23,7 @@ public class CrudService<T, TKey>(IRepository<T, TKey> repository) : ICrudServic
     {
         bool isExist = isEnum
             ? repository.GetOrderedSet().Any(e => e.Id!.Equals(entity.Id))
-            : repository.GetQueryableSet()
+            : repository.GetQueryableSet(OnlyUsed:false)
                 .Any(e => e.Id!.Equals(entity.Id));
         if (isExist)
         {

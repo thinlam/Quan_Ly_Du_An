@@ -19,8 +19,8 @@ internal class DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) : I
     public async Task<PaginatedList<DuAnDto>> Handle(DuAnGetDanhSachQuery request,
         CancellationToken cancellationToken = default)
     {
-        var queryable = _authManager.FilterVisible(DuAn.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
-            .Include(e => e.DuToans)
+        var queryable = _authManager.FilterVisible(DuAn.GetQueryableSet(), AuthorizationResourceKeys.DuAn);
+         queryable= queryable.Include(e => e.DuToans)
             .Include(e => e.BuocHienTai)
             .WhereIf(request.SearchDto.TenDuAn.IsNotNullOrWhitespace(),
                 e => e.TenDuAn!.ToLower()!.Contains(request.SearchDto.TenDuAn!.ToLower()))

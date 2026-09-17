@@ -174,3 +174,75 @@ Thay `duAnId`/`goiThauId`/`nhaThauId`/`chucVuId` bằng dữ liệu thật lấy
 3. Bỏ `toTrinhKetQua`/`quyetDinhPheDuyet` khi tạo → GET trả `null` 2 object đó; `goiThauId` + `thongTinNhaThau` vẫn có.
 4. Record sẵn `08defc12-4e20-3b60-687a-7b38f8073d8e`: đối chiếu cột DB với JSON, không đoán.
 5. Hồi quy `danh-sach-tien-do`: gọi GET danh sách → shape list **không đổi** (không thêm field chi-tiet vào list).
+
+## 10. Test API `PUT api/to-trinh-tham-dinh-nha-thau/cap-nhat` (fix 2026-09-10)
+
+> **Đã implement.** `dotnet build QLDA.WebApi` — 0 warning / 0 error. Không cần migration.
+
+### 10.1. Mục tiêu
+
+`cap-nhat` phải cập nhật đầy đủ 6 object giống `them-moi`: `ThongTinNhaThau`, `DoiChieu`, `ThuongThao`, `ThamDinh`, `ToTrinhKetQua` (`ToTrinhQuyetDinh`), `QuyetDinhPheDuyet` (`VanBanQuyetDinh`).
+
+### 10.2. Payload mẫu (dùng `id` của tờ trình đã tạo qua `them-moi`)
+
+```json
+{
+  "id": "<Id tờ trình từ TC-01>",
+  "duAnId": "<duAnId TC-01>",
+  "buocId": 6903,
+  "goiThauId": "<goiThauId TC-01>",
+  "nhaThauId": "<nhaThauId TC-01>",
+  "trangThaiDangTaiId": null,
+  "thongTinNhaThau": {
+    "nhaThauId": "<nhaThauId TC-01>",
+    "fileEHSDT": [],
+    "ngayKetThucDanhGia": null,
+    "fileDanhGia": []
+  },
+  "doiChieu": { "so": "2", "ngay": "2026-09-10", "noiDung": "", "file": [] },
+  "thuongThao": { "so": "2", "ngay": "2026-09-10", "noiDung": "2", "file": [] },
+  "thamDinh": { "so": "", "ngay": "2026-09-10", "noiDung": "2", "file": [] },
+  "toTrinhKetQua": { "so": "2", "ngay": "2026-09-10", "nguoiKy": "2", "chucVuId": 9, "trichYeu": "2", "file": [] },
+  "quyetDinhPheDuyet": { "so": "2", "ngay": null, "nguoiKy": "2", "ngayKy": "2026-09-10", "chucVuId": 9, "trichYeu": "", "file": [] }
+}
+```
+
+### 10.3. Các bước test
+
+1. Gọi `PUT /api/to-trinh-tham-dinh-nha-thau/cap-nhat` với payload trên.
+2. Gọi `GET /api/to-trinh-tham-dinh-nha-thau/{id}/chi-tiet` (cùng `id`) — kỳ vọng persist đúng:
+   - `doiChieu.so = "2"`, `doiChieu.ngay = 2026-09-10`
+   - `thuongThao.so = "2"`, `thuongThao.ngay = 2026-09-10`, `thuongThao.noiDung = "2"`
+   - `thamDinh.ngay = 2026-09-10`, `thamDinh.noiDung = "2"`
+   - `toTrinhKetQua.so = "2"`, `toTrinhKetQua.nguoiKy = "2"`, `toTrinhKetQua.chucVuId = 9`, `toTrinhKetQua.trichYeu = "2"`
+   - `quyetDinhPheDuyet.so = "2"`, `quyetDinhPheDuyet.nguoiKy = "2"`, `quyetDinhPheDuyet.ngayKy = 2026-09-10`, `quyetDinhPheDuyet.chucVuId = 9`
+   - `thongTinNhaThau.nhaThauId` khớp (update đúng)
+3. Query DB:
+   - `ToTrinhThamDinhBuocXuLy` (3 dòng) — `So`/`Ngay`/`NoiDung` khớp, `Loai` không đổi.
+   - `ToTrinhQuyetDinh` (`EntityId` = id, `Loai='ToTrinhThamDinhNhaThau'`) — `So`/`Ngay`/`NguoiKy`/`ChucVu`/`TrichYeu` khớp.
+   - `VanBanQuyetDinh` (`Id` = id, `Loai='ToTrinhThamDinhNhaThau'`) — `So`/`Ngay`/`NgayKy`/`NguoiKy`/`NguoiKyChucVuId`/`TrichYeu` khớp.
+
+### 10.4. Attachment — null vs `[]`
+
+| FE gửi | Kỳ vọng |
+|---|---|
+| `file`/`fileEHSDT`/`fileDanhGia` = `null` (bỏ field) | Không chạy bulk → file cũ giữ nguyên |
+| `file`/`fileEHSDT`/`fileDanhGia` = `[]` | Không chạy bulk → file cũ giữ nguyên (convention `Count > 0`, không xóa ngoài ý muốn) |
+| list không rỗng, thiếu 1 file cũ | Bulk `AutoDeleteMissing=true` → file thiếu bị xóa, file mới thêm vào |
+
+### 10.5. Validate / hồi quy
+
+- `id` không tồn tại → `ManagedException` "Không tìm thấy dữ liệu.".
+- Trạng thái không phải Dự thảo/Trả lại → `ManagedException` "Trạng thái không thể cập nhật!".
+- Bỏ `toTrinhKetQua` (null) → không tạo/sửa `ToTrinhQuyetDinh`, GET trả `null`.
+- Bỏ `quyetDinhPheDuyet` (null) → không tạo/sửa `VanBanQuyetDinh`, GET trả `null`.
+- Hồi quy: `them-moi` + `GET chi-tiet` vẫn hoạt động như cũ (Create/Update dùng chung helper map).
+
+### 10.6. Bảng test case bổ sung
+
+| ID | Test case | Input | Kỳ vọng | Trạng thái |
+|---|---|---|---|---|
+| **TC-20** | `cap-nhat` happy path — cập nhật đủ 6 object | Payload 10.2 | GET chi-tiet trả đúng 6 object mới (xem 10.3) | ⬜ |
+| **TC-21** | `cap-nhat` giữ file cũ khi gửi `[]`/`null` | Tạo tờ trình có file → cap-nhat gửi `[]` | File không bị xóa | ⬜ |
+| **TC-22** | `cap-nhat` thêm/xóa file có chủ đích | List không rỗng, bỏ 1 file cũ | File bỏ bị xóa, file mới xuất hiện | ⬜ |
+| **TC-23** | Hồi quy `them-moi` + `GET chi-tiet` | Chạy lại TC-01/TC-15 | Không đổi behavior | ⬜ |

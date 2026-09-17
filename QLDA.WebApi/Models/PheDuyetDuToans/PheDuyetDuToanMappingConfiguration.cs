@@ -11,6 +11,7 @@ public static class PheDuyetDuToanMappingConfiguration {
             Id = entity.Id,
             BuocId = entity.BuocId,
             DuAnId = entity.DuAnId,
+            DuToanId = entity.DuToanId,
             ChucVuId = entity.ChucVuId,
             NgayKy = entity.NgayKy,
             NguoiKy = entity.NguoiKy,
@@ -30,6 +31,7 @@ public static class PheDuyetDuToanMappingConfiguration {
     public static PheDuyetDuToan ToEntity(this PheDuyetDuToanModel model)
         => new() {
             Id = model.GetId(),
+            DuToanId = model.DuToanId,
             BuocId = model.BuocId,
             DuAnId = model.DuAnId,
             ChucVuId = model.ChucVuId,
@@ -43,6 +45,7 @@ public static class PheDuyetDuToanMappingConfiguration {
     public static void Update(this PheDuyetDuToan entity, PheDuyetDuToanModel model) {
         entity.BuocId = model.BuocId;
         entity.DuAnId = model.DuAnId;
+        entity.DuToanId = model.DuToanId;
         entity.ChucVuId = model.ChucVuId;
         entity.NgayKy = model.NgayKy;
         entity.NguoiKy = model.NguoiKy;

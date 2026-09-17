@@ -46,5 +46,10 @@ public class DuToanDauTuConfiguration : AggregateRootConfiguration<DuToanDauTu> 
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false);
+
+        builder.HasOne(e => e.PheDuyetDuToan)
+          .WithOne(e => e.DuToan)
+          .HasForeignKey<PheDuyetDuToan>(e => e.DuToanId)
+          .OnDelete(DeleteBehavior.Cascade);
     }
 }

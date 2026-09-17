@@ -85,6 +85,7 @@ internal class StubContext : IAuthorizationContext
     public long? PhongBanId => 1;
     public bool HasKhtcBypass => false;
     public bool IsAdminManager => false;
+    public bool HasViewAll => false;
     public Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct)
         => Task.FromResult<long?>(1);
 }

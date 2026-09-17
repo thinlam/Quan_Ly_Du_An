@@ -127,3 +127,58 @@ Nổ tại `HoSoMoiThauDienTuGetDanhSachQuery.cs:68` (`PaginatedListAsync` → `
 
 Docs: `hoso-danh-sach.md`. **Chưa sửa code.**
 
+## 2026-09-10 — Fix `PUT cap-nhat` cập nhật đầy đủ 6 object (follow-up #179)
+
+Người yêu cầu: API `PUT api/to-trinh-tham-dinh-nha-thau/cap-nhat` không cập nhật đầy đủ `ThongTinNhaThau`/`DoiChieu`/`ThuongThao`/`ThamDinh`/`ToTrinhKetQua`/`QuyetDinhPheDuyet`.
+
+Khảo sát trước khi code:
+- `cap-nhat` vẫn bind **`ToTrinhThamDinhNhaThauModel`** (WebApi, shape pre-#179) — model thiếu `GoiThauId`/`ThongTinNhaThau`/`ToTrinhKetQua`/`QuyetDinhPheDuyet` → binding drop im lặng các field FE gửi.
+- `ToTrinhThamDinhNhaThauUpdateCommand` chỉ update `DuAnId`/`BuocId`/`NhaThauId`/`TrangThaiDangTaiId` + `SyncBuocXuLys` — **không đụng** `ToTrinhQuyetDinh`/`VanBanQuyetDinh`.
+- Controller `Update` không lưu file `FileEHSDT`/`FileDanhGia`/`ToTrinhQuyetDinh`/`..._QuyetDinh`.
+- `DoiChieu`/`ThuongThao`/`ThamDinh` (data + file) **đã chạy đúng** từ 2026-08-13 — không phải nguyên nhân bug.
+
+Implement:
+1. **`ToTrinhThamDinhNhaThauCapNhatDto`** (mới): `Id` + `GoiThauId` + `ThongTinNhaThau`/`DoiChieu`/`ThuongThao`/`ThamDinh`/`ToTrinhKetQua`/`QuyetDinhPheDuyet` + legacy `DanhSachTepDinhKem`/`DanhSachTepThamDinh`. Tái dùng nested DTO của `ToTrinhThamDinhNhaThauThemMoiDto`.
+2. **`ToTrinhThamDinhNhaThauMappings`**: thêm `ToToTrinhQuyetDinh`/`ApplyTo` (ToTrinhKetQua↔ToTrinhQuyetDinh) và `ToVanBanQuyetDinh`/`ApplyTo` (QuyetDinhPheDuyet↔VanBanQuyetDinh) — dùng chung Create + Update.
+3. **`ToTrinhThamDinhNhaThauUpdateCommand`**: nhận DTO mới; upsert `ToTrinhQuyetDinh` (theo `EntityId`+`Loai`) và `VanBanQuyetDinh` (theo `Id`+`Loai`); trả `ToTrinhThamDinhNhaThauUpdateResult` (Entity + child IDs).
+4. **`ToTrinhThamDinhNhaThauThemMoiCommand`**: refactor dùng helper chung, không đổi behavior.
+5. **Controller `Update`**: bind DTO mới; lưu thêm 4 nhóm file; thống nhất convention attachment `Count > 0` cho tất cả nhóm (null/`[]` = giữ file cũ — khớp `them-moi`, tránh xóa file ngoài ý muốn khi FE gửi `[]` mặc định).
+
+`dotnet build QLDA.WebApi` (output tạm, do `QLDA.WebApi.exe` đang chạy giữ khóa bin) — **0 warning / 0 error**. Không cần migration (schema đã đủ `GoiThauId`/`NgayKetThucDanhGia`, bảng `ToTrinhQuyetDinh`/`VanBanQuyetDinh`).
+
+Docs: `report.md` (mục 19), `test-workflow.md` (mục 10). Dead code còn giữ (chưa xóa): `ToTrinhThamDinhNhaThauModel`/`ToTrinhThamDinhNhaThauMappingConfiguration` + 2 extension `GetDanhSachTepDinhKem`/`GetDanhSachTepThamDinh` trong `TepDinhKemMappingConfigurations.cs`.
+
+## 2026-09-10 — Phát hiện bug: `cap-nhat` không xóa attachment khi `File = []`
+
+Trong lúc test acceptance cho phần cập nhật child objects, phát hiện: `PUT cap-nhat`
+gửi `quyetDinhPheDuyet.file = []` nhưng `GET chi-tiet` vẫn trả file cũ
+(`Qui trinh QLDA ... .docx`, `groupType = ToTrinhThamDinhNhaThau_QuyetDinh`).
+
+Khảo sát:
+- Root cause: toàn bộ 9 nhóm attachment trong `ToTrinhThamDinhNhaThauController.Update`
+  dùng `File is { Count: > 0 }` → `[]` bị skip → `AttachmentBulkInsertOrUpdateCommand`
+  (`AutoDeleteMissing = true`) không chạy → file cũ không bị xóa.
+- Quy tắc cần: `null` = giữ nguyên, `[]` = xóa hết, `[f1,f2]` = sync.
+- Hướng sửa: đổi 9 chỗ `is { Count: > 0 }` → `is { }` trong `Update` (giữ điều kiện
+  child `result.ToTrinhQuyetDinhId`/`result.VanBanQuyetDinhId`). Không đụng `them-moi`.
+
+Docs: `cap-nhat-attachment-xoa-file.md`. **Chưa sửa code** — chờ xác nhận phạm vi
+(sửa 9 nhóm hay chỉ 7 nhóm mới, bỏ qua 2 nhóm legacy `DanhSachTep*`).
+
+## 2026-09-10 (tiếp) — Fix bug `cap-nhat` không xóa attachment khi `File = []`
+
+Người yêu cầu duyệt fix theo docs (phạm vi **9 nhóm**). Implement:
+
+- `ToTrinhThamDinhNhaThauController.Update`: đổi **9 block** từ `File is { Count: > 0 }`
+  → `File is { }` (chỉ skip khi `null`):
+  - `DanhSachTepDinhKem`, `DanhSachTepThamDinh`, `FileEHSDT`, `FileDanhGia`,
+    `DoiChieu.File`, `ThuongThao.File`, `ThamDinh.File`, `ToTrinhKetQua.File`, `QuyetDinhPheDuyet.File`.
+  - Giữ nguyên điều kiện child `result.ToTrinhQuyetDinhId`/`result.VanBanQuyetDinhId`.
+- Behavior: `null` = giữ file cũ; `[]` = gọi `AttachmentBulkInsertOrUpdateCommand`
+  `Entities=[]` + `AutoDeleteMissing=true` → xóa hết file nhóm; non-empty = sync.
+- `them-moi` giữ nguyên `Count > 0` (create, an toàn).
+
+`dotnet build QLDA.WebApi` (output tạm) → **0 warning / 0 error**.
+Docs cập nhật `cap-nhat-attachment-xoa-file.md` (trạng thái ĐÃ FIX).
+**Cần restart `QLDA.WebApi.exe` để code mới có hiệu lực rồi test lại 3 case.**
+

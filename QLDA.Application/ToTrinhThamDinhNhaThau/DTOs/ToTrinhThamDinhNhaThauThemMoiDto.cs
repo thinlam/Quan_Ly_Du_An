@@ -16,20 +16,24 @@ public class ToTrinhThamDinhNhaThauThemMoiDto
     /// Chỉ lưu Id — GiaTri/HinhThucLCNT luôn load lại từ GoiThau, không lưu duplicate.
     /// </summary>
     public Guid GoiThauId { get; set; }
+    public QuyetDinhPheDuyetDto? QuyetDinhPheDuyet { get; set; }
+    // quyết định  kết qả nhà thầu 
+    public long GiaTriTrungThau { get; set; }
+    public int? SoNgayThucHienHopDong { get; set; }
+    public int? ThoiGianThucHienGoiThau { get; set; }
+    //end  quyết định  kết qả nhà thầu 
 
     public int? TrangThaiDangTaiId { get; set; }
-
     public ThongTinNhaThauDto? ThongTinNhaThau { get; set; }
     public ToTrinhThamDinhBuocXuLyDto? DoiChieu { get; set; }
     public ToTrinhThamDinhBuocXuLyDto? ThuongThao { get; set; }
     public ToTrinhThamDinhBuocXuLyDto? ThamDinh { get; set; }
     public ToTrinhKetQuaDto? ToTrinhKetQua { get; set; }
-    public QuyetDinhPheDuyetDto? QuyetDinhPheDuyet { get; set; }
 }
 
 /// <summary>Mục 2 — Thông tin nhà thầu.</summary>
-public class ThongTinNhaThauDto
-{
+
+public class ThongTinNhaThauDto {
     public Guid? NhaThauId { get; set; }
     public List<TepDinhKemDto>? FileEHSDT { get; set; }
     public DateTimeOffset? NgayKetThucDanhGia { get; set; }

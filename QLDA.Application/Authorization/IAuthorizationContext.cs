@@ -26,7 +26,7 @@ public interface IAuthorizationContext {
     /// Cached, computed once per request.
     /// </summary>
     bool HasKhtcBypass { get; }
-
+    bool HasViewAll { get; }
     /// <summary>
     /// Get LanhDaoPhuTrachId for a DuAn, cached per-DuAn per request.
     /// </summary>

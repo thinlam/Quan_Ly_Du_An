@@ -81,15 +81,15 @@ internal class HopDongUpdateCommandHandler : IRequestHandler<HopDongUpdateComman
     private async Task ValidateAsync(HopDongUpdateCommand request, CancellationToken cancellationToken = default) {
         ManagedException.ThrowIf(
             when: !await GoiThau.GetQueryableSet().AnyAsync(e => e.Id == request.Dto.GoiThauId, cancellationToken),
-            message: "Không tồn tại gói thầu"
+            message: "Không tồn tại gói thầu!"
         );
         ManagedException.ThrowIf(
             when: await HopDong.GetQueryableSet().AnyAsync(e => e.GoiThauId == request.Dto.GoiThauId && e.Id != request.Dto.Id, cancellationToken),
-            message: "Gói thầu đã có hợp đồng"
+            message: "Gói thầu đã có hợp đồng!"
         );
         ManagedException.ThrowIf(
             when: request.Dto.LoaiHopDongId > 0 && !await DanhMucLoaiHopDong.GetQueryableSet().AnyAsync(e => e.Id == request.Dto.LoaiHopDongId, cancellationToken),
-            message: "Không tồn tại loại hợp đồng này");
+            message: "Không tồn tại loại hợp đồng này!");
     }
 
     private async Task UpdateAsync(HopDong entity, CancellationToken cancellationToken = default) {

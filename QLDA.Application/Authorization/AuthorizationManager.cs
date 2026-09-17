@@ -62,14 +62,14 @@ public class AuthorizationManager(
             return;
 
         // Short-circuit khi user đã có role LDDV.
-        if (_context.User.AuthInfo.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV))
-            return;
+        //if (_context.User.AuthInfo.HasRole(QLDA.Domain.Constants.RoleConstants.QLDA_LDDV))
+        //    return;
 
         var lanhDaoId = await _context.GetLanhDaoPhuTrachIdAsync(duAnId, ct);
         if (lanhDaoId.HasValue && lanhDaoId.Value == _context.UserId)
             return;
 
-        throw new ForbiddenException("Chỉ Lãnh đạo phụ trách chính hoặc role LDDV mới có quyền duyệt phê duyệt");
+        throw new ForbiddenException("Chỉ lãnh đạo phụ trách chính hoặc phòng tài chính kế hoạch  mới có quyền phê duyệt");
     }
 
     /// <summary>
@@ -80,9 +80,10 @@ public class AuthorizationManager(
     /// </summary>
     public async Task EnsureCanExecuteAsync(int? buocId, Guid duAnId, IAuthorizationContext ctx, CancellationToken ct = default) {
         if (ctx.HasKhtcBypass) return;
-        if (ctx.User.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_QuanTri)) return;
+        //if (ctx.HasViewAll) return;
+        //if (ctx.User.AuthInfo.HasRole(Domain.Constants.RoleConstants.QLDA_QuanTri)) return;
 
-        if (buocId.HasValue) {
+        if (buocId.HasValue || buocId!= 0) {
             await _buocAuth.EnsureCanExecuteStepAsync(buocId, ctx, ct);
             return;
         }

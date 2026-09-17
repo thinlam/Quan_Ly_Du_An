@@ -21,6 +21,7 @@ internal class PheDuyetDuToanGetQueryHandler(IServiceProvider serviceProvider)
         CancellationToken cancellationToken = default) {
         var queryable = PheDuyetDuToan.GetOrderedSet()
             .Include(e => e.TrangThai)
+            .Include(e => e.DuToan)
             .Where(e => e.Id == request.Id);
 
         if (request.IsNoTracking)

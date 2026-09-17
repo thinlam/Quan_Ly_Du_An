@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucBuocs.DTOs;
 using QLDA.Application.DuAnBuocs;
 using QLDA.Application.DuAnBuocs.Extensions;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.DuAns.Commands;
 
@@ -22,11 +23,15 @@ internal class DuAnUpdateStepCommandHandler
     : IRequestHandler<DuAnUpdateStepCommand, DuAnBuoc?> {
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc;
+    private readonly IBuocAuthorizationProvider _auth;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationContext _authContext;
 
     public DuAnUpdateStepCommandHandler(IServiceProvider serviceProvider) {
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DuAnBuoc = serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+        _auth = serviceProvider.GetRequiredService<IBuocAuthorizationProvider>();
+        _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = DuAn.UnitOfWork;
     }
 
@@ -51,6 +56,9 @@ internal class DuAnUpdateStepCommandHandler
     }
     #region Private helper methods
     private async Task ValidateAsync(DuAnUpdateStepCommand request, CancellationToken cancellationToken) {
+        // check có  quyền cập nhật tiến độ hay không
+        await _auth.EnsureCanExecuteStepAsync(request.BuocId, _authContext, cancellationToken);
+       
         ManagedException.ThrowIf(
             when: !await DuAn.GetQueryableSet().AnyAsync(e => e.Id == request.DuAnId, cancellationToken),
             message: "Không tồn tại dự án");

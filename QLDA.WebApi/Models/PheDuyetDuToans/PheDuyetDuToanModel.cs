@@ -16,6 +16,7 @@ public class PheDuyetDuToanModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTe
         return SequentialGuidGenerator.Instance.NewGuid();
     }
 
+    public Guid DuToanId { get; set; }
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string? SoVanBan { get; set; }

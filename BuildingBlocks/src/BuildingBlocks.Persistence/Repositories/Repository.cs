@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -113,7 +113,7 @@ namespace BuildingBlocks.Persistence.Repositories {
             return query;
         }
         public IQueryable<TEntity> GetOriginalSet() => HandleFilter(OnlyUsed: false, OnlyNotDeleted: false);
-        public IQueryable<TEntity> GetOrderedSet() => HandleFilter(OrderByIndex: true);
+        public IQueryable<TEntity> GetOrderedSet() => HandleFilter(OnlyUsed: false, OrderByIndex: true);
         #endregion
 
         #region Bulk Operations

@@ -9,6 +9,7 @@ public class PheDuyetDuToan : VanBanQuyetDinh {
     public int? ChucVuId { get; set; }
     public long? GiaTriDuThau { get; set; }
     public int? TrangThaiId { get; set; }
+    public Guid DuToanId { get; set; }
 
     /// <summary>
     /// USER_MASTER.UserPortalId
@@ -17,6 +18,7 @@ public class PheDuyetDuToan : VanBanQuyetDinh {
 
     #region Navigation Properties
 
+    public DuToanDauTu? DuToan { get; set; }
     public DanhMucChucVu? ChucVu { get; set; }
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
     #endregion

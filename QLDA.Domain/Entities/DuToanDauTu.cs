@@ -28,5 +28,6 @@ public class DuToanDauTu : Entity<Guid>, IAggregateRoot, ITienDo
     public DanhMucTrangThaiPheDuyet? TrangThai { get; set; }
     public DanhMucNguonVon? NguonVon { get; set; }
     public DanhMucPhuongAnThietKe? PhuongAnThietKe { get; set; }
+    public PheDuyetDuToan? PheDuyetDuToan { get; set; }
     #endregion
 }

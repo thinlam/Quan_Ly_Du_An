@@ -22,6 +22,11 @@ public class ToTrinhThamDinhNhaThau : Entity<Guid>, IAggregateRoot, ITienDo
     public DateTimeOffset? NgayKetThucDanhGia { get; set; }
     public List<ToTrinhThamDinhBuocXuLy>? BuocXuLys { get; set; } = [];
     #endregion
+    //Thông tin kết quả gói thầu
+    public long? GiaTriTrungThau { get; set; }
+    public int? ThoiGianThucHienGoiThau { get; set; }
+    public int? SoNgayThucHienHopDong { get; set; }
+    //end thông tin kết quả gói thầu
 
     #region Navigation Properties
     public DuAn? DuAn { get; set; }

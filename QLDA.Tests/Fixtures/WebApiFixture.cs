@@ -118,6 +118,7 @@ public class WebApiFixture : WebApplicationFactory<Program>, IAsyncLifetime, IWe
     {
         public long PhongKHTCId => 219; // Match hardcoded PhongBanId=219 in Trinh commands
         public long PhongHCTHId => 300; // Match PhongBanId in CreateHcthClient()
+        public long GiamDocId => 4; 
     }
 
     public async Task InitializeAsync()

@@ -20,6 +20,7 @@ public class AuthorizationContext(
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     private bool? _hasKhtcBypass;
+    private bool? _hasGiamDocDonVi; 
     private readonly ConcurrentDictionary<Guid, long?> _lanhDaoCache = new();
 
     public IUserProvider User => _user;
@@ -29,7 +30,8 @@ public class AuthorizationContext(
     public long? PhongBanId => _user.Info.PhongBanID;
 
     public bool HasKhtcBypass => _hasKhtcBypass ??= ComputeHasKhtcBypass();
-
+    public bool HasViewAll => _hasGiamDocDonVi ??= ComputeHasViewAllBypass();
+    
     public async Task<long?> GetLanhDaoPhuTrachIdAsync(Guid duAnId, CancellationToken ct) {
         if (_lanhDaoCache.TryGetValue(duAnId, out var cached))
             return cached;
@@ -46,5 +48,7 @@ public class AuthorizationContext(
 
     private bool ComputeHasKhtcBypass()
         => _user.Info.PhongBanID == _settings.PhongKHTCId;
+    private bool ComputeHasViewAllBypass()
+       => _user.Info.UserID == _settings.GiamDocId;
 
 }

@@ -21,6 +21,10 @@ public class ToTrinhThamDinhNhaThauDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMay
     public string? MaTrangThai { get; set; }
     public int? TrangThaiDangTaiId { get; set; }
     public string? TenTrangThai { get; set; }
+
+    public long GiaTriTrungThau { get; set; }
+    public int? SoNgayThucHienHopDong { get; set; }
+    public int? ThoiGianThucHienGoiThau { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }
 
@@ -43,4 +47,3 @@ public class KetQuaThamDinhNhaThauDto
 
 }
 
-  

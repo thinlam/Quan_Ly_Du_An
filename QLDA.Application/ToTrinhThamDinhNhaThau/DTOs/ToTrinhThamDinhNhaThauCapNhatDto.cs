@@ -3,12 +3,11 @@ using QLDA.Application.TepDinhKems.DTOs;
 namespace QLDA.Application.ToTrinhThamDinhNhaThaus.DTOs;
 
 /// <summary>
-/// Response riêng cho <c>GET /api/to-trinh-tham-dinh-nha-thau/{id}/chi-tiet</c> — bổ sung
-/// <c>GoiThauId</c> / <c>ThongTinNhaThau</c> / <c>ToTrinhKetQua</c> / <c>QuyetDinhPheDuyet</c>
-/// mà response chi-tiet cũ còn thiếu (Issue #179). Không dùng chung với DTO list
-/// (<see cref="ToTrinhThamDinhNhaThauDto"/>) để tránh đổi shape list.
+/// Payload đầy đủ cho <c>PUT api/to-trinh-tham-dinh-nha-thau/cap-nhat</c> — khớp contract
+/// <see cref="ToTrinhThamDinhNhaThauThemMoiDto"/> bổ sung <c>Id</c> và legacy
+/// <c>DanhSachTepDinhKem</c>/<c>DanhSachTepThamDinh</c> (Issue #179).
 /// </summary>
-public class ToTrinhThamDinhNhaThauChiTietDto
+public class ToTrinhThamDinhNhaThauCapNhatDto
 {
     public Guid Id { get; set; }
     public Guid DuAnId { get; set; }
@@ -19,6 +18,7 @@ public class ToTrinhThamDinhNhaThauChiTietDto
     public long? GiaTriTrungThau { get; set; }
     public int? ThoiGianThucHienGoiThau { get; set; }
     public int? SoNgayThucHienHopDong { get; set; }
+
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
     public List<TepDinhKemDto>? DanhSachTepThamDinh { get; set; }
 

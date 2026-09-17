@@ -1,7 +1,7 @@
 using System.Data;
 using Microsoft.Extensions.Logging;
 using QLDA.Application.Authorization;
-
+using Microsoft.EntityFrameworkCore;
 namespace QLDA.Application.PheDuyetDuToans.Commands;
 
 public record PheDuyetDuToanInsertOrUpdateCommand(PheDuyetDuToan Entity) : IRequest {
@@ -11,6 +11,7 @@ internal class PheDuyetDuToanInsertOrUpdateCommandHandler : IRequestHandler<PheD
     private readonly IRepository<PheDuyetDuToan, Guid> PheDuyetDuToan;
     private readonly IRepository<DuAn, Guid> DuAn;
     private readonly IRepository<DanhMucBuoc, int> DanhMucBuoc;
+    private readonly IRepository<DuToanDauTu, Guid> DuToanDauTu;
     private readonly IRepository<DanhMucChucVu, int> DanhMucChucVu;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PheDuyetDuToanInsertOrUpdateCommandHandler> _logger;
@@ -22,6 +23,7 @@ internal class PheDuyetDuToanInsertOrUpdateCommandHandler : IRequestHandler<PheD
         PheDuyetDuToan = serviceProvider.GetRequiredService<IRepository<PheDuyetDuToan, Guid>>();
         DuAn = serviceProvider.GetRequiredService<IRepository<DuAn, Guid>>();
         DanhMucBuoc = serviceProvider.GetRequiredService<IRepository<DanhMucBuoc, int>>();
+        DuToanDauTu = serviceProvider.GetRequiredService<IRepository<DuToanDauTu, Guid>>();
         DanhMucChucVu = serviceProvider.GetRequiredService<IRepository<DanhMucChucVu, int>>();
         _logger = logger;
         _unitOfWork = PheDuyetDuToan.UnitOfWork;
@@ -39,6 +41,14 @@ internal class PheDuyetDuToanInsertOrUpdateCommandHandler : IRequestHandler<PheD
                 request.Entity.ChucVuId > 0 &&
                 !DanhMucChucVu.GetQueryableSet().Any(e => e.Id == request.Entity.ChucVuId),
                 "Không tồn tại chức vụ này");
+
+            var hasActivePheDuyet = await PheDuyetDuToan .GetQueryableSet()
+                                                            .AnyAsync(  e =>    e.DuToanId == request.Entity.DuToanId
+                                                                                     && !e.IsDeleted
+                                                                                     && e.Id != request.Entity.Id,    cancellationToken);
+
+            ManagedException.ThrowIf(   hasActivePheDuyet,  "Dự toán đã có phê duyệt");
+
             using (await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
                 var isExist = PheDuyetDuToan.GetQueryableSet().Any(o => o.Id == request.Entity.Id);
                 if (isExist) {

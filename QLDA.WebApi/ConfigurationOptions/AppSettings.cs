@@ -9,7 +9,8 @@ public class AppSettings {
     /// ID Phòng Kế Hoạch - Tài chính - đơn vị có quyền CRUD ThanhToan
     /// </summary>
     public long PhongKHTCId { get; set; }
-
+    public long GiamDocId { get; set; }
+    
     /// <summary>
     /// ID Phòng Hành chính - Tổng hợp
     /// </summary>

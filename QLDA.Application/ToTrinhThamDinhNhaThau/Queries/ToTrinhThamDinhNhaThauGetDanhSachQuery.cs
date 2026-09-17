@@ -62,6 +62,7 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
                 TrangThaiId = e.TrangThaiId,
                 MaTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ma : string.Empty,
                 TenTrangThai = e.TrangThai != null && e.TrangThai!.Ma != "LEG" ? e.TrangThai!.Ten : string.Empty,
+
             })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken: cancellationToken);
 

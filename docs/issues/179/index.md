@@ -40,6 +40,7 @@ Ngoài ra:
 
 - [`report.md`](./report.md) — Báo cáo khảo sát chi tiết source hiện tại + trả lời đầy đủ 28 câu hỏi bắt buộc + thiết kế đề xuất + rủi ro/xung đột cần xác nhận trước khi code.
 - [`hoso-danh-sach.md`](./hoso-danh-sach.md) — `GET ho-so-moi-thau-dien-tu/danh-sach` 400 vì Include `[NotMapped]` ToTrinh/QuyetDinh. **Chưa implement — chờ xác nhận.**
+- [`cap-nhat-attachment-xoa-file.md`](./cap-nhat-attachment-xoa-file.md) — Bug `PUT cap-nhat` không xóa attachment khi `File = []` (9 nhóm dùng `Count > 0`). **Chưa fix — chờ xác nhận phạm vi.**
 - [`journal.md`](./journal.md) — Nhật ký công việc theo ngày (bao gồm khảo sát + implement `GET {id}/chi-tiet`).
 - [`test-workflow.md`](./test-workflow.md) — Kế hoạch kiểm thử.
 
@@ -48,6 +49,8 @@ Ngoài ra:
 **Đã implement theo hướng (A)** ở mục "Xung đột" của `report.md` — viết đè logic `POST them-moi` theo spec mới, giữ nguyên route. `Update` / `Get chi tiết` / `danh-sach-tien-do` đã map `DoiChieu`/`ThuongThao`/`ThamDinh` và `NhaThauId`. `dotnet build SER.sln` — 0 lỗi.
 
 **2026-08-17: hoàn tất `GET {id}/chi-tiet`** (branch `bugfix/to-trinh-td-nha-thau-chi-tiet`) — response đã bổ sung `goiThauId`, `thongTinNhaThau`, `toTrinhKetQua`, `quyetDinhPheDuyet` qua DTO riêng `ToTrinhThamDinhNhaThauChiTietDto` + query riêng `ToTrinhThamDinhNhaThauGetChiTietQuery` + `ToChiTietDto` mapping. Đã kiểm tra **không xung đột** với dev D đang thêm `GoiThauId` cho `danh-sach-tien-do` (chỉ chung file Controller nhưng khác method; task chi-tiet không đụng list DTO/Query/Mapping của dev D).
+
+**2026-09-10: hoàn tất `PUT cap-nhat` cập nhật đầy đủ 6 object** — chuyển sang DTO/flow giống `them-moi`: `ToTrinhThamDinhNhaThauCapNhatDto` + `ToTrinhThamDinhNhaThauUpdateCommand` upsert `ToTrinhQuyetDinh`/`VanBanQuyetDinh` + Controller lưu thêm file `FileEHSDT`/`FileDanhGia`/`ToTrinhQuyetDinh`/`..._QuyetDinh`. Convention attachment `Count > 0` (null/`[]` giữ file cũ). Không cần migration. Chi tiết: `report.md` mục 19, `test-workflow.md` mục 10.
 
 Entity `ToTrinhThamDinhNhaThau` (sau 2026-08-14):
 

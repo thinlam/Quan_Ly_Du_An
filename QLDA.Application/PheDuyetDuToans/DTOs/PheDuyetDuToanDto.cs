@@ -23,6 +23,8 @@ public class PheDuyetDuToanDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepD
         return SequentialGuidGenerator.Instance.NewGuid();
     }
 
+    public Guid DuToanId { get; set; }
+    public string TenDuToan { get; set; } = string.Empty;
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public string? SoVanBan { get; set; }

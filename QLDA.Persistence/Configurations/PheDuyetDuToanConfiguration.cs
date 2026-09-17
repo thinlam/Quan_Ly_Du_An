@@ -10,6 +10,7 @@ public class PheDuyetDuToanConfiguration : IEntityTypeConfiguration<PheDuyetDuTo
         // TPT inheritance: derived type has its own table, key configured on base type (VanBanQuyetDinh)
         builder.ToTable(nameof(PheDuyetDuToan));
 
+  
         // Configure derived properties only
         builder.Property(e => e.GiaTriDuThau).HasPrecision(18, 2);
         
@@ -23,6 +24,7 @@ public class PheDuyetDuToanConfiguration : IEntityTypeConfiguration<PheDuyetDuTo
             .HasForeignKey(e => e.TrangThaiId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired(false);
-
+        builder.HasIndex(e => e.DuToanId)
+        ;
     }
 }

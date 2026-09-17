@@ -33,7 +33,7 @@ internal class DuAnBuocGetTreeListQueryHandler(IServiceProvider serviceProvider)
 
         var baseQuery = _buocAuth.FilterVisibleSteps(
                 DuAnBuoc.GetQueryableSet(),
-                _authContext)
+                _authContext, "View")
             .WhereFunc(request.IsNoTracking, q => q.AsNoTracking())
             .Include(e => e.Buoc!.GiaiDoan)
             .Include(e => e.Buoc!.QuyTrinh)

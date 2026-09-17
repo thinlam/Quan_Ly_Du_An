@@ -1,7 +1,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using BuildingBlocks.Domain.Entities.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Domain.Enums;
+using Serilog;
 using RoleConstants = QLDA.Domain.Constants.RoleConstants;
 
 namespace QLDA.Application.Authorization;
@@ -15,10 +17,10 @@ public static class BuocAuthorizationHelper {
     /// Tạo filter expression cho ownership check của Bước.
     /// Logic (sau khi siết phân quyền):
     /// 1. User là Lãnh Đạo Phụ Trách DuAn → được (ALL - không cần check phòng)
-    /// 2. User là người tạo bước → được (chỉ bản ghi mình tạo)
-    /// 3. Phòng ban chính của Bước = Phòng ban của user → được
-    /// 4a. User nằm trong danh sách PBPH của Bước AND user thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
-    /// 4b. Bypass theo DuAn khi Bước CHƯA gán phòng ban
+   
+    /// 2. Phòng ban chính của Bước = Phòng ban của user → được
+    /// 3a. User nằm trong danh sách PBPH của Bước AND user thuộc DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
+    /// 3b. Bypass theo DuAn khi Bước CHƯA gán phòng ban
     ///     (PhongPhuTrachChinhId == null HOẶC DuAnBuocPhongBanPhoiHops rỗng):
     ///     - DuAn.DonViPhuTrachChinhId == phongBanId → được
     ///     - Phòng ban ∈ DuAn.DuAnChiuTrachNhiemXuLys (Loai=DonViPhoiHop) → được
@@ -35,8 +37,8 @@ public static class BuocAuthorizationHelper {
         // Điều kiện 1: User là Lãnh Đạo Phụ Trách DuAn
         var isLanhDao = BuildLanhDaoCondition(param, userId);
 
-        // Điều kiện 2: User là người tạo bước
-        var isCreator = BuildCreatorCondition(param, userId);
+        // Điều kiện 2: User là người tạo bước -> sai vì lúc đầu ng tạo là dc phụ trách bước/dự án nên dc phép tạo/ sau ko dc phụ trách nữa ->Nhưng ko dc phép thao tác bước nữa
+        // var isCreator = BuildCreatorCondition(param, userId);
 
         // Điều kiện 3: Phòng ban phụ trách chính
         var isPhongBanChinh = BuildPhongBanChinhCondition(param, phongBanIdValue);
@@ -44,10 +46,10 @@ public static class BuocAuthorizationHelper {
         // Điều kiện 4: Trong danh sách phối hợp AND thuộc DuAn.ChiuTrachNhiemXuLys
         var isPhoiHopInScope = BuildPhoiHopInChiuTrachNhiemScopeCondition(param, phongBanIdValue);
 
-        // Combine: IsLanhDao || IsCreator || IsPhongBanChinh || IsPhoiHopInScope
-        var combinedBody = Expression.OrElse(
-            Expression.OrElse(isLanhDao, isCreator),
-            Expression.OrElse(isPhongBanChinh, isPhoiHopInScope));
+        // Combine: IsLanhDao || IsPhongBanChinh || IsPhoiHopInScope
+      
+        var combinedBody =   Expression.OrElse( isLanhDao,
+                                                   Expression.OrElse( isPhongBanChinh, isPhoiHopInScope));
 
         return Expression.Lambda<Func<DuAnBuoc, bool>>(combinedBody, param);
     }
@@ -185,9 +187,94 @@ public static class BuocAuthorizationHelper {
     /// <summary>
     /// Kiểm tra ownership trên object đã load (không phải IQueryable).
     /// </summary>
+    public static bool CheckOwnership_dev(
+    DuAnBuoc buoc,
+    long userId,
+    long? phongBanId) {
+        var phongBanIdValue = phongBanId ?? 0;
+
+        var param = Expression.Parameter(
+            typeof(DuAnBuoc),
+            "b");
+
+        var isLanhDao =
+            BuildLanhDaoCondition(param, userId);
+
+        var isCreator =
+            BuildCreatorCondition(param, userId);
+
+        var isPhongBanChinh =
+            BuildPhongBanChinhCondition(
+                param,
+                phongBanIdValue);
+
+        var isPhoiHopInScope =
+            BuildPhoiHopInChiuTrachNhiemScopeCondition(
+                param,
+                phongBanIdValue);
+
+        // Evaluate từng condition
+        var lanhDaoResult =
+            Expression.Lambda<Func<DuAnBuoc, bool>>(
+                isLanhDao,
+                param)
+            .Compile()(buoc);
+
+        var creatorResult =
+            Expression.Lambda<Func<DuAnBuoc, bool>>(
+                isCreator,
+                param)
+            .Compile()(buoc);
+
+        var phongBanChinhResult =
+            Expression.Lambda<Func<DuAnBuoc, bool>>(
+                isPhongBanChinh,
+                param)
+            .Compile()(buoc);
+
+        var phoiHopResult =
+            Expression.Lambda<Func<DuAnBuoc, bool>>(
+                isPhoiHopInScope,
+                param)
+            .Compile()(buoc);
+
+        var finalResult =
+            lanhDaoResult
+            || creatorResult
+            || phongBanChinhResult
+            || phoiHopResult;
+
+        Log.Error(
+            """
+        [CheckOwnership DEBUG]
+        UserId={UserId}
+        PhongBanId={PhongBanId}
+        DuAnBuocId={DuAnBuocId}
+
+        IsLanhDao       = {IsLanhDao}
+        IsCreator       = {IsCreator}
+        IsPhongBanChinh = {IsPhongBanChinh}
+        IsPhoiHop       = {IsPhoiHop}
+
+        FINAL           = {Final}
+        """,
+            userId,
+            phongBanId,
+            buoc.Id,
+            lanhDaoResult,
+            creatorResult,
+            phongBanChinhResult,
+            phoiHopResult,
+            finalResult);
+
+        return finalResult;
+    }
     public static bool CheckOwnership(DuAnBuoc buoc, long userId, long? phongBanId) {
         var filter = BuildOwnershipFilter(userId, phongBanId);
-        return filter.Compile()(buoc);
+        var resul= filter.Compile()(buoc);
+
+
+        return resul;
     }
 }
 
@@ -201,15 +288,15 @@ public static class BuocAuthorizationHelper {
 /// - CanExecuteThanhToanAsync: chỉ Owner/LanhDao + PhongBanChinh (KHÔNG cho PhoiHop) — cho phép Insert/Update ThanhToan
 /// </summary>
 public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IBuocAuthorizationProvider {
-    public async Task<bool> CanExecuteStepAsync(DuAnBuoc buoc, IAuthorizationContext ctx, CancellationToken ct) {
-        if (ctx.HasKhtcBypass) return true;
-        if (ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)) return true;
-
-        return BuocAuthorizationHelper.CheckOwnership(buoc, ctx.UserId, ctx.PhongBanId);
+    public Task<bool> CanExecuteStepAsync(      DuAnBuoc buoc,      IAuthorizationContext ctx,      CancellationToken ct) {
+        var result =  ctx.HasKhtcBypass// || ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)
+                                ||   BuocAuthorizationHelper.CheckOwnership(buoc,     ctx.UserId,     ctx.PhongBanId);
+        return Task.FromResult(result);
     }
 
-    public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx) {
+    public IQueryable<DuAnBuoc> FilterVisibleSteps(IQueryable<DuAnBuoc> query, IAuthorizationContext ctx,string type="Edit") {
         if (ctx.HasKhtcBypass) return query;
+        if (type != "Edit" && ctx.HasViewAll) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -224,6 +311,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
         IAuthorizationContext ctx,
         Expression<Func<T, int?>> buocIdSelector) where T : class {
         if (ctx.HasKhtcBypass) return query;
+        if (ctx.HasViewAll) return query;
 
         if (ctx.PhongBanId == 0 && ctx.UserId <= 0)
             return query.Where(e => false);
@@ -238,7 +326,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
     public async Task EnsureCanExecuteStepAsync(int? buocId, IAuthorizationContext ctx, CancellationToken ct = default) {
         if (!buocId.HasValue) return;
         if (ctx.HasKhtcBypass) return;
-        if (ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)) return;
+       // if (ctx.User.AuthInfo.HasRole(RoleConstants.QLDA_QuanTri)) return;
 
         var buoc = await buocRepo.GetQueryableSet()
             .Include(e => e.DuAn).ThenInclude(e => e!.DuAnChiuTrachNhiemXuLys)
@@ -246,7 +334,7 @@ public class BuocAuthorizationProvider(IRepository<DuAnBuoc, int> buocRepo) : IB
             .FirstOrDefaultAsync(e => e.Id == buocId.Value, ct);
 
         if (buoc != null && !await CanExecuteStepAsync(buoc, ctx, ct))
-            throw new ForbiddenException("Phòng ban không có quyền thao tác bước này");
+            throw new ForbiddenException("Bạn không có quyền thao tác bước này");
     }
 
 

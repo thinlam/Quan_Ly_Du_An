@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 using QLDA.Application.DuAns.DTOs;
 using QLDA.Domain.Entities;
+using QLDA.Application.Authorization;
 
 namespace QLDA.Application.DuAns.Queries;
 
@@ -21,6 +22,7 @@ internal class TongHopVonGiaiNganQueryHandler
     private readonly IRepository<KeHoachVon, Guid> _keHoachVon;
     private readonly IRepository<UserMaster, long> _userMaster;
     private readonly IRepository<DmDonVi, long> _dmDonVi;
+    private readonly IAuthorizationManager _authManager;
     private readonly IDapperRepository _dapper;
 
     public TongHopVonGiaiNganQueryHandler(IServiceProvider serviceProvider)
@@ -32,13 +34,16 @@ internal class TongHopVonGiaiNganQueryHandler
         _thanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
         _keHoachVon = serviceProvider.GetRequiredService<IRepository<KeHoachVon, Guid>>();
         _dapper = serviceProvider.GetRequiredService<IDapperRepository>();
+        _authManager =serviceProvider.GetRequiredService<IAuthorizationManager>();
     }
 
-    public async Task<List<BaoCaoDuAnDto>> Handle(
-       TongHopVonGiaiNganQuery request,
-       CancellationToken cancellationToken = default) {
-        var query = _duAn.GetQueryableSet()
-            .Include(d => d.GiaiDoanHienTai)
+    public async Task<List<BaoCaoDuAnDto>> Handle(   TongHopVonGiaiNganQuery request, CancellationToken cancellationToken = default) {
+        var firstDayOfYear = new DateTimeOffset(request.Nam, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var firstDayOfNextYear = firstDayOfYear.AddYears(1);
+
+        var query = _authManager.FilterVisible(_duAn.GetQueryableSet(), AuthorizationResourceKeys.DuAn);
+
+        query = query.Include(d => d.GiaiDoanHienTai)
             .Include(d => d.BuocHienTai)
             .Include(d => d.DuAnChiuTrachNhiemXuLys)
             .AsNoTracking().Where(e => !e.IsDeleted);
@@ -55,7 +60,14 @@ internal class TongHopVonGiaiNganQueryHandler
                 TenDuAn = d.TenDuAn,
                 MaDuAn = d.MaDuAn,
                 TenBuoc = d.BuocHienTai != null ? d.BuocHienTai.TenBuoc    : null,
-                TenGiaiDoanHienTai = d.GiaiDoanHienTai != null   ? d.GiaiDoanHienTai.Ten : null,
+                TenGiaiDoanHienTai = d.BuocHienTai != null && d.BuocHienTai.Buoc != null && d.BuocHienTai.Buoc.GiaiDoan != null
+                    ? d.BuocHienTai.Buoc.GiaiDoan.Ten
+                    : d.GiaiDoanHienTai != null ? d.GiaiDoanHienTai.Ten : null,
+                // GiaiDoanHienTaiId (denormalized) có thể stale so với bước hiện tại
+                // (xem docs/issues/fix-01) → lấy phase từ bước hiện tại làm nguồn chuẩn.
+                GiaiDoanHienTaiId = d.BuocHienTai != null && d.BuocHienTai.Buoc != null
+                    ? d.BuocHienTai.Buoc.GiaiDoanId
+                    : d.GiaiDoanHienTaiId,
                 PhongBanPhuTrach = _dmDonVi.GetQueryableSet()
                     .Where(x => x.Id == d.DonViPhuTrachChinhId)
                     .Select(x => x.TenDonVi).FirstOrDefault(),
@@ -64,17 +76,20 @@ internal class TongHopVonGiaiNganQueryHandler
                     .Select(x => x.HoTen).FirstOrDefault(),
                 DonViPhoiHops = string.Empty,
                 LoaiDuAnTheoNamId = d.LoaiDuAnTheoNamId,
-                KeHoachVon = _keHoachVon.GetQueryableSet()
-                    .Where(k =>   !k.IsDeleted &&  k.Nam == request.Nam && k.DuAnId == d.Id)
-                    .Sum(k =>(k.SoVonDieuChinh ?? 0) != 0   ? (k.SoVonDieuChinh ?? 0) : k.SoVon),
-
-                GiaTriGiaiNgan = _thanhToan.GetQueryableSet()
-                    .Where(t =>
-                        !t.IsDeleted &&
-                        t.DuAnId == d.Id &&
-                        t.NgayHoaDon.HasValue &&
-                        t.NgayHoaDon.Value.Year == request.Nam)
-                    .Sum(t => (long?)t.GiaTri) ?? 0
+           
+                KeHoachVon = Math.Round((_keHoachVon.GetQueryableSet()
+                                            .Where(k => !k.IsDeleted && k.Nam == request.Nam && k.DuAnId == d.Id)
+                                            .Sum(k => (decimal?)(
+                                                (!k.SoVonDieuChinh.HasValue || k.SoVonDieuChinh.Value == 0)
+                                                    ? k.SoVon
+                                                    : k.SoVonDieuChinh.Value
+                                            )) ?? 0m) / 1000000m,3),
+                GiaTriGiaiNgan = Math.Round((_thanhToan.GetQueryableSet()
+                                                                            .Where(t =>   !t.IsDeleted &&   t.DuAnId == d.Id 
+                                                                                 && t.NgayHoaDon.HasValue && (t.NgayHoaDon.Value >= firstDayOfYear
+                                                                                && t.NgayHoaDon.Value < firstDayOfNextYear ))
+                                                                            .Sum(t => (decimal?)t.GiaTri) ?? 0m) / 1000000m
+                                                    , 3)
             }).ToListAsync(cancellationToken);
 
         var duAnIds = result.Select(x => x.Id).ToList();

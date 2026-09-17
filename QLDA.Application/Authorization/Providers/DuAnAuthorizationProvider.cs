@@ -22,7 +22,7 @@ namespace QLDA.Application.Authorization;
 /// 2. CreatedBy == userId → được (chỉ bản ghi mình tạo)
 /// 3. DonViPhuTrachChinhId == phongBanId → được (ALL trong phòng)
 /// 4. DuAnChiuTrachNhiemXuLys.Any(RightId == phongBanId) → được (ALL trong phòng)
-///
+/// 3. Giám đốc đơn vị (GiamDocId) → được (ALL - không cần check phòng)
 /// Authorization flags ( HasReadAllBypass) are computed once
 /// per request by AuthorizationContext and exposed via IAuthorizationContext parameter.
 /// </summary>
@@ -53,6 +53,7 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
     public IQueryable<T> Filter<T>(IQueryable<T> query, IAuthorizationContext ctx) where T : class
     {
         if (ctx.HasKhtcBypass) return query;
+        if (ctx.HasViewAll) return query;
 
         if (query is IQueryable<DuAn> daQuery)
             return (IQueryable<T>)ApplyDuAnOwnershipFilter(daQuery, ctx);
@@ -107,7 +108,6 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
         return duAnRepo.GetQueryableSet()
             .Where(e =>
                 e.LanhDaoPhuTrachId == userId ||
-                e.CreatedBy == userId.ToString() ||
                 e.DonViPhuTrachChinhId == phongBanId ||
                 e.DuAnChiuTrachNhiemXuLys!.Any(x =>
                     x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop))
@@ -142,8 +142,7 @@ public class DuAnAuthorizationProvider(IRepository<DuAn, Guid> duAnRepo) : IAuth
         return await duAnRepo.GetQueryableSet()
             .Where(d => d.Id == duAnId)
             .AnyAsync(d =>
-                d.LanhDaoPhuTrachId == userId ||
-                d.CreatedBy == userId.ToString() ||
+                d.LanhDaoPhuTrachId == userId ||               // d.CreatedBy == userId.ToString() ||
                 d.DonViPhuTrachChinhId == phongBanId ||
                 d.DuAnChiuTrachNhiemXuLys!.Any(x =>
                     x.RightId == phongBanId && x.Loai == EChiuTrachNhiemXuLy.DonViPhoiHop),
