@@ -9,7 +9,6 @@ public static class ThanhToanMappings {
             DuAnId = dto.DuAnId,
             BuocId = dto.BuocId,
             NghiemThuId = dto.NghiemThuId,
-            NguonVonId = dto.NguonVonId,
             SoHoaDon = dto.SoHoaDon,
             NgayHoaDon = dto.NgayHoaDon,
             GiaTri = dto.GiaTri,
@@ -22,7 +21,6 @@ public static class ThanhToanMappings {
         return new ThanhToan {
             Id = dto.Id,
             NghiemThuId = dto.NghiemThuId,
-            NguonVonId = dto.NguonVonId,
             SoHoaDon = dto.SoHoaDon,
             NgayHoaDon = dto.NgayHoaDon,
             GiaTri = dto.GiaTri,
@@ -37,8 +35,6 @@ public static class ThanhToanMappings {
             DuAnId = entity.DuAnId,
             BuocId = entity.BuocId,
             NghiemThuId = entity.NghiemThuId,
-            NguonVonId = entity.NguonVonId,
-            TenNguonVon = entity.NguonVon?.Ten,
             SoHoaDon = entity.SoHoaDon,
             NgayHoaDon = entity.NgayHoaDon,
             GiaTri = entity.GiaTri,
@@ -49,9 +45,6 @@ public static class ThanhToanMappings {
     }
     public static void Update(this ThanhToan entity, ThanhToanUpdateDto dto) {
         entity.NghiemThuId = dto.NghiemThuId;
-        if (dto.NguonVonId.HasValue) {
-            entity.NguonVonId = dto.NguonVonId;
-        }
         entity.SoHoaDon = dto.SoHoaDon;
         entity.NgayHoaDon = dto.NgayHoaDon;
         entity.GiaTri = dto.GiaTri;

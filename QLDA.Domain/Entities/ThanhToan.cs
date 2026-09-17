@@ -1,4 +1,3 @@
-using QLDA.Domain.Entities.DanhMuc;
 using QLDA.Domain.Interfaces;
 
 namespace QLDA.Domain.Entities;
@@ -10,10 +9,6 @@ public class ThanhToan : Entity<Guid>, IAggregateRoot, ITienDo {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid NghiemThuId { get; set; }
-    /// <summary>
-    /// ID nguồn vốn (lấy từ Gói thầu)
-    /// </summary>
-    public int? NguonVonId { get; set; }
     /// <summary>
     /// Số hóa đơn
     /// </summary>
@@ -34,7 +29,6 @@ public class ThanhToan : Entity<Guid>, IAggregateRoot, ITienDo {
     public DuAn? DuAn { get; set; }
     public DuAnBuoc? DuAnBuoc { get; set; }
     public NghiemThu? NghiemThu { get; set; }
-    public DanhMucNguonVon? NguonVon { get; set; }
 
     #endregion
 }

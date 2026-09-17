@@ -8,7 +8,6 @@ public class ThanhToanInsertDto : IMayHaveTepDinhKemInsertDto, ITienDo {
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid NghiemThuId { get; set; }
-    public int? NguonVonId { get; set; }
     public string? SoHoaDon { get; set; }
     public DateTimeOffset? NgayHoaDon { get; set; }
     [DefaultValue(0)] public long? GiaTri { get; set; }

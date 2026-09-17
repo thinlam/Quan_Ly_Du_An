@@ -13,9 +13,6 @@ public record ThanhToanUpdateCommand(ThanhToanUpdateDto Dto) : IRequest<ThanhToa
 internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCommand, ThanhToan>
 {
     private readonly IRepository<ThanhToan, Guid> ThanhToan;
-    private readonly IRepository<NghiemThu, Guid> _nghiemThu;
-    private readonly IRepository<HopDong, Guid> _hopDong;
-    private readonly IRepository<GoiThau, Guid> _goiThau;
     private readonly IAuthorizationManager _authManager;
     private readonly IAuthorizationContext _authContext;
     private readonly IUnitOfWork _unitOfWork;
@@ -23,9 +20,6 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
     public ThanhToanUpdateCommandHandler(IServiceProvider serviceProvider)
     {
         ThanhToan = serviceProvider.GetRequiredService<IRepository<ThanhToan, Guid>>();
-        _nghiemThu = serviceProvider.GetRequiredService<IRepository<NghiemThu, Guid>>();
-        _hopDong = serviceProvider.GetRequiredService<IRepository<HopDong, Guid>>();
-        _goiThau = serviceProvider.GetRequiredService<IRepository<GoiThau, Guid>>();
         _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
         _authContext = serviceProvider.GetRequiredService<IAuthorizationContext>();
         _unitOfWork = ThanhToan.UnitOfWork;
@@ -44,15 +38,6 @@ internal class ThanhToanUpdateCommandHandler : IRequestHandler<ThanhToanUpdateCo
 
         await _authManager.EnsureCanExecuteAsync(entity.BuocId, entity.DuAnId, _authContext, cancellationToken);
         entity.Update(request.Dto);
-
-        if (!entity.NguonVonId.HasValue)
-        {
-            entity.NguonVonId = await (from nt in _nghiemThu.GetQueryableSet()
-                                       join hd in _hopDong.GetQueryableSet() on nt.HopDongId equals hd.Id
-                                       join gt in _goiThau.GetQueryableSet() on hd.GoiThauId equals gt.Id
-                                       where nt.Id == entity.NghiemThuId
-                                       select gt.NguonVonId).FirstOrDefaultAsync(cancellationToken);
-        }
 
         if (_unitOfWork.HasTransaction)
         {

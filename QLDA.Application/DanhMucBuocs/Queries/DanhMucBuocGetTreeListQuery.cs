@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucBuocs.DTOs;
 using QLDA.Application.DuAnBuocs.Extensions;
 
@@ -18,7 +18,7 @@ internal class DanhMucBuocGetTreeListQueryHandler(IServiceProvider ServiceProvid
 
     public async Task<List<DanhMucBuocDto>> Handle(DanhMucBuocGetTreeListQuery query,
         CancellationToken cancellationToken = default) {
-        var queryable = DanhMucBuocRepository.GetQueryableSet(OnlyUsed: false)
+        var queryable = DanhMucBuocRepository.GetQueryableSet()
             .Where(o => o.QuyTrinhId == query.QuyTrinhId);
 
         if (query.IsNoTracking)

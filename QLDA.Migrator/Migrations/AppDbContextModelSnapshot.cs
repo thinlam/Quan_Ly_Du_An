@@ -7909,9 +7909,6 @@ namespace QLDA.Migrator.Migrations
                     b.Property<Guid>("NghiemThuId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("NguonVonId")
-                        .HasColumnType("int");
-
                     b.Property<string>("NoiDung")
                         .HasColumnType("nvarchar(max)");
 
@@ -7941,8 +7938,6 @@ namespace QLDA.Migrator.Migrations
                     b.HasIndex("NghiemThuId")
                         .IsUnique()
                         .HasFilter("[IsDeleted] = 0 AND [NghiemThuId] IS NOT NULL");
-
-                    b.HasIndex("NguonVonId");
 
                     b.ToTable("ThanhToan", (string)null);
                 });
@@ -10231,18 +10226,11 @@ namespace QLDA.Migrator.Migrations
                         .HasForeignKey("QLDA.Domain.Entities.ThanhToan", "NghiemThuId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("QLDA.Domain.Entities.DanhMuc.DanhMucNguonVon", "NguonVon")
-                        .WithMany()
-                        .HasForeignKey("NguonVonId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("DuAn");
 
                     b.Navigation("DuAnBuoc");
 
                     b.Navigation("NghiemThu");
-
-                    b.Navigation("NguonVon");
                 });
 
             modelBuilder.Entity("QLDA.Domain.Entities.ThanhVienBanQLDA", b =>

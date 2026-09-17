@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using QLDA.Application.Common.Mapping;
 
 namespace QLDA.Application.DmChucVus.Queries;
@@ -20,7 +20,8 @@ public record DmChucVuGetDanhSachQueryueryHandler(IServiceProvider ServiceProvid
         try
         {
 
-            var query = dmChucVu.GetQueryableSet(OnlyUsed: false).AsNoTracking()
+            var query = dmChucVu.GetQueryableSet().AsNoTracking()
+                .Where(e => e.Used == true)
                 .WhereIf(!request.GetAll ?? false, e => e.Used);
 
             return await query
