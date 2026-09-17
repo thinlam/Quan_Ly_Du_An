@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucQuyTrinhs.DTOs;
 
 namespace QLDA.Application.DanhMucQuyTrinhs.Queries;
@@ -11,7 +11,7 @@ public record DanhMucQuyTrinhGetQueryHandler(IServiceProvider ServiceProvider)
         ServiceProvider.GetRequiredService<IRepository<DanhMucQuyTrinh, int>>();
 
     public async Task<DanhMucQuyTrinhDto> Handle(DanhMucQuyTrinhGetQuery request, CancellationToken cancellationToken) {
-        var query = DanhMucQuyTrinh.GetQueryableSet()
+        var query = DanhMucQuyTrinh.GetQueryableSet(OnlyUsed: false)
             .Where(e => e.Id == request.Id && !e.IsDeleted);
 
         if (request.IsNoTracking)

@@ -30,6 +30,14 @@ public class ThanhToanConfiguration : AggregateRootConfiguration<ThanhToan> {
             .IsUnique()
             .HasFilter("[IsDeleted] = 0 AND [NghiemThuId] IS NOT NULL");
         // Enforce 1-1 relationship: only one non-deleted ThanhToan per NghiemThu
+
+        builder.Property(e => e.NguonVonId).IsRequired(false);
+        builder.HasIndex(e => e.NguonVonId);
+        builder.HasOne(e => e.NguonVon)
+            .WithMany()
+            .HasForeignKey(e => e.NguonVonId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
       
     }
 }
