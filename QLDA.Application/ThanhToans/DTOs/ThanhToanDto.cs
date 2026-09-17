@@ -15,6 +15,8 @@ public class ThanhToanDto : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepDinhKe
     public Guid DuAnId { get; set; }
     public int? BuocId { get; set; }
     public Guid NghiemThuId { get; set; }
+    public int? NguonVonId { get; set; }
+    public string? TenNguonVon { get; set; }
     public Guid HopDongId { get; set; }
     public List<Guid>? PhuLucHopDongIds { get; set; }
     public string? SoHoaDon { get; set; }
