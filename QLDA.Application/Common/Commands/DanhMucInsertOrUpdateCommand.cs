@@ -1,4 +1,4 @@
-using QLDA.Application.Common.Enums;
+﻿using QLDA.Application.Common.Enums;
 
 namespace QLDA.Application.Common.Commands;
 
@@ -125,7 +125,7 @@ internal class DanhMucInsertOrUpdateCommandHandler : IRequestHandler<DanhMucInse
 
                     //Kiểm tra xem đã có quy trình mặc định nào khác chưa
 
-                    if (DanhMucQuyTrinh.GetQueryableSet().Any(e => e.Id != entity.Id && e.MacDinh))
+                    if (DanhMucQuyTrinh.GetQueryableSet(OnlyUsed: false).Any(e => e.Id != entity.Id && e.MacDinh))
                         entity.MacDinh = false;
 
                     await DanhMucQuyTrinh.AddOrUpdateAsync(entity, cancellationToken: cancellationToken);

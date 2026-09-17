@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucTinhTrangThucHienLcnts.DTOs;
 
 namespace QLDA.Application.DanhMucTinhTrangThucHienLcnts.Commands;
@@ -38,7 +38,7 @@ internal class DanhMucTinhTrangThucHienLcntInsertCommandHandler : IRequestHandle
     private async Task ValidateAsync(DanhMucTinhTrangThucHienLcntInsertCommand request, CancellationToken cancellationToken)
     {
         // Kiểm tra trùng tên
-        var exists = await _danhMuc.GetQueryableSet()
+        var exists = await _danhMuc.GetQueryableSet(OnlyUsed: false)
             .AnyAsync(e => e.Ten == request.Dto.Ten, cancellationToken: cancellationToken);
 
         ManagedException.ThrowIf(exists, "Tên đã tồn tại");

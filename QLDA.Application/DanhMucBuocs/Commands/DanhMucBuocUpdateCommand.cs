@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QLDA.Application.DanhMucBuocs.DTOs;
 
@@ -21,14 +21,14 @@ internal class DanhMucBuocUpdateCommandHandler : IRequestHandler<DanhMucBuocUpda
         using (await UnitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)) {
             await ValidateAsync(request, cancellationToken);
 
-            var entity = await DanhMucBuoc.GetOrderedSet()
+            var entity = await DanhMucBuoc.GetQueryableSet(OnlyUsed: false)
                 .Include(e => e.BuocManHinhs)
                 .FirstOrDefaultAsync(e => e.Id == request.Dto.Id, cancellationToken);
             ManagedException.ThrowIfNull(entity);
 
             DanhMucBuoc? parent = null;
             if (request.Dto.ParentId > 0) {
-                parent = await DanhMucBuoc.GetOrderedSet().FirstOrDefaultAsync(c => c.Id == request.Dto.ParentId, cancellationToken: cancellationToken);
+                parent = await DanhMucBuoc.GetQueryableSet(OnlyUsed: false).FirstOrDefaultAsync(c => c.Id == request.Dto.ParentId, cancellationToken: cancellationToken);
                 ManagedException.ThrowIf(parent == null, "Bước cha không tồn tại.");
             }
 
@@ -37,7 +37,7 @@ internal class DanhMucBuocUpdateCommandHandler : IRequestHandler<DanhMucBuocUpda
             await DanhMucBuoc.MoveNodeAsync(entity, parent, cancellationToken);
 
             if (request.Dto.DanhSachManHinh?.Count > 0) {
-                var danhSachManHinh = await DanhMucManHinh.GetQueryableSet()
+                var danhSachManHinh = await DanhMucManHinh.GetQueryableSet(OnlyUsed: false)
                     .Where(e => request.Dto.DanhSachManHinh.Contains(e.Id))
                     .ToListAsync(cancellationToken: cancellationToken);
 
