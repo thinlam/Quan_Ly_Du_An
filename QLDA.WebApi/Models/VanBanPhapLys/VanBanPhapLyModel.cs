@@ -27,6 +27,11 @@ public class VanBanPhapLyModel : IHasKey<Guid?>, IMustHaveId<Guid>, IMayHaveTepD
     public int? BuocId { get; set; }
 
     public Guid DuAnId { get; set; }
+    /// <summary>
+    /// Loại văn bản theo <see cref="EnumLoaiVanBanQuyetDinh"/>: VanBanPhapLy (mặc định) hoặc ChungTu.
+    /// Giá trị khác/trống sẽ được lưu mặc định là VanBanPhapLy.
+    /// </summary>
+    public string? Loai { get; set; }
     public string? SoVanBan { get; set; } = string.Empty;
     public string? CoQuanQuyetDinh { get; set; } = string.Empty;
     public DateTimeOffset? NgayVanBan { get; set; }

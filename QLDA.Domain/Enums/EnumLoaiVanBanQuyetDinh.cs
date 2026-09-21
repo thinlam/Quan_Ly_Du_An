@@ -10,6 +10,7 @@ public enum EnumLoaiVanBanQuyetDinh {
   [Description("Quyết định lập Bên mời thầu")] QuyetDinhLapBenMoiThau,
   [Description("Quyết định lập Hội đồng thẩm định")] QuyetDinhLapHoiDongThamDinh,
   [Description("Văn bản pháp lý")] VanBanPhapLy,
+  [Description("Chứng từ")] ChungTu,
   [Description("Văn bản chủ trương")] VanBanChuTruong,
   [Description("Kế hoạch lựa chọn nhà thầu")] KeHoachLuaChonNhaThau,
   [Description("Quyết định phê duyệt dự toán")] PheDuyetDuToan,

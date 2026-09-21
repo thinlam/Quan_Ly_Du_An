@@ -40,7 +40,7 @@ public static class VanBanPhapLyMappingConfiguration
             So = model.SoVanBan,
             TrichYeu = model.TrichYeu,
             Ngay = model.NgayKy,
-            Loai = EnumLoaiVanBanQuyetDinh.VanBanPhapLy.ToString(),
+            Loai = ResolveLoai(model.Loai),
         };
 
     public static void Update(this VanBanPhapLy entity, VanBanPhapLyModel model)
@@ -55,6 +55,13 @@ public static class VanBanPhapLyMappingConfiguration
         entity.So = model.SoVanBan;
         entity.Ngay = model.NgayVanBan;// hiện UI chỉ hiện ngày ký
         entity.TrichYeu = model.TrichYeu;
-        entity.Loai = EnumLoaiVanBanQuyetDinh.VanBanPhapLy.ToString();
+        entity.Loai = model.Loai == nameof(EnumLoaiVanBanQuyetDinh.ChungTu)
+            ? nameof(EnumLoaiVanBanQuyetDinh.ChungTu)
+            : entity.Loai;
          }
+
+    private static string ResolveLoai(string? loai) =>
+        loai == nameof(EnumLoaiVanBanQuyetDinh.ChungTu)
+            ? nameof(EnumLoaiVanBanQuyetDinh.ChungTu)
+            : EnumLoaiVanBanQuyetDinh.VanBanPhapLy.ToString();
 }
