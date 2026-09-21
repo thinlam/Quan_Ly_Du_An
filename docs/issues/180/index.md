@@ -27,7 +27,7 @@ Yêu cầu:
 | `api/van-ban-phap-ly/them-moi` | POST | Tạo mới — nhận `loai: "ChungTu"` |
 | `api/van-ban-phap-ly/cap-nhat` | PUT | Cập nhật — giữ nguyên `Loai` nếu không gửi; đổi sang `ChungTu` nếu gửi |
 | `api/van-ban-phap-ly/{id}/chi-tiet` | GET | Chi tiết (không trả `Loai` — không đổi) |
-| `api/van-ban-phap-ly/danh-sach-tien-do` | GET | Danh sách tiến độ (không trả `Loai` — không đổi) |
+| `api/van-ban-phap-ly/danh-sach-tien-do` | GET | Danh sách tiến độ — hỗ trợ filter `loai`; không gửi → mặc định `VanBanPhapLy` |
 | `api/tong-hop-van-ban-quyet-dinh/danh-sach-day-du` | GET | Trả `loai` dạng tên hiển thị — tự hiển thị **"Chứng từ"** |
 | `api/danh-muc-enum/danh-sach?enumName=ELoaiVanBanQuyetDinh` | GET | Danh sách loại cho FE — tự include `ChungTu` |
 
@@ -58,3 +58,16 @@ POST /api/van-ban-phap-ly/them-moi
 ## 6. Trạng thái hiện tại
 
 **Đã implement** — `dotnet build SER.sln` 0 lỗi. Chi tiết: `report.md`.
+
+## 7. Bổ sung: filter `loai` cho `danh-sach-tien-do`
+
+Sau khi thêm loại `ChungTu`, list tiến độ cần phân biệt loại. `GET api/van-ban-phap-ly/danh-sach-tien-do`
+giờ nhận query param `loai`:
+
+| `loai` | Kết quả |
+|--------|---------|
+| `VanBanPhapLy` | Chỉ bản ghi `Loai = "VanBanPhapLy"` |
+| `ChungTu` | Chỉ bản ghi `Loai = "ChungTu"` |
+| không gửi / `VBPL` (parse fail → null) | Mặc định `VanBanPhapLy` |
+
+Không ảnh hưởng các filter/phân quyền/paging hiện có.

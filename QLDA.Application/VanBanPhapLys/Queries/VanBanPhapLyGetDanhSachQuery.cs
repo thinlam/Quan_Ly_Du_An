@@ -2,6 +2,7 @@ using QLDA.Application.Common.Mapping;
 using QLDA.Application.TepDinhKems.DTOs;
 using QLDA.Application.VanBanPhapLys.DTOs;
 using QLDA.Application.Authorization;
+using QLDA.Domain.Enums;
 
 namespace QLDA.Application.VanBanPhapLys.Queries;
 
@@ -11,6 +12,10 @@ public record VanBanPhapLyGetDanhSachQuery : AggregateRootPagination, IMayHaveGl
     public int? BuocId { get; set; }
     public string? GlobalFilter { get; set; }
     public bool IsNoTracking { get; set; }
+    /// <summary>
+    /// Loại văn bản (EnumLoaiVanBanQuyetDinh). Không truyền/null/parse fail → mặc định VanBanPhapLy.
+    /// </summary>
+    public EnumLoaiVanBanQuyetDinh? Loai { get; set; }
     /// <summary>
     /// Loại dự án theo năm - tài chính
     /// </summary>
@@ -36,8 +41,12 @@ internal class
     public async Task<PaginatedList<VanBanPhapLyDto>> Handle(VanBanPhapLyGetDanhSachQuery request,
         CancellationToken cancellationToken = default)
     {
+        // Issue #180 — mặc định chỉ lấy Văn bản pháp lý (VBPL); truyền Loai khác (VD ChungTu) để lọc theo loại
+        var loai = request.Loai?.ToString() ?? nameof(EnumLoaiVanBanQuyetDinh.VanBanPhapLy);
+
         var queryable = _authManager.FilterVisible(VanBanPhapLy.GetQueryableSet(), AuthorizationResourceKeys.DuAn)
                 .Where(e => !e.DuAn!.IsDeleted)
+                .Where(e => e.Loai == loai)
                 .WhereIf(request.DuAnId != null, e => e.DuAnId == request.DuAnId)
                 .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
                 .WhereIf(request.BuocId > 0, e => e.BuocId == request.BuocId)
