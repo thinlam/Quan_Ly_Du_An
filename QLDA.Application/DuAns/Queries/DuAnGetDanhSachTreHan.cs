@@ -1,7 +1,8 @@
+using BuildingBlocks.CrossCutting.DateTimes;
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.Application.Common.Mapping;
 using QLDA.Application.DuAns.DTOs;
-using BuildingBlocks.CrossCutting.DateTimes;
 using QLDA.WebApi.Models.DuAns;
 
 namespace QLDA.Application.DuAns.Queries;
@@ -12,6 +13,7 @@ public record DuAnGetDanhSachTreHanHandler(IServiceProvider serviceProvider)
     : IRequestHandler<DuAnGetDanhSachTreHan, PaginatedList<DuAnTreHanChiTietDto>> {
     private readonly IRepository<DuAnBuoc, int> DuAnBuoc =
         serviceProvider.GetRequiredService<IRepository<DuAnBuoc, int>>();
+    private readonly IAuthorizationManager    _authManager = serviceProvider.GetRequiredService<IAuthorizationManager>();
 
     private readonly IRepository<DmDonVi, long> DanhMucDonVi =
         serviceProvider.GetRequiredService<IRepository<DmDonVi, long>>();
@@ -21,9 +23,9 @@ public record DuAnGetDanhSachTreHanHandler(IServiceProvider serviceProvider)
     public async Task<PaginatedList<DuAnTreHanChiTietDto>> Handle(DuAnGetDanhSachTreHan request,
         CancellationToken cancellationToken) {
         // var now = _dateTimeProvider.OffsetUtcNow;
-        var query = DuAnBuoc.GetDanhSachTreHanQueryable(
-           request.SearchDto);
-        return await query
+        var queryable = _authManager.FilterVisible(DuAnBuoc.GetDanhSachTreHanQueryable(
+           request.SearchDto), AuthorizationResourceKeys.DuAn);
+        return await queryable
            .Select(e => new DuAnTreHanChiTietDto {
                DuAnId = e.DuAnId,
                TenDuAn = e.DuAn!.TenDuAn,

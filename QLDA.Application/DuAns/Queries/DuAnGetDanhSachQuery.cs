@@ -62,8 +62,10 @@ internal class DuAnGetDanhSachQueryHandler(IServiceProvider serviceProvider) : I
             .WhereIf(request.SearchDto.TuNgay.HasValue, e => e.NgayBatDau >= request.SearchDto.TuNgay!.Value.ToStartOfDayUtc())
             .WhereIf(request.SearchDto.DenNgay.HasValue, e => e.NgayBatDau <= request.SearchDto.DenNgay!.Value.ToEndOfDayUtc())
             .WhereIf(request.SearchDto.NamBatDau > 0, e => e.NgayBatDau!.Value.Year == request.SearchDto.NamBatDau)
-            .WhereIf(request.SearchDto.NamDuAn > 0,
-                e => request.SearchDto.NamDuAn >= e.ThoiGianKhoiCong && ((e.ThoiGianHoanThanh == null && e.ThoiGianKhoiCong == request.SearchDto.NamDuAn) || request.SearchDto.NamDuAn <= e.ThoiGianHoanThanh))
+            .WhereIf(request.SearchDto.NamDuAn > 0,     e =>
+                request.SearchDto.NamDuAn >= e.ThoiGianKhoiCong
+                && ((        e.ThoiGianHoanThanh == null  &&  e.ThoiGianKhoiCong == request.SearchDto.NamDuAn)
+                        ||      request.SearchDto.NamDuAn <= e.ThoiGianHoanThanh))
             .WhereIf(request.SearchDto.HinhThucDauTuId > 0, e => e.HinhThucDauTuId == request.SearchDto.HinhThucDauTuId)
             .WhereIf(request.SearchDto.LoaiDuAnTheoNamId > 0, e => e.LoaiDuAnTheoNamId == request.SearchDto.LoaiDuAnTheoNamId)
             .WhereGlobalFilter(

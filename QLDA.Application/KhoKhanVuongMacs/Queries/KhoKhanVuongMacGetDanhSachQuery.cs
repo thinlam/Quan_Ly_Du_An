@@ -62,6 +62,8 @@ internal class
             .WhereIf(request.MucDoKhoKhanId > 0, e => e.MucDoKhoKhanId == request.MucDoKhoKhanId)
             .WhereIf(request.LoaiDuAnId > 0, e => e.DuAn!.LoaiDuAnId == request.LoaiDuAnId)
             .WhereIf(request.LoaiDuAnTheoNamId > 0, e => e.DuAn!.LoaiDuAnTheoNamId == request.LoaiDuAnTheoNamId)
+            .WhereIf(request.LanhDaoPhuTrachId > 0, e => e.DuAn!.LanhDaoPhuTrachId == request.LanhDaoPhuTrachId)
+            .WhereIf(request.DonViPhuTrachChinhId > 0, e => e.DuAn!.DonViPhuTrachChinhId == request.DonViPhuTrachChinhId)
             .WhereIf(request.NoiDung.IsNotNullOrWhitespace(), e => e.NoiDung!.ToLower().Contains(request.NoiDung!.ToLower()))
             .WhereIf(request.TuNgay.HasValue,
                 e => e.Ngay.HasValue && e.Ngay.Value >= request.TuNgay!.Value.ToStartOfDayUtc())

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using QLDA.Application.Authorization;
 using QLDA.WebApi.Models.DuAns;
 
 namespace QLDA.Application.DuAns.Queries;
@@ -6,15 +7,15 @@ namespace QLDA.Application.DuAns.Queries;
 public static class DuAnQueryExtensions {
     public static IQueryable<DuAnBuoc> GetDanhSachTreHanQueryable(
         this IRepository<DuAnBuoc, int> duAnBuocRepo,
-        DuAnSearchOverdueDto searchDto) {
-        return duAnBuocRepo .GetQueryableSet().AsNoTracking()
-            // Bước chưa xóa + dự án chưa xóa
-            .Where(e =>   !e.IsDeleted &&   e.DuAn != null &&   !e.DuAn.IsDeleted)
+    DuAnSearchOverdueDto searchDto) {
+        var query = duAnBuocRepo .GetQueryableSet().AsNoTracking()
+            // Bước chưa xóa + dự án chưa xóa -> đã filter sẵn
+            .Where(e =>    e.DuAn != null )
             // Có ngày dự kiến + ngày thực tế
             // và thực tế > dự kiến => trễ hạn
             .Where(e => e.NgayDuKienKetThuc.HasValue &&
-                                    e.NgayThucTeKetThuc.HasValue &&
-                                    e.NgayThucTeKetThuc.Value > e.NgayDuKienKetThuc.Value)
+                                  (  (e.NgayThucTeKetThuc.HasValue && e.NgayThucTeKetThuc.Value.Date > e.NgayDuKienKetThuc.Value.Date )))
+                                //  || (!e.NgayThucTeKetThuc.HasValue && DateTimeOffset.UtcNow.Date > e.NgayDuKienKetThuc.Value.Date )))
 
             // Đơn vị phụ trách chính
             .WhereIf(  searchDto.DonViPhuTrachChinhId > 0,    e => e.DuAn!.DonViPhuTrachChinhId ==       searchDto.DonViPhuTrachChinhId)
@@ -29,5 +30,6 @@ public static class DuAnQueryExtensions {
                 e => e.BuocId == searchDto.BuocId)
             // Search
             .WhereGlobalFilter(searchDto, e => e.DuAn!.TenDuAn, e => e.Buoc!.Ten);
+        return query;
     }
 }
