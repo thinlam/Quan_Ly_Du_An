@@ -26,6 +26,17 @@
 
 **Build:** `dotnet build SER.sln` — 0 warning, 0 error.
 
+## 21/09 — Bổ sung filter `loai` cho `van-ban-phap-ly/danh-sach-tien-do`
+
+**Lý do:** sau khi thêm loại `ChungTu`, list tiến độ cần phân biệt loại; yêu cầu mặc định chỉ lấy VBPL.
+
+**Files changed:**
+- `QLDA.Application/VanBanPhapLys/Queries/VanBanPhapLyGetDanhSachQuery.cs` — thêm `EnumLoaiVanBanQuyetDinh? Loai`; handler luôn áp `.Where(e => e.Loai == loai)`, default `VanBanPhapLy` khi null.
+- `QLDA.WebApi/Controllers/VanBanPhapLyController.cs` — thêm query param `loai`.
+- `docs/issues/180/` — cập nhật index.md, report.md, test-workflow.md.
+
+**Build:** `dotnet build SER.sln` — 0 warning, 0 error.
+
 ## Còn lại
 - [ ] Xác nhận FE tên `PartialView` cho `Chứng từ` (nếu cần hiển thị partial riêng trên
       `tong-hop-van-ban-quyet-dinh`) → bổ sung vào `LoaiVanBanQuyetDinhConst.Dictionary`.

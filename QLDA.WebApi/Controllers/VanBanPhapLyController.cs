@@ -6,6 +6,7 @@ using BuildingBlocks.Application.Attachments.Common;
 using QLDA.Application.VanBanPhapLys.Commands;
 using QLDA.Application.VanBanPhapLys.DTOs;
 using QLDA.Application.VanBanPhapLys.Queries;
+using QLDA.Domain.Enums;
 using QLDA.WebApi.Models.TepDinhKems;
 using QLDA.WebApi.Models.VanBanPhapLys;
 
@@ -118,7 +119,7 @@ public class VanBanPhapLyController : AggregateRootController {
     [HttpGet("api/van-ban-phap-ly/danh-sach-tien-do")]
     [ProducesResponseType<ResultApi<PaginatedList<VanBanPhapLyDto>>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ResultApi>(StatusCodes.Status400BadRequest)]
-    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null) {
+    public async Task<ResultApi> Get([FromQuery] Guid? duAnId, int? buocId, string? globalFilter = null, int pageIndex = 0, int pageSize = 0, int? loaiDuAnTheoNamId = null, EnumLoaiVanBanQuyetDinh? loai = null) {
         var res = await Mediator.Send(new VanBanPhapLyGetDanhSachQuery() {
             DuAnId = duAnId,
             BuocId = buocId,
@@ -127,6 +128,7 @@ public class VanBanPhapLyController : AggregateRootController {
             PageSize = pageSize,
             IsNoTracking = true,
             LoaiDuAnTheoNamId = loaiDuAnTheoNamId,
+            Loai = loai,
         });
         return ResultApi.Ok(res);
     }

@@ -75,6 +75,36 @@ curl "http://localhost:5000/api/danh-muc-enum/danh-sach?enumName=ELoaiVanBanQuye
 
 Kỳ vọng: có item `{ rawName: "ChungTu", ten: "Chứng từ" }`.
 
+## Filter `loai` — `danh-sach-tien-do`
+
+### TC7 — Không gửi `loai` → mặc định VBPL
+
+```bash
+curl "http://localhost:5000/api/van-ban-phap-ly/danh-sach-tien-do?duAnId=<guid>"
+```
+
+Kỳ vọng: chỉ trả bản ghi `Loai = 'VanBanPhapLy'` (không lẫn `ChungTu`).
+
+### TC8 — Gửi `loai=VanBanPhapLy`
+
+```bash
+curl "http://localhost:5000/api/van-ban-phap-ly/danh-sach-tien-do?duAnId=<guid>&loai=VanBanPhapLy"
+```
+
+Kỳ vọng: chỉ trả `VanBanPhapLy` (tương đương TC7).
+
+### TC9 — Gửi `loai=ChungTu`
+
+```bash
+curl "http://localhost:5000/api/van-ban-phap-ly/danh-sach-tien-do?duAnId=<guid>&loai=ChungTu"
+```
+
+Kỳ vọng: chỉ trả bản ghi `Loai = 'ChungTu'` (VD bản ghi tạo ở TC1).
+
+### TC10 — Gửi `loai=VBPL` (giá trị không parse được)
+
+Kỳ vọng: enum parse fail → null → mặc định `VanBanPhapLy` (trả list VBPL như TC7).
+
 ## Verify DB trực tiếp (SQL)
 
 ```sql

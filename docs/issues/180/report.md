@@ -96,3 +96,49 @@ Build succeeded.
 0 Warning(s)
 0 Error(s)
 ```
+
+## 8. Bổ sung (cùng branch): filter `loai` cho `danh-sach-tien-do`
+
+### 8.1. Trace trước khi sửa
+
+`GET api/van-ban-phap-ly/danh-sach-tien-do`:
+
+```
+VanBanPhapLyController.Get                                QLDA.WebApi/Controllers/VanBanPhapLyController.cs:121
+→ VanBanPhapLyGetDanhSachQuery                            QLDA.Application/VanBanPhapLys/Queries/VanBanPhapLyGetDanhSachQuery.cs
+→ handler lọc: DuAnId, LoaiDuAnTheoNamId, BuocId, GlobalFilter
+```
+
+**Trước khi sửa: KHÔNG có filter `Loai`** → API trả toàn bộ bản ghi `VanBanPhapLy` (lẫn cả bản ghi `ChungTu` sau khi thêm loại mới). Pattern filter `Loai` có sẵn ở
+`TongHopVanBanQuyetDinhGetListQuery` (`EnumLoaiVanBanQuyetDinh? Loai` + `e.Loai == request.Loai.ToString()`).
+
+### 8.2. Thay đổi
+
+| File | Thay đổi |
+|------|----------|
+| `QLDA.Application/VanBanPhapLys/Queries/VanBanPhapLyGetDanhSachQuery.cs` | Thêm field `EnumLoaiVanBanQuyetDinh? Loai`; handler resolve `loai` mặc định = `VanBanPhapLy` khi null và luôn áp `.Where(e => e.Loai == loai)` |
+| `QLDA.WebApi/Controllers/VanBanPhapLyController.cs` | Thêm query param `EnumLoaiVanBanQuyetDinh? loai = null` → truyền vào query |
+
+Logic handler:
+
+```csharp
+var loai = request.Loai?.ToString() ?? nameof(EnumLoaiVanBanQuyetDinh.VanBanPhapLy);
+var queryable = _authManager.FilterVisible(...)
+    .Where(e => !e.DuAn!.IsDeleted)
+    .Where(e => e.Loai == loai)   // luôn lọc; null/parse fail -> VanBanPhapLy (VBPL)
+    .WhereIf(...);
+```
+
+### 8.3. Behavior
+
+| `loai` request | Kết quả |
+|----------------|---------|
+| `VanBanPhapLy` | Chỉ bản ghi `Loai = "VanBanPhapLy"` |
+| `ChungTu` | Chỉ bản ghi `Loai = "ChungTu"` |
+| không gửi / `VBPL` (enum parse fail → null) | Mặc định `VanBanPhapLy` |
+
+### 8.4. Ảnh hưởng
+
+- Query chỉ có 1 caller (`VanBanPhapLyController.Get`) → rủi ro thấp.
+- Chỉ thêm 1 `.Where` luôn áp dụng; không đụng auth (`FilterVisible`), paging, `GlobalFilter`, `LoaiDuAnTheoNamId`.
+- Không cần migration; không sửa `VanBanPhapLyDto` (yêu cầu chỉ là filter).
