@@ -55,6 +55,7 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
             nameof(EGroupType.HoSoMoiThauDienTuQuyetDinh),
             nameof(EGroupType.HoSoMoiThauDienTuQuyetDinhTD),
             nameof(EGroupType.HoSoMoiThauDienTuCamKetTD),
+            nameof(EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia),
             nameof(EGroupType.HoSoMoiThauDienTuBaoCaoTD));
 
         var result = await queryable

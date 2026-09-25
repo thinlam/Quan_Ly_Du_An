@@ -12,7 +12,7 @@ public static class HoSoMoiThauDienTuMappingConfiguration
         this HoSoMoiThauDienTu entity,
         List<Attachment>? files = null, List<Attachment>? filesCamKet = null, List<Attachment>? filesThamDinh = null
         , List<Attachment>? fileBaoCao = null, List<Attachment>? filesToTrinh = null
-        , List<Attachment>? filesQuyetDinh = null) => new()
+        , List<Attachment>? filesQuyetDinh = null, List<Attachment>? fileQuyetDinhLapToChuyenGias = null) => new()
         {
             Id = entity.Id,
             DuAnId = entity.DuAnId,
@@ -29,7 +29,8 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                 NhaThauId = entity.NhaThauId ?? new Guid(),
                 DinhKemQuyetDinh = filesThamDinh?.Select(f => f.ToModel()).ToList() ,
                 DinhKemCamKet = filesCamKet?.Select(f => f.ToModel()).ToList(),
-                DinhKemBaoCao = fileBaoCao?.Select(f => f.ToModel()).ToList()
+                DinhKemBaoCao = fileBaoCao?.Select(f => f.ToModel()).ToList(),
+                DinhKemQuyetDinhLapToChuyenGia = fileQuyetDinhLapToChuyenGias?.Select(f => f.ToModel()).ToList()
             } : null,
             ToTrinh = entity.ToTrinh != null ? new ToTrinhQuyetDinhModel()
             {
@@ -160,6 +161,9 @@ public static class HoSoMoiThauDienTuMappingConfiguration
     public static List<Attachment> GetDanhSachTepDinhKemQuyetDinhThamDinh(
        this HoSoMoiThauThamDinhModel model, Guid groupId)
        => model.DinhKemQuyetDinh?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhTD).ToList() ?? [];
+    public static List<Attachment> GetDanhSachTepDinhKemLapToChuyenGia(
+         this HoSoMoiThauThamDinhModel model, Guid groupId)
+         => model.DinhKemQuyetDinhLapToChuyenGia?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia).ToList() ?? [];
 
     /// <summary>
     /// groupId = HoSoMoiThauDienTu.Id, không dùng ToTrinh.Id.
@@ -174,8 +178,9 @@ public static class HoSoMoiThauDienTuMappingConfiguration
     public static List<Attachment> GetDanhSachTepDinhKemQuyetDinh(
       this ToTrinhQuyetDinhModel model, Guid groupId)
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinh).ToList() ?? [];
-
+ 
     public static List<Attachment> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTu).ToList() ?? [];
+  
 }

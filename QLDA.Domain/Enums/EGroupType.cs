@@ -60,6 +60,7 @@ public enum EGroupType {
     HoSoMoiThauDienTuQuyetDinhTD,
     HoSoMoiThauDienTuCamKetTD,
     HoSoMoiThauDienTuBaoCaoTD,
+    HoSoMoiThauDienTuQuyetDinhLapToChuyenGia,
     PhanKhaiKinhPhi,
     ToTrinhKeHoach,
     DeXuatChuTruongMoi,

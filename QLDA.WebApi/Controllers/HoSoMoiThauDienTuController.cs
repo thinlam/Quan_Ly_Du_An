@@ -41,6 +41,11 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()]
         ))).ToAttachmentEntities();
+        var fileQuyetDinhLapToChuyenGias = (await Mediator.Send(new GetAttachmentsQuery(
+        GroupIds: [groupId],
+        BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia.ToString()]
+    ))).ToAttachmentEntities();
+
         var fileThamDinhs = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()]
@@ -49,7 +54,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString()]
         ))).ToAttachmentEntities();
-        return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh, filesQuyetDinh));
+        return ResultApi.Ok(entity.ToModel(files, fileCamKets, fileThamDinhs, fileBaoCaos, filesToTrinh, filesQuyetDinh, fileQuyetDinhLapToChuyenGias));
     }
 
     [HttpGet("danh-sach")]
@@ -137,7 +142,11 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId) ?? [],
             EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
             cancellationToken);
-
+        await SyncTepDinhKemAsync(
+            groupId,
+            model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemLapToChuyenGia(entityId) ?? [],
+            EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia.ToString(),
+            cancellationToken);
     }
 
     private Task SyncTepDinhKemAsync(
