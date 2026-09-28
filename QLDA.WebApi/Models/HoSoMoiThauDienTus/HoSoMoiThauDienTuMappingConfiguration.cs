@@ -24,13 +24,13 @@ public static class HoSoMoiThauDienTuMappingConfiguration
             ThoiGianThucHien = entity.ThoiGianThucHien,
             TrangThaiDangTai = entity.TrangThaiDangTai,
             TrangThaiId = entity.TrangThaiId,
+
             HoSoMoiThauThamDinh = entity.NhaThauId != null && (entity.ThamDinh??false) ? new HoSoMoiThauThamDinhModel()
             {
                 NhaThauId = entity.NhaThauId ?? new Guid(),
                 DinhKemQuyetDinh = filesThamDinh?.Select(f => f.ToModel()).ToList() ,
                 DinhKemCamKet = filesCamKet?.Select(f => f.ToModel()).ToList(),
                 DinhKemBaoCao = fileBaoCao?.Select(f => f.ToModel()).ToList(),
-                DinhKemQuyetDinhLapToChuyenGia = fileQuyetDinhLapToChuyenGias?.Select(f => f.ToModel()).ToList()
             } : null,
             ToTrinh = entity.ToTrinh != null ? new ToTrinhQuyetDinhModel()
             {
@@ -52,6 +52,7 @@ public static class HoSoMoiThauDienTuMappingConfiguration
                 TrichYeu = entity.QuyetDinh!.TrichYeu,
                 DanhSachTepDinhKem = filesQuyetDinh?.Select(f => f.ToModel()).ToList()
             } : null,
+            DanhSachTepLapToChuyenGia = fileQuyetDinhLapToChuyenGias?.Select(f => f.ToModel()).ToList(),
             DanhSachTepDinhKem = files?.Select(f => f.ToModel()).ToList()
         };
 
@@ -78,7 +79,8 @@ public static class HoSoMoiThauDienTuMappingConfiguration
             }: null,
             ToTrinh = model.ToTrinh != null ? ToUpdateModel(model.ToTrinh) : null,
             QuyetDinh = model.QuyetDinh != null ? ToUpdateModel(model.QuyetDinh) : null,
-            DanhSachTepDinhKem = model.DanhSachTepDinhKem?.Select(m => ToDto(m)).ToList()
+            DanhSachTepDinhKem = model.DanhSachTepDinhKem?.Select(m => ToDto(m)).ToList(),
+            DanhSachTepLapToChuyenGia  = model.DanhSachTepLapToChuyenGia?.Select(m => ToDto(m)).ToList()
         };
 
         return dto;
@@ -161,9 +163,6 @@ public static class HoSoMoiThauDienTuMappingConfiguration
     public static List<Attachment> GetDanhSachTepDinhKemQuyetDinhThamDinh(
        this HoSoMoiThauThamDinhModel model, Guid groupId)
        => model.DinhKemQuyetDinh?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhTD).ToList() ?? [];
-    public static List<Attachment> GetDanhSachTepDinhKemLapToChuyenGia(
-         this HoSoMoiThauThamDinhModel model, Guid groupId)
-         => model.DinhKemQuyetDinhLapToChuyenGia?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia).ToList() ?? [];
 
     /// <summary>
     /// groupId = HoSoMoiThauDienTu.Id, không dùng ToTrinh.Id.
@@ -178,7 +177,10 @@ public static class HoSoMoiThauDienTuMappingConfiguration
     public static List<Attachment> GetDanhSachTepDinhKemQuyetDinh(
       this ToTrinhQuyetDinhModel model, Guid groupId)
       => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinh).ToList() ?? [];
- 
+    public static List<Attachment> GetDanhSachTepDinhKemLapToChuyenGia(
+        this HoSoMoiThauDienTuModel model, Guid groupId)
+        => model.DanhSachTepLapToChuyenGia?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia).ToList() ?? [];
+
     public static List<Attachment> GetDanhSachTepDinhKem(
         this HoSoMoiThauDienTuModel model, Guid groupId)
         => model.DanhSachTepDinhKem?.ToEntities(groupId, EGroupType.HoSoMoiThauDienTu).ToList() ?? [];

@@ -23,6 +23,11 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTu.ToString()]
         ))).ToAttachmentEntities();
 
+        var fileQuyetDinhLapToChuyenGias = (await Mediator.Send(new GetAttachmentsQuery(
+            GroupIds: [groupId],
+            BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia.ToString()]
+        ))).ToAttachmentEntities();
+
         // Dữ liệu mới lưu theo HoSo.Id; giữ thêm Id cũ để đọc bản ghi legacy.
         var filesToTrinh = new List<Attachment>();
         if (entity.ToTrinh != null)
@@ -41,11 +46,7 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuCamKetTD.ToString()]
         ))).ToAttachmentEntities();
-        var fileQuyetDinhLapToChuyenGias = (await Mediator.Send(new GetAttachmentsQuery(
-        GroupIds: [groupId],
-        BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia.ToString()]
-    ))).ToAttachmentEntities();
-
+      
         var fileThamDinhs = (await Mediator.Send(new GetAttachmentsQuery(
             GroupIds: [groupId],
             BaseGroupTypes: [EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString()]
@@ -110,6 +111,12 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             EGroupType.HoSoMoiThauDienTu.ToString(),
             cancellationToken);
 
+        await SyncTepDinhKemAsync(
+         groupId,
+         model.GetDanhSachTepDinhKemLapToChuyenGia(entityId),
+           EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia.ToString(),
+         cancellationToken);
+
         if (entity.ToTrinh != null || entityOld?.ToTrinh != null) {
             await SyncTepDinhKemAsync(
                 groupId,
@@ -129,11 +136,11 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
                    groupId,
                     model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemQuyetDinhThamDinh(entityId) ?? [],
                    EGroupType.HoSoMoiThauDienTuQuyetDinhTD.ToString(),
-                   cancellationToken) ;
+                   cancellationToken);
 
         await SyncTepDinhKemAsync(
             groupId,
-            model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemCamKetThamDinh(entityId)??[],
+            model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemCamKetThamDinh(entityId) ?? [],
             EGroupType.HoSoMoiThauDienTuCamKetTD.ToString(),
             cancellationToken);
 
@@ -141,11 +148,6 @@ public class HoSoMoiThauDienTuController(IServiceProvider sp) : AggregateRootCon
             groupId,
             model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemBaoCaoThamDinh(entityId) ?? [],
             EGroupType.HoSoMoiThauDienTuBaoCaoTD.ToString(),
-            cancellationToken);
-        await SyncTepDinhKemAsync(
-            groupId,
-            model.HoSoMoiThauThamDinh?.GetDanhSachTepDinhKemLapToChuyenGia(entityId) ?? [],
-            EGroupType.HoSoMoiThauDienTuQuyetDinhLapToChuyenGia.ToString(),
             cancellationToken);
     }
 

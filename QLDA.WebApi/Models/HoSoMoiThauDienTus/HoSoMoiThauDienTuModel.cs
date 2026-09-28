@@ -26,4 +26,6 @@ public class HoSoMoiThauDienTuModel : IHasKey<Guid?>, IMustHaveId<Guid>,
     public ToTrinhQuyetDinhModel? ToTrinh { get; set; }
     public ToTrinhQuyetDinhModel? QuyetDinh { get; set; }
     public List<TepDinhKemModel>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemModel>? DanhSachTepLapToChuyenGia { get; set; }
+
 }

@@ -80,14 +80,14 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         // Tờ trình kết quả (mục 4) — upsert ToTrinhQuyetDinh theo EntityId + Loai (Issue #179).
         ToTrinhQuyetDinh? noiDungThamDinh = null;
         string type = string.Empty;
-        if (dto.ToTrinhKetQua != null) {
+        if (dto.ThamDinh != null) {
             type = ToTrinhQuyetDinhLoai.NoiDungThamDinhNhaThau;
             noiDungThamDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
                 .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == type, cancellationToken);
             if (noiDungThamDinh != null)
-                dto.ToTrinhKetQua.ApplyTo(noiDungThamDinh);
+                dto.ThamDinh.ApplyTo(noiDungThamDinh);
             else {
-                noiDungThamDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id, type);
+                noiDungThamDinh = dto.ThamDinh.ToToTrinhQuyetDinh(entity.Id, type);
                 await _toTrinhQuyetDinhRepo.AddAsync(noiDungThamDinh, cancellationToken);
             }
         } //     , dto.ThamDinh

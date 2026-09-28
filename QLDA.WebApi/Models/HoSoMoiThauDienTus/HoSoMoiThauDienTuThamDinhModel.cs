@@ -14,7 +14,6 @@ public class HoSoMoiThauThamDinhModel
         return (Guid)NhaThauId;
     }
     
-    public List<TepDinhKemModel>? DinhKemQuyetDinhLapToChuyenGia { get; set; }
     public List<TepDinhKemModel>? DinhKemQuyetDinh { get; set; }
     public List<TepDinhKemModel>? DinhKemCamKet { get; set; }
     public List<TepDinhKemModel>? DinhKemBaoCao { get; set; }

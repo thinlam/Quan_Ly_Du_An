@@ -17,6 +17,7 @@ public class HoSoMoiThauDienTuInsertDto : IMayHaveTepDinhKemDto {
     public ToTrinhQuyetDinhDto? ToTrinh { get; set; }
     public ToTrinhQuyetDinhDto? QuyetDinh { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
+    public List<TepDinhKemDto>? DanhSachTepLapToChuyenGia { get; set; }
 }
 public class HoSoMoiThauThamDinhDto
 {

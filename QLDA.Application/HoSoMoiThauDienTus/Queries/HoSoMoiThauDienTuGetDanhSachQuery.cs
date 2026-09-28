@@ -82,60 +82,9 @@ internal class HoSoMoiThauDienTuGetDanhSachQueryHandler : IRequestHandler<HoSoMo
              })
             .PaginatedListAsync(request.Skip(), request.Take(), cancellationToken);
 
-        var ids = result.Data.Select(x => x.Id).ToList();
-        if (ids.Count == 0)
-            return result;
-
-        var loaiToTrinh = ToTrinhQuyetDinhLoai.HoSoMoiThauToTrinh;
-        var loaiQuyetDinh = ToTrinhQuyetDinhLoai.HoSoMoiThauQuyetDinh;
-
-        var vanBan = await ToTrinhQuyetDinh.GetQueryableSet()
-            .AsNoTracking()
-            .Where(e => e.EntityId != null
-                && ids.Contains(e.EntityId.Value)
-                && (e.Loai == loaiToTrinh || e.Loai == loaiQuyetDinh))
-            .ToListAsync(cancellationToken);
-
-        var toTrinhByHoSoId = vanBan
-            .Where(e => e.Loai == loaiToTrinh && e.EntityId.HasValue)
-            .GroupBy(e => e.EntityId!.Value)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        var quyetDinhByHoSoId = vanBan
-            .Where(e => e.Loai == loaiQuyetDinh && e.EntityId.HasValue)
-            .GroupBy(e => e.EntityId!.Value)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        foreach (var item in result.Data) {
-            item.ToTrinh = toTrinhByHoSoId.TryGetValue(item.Id, out var tt) ? tt.ToDto() : null;
-            item.QuyetDinh = quyetDinhByHoSoId.TryGetValue(item.Id, out var qd) ? qd.ToDto() : null;
-        }
-
-        var legacyGroupIds = vanBan.Select(x => x.Id.ToString()).ToList();
-        var groupTypesToTrinh = AttachmentSubquery.ExpandGroupTypes(
-            includeSigned: true, nameof(EGroupType.HoSoMoiThauDienTuToTrinh));
-        var groupTypesQuyetDinh = AttachmentSubquery.ExpandGroupTypes(
-            includeSigned: true, nameof(EGroupType.HoSoMoiThauDienTuQuyetDinh));
-
-        var legacyFiles = legacyGroupIds.Count == 0
-            ? []
-            : await TepDinhKem.GetQueryableSet().AsNoTracking()
-                .Where(i => legacyGroupIds.Contains(i.GroupId)
-                    && (groupTypesToTrinh.Contains(i.GroupType) || groupTypesQuyetDinh.Contains(i.GroupType)))
-                .Select(i => i.ToDto())
-                .ToListAsync(cancellationToken);
-
-        var filesByGroupId = legacyFiles
-            .Where(f => f.GroupId != null)
-            .GroupBy(f => f.GroupId!)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        foreach (var item in result.Data) {
-            AppendLegacyFiles(item, item.ToTrinh?.Id, filesByGroupId);
-            AppendLegacyFiles(item, item.QuyetDinh?.Id, filesByGroupId);
-        }
 
         return result;
+
     }
 
     private static void AppendLegacyFiles(

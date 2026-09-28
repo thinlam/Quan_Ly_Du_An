@@ -62,7 +62,7 @@ internal class HoSoMoiThauDienTuUpdateCommandHandler : IRequestHandler<HoSoMoiTh
         //region thông tin thẩm định
         entity.NhaThauId = (model.ThamDinh ?? false) ? model.HoSoMoiThauThamDinh?.NhaThauId : null;
         entity.ThamDinh = model.ThamDinh;
-         
+   
 
         if (request.Model.ToTrinh != null)
         {

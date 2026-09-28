@@ -20,6 +20,5 @@ public class HoSoMoiThauDienTuDto {
     public int? TrangThaiId { get; set; }
     public string? TenTrangThai { get; set; }
     public List<TepDinhKemDto>? DanhSachTepDinhKem { get; set; }
-    public ToTrinhQuyetDinhDto? ToTrinh { get; set; }
-    public ToTrinhQuyetDinhDto? QuyetDinh { get; set; }
+
 }
