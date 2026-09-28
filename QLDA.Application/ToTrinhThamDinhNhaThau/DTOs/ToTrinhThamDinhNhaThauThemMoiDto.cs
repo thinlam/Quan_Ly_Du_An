@@ -27,7 +27,7 @@ public class ToTrinhThamDinhNhaThauThemMoiDto
     public ThongTinNhaThauDto? ThongTinNhaThau { get; set; }
     public ToTrinhThamDinhBuocXuLyDto? DoiChieu { get; set; }
     public ToTrinhThamDinhBuocXuLyDto? ThuongThao { get; set; }
-    public ToTrinhThamDinhBuocXuLyDto? ThamDinh { get; set; }
+    public ToTrinhKetQuaDto? ThamDinh { get; set; }
     public ToTrinhKetQuaDto? ToTrinhKetQua { get; set; }
 }
 

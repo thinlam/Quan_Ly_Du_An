@@ -43,10 +43,7 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             GroupIds: [entity.Id.ToString()],
             BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThuongThao)]
         ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
-        var filesThamDinhBuoc = (await Mediator.Send(new GetAttachmentsQuery(
-            GroupIds: [entity.Id.ToString()],
-            BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)]
-        ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
+    
 
         // File của Thông tin nhà thầu (E-HSDT / Đánh giá) — Issue #179.
         var fileEHSDT = (await Mediator.Send(new GetAttachmentsQuery(
@@ -67,6 +64,13 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
                 BaseGroupTypes: [nameof(EGroupType.ToTrinhQuyetDinh)]
             ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
         }
+        List<TepDinhKemDto>? filesThamDinh = null;
+        if (loaded.NoiDungThamDinh != null) {
+            filesThamDinh = (await Mediator.Send(new GetAttachmentsQuery(
+                GroupIds: [loaded.NoiDungThamDinh.Id.ToString()],
+                BaseGroupTypes: [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)]
+            ))).ToAttachmentEntities().Select(x => x.ToDto()).ToList();
+        }
 
         // File Quyết định phê duyệt — GroupId là VanBanQuyetDinh.Id (= entity.Id), chỉ khi có bản ghi.
         List<TepDinhKemDto>? filesQuyetDinh = null;
@@ -83,9 +87,10 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             danhSachTepThamDinh: danhSachTepThamDinh.Select(x => x.ToDto()).ToList(),
             filesDoiChieu: filesDoiChieu,
             filesThuongThao: filesThuongThao,
-            filesThamDinh: filesThamDinhBuoc,
+            filesThamDinh: filesThamDinh,
             fileEHSDT: fileEHSDT,
             fileDanhGia: fileDanhGia,
+            noiDungThamDinh: loaded.NoiDungThamDinh,
             toTrinhKetQua: loaded.ToTrinhKetQua,
             filesToTrinhKetQua: filesToTrinhKetQua,
             quyetDinh: loaded.QuyetDinhPheDuyet,
@@ -159,13 +164,25 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
                 AutoDeleteMissing = true
             }, cancellationToken);
         }
-        if (dto.ThamDinh?.File is { Count: > 0 } fileThamDinh)
-        {
-            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
-            {
-                GroupId = entity.Id.ToString(),
+  
+        if (result.NoiDungThamDinhId is { } noiDungThamDinhId && dto.ThamDinh?.File is { Count: > 0 } fileThamDinh) {
+            // ToTrinhQuyetDinh.Id là long (không phải Guid) — không dùng được overload
+            // ToEntities(Guid groupId,...), map thủ công GroupId theo id dạng long.
+            var files = fileThamDinh.Select(f => new Attachment {
+                Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
+                ParentId = f.ParentId,
+                GroupId = noiDungThamDinhId.ToString(),
+                GroupType = nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh),
+                Type = f.Type,
+                FileName = f.FileName,
+                OriginalName = f.OriginalName,
+                Path = f.Path,
+                Size = f.Size,
+            }).ToList();
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
+                GroupId = noiDungThamDinhId.ToString(),
                 GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)],
-                Entities = [.. fileThamDinh.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)],
+                Entities = files,
                 AutoDeleteMissing = true
             }, cancellationToken);
         }
@@ -289,17 +306,27 @@ public class ToTrinhThamDinhNhaThauController(IServiceProvider serviceProvider) 
             filesThuongThao = entities.Select(x => x.ToDto()).ToList();
         }
         List<TepDinhKemDto>? filesThamDinhBuoc = null;
-        if (dto.ThamDinh?.File is { } fileThamDinh)
-        {
-            var entities = fileThamDinh.ToEntities(entity.Id, EGroupType.ToTrinhThamDinhNhaThau_ThamDinh).ToList();
-            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand
-            {
-                GroupId = entity.Id.ToString(),
+
+        if (result.noiDungThamDinhId is { } NoiDungThamDinhId && dto.ThamDinh?.File is { } fileThamDinh) {
+            // ToTrinhQuyetDinh.Id là long (không phải Guid) — map thủ công GroupId theo id dạng long.
+            var files = fileThamDinh.Select(f => new Attachment {
+                Id = f.Id ?? GuidExtensions.GetSequentialGuidId(),
+                ParentId = f.ParentId,
+                GroupId = NoiDungThamDinhId.ToString(),
+                GroupType = nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh),
+                Type = f.Type,
+                FileName = f.FileName,
+                OriginalName = f.OriginalName,
+                Path = f.Path,
+                Size = f.Size,
+            }).ToList();
+
+            await Mediator.Send(new AttachmentBulkInsertOrUpdateCommand {
+                GroupId = NoiDungThamDinhId.ToString(),
                 GroupTypes = [nameof(EGroupType.ToTrinhThamDinhNhaThau_ThamDinh)],
-                Entities = entities,
+                Entities = files,
                 AutoDeleteMissing = true
             }, cancellationToken);
-            filesThamDinhBuoc = entities.Select(x => x.ToDto()).ToList();
         }
 
         // File Tờ trình kết quả — GroupId là ToTrinhQuyetDinh.Id (long), chỉ khi có bản ghi.

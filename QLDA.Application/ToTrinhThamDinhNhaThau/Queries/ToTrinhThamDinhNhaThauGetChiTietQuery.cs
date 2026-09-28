@@ -10,6 +10,7 @@ namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Queries;
 /// </summary>
 public record ToTrinhThamDinhNhaThauChiTietResult(
     ToTrinhThamDinhNhaThau Entity,
+    ToTrinhQuyetDinh? NoiDungThamDinh,
     ToTrinhQuyetDinh? ToTrinhKetQua,
     VanBanQuyetDinh? QuyetDinhPheDuyet);
 
@@ -35,15 +36,18 @@ internal class ToTrinhThamDinhNhaThauGetChiTietQueryHandler(IServiceProvider ser
             .FirstOrDefaultAsync(cancellationToken);
 
         ManagedException.ThrowIf(entity == null, "Không tìm thấy dữ liệu");
-
         var toTrinhKetQua = await _toTrinhQuyetDinhRepo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.EntityId == request.Id
                 && e.Loai == ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau, cancellationToken);
+
+        var noiDungThamDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
+            .FirstOrDefaultAsync(e => e.EntityId == request.Id
+                && e.Loai == ToTrinhQuyetDinhLoai.NoiDungThamDinhNhaThau, cancellationToken);
 
         var quyetDinh = await _vanBanQuyetDinhRepo.GetQueryableSet()
             .FirstOrDefaultAsync(e => e.Id == request.Id
                 && e.Loai == nameof(EnumLoaiVanBanQuyetDinh.ToTrinhThamDinhNhaThau), cancellationToken);
 
-        return new ToTrinhThamDinhNhaThauChiTietResult(entity!, toTrinhKetQua, quyetDinh);
+        return new ToTrinhThamDinhNhaThauChiTietResult(entity!, noiDungThamDinh ,toTrinhKetQua, quyetDinh);
     }
 }

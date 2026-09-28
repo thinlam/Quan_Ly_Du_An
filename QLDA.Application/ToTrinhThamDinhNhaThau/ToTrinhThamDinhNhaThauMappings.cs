@@ -13,15 +13,14 @@ public static class ToTrinhThamDinhNhaThauMappings
     /// </summary>
     public static List<ToTrinhThamDinhBuocXuLy> ToBuocXuLyList(
         ToTrinhThamDinhBuocXuLyDto? doiChieu,
-        ToTrinhThamDinhBuocXuLyDto? thuongThao,
-        ToTrinhThamDinhBuocXuLyDto? thamDinh) {
+        ToTrinhThamDinhBuocXuLyDto? thuongThao) {
         var list = new List<ToTrinhThamDinhBuocXuLy>();
         if (doiChieu != null)
             list.Add(new() { So = doiChieu.So, Ngay = doiChieu.Ngay, NoiDung = doiChieu.NoiDung, Loai = ToTrinhThamDinhBuocXuLyLoai.DoiChieu });
         if (thuongThao != null)
             list.Add(new() { So = thuongThao.So, Ngay = thuongThao.Ngay, NoiDung = thuongThao.NoiDung, Loai = ToTrinhThamDinhBuocXuLyLoai.ThuongThao });
-        if (thamDinh != null)
-            list.Add(new() { So = thamDinh.So, Ngay = thamDinh.Ngay, NoiDung = thamDinh.NoiDung, Loai = ToTrinhThamDinhBuocXuLyLoai.ThamDinh });
+        //if (thamDinh != null)
+        //    list.Add(new() { So = thamDinh.So, Ngay = thamDinh.Ngay, NoiDung = thamDinh.NoiDung, Loai = ToTrinhThamDinhBuocXuLyLoai.ThamDinh });
         return list;
     }
 
@@ -62,12 +61,12 @@ public static class ToTrinhThamDinhNhaThauMappings
     /// Tờ trình kết quả (mục 6) → <see cref="ToTrinhQuyetDinh"/> (Loai=ToTrinhThamDinhNhaThau).
     /// Dùng chung Create + Update (Issue #179).
     /// </summary>
-    public static ToTrinhQuyetDinh ToToTrinhQuyetDinh(this ToTrinhKetQuaDto dto, Guid entityId)
+    public static ToTrinhQuyetDinh ToToTrinhQuyetDinh(this ToTrinhKetQuaDto dto, Guid entityId, string type)
     {
         var entity = new ToTrinhQuyetDinh
         {
             EntityId = entityId,
-            Loai = ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau,
+            Loai = type ,
         };
         dto.ApplyTo(entity);
         return entity;
@@ -152,6 +151,7 @@ public static class ToTrinhThamDinhNhaThauMappings
         List<TepDinhKemDto>? filesThamDinh = null,
         List<TepDinhKemDto>? fileEHSDT = null,
         List<TepDinhKemDto>? fileDanhGia = null,
+        ToTrinhQuyetDinh? noiDungThamDinh = null,
         ToTrinhQuyetDinh? toTrinhKetQua = null,
         List<TepDinhKemDto>? filesToTrinhKetQua = null,
         VanBanQuyetDinh? quyetDinh = null,
@@ -177,7 +177,14 @@ public static class ToTrinhThamDinhNhaThauMappings
             },
             DoiChieu = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.DoiChieu)?.ToDto(filesDoiChieu),
             ThuongThao = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.ThuongThao)?.ToDto(filesThuongThao),
-            ThamDinh = entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.ThamDinh)?.ToDto(filesThamDinh),
+            ThamDinh = noiDungThamDinh == null ? null : new ToTrinhKetQuaDto {
+                So = noiDungThamDinh.So,
+                Ngay = noiDungThamDinh.Ngay,
+                NguoiKy = noiDungThamDinh.NguoiKy,
+                ChucVuId = noiDungThamDinh.ChucVu,
+                TrichYeu = noiDungThamDinh.TrichYeu,
+                File = filesThamDinh,
+            },// entity.BuocXuLys?.FirstOrDefault(x => x.Loai == ToTrinhThamDinhBuocXuLyLoai.ThamDinh)?.ToDto(filesThamDinh),
             ToTrinhKetQua = toTrinhKetQua == null ? null : new ToTrinhKetQuaDto {
                 So = toTrinhKetQua.So,
                 Ngay = toTrinhKetQua.Ngay,

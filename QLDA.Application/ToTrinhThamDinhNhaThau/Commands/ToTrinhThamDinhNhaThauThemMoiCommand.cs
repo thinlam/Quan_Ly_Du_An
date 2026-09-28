@@ -14,6 +14,7 @@ namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 public record ToTrinhThamDinhNhaThauThemMoiResult(
     ToTrinhThamDinhNhaThau Entity,
     long? ToTrinhQuyetDinhId,
+    long? NoiDungThamDinhId,
     Guid? VanBanQuyetDinhId);
 
 public record ToTrinhThamDinhNhaThauThemMoiCommand(ToTrinhThamDinhNhaThauThemMoiDto Dto)
@@ -80,17 +81,21 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
             
 
 };
-        entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao, dto.ThamDinh));
+        entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao));
 
         using var tx = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
         await _repo.AddAsync(entity, cancellationToken);
 
+        ToTrinhQuyetDinh? noiDungThamDinh = null;
+        if (dto.ThamDinh != null) {
+            noiDungThamDinh = dto.ThamDinh.ToToTrinhQuyetDinh(entity.Id, ToTrinhQuyetDinhLoai.NoiDungThamDinhNhaThau);
+            await _toTrinhQuyetDinhRepo.AddAsync(noiDungThamDinh, cancellationToken);
+        }
         ToTrinhQuyetDinh? toTrinhQuyetDinh = null;
         if (dto.ToTrinhKetQua != null) {
-            toTrinhQuyetDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id);
+            toTrinhQuyetDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id, ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau);
             await _toTrinhQuyetDinhRepo.AddAsync(toTrinhQuyetDinh, cancellationToken);
         }
-
         VanBanQuyetDinh? vanBanQuyetDinh = null;
         if (dto.QuyetDinhPheDuyet != null) {
             vanBanQuyetDinh = dto.QuyetDinhPheDuyet.ToVanBanQuyetDinh(entity, trangThaiDuThao?.Id);
@@ -100,6 +105,6 @@ internal class ToTrinhThamDinhNhaThauThemMoiCommandHandler
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return new ToTrinhThamDinhNhaThauThemMoiResult(entity, toTrinhQuyetDinh?.Id, vanBanQuyetDinh?.Id);
+        return new ToTrinhThamDinhNhaThauThemMoiResult(entity, toTrinhQuyetDinh?.Id, noiDungThamDinh?.Id, vanBanQuyetDinh?.Id);
     }
 }

@@ -89,7 +89,7 @@ internal class    ToTrinhThamDinhNhaThauDanhSachQueryHandler(IServiceProvider Se
         var toTrinhQuyetDinhs = toTrinhIds.Count == 0
             ? []
             : await ToTrinhQuyetDinh.GetQueryableSet().AsNoTracking()
-                .Where(e => toTrinhIds.Contains(e.EntityId) && e.Loai == ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau)
+                .Where(e => toTrinhIds.Contains(e.EntityId) &&( e.Loai == ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau   ||  e.Loai == ToTrinhQuyetDinhLoai.NoiDungThamDinhNhaThau))
                 .Select(e => new { e.Id, e.EntityId })
                 .ToListAsync(cancellationToken);
 

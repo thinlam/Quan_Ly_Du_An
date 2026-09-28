@@ -13,4 +13,5 @@ public static class ToTrinhQuyetDinhLoai
     public const string HoSoMoiThauQuyetDinh = "HoSoMoiThauQuyetDinh";
     /// <summary>Tờ trình kết quả của ToTrinhThamDinhNhaThau.</summary>
     public const string ToTrinhThamDinhNhaThau = "ToTrinhThamDinhNhaThau";
+    public const string NoiDungThamDinhNhaThau = "NoiDungThamDinhNhaThau";
 }

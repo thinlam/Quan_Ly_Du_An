@@ -13,6 +13,7 @@ namespace QLDA.Application.ToTrinhThamDinhNhaThaus.Commands;
 /// </summary>
 public record ToTrinhThamDinhNhaThauUpdateResult(
     ToTrinhThamDinhNhaThau Entity,
+    long? noiDungThamDinhId,
     long? ToTrinhQuyetDinhId,
     Guid? VanBanQuyetDinhId);
 
@@ -75,19 +76,33 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         entity.ThoiGianThucHienGoiThau = dto.ThoiGianThucHienGoiThau;   
 
 
-        entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao, dto.ThamDinh));
-
+        entity.SyncBuocXuLys(ToTrinhThamDinhNhaThauMappings.ToBuocXuLyList(dto.DoiChieu, dto.ThuongThao));
+        // Tờ trình kết quả (mục 4) — upsert ToTrinhQuyetDinh theo EntityId + Loai (Issue #179).
+        ToTrinhQuyetDinh? noiDungThamDinh = null;
+        string type = string.Empty;
+        if (dto.ToTrinhKetQua != null) {
+            type = ToTrinhQuyetDinhLoai.NoiDungThamDinhNhaThau;
+            noiDungThamDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
+                .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == type, cancellationToken);
+            if (noiDungThamDinh != null)
+                dto.ToTrinhKetQua.ApplyTo(noiDungThamDinh);
+            else {
+                noiDungThamDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id, type);
+                await _toTrinhQuyetDinhRepo.AddAsync(noiDungThamDinh, cancellationToken);
+            }
+        } //     , dto.ThamDinh
         // Tờ trình kết quả (mục 6) — upsert ToTrinhQuyetDinh theo EntityId + Loai (Issue #179).
         ToTrinhQuyetDinh? toTrinhQuyetDinh = null;
         if (dto.ToTrinhKetQua != null)
         {
+             type = ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau;
             toTrinhQuyetDinh = await _toTrinhQuyetDinhRepo.GetQueryableSet()
-                .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == ToTrinhQuyetDinhLoai.ToTrinhThamDinhNhaThau, cancellationToken);
+                .FirstOrDefaultAsync(x => x.EntityId == entity.Id && x.Loai == type, cancellationToken);
             if (toTrinhQuyetDinh != null)
                 dto.ToTrinhKetQua.ApplyTo(toTrinhQuyetDinh);
             else
             {
-                toTrinhQuyetDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id);
+                toTrinhQuyetDinh = dto.ToTrinhKetQua.ToToTrinhQuyetDinh(entity.Id, type );
                 await _toTrinhQuyetDinhRepo.AddAsync(toTrinhQuyetDinh, cancellationToken);
             }
         }
@@ -113,6 +128,6 @@ internal class ToTrinhThamDinhNhaThauUpdateCommandHandler : IRequestHandler<ToTr
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        return new ToTrinhThamDinhNhaThauUpdateResult(entity!, toTrinhQuyetDinh?.Id, vanBanQuyetDinh?.Id);
+        return new ToTrinhThamDinhNhaThauUpdateResult(entity!, noiDungThamDinh?.Id, toTrinhQuyetDinh?.Id, vanBanQuyetDinh?.Id);
     }
 }
